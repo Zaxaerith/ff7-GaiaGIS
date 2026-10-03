@@ -16,7 +16,7 @@ GaiaGIS original source uses GPL-3.0-only. The dependencies below retain their O
 
 ## Unlicensed FF7 references
 
-maciej-trebacz/ff7-landscaper and ergonomy-joe/ff7-worldmap are reverse-engineering references/validation oracles only. No source is vendored, relicensed or copied into the Viewer. Reference caches are excluded from Git and release bundles.
+maciej-trebacz/ff7-landscaper and ergonomy-joe/ff7-worldmap are reverse-engineering references/validation oracles only. No source is vendored, relicensed or copied into the Viewer. Reference caches are excluded from Git and release bundles. The v1.3 traversal evaluator independently expresses necessary behavior facts; evidence, pinned reference revisions, model/tint mapping and runtime limitations are documented in docs/v1.3/traversal-research.md. No decompiled implementation is bundled.
 
 The npm lockfile pins the full dependency graph. Individual transitive packages retain their licenses in node_modules; no third-party source is relicensed as GPL.
 

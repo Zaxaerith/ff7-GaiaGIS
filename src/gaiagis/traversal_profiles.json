@@ -1,0 +1,21 @@
+{
+  "schema": "gaiagis-traversal-profiles",
+  "version": 1,
+  "evidence": "verified_reference_logic",
+  "compatibility_profile": "classic-pc-reference",
+  "runtime_equivalence": "not-verified-steam2026",
+  "bridge_mask": "0x20006000",
+  "foot_exit_mask": "0x021B6F83",
+  "profiles": [
+    {"id":"foot","name":"On Foot","model_id":0,"mask":"0x721B6F83","bridge_sensitive":true,"exit_mask":null,"departure_mask":null,"tint":null},
+    {"id":"buggy","name":"Buggy","model_id":6,"mask":"0x331B6F13","bridge_sensitive":false,"exit_mask":"0x021B6F83","departure_mask":"0x221B0F83","tint":null},
+    {"id":"tiny-bronco","name":"Tiny Bronco · water","model_id":5,"mask":"0x00000070","bridge_sensitive":false,"exit_mask":"0x00020800","departure_mask":"0x00000070","tint":null},
+    {"id":"highwind-landing","name":"Highwind Landing","model_id":3,"mask":"0x00000001","bridge_sensitive":false,"exit_mask":"0x021B6F83","departure_mask":"0x00000001","tint":null},
+    {"id":"chocobo-yellow","name":"Chocobo · Yellow","model_id":19,"mask":"0x321B6F83","bridge_sensitive":true,"exit_mask":"0x321B6F83","departure_mask":"0x221B0F03","tint":0},
+    {"id":"chocobo-green","name":"Chocobo · Green","model_id":19,"mask":"0x321B6F87","bridge_sensitive":true,"exit_mask":"0x321B6F83","departure_mask":"0x221B0F03","tint":1},
+    {"id":"chocobo-blue","name":"Chocobo · Blue","model_id":19,"mask":"0x321B6FF3","bridge_sensitive":true,"exit_mask":"0x321B6F83","departure_mask":"0x221B0F03","tint":2},
+    {"id":"chocobo-black","name":"Chocobo · Black","model_id":19,"mask":"0x325B7FF7","bridge_sensitive":true,"exit_mask":"0x321B6F83","departure_mask":"0x221B0F03","tint":3},
+    {"id":"chocobo-gold","name":"Chocobo · Gold","model_id":19,"mask":"0x375B7FFF","bridge_sensitive":true,"exit_mask":"0x321B6F83","departure_mask":"0x221B0F03","tint":4},
+    {"id":"submarine-surface","name":"Submarine · WM0 surface","model_id":13,"mask":"0x04048008","bridge_sensitive":false,"exit_mask":"0x021B6F83","departure_mask":"0x00040000","tint":null}
+  ]
+}

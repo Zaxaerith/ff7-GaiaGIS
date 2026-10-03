@@ -63,7 +63,7 @@ export function yuffieScene(data:EncounterDataset,level:number,terrain:number){
   const r=data.yuffie.find(r=>level<=r.level_max)??data.yuffie.at(-1)!;return r.scene_id+(terrain===25?1:0);
 }
 export function chocoboRating(data:EncounterDataset,scene:number){return data.chocobo_ratings.find(r=>r.valid&&r.scene_id===scene)?.rating??null;}
-export type ColorLayer='terrain'|'region'|'encounter'|'encounter-rate';
+export type ColorLayer='terrain'|'region'|'encounter'|'encounter-rate'|'traversal';
 export const encounterPalette={active:'#53c2a2',inactive:'#586474',script:'#b19a61',unavailable:'#76818b',tracks:'#ffdb64'};
 export function encounterColor(data:EncounterDataset|null,a:TriangleAttributes,rate=false):string{
   if(a.origin||!data||a.region===null||a.terrain===null)return encounterPalette.unavailable;

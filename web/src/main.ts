@@ -10,6 +10,7 @@ import {projections} from './projections';
 import type {ProjectionId} from './projections/Projection';
 import {mountLocations} from './ui/locations';
 import {mountEncounters} from './ui/encounters';
+import {mountTraversal} from './ui/traversal';
 import type {ColorLayer} from './data/encounters';
 
 const root=document.querySelector<HTMLElement>('#app')!;
@@ -51,6 +52,7 @@ async function start(provided?:{mesh:GaiaMesh;meta:GaiaMeta}){
     activeViewer=viewer;viewer.onError=message=>fail(message);setBusy(false);
     const locationControls=mountLocations(viewer,meta,()=>request===operation);
     const encounterControls=mountEncounters(viewer,meta,()=>request===operation);
+    const traversalControls=mountTraversal(viewer,meta);
     viewer.renderer.domElement.addEventListener('keydown',e=>{if(['n','N','ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key))element<HTMLInputElement>('auto-rotate').checked=false;});
     element('loading').hidden=true;
     element('dataset-count').textContent=`${mesh.triangleCount.toLocaleString()} canonical triangles`;
@@ -120,6 +122,7 @@ async function start(provided?:{mesh:GaiaMesh;meta:GaiaMeta}){
       element('coordinates').textContent=`${lon.toFixed(2)}° / ${lat.toFixed(2)}°`;
       detail.dataset.sourceTriangle=String(source);detail.dataset.origin=String(a.origin);
       encounterControls.inspect(source,detail);
+      traversalControls.inspect(source,detail);
     };
   } catch(error){if(request!==operation)return;activeViewer?.dispose();activeViewer=undefined;fail(error instanceof Error?error.message:String(error),error instanceof MissingDatasetError);}
 }

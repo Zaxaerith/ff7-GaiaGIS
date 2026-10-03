@@ -20,6 +20,8 @@ import {flyDirection,flyDuration,shortestLongitude} from './flyTo';
 import type {Location,LocationFilter} from '../data/poi';
 import {encounterColor,encounterPalette} from '../data/encounters';
 import type {ColorLayer,EncounterDataset} from '../data/encounters';
+import {profileById,traversalColor} from '../data/traversal';
+import {orderSurfaceHits} from './surfacePicking';
 
 type Frame={positions:Float32Array;mask:Float32Array};
 interface Morph {start:number;fromId:ProjectionId;from:Frame;to:Frame;gridFrom:Frame;gridTo:Frame;cameraFrom:Vector3;cameraTo:Vector3;targetFrom:Vector3;depthFrom:number;}
@@ -39,6 +41,7 @@ export class GaiaViewer {
   private flight:Flight|null=null;
   private queuedLocation:{lon:number;lat:number}|null=null;
   private colorLayer:ColorLayer='terrain';
+  private movementMode='foot';
   private encounters:EncounterDataset|null=null;
   private chocoboTracks=false;
   private reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -217,6 +220,7 @@ export class GaiaViewer {
   }
   setTerrain(value:boolean){this.terrain=value;this.colorSurface();}
   setColorLayer(layer:ColorLayer){this.colorLayer=layer;this.colorSurface();}
+  setMovementMode(id:string){profileById(id);this.movementMode=id;if(this.colorLayer==='traversal')this.colorSurface();}
   setEncounters(data:EncounterDataset|null){this.encounters=data;this.colorSurface();}
   setChocoboTracks(value:boolean){this.chocoboTracks=value;this.colorSurface();}
   focusLocation(lon:number,lat:number){
@@ -291,6 +295,7 @@ export class GaiaViewer {
       const source=this.display.renderToSource[t];
       if(source!==previous){const a=this.mesh.attributes(source);const colored=this.colorLayer!=='terrain'||this.terrain;color=a.origin?this.distinguishCaps?cap:colored?cap:neutral:colored?palette.get(this.colorLayer==='region'?a.region!:a.terrain!)||neutral:neutral;
         if(!a.origin&&gameplay){const key=`${a.region}:${a.terrain}:${a.script===0}`;if(!gameColors.has(key))gameColors.set(key,new Color(encounterColor(this.encounters,a,this.colorLayer==='encounter-rate')));color=gameColors.get(key)!;}
+        if(this.colorLayer==='traversal'){const key=`traversal:${a.terrain}:${a.script}:${a.origin}`;if(!gameColors.has(key))gameColors.set(key,new Color(traversalColor(this.movementMode,a)));color=gameColors.get(key)!;}
         if(!a.origin&&this.chocoboTracks&&a.chocobo)color=tracks;previous=source;}
       for(let j=0;j<9;j+=3){const i=t*9+j;colors[i]=color.r;colors[i+1]=color.g;colors[i+2]=color.b;}
     }
@@ -302,7 +307,7 @@ export class GaiaViewer {
     ray.setFromCamera(new Vector2((x-rect.left)/rect.width*2-1,-(y-rect.top)/rect.height*2+1),this.camera);
     const hits=ray.intersectObject(this.surface,false);
     const bary=new Vector3(),a=new Vector3(),b=new Vector3(),c=new Vector3();
-    for(const hit of hits) {
+    for(const hit of orderSurfaceHits(hits)) {
       const face=hit.faceIndex;if(face==null) continue;
       const base=face*9;
       a.fromArray(this.frame.positions,base);b.fromArray(this.frame.positions,base+3);c.fromArray(this.frame.positions,base+6);

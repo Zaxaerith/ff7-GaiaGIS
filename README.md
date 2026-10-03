@@ -6,7 +6,7 @@ A mathematical GIS reconstruction of Final Fantasy VII's polygonal world map, wi
 
 FINAL FANTASY VII WM0 → polygon mesh → periodic topology analysis → inverse-Mercator parameterization → Earth-sized Gaia sphere → GIS → interactive Web viewer → map projections.
 
-This is a **code-only project**. The repository contains no FF7 game data, complete derived Gaia geometry, POI coordinates or derived encounter dataset. Users generate V1 data from their own installation and load it locally. v1.2 is a local release candidate pending publication approval. [v1.1 release notes](docs/releases/v1.1.0.md) · [Stable v1.0 notes](docs/releases/v1.0.0.md) · [Data policy](docs/data-and-copyright.md).
+This is a **code-only project**. The repository contains no FF7 game data, complete derived Gaia geometry, POI coordinates or derived encounter dataset. Users generate V1 data from their own installation and load it locally. v1.3 is a local release candidate pending publication approval; v1.2 remains preserved in local history. [v1.1 release notes](docs/releases/v1.1.0.md) · [Stable v1.0 notes](docs/releases/v1.0.0.md) · [Data policy](docs/data-and-copyright.md).
 
 ## Viewer
 
@@ -19,6 +19,7 @@ This is a **code-only project**. The repository contains no FF7 game data, compl
 - About/help explains local setup, reconstruction assumptions, research status and licenses.
 - Browser-local loading of gaia-meta.json + gaia-mesh.bin. Files are verified with SHA-256 and never uploaded.
 - Optional named locations and field entrances, locally generated from your own installation: markers, major-location labels, category filters, name/alias/internal-field search, fly-to and entrance provenance inspection in all five projections.
+- Traversal & Vehicles: static classic-PC terrain compatibility for On Foot, Buggy, water Tiny Bronco, five Chocobo variants and Submarine surface; separate Highwind landing initiation, four-state legend and comparison Inspector. Runtime/story state and reachability are not simulated.
 - Optional World Encounters: Encounter Zones, raw Encounter Rate, independent Chocobo Tracks, and triangle encounter/Mystery Ninja/Chocobo metadata. Weights are not absolute probabilities; runtime state is not simulated.
 
 TypeScript, Vite and Three.js; no backend or UI framework. d3 is a test oracle only. The browser needs WebGL2 and HTTPS or localhost for checksum verification. GPU/device performance varies.
@@ -64,6 +65,10 @@ python -B scripts/build_encounter_assets.py --source 'YOUR_FF7_INSTALLATION'
 ```
 
 Generate **web/public/data/gaia-encounters.json**, then use **Display → Load Encounters**. This optional dataset binds enc_w.bin tables to existing triangle region/terrain lineage. Chocobo Tracks uses the independent MAP flag and works without the file. Gameplay terrain is not land cover, and encounter regions are not ecological regions. The lookup follows documented classic PC behavior; 2026 runtime code equivalence is not yet verified. No encounter dataset is distributed publicly. [Encounter research](docs/v1.2/encounter-research.md) · [Schema and generation](docs/v1.2/encounter-data.md) · [Local validation](docs/v1.2/validation.md).
+
+### Traversal & Vehicles (v1.3)
+
+Select **Display → Color layer → Traversal**, then a Movement mode. The small public rule profile reuses your local V1 terrain/script/lineage; **no additional dataset file is required**. Allowed means an ordinary static terrain mask passes, not guaranteed movement or story/runtime reachability. Highwind Landing shows initiation eligibility rather than airborne travel. Bridge history, boarding/candidate points and a Chocobo exit height gate remain explicitly separate. Current Steam 2026 runtime equivalence is not verified. Chocobo Tracks and Encounters remain independent. [Research and 32-terrain matrix](docs/v1.3/traversal-research.md) · [Profile/data](docs/v1.3/traversal-data.md) · [Local validation](docs/v1.3/validation.md).
 
 ## Production and release
 
