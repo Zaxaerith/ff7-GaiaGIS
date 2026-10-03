@@ -31,6 +31,11 @@ Commit authorship remains Zaxaerith. The existing v1.0.0 tag is unchanged.
 | npm build | passed |
 | npm build:release / audit:release | passed; seven code/notice files, zero derived assets |
 
+A clean Git source archive was installed with `npm ci` and validated
+without private files: 72 Web tests passed, four real-data tests skipped;
+16 POI Python tests passed, one source integration test skipped. Both
+production builds and the source-only audit passed in that checkout.
+
 Browser QA used installed Chrome with isolated workspace profiles/temp.
 Midgar, Junon, Mythril Mine and Temple of the Ancients were checked in
 each of the five projections at desktop, 390px and 320px touch layouts.
