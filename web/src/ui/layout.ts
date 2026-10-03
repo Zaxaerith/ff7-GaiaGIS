@@ -8,7 +8,10 @@ export function mountLayout(root:HTMLElement) {
     </header>
     <main class="workspace">
       <aside class="controls panel" aria-label="Display controls"><div class="panel-heading"><h2>Display</h2><span>01</span></div>
-        <label class="field-label" for="color-layer">Color layer</label><select id="color-layer"><option value="terrain">FF7 gameplay terrain</option><option value="region">FF7 regions</option></select>
+        <label class="field-label" for="color-layer">Color layer</label><select id="color-layer"><option value="terrain">FF7 gameplay terrain</option><option value="region">FF7 regions</option><option value="encounter" disabled>Encounter Zones</option><option value="encounter-rate" disabled>Encounter Rate · raw game value</option></select>
+        <button id="load-encounters">Load Encounters</button><p id="encounter-status" class="control-note" role="status">Encounter data unavailable · optional local file</p>
+        <label class="switch-row"><span>Chocobo Tracks</span><input id="chocobo-tracks" type="checkbox"/></label>
+        <p id="tracks-legend" class="control-note" hidden><span class="tracks-swatch"></span>Yellow: WM0 Chocobo flag. Lure and runtime eligibility are not simulated.</p>
         <label class="field-label" for="region-focus">Go to region</label><select id="region-focus"><option value="">Choose a region…</option></select>
         <p id="region-note" class="control-note">Approximate geometric centers, not field entrances.</p>
         <section class="locations-controls" aria-label="Named locations">
@@ -52,14 +55,16 @@ export function mountLayout(root:HTMLElement) {
     <footer><span class="status-dot"></span><span id="view-status">Preparing viewer</span><span id="coordinates"></span><button id="about-button">About / help</button><span class="footer-right"><span id="fps">— FPS</span><span class="footer-disclaimer">Independent fan / technical project · Not affiliated with Square Enix</span></span></footer>
     <input id="local-dataset-files" type="file" accept=".json,.bin" multiple hidden aria-label="Local V1 metadata and mesh files"/>
     <input id="local-poi-file" type="file" accept=".json" hidden aria-label="Local locations file"/>
+    <input id="local-encounters-file" type="file" accept=".json" hidden aria-label="Local encounters file"/>
     <dialog id="about-dialog" aria-labelledby="about-title">
       <div class="dialog-heading"><h2 id="about-title">GaiaGIS · V1 Geometric Gaia</h2><button id="close-about" aria-label="Close About">×</button></div>
-      <p class="version-badge">WEB VIEWER 1.1 · CANONICAL V1</p>
+      <p class="version-badge">WEB VIEWER 1.2 · CANONICAL V1</p>
       <p>Explore FF7's original world polygons through GaiaGIS's geometric reconstruction. The five projections are views of the same V1 dataset.</p>
       <h3>Open your own local dataset</h3>
       <p>Select <code>gaia-meta.json</code> and <code>gaia-mesh.bin</code> together, generated locally with GaiaGIS. Files stay in your browser and are never uploaded. The source-only release contains no game-derived map data.</p>
       <button id="choose-local-data">Choose both V1 files</button><p id="local-data-status" role="status"></p>
       <p>Optional named locations: generate <code>gaia-poi.json</code> with <code>python -B scripts/build_poi_assets.py --source "YOUR_FF7_INSTALLATION"</code>, then use <strong>Load Locations</strong> in Display. Coordinates stay local. Entrances describe conditional triggers, not current story availability.</p>
+      <p>Optional gameplay tables: generate <code>gaia-encounters.json</code> with <code>python -B scripts/build_encounter_assets.py --source "YOUR_FF7_INSTALLATION"</code>, then <strong>Load Encounters</strong>. Encounter Zones and raw Encounter Rate use triangle region/terrain; Chocobo Tracks uses the independent MAP flag. Terrain is gameplay classification, not land cover; encounter regions are not ecological regions. No runtime state or battle probability is simulated.</p>
       <details><summary>Local generation</summary><pre>python -B scripts/build_gaia.py --source "YOUR_FF7_INSTALLATION"
 python -B scripts/build_web_assets.py</pre><p>Run from the project root using your existing Python/QGIS setup. Your game installation is read-only. Full setup instructions are included in the repository README.</p></details>
       <h3>Controls</h3><p>Drag to orbit or pan; scroll or pinch to zoom. Click/tap a triangle for FF7 lineage. Regions navigate to approximate area-weighted spherical centers; broad sea regions may have diffuse centers.</p>

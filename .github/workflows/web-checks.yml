@@ -15,6 +15,7 @@ jobs:
         with:
           python-version: '3.14'
       - run: python -B -m unittest discover -s tests -p test_poi.py -v
+      - run: python -B -m unittest discover -s tests -p test_encounters.py -v
   web:
     runs-on: windows-latest
     steps:

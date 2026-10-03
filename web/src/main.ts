@@ -9,6 +9,8 @@ import {terrainPalette,distinguishedCapColor} from './styles/terrainPalette';
 import {projections} from './projections';
 import type {ProjectionId} from './projections/Projection';
 import {mountLocations} from './ui/locations';
+import {mountEncounters} from './ui/encounters';
+import type {ColorLayer} from './data/encounters';
 
 const root=document.querySelector<HTMLElement>('#app')!;
 const element=<T extends HTMLElement=HTMLElement>(id:string)=>document.getElementById(id) as T;
@@ -48,6 +50,7 @@ async function start(provided?:{mesh:GaiaMesh;meta:GaiaMeta}){
     const viewer=new GaiaViewer(element('viewport'),mesh,meta);
     activeViewer=viewer;viewer.onError=message=>fail(message);setBusy(false);
     const locationControls=mountLocations(viewer,meta,()=>request===operation);
+    const encounterControls=mountEncounters(viewer,meta,()=>request===operation);
     viewer.renderer.domElement.addEventListener('keydown',e=>{if(['n','N','ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key))element<HTMLInputElement>('auto-rotate').checked=false;});
     element('loading').hidden=true;
     element('dataset-count').textContent=`${mesh.triangleCount.toLocaleString()} canonical triangles`;
@@ -67,7 +70,7 @@ async function start(provided?:{mesh:GaiaMesh;meta:GaiaMeta}){
       element('region-note').textContent=`${region.name} · approximate center ${region.lat.toFixed(1)}°, ${region.lon.toFixed(1)}°${region.concentration<.3?' · diffuse region':''}`;
     });
     element<HTMLSelectElement>('color-layer').addEventListener('change',e=>{
-      const layer=(e.target as HTMLSelectElement).value as 'terrain'|'region';viewer.setColorLayer(layer);drawLegend(layer);element<HTMLInputElement>('terrain').disabled=layer==='region';
+      const layer=(e.target as HTMLSelectElement).value as ColorLayer;if(layer==='terrain'||layer==='region')drawLegend(layer);element<HTMLInputElement>('terrain').disabled=layer!=='terrain';
     });
     const bind=(id:string,action:(checked:boolean)=>void)=>element<HTMLInputElement>(id).addEventListener('change',e=>action((e.target as HTMLInputElement).checked));
     const setGraticule=(value:boolean)=>{viewer.setGraticule(value);element<HTMLInputElement>('graticule').checked=value;element('toggle-graticule').setAttribute('aria-pressed',String(value));};
@@ -116,6 +119,7 @@ async function start(provided?:{mesh:GaiaMesh;meta:GaiaMeta}){
       addProperties([['Longitude',`${lon.toFixed(4)}°`],['Latitude',`${lat.toFixed(4)}°`],['Height (assumed)',`${height.toFixed(2)} m`]]);
       element('coordinates').textContent=`${lon.toFixed(2)}° / ${lat.toFixed(2)}°`;
       detail.dataset.sourceTriangle=String(source);detail.dataset.origin=String(a.origin);
+      encounterControls.inspect(source,detail);
     };
   } catch(error){if(request!==operation)return;activeViewer?.dispose();activeViewer=undefined;fail(error instanceof Error?error.message:String(error),error instanceof MissingDatasetError);}
 }

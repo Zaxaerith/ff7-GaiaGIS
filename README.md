@@ -6,7 +6,7 @@ A mathematical GIS reconstruction of Final Fantasy VII's polygonal world map, wi
 
 FINAL FANTASY VII WM0 → polygon mesh → periodic topology analysis → inverse-Mercator parameterization → Earth-sized Gaia sphere → GIS → interactive Web viewer → map projections.
 
-This is a **code-only public release**. The repository contains no FF7 game data, complete derived Gaia geometry or POI coordinate dataset. Users generate V1 data from their own installation and load it locally. [v1.1 release notes](docs/releases/v1.1.0.md) · [Stable v1.0 notes](docs/releases/v1.0.0.md) · [Data policy](docs/data-and-copyright.md).
+This is a **code-only project**. The repository contains no FF7 game data, complete derived Gaia geometry, POI coordinates or derived encounter dataset. Users generate V1 data from their own installation and load it locally. v1.2 is a local release candidate pending publication approval. [v1.1 release notes](docs/releases/v1.1.0.md) · [Stable v1.0 notes](docs/releases/v1.0.0.md) · [Data policy](docs/data-and-copyright.md).
 
 ## Viewer
 
@@ -19,6 +19,7 @@ This is a **code-only public release**. The repository contains no FF7 game data
 - About/help explains local setup, reconstruction assumptions, research status and licenses.
 - Browser-local loading of gaia-meta.json + gaia-mesh.bin. Files are verified with SHA-256 and never uploaded.
 - Optional named locations and field entrances, locally generated from your own installation: markers, major-location labels, category filters, name/alias/internal-field search, fly-to and entrance provenance inspection in all five projections.
+- Optional World Encounters: Encounter Zones, raw Encounter Rate, independent Chocobo Tracks, and triangle encounter/Mystery Ninja/Chocobo metadata. Weights are not absolute probabilities; runtime state is not simulated.
 
 TypeScript, Vite and Three.js; no backend or UI framework. d3 is a test oracle only. The browser needs WebGL2 and HTTPS or localhost for checksum verification. GPU/device performance varies.
 
@@ -55,6 +56,14 @@ python -B scripts/build_poi_assets.py --source 'YOUR_FF7_INSTALLATION'
 ```
 
 This creates **web/public/data/gaia-poi.json** using WM0 trigger triangles, world scripts, FIELD.TBL and your English flevel.lgp/maplist. In the Viewer, use **Display → Load Locations** after loading the original two V1 files. The POI dataset is locally generated from the user's own FF7 installation and is not distributed publicly. Without it, the map works normally. Search supports names, aliases and internal field names; selected locations expose every resolved entrance and its provenance. Gold Saucer and Northern Cave remain unresolved in the static trigger extractor. [Data schema and provenance](docs/v1.1/poi-data.md) · [Entrance research](docs/v1.1/field-entrance-research.md).
+
+### Optional encounters (v1.2)
+
+```powershell
+python -B scripts/build_encounter_assets.py --source 'YOUR_FF7_INSTALLATION'
+```
+
+Generate **web/public/data/gaia-encounters.json**, then use **Display → Load Encounters**. This optional dataset binds enc_w.bin tables to existing triangle region/terrain lineage. Chocobo Tracks uses the independent MAP flag and works without the file. Gameplay terrain is not land cover, and encounter regions are not ecological regions. The lookup follows documented classic PC behavior; 2026 runtime code equivalence is not yet verified. No encounter dataset is distributed publicly. [Encounter research](docs/v1.2/encounter-research.md) · [Schema and generation](docs/v1.2/encounter-data.md) · [Local validation](docs/v1.2/validation.md).
 
 ## Production and release
 

@@ -18,6 +18,8 @@ import {regionColor} from '../data/regions';
 import {LocationsOverlay} from './locations';
 import {flyDirection,flyDuration,shortestLongitude} from './flyTo';
 import type {Location,LocationFilter} from '../data/poi';
+import {encounterColor,encounterPalette} from '../data/encounters';
+import type {ColorLayer,EncounterDataset} from '../data/encounters';
 
 type Frame={positions:Float32Array;mask:Float32Array};
 interface Morph {start:number;fromId:ProjectionId;from:Frame;to:Frame;gridFrom:Frame;gridTo:Frame;cameraFrom:Vector3;cameraTo:Vector3;targetFrom:Vector3;depthFrom:number;}
@@ -36,7 +38,9 @@ export class GaiaViewer {
   private locations:LocationsOverlay;
   private flight:Flight|null=null;
   private queuedLocation:{lon:number;lat:number}|null=null;
-  private colorLayer:'terrain'|'region'='terrain';
+  private colorLayer:ColorLayer='terrain';
+  private encounters:EncounterDataset|null=null;
+  private chocoboTracks=false;
   private reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   private scene=new Scene();
   private perspective=new PerspectiveCamera(45,1,0.005,100);
@@ -212,7 +216,9 @@ export class GaiaViewer {
     this.onProjection(id,true);
   }
   setTerrain(value:boolean){this.terrain=value;this.colorSurface();}
-  setColorLayer(layer:'terrain'|'region'){this.colorLayer=layer;this.colorSurface();}
+  setColorLayer(layer:ColorLayer){this.colorLayer=layer;this.colorSurface();}
+  setEncounters(data:EncounterDataset|null){this.encounters=data;this.colorSurface();}
+  setChocoboTracks(value:boolean){this.chocoboTracks=value;this.colorSurface();}
   focusLocation(lon:number,lat:number){
     if(this.morph||!Number.isFinite(lon)||!Number.isFinite(lat))return;
     this.cancelFlight();
@@ -279,10 +285,13 @@ export class GaiaViewer {
     const colors=this.surface.geometry.getAttribute('color').array as Float32Array;
     const palette=new Map<number,Color>();for(let id=0;id<32;id++)palette.set(id,new Color(this.colorLayer==='region'?regionColor(id):terrainPalette[id]));
     const cap=new Color(this.distinguishCaps?distinguishedCapColor:syntheticOceanColor),neutral=new Color('#83939a');
+    const gameplay=this.colorLayer==='encounter'||this.colorLayer==='encounter-rate',gameColors=new Map<string,Color>(),tracks=new Color(encounterPalette.tracks);
     let previous=-1,color=neutral;
     for(let t=0;t<this.display.renderToSource.length;t++) {
       const source=this.display.renderToSource[t];
-      if(source!==previous){const a=this.mesh.attributes(source);const colored=this.colorLayer==='region'||this.terrain;color=a.origin?this.distinguishCaps?cap:colored?cap:neutral:colored?palette.get(this.colorLayer==='region'?a.region!:a.terrain!)||neutral:neutral;previous=source;}
+      if(source!==previous){const a=this.mesh.attributes(source);const colored=this.colorLayer!=='terrain'||this.terrain;color=a.origin?this.distinguishCaps?cap:colored?cap:neutral:colored?palette.get(this.colorLayer==='region'?a.region!:a.terrain!)||neutral:neutral;
+        if(!a.origin&&gameplay){const key=`${a.region}:${a.terrain}:${a.script===0}`;if(!gameColors.has(key))gameColors.set(key,new Color(encounterColor(this.encounters,a,this.colorLayer==='encounter-rate')));color=gameColors.get(key)!;}
+        if(!a.origin&&this.chocoboTracks&&a.chocobo)color=tracks;previous=source;}
       for(let j=0;j<9;j+=3){const i=t*9+j;colors[i]=color.r;colors[i+1]=color.g;colors[i+2]=color.b;}
     }
     this.surface.geometry.getAttribute('color').needsUpdate=true;

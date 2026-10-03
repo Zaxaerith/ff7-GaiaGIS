@@ -36,3 +36,4 @@ node_modules/
 *.qgz
 *.qgd
 gaia-poi.json
+gaia-encounters.json

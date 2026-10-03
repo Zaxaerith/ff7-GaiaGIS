@@ -26,6 +26,9 @@ GeoPackage, GLB, transport binaries, metadata containing game geometry, rendered
 
 Local generation is permitted by this project's workflow. `output/`, `web/public/data/` generated files, `web/dist/`, screenshot PNGs and research caches are ignored by Git. The public data directory's README is source documentation and is retained. This also covers v1.1's `gaia-poi.json`: complete game-derived world entrance coordinates are not part of the public release; users generate and load their own private file.
 
+The same boundary covers v1.2's `gaia-encounters.json`: complete FF7-derived
+encounter tables remain local-generated and excluded from code-only delivery.
+
 **Web v1.0 preparation: no push, no public upload of derived data, no Pages activation or deployment.** Source/tooling and a manual code-only workflow are prepared locally.
 
 ## Later Pages deployment
