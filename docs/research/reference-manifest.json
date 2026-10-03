@@ -1,0 +1,35 @@
+{
+  "retrieved_date": "2026-10-02",
+  "repositories": [
+    {
+      "repository": "maciej-trebacz/ff7-landscaper",
+      "commit": "3e2708441a8335f14e10fb52bd9af4a82a2a6921",
+      "url": "https://github.com/maciej-trebacz/ff7-landscaper/tree/3e2708441a8335f14e10fb52bd9af4a82a2a6921",
+      "license": "No explicit license found in inspected tree; reference only"
+    },
+    {
+      "repository": "ergonomy-joe/ff7-worldmap",
+      "commit": "bc7576e68b118e776ccefecfbc982a702a7f9e0f",
+      "url": "https://github.com/ergonomy-joe/ff7-worldmap/tree/bc7576e68b118e776ccefecfbc982a702a7f9e0f",
+      "license": "No explicit license found in inspected tree; reference only"
+    },
+    {
+      "repository": "maciej-trebacz/ff7-terraform-cli",
+      "commit": "04bf495f7ce8f336460a2854ec4f1078879cdd22",
+      "url": "https://github.com/maciej-trebacz/ff7-terraform-cli/tree/04bf495f7ce8f336460a2854ec4f1078879cdd22",
+      "license": "GPL-3.0"
+    },
+    {
+      "repository": "maciej-trebacz/ff7-wm-scripts",
+      "commit": "6d0c87aa190e42f083fbd08370cf2e5a6ea2d392",
+      "url": "https://github.com/maciej-trebacz/ff7-wm-scripts/tree/6d0c87aa190e42f083fbd08370cf2e5a6ea2d392",
+      "license": "No explicit license found in inspected tree; reference only"
+    },
+    {
+      "repository": "maciej-trebacz/ff7-lgp-explorer",
+      "commit": "6c6338a3feba0e2b65f4f6cab5dd648cf6aed336",
+      "url": "https://github.com/maciej-trebacz/ff7-lgp-explorer/tree/6c6338a3feba0e2b65f4f6cab5dd648cf6aed336",
+      "license": "No explicit license found in inspected tree; reference only"
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+[project]
+name = "gaiagis"
+version = "0.3.0"
+description = "Read-only FF7 geometry parsing, spherical GIS reconstruction and Web visualization assets"
+license = "GPL-3.0-only"
+requires-python = ">=3.12"
+dependencies = []
+
+[project.scripts]
+gaiagis-validate = "gaiagis.cli:main"
+gaiagis-build-sphere = "gaiagis.sphere_cli:main"

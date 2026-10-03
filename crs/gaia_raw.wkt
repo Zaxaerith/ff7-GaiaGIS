@@ -1,0 +1,1 @@
+ENGCRS["GaiaGame raw FF7 coordinate space",EDATUM["Unknown engineering datum"],CS[Cartesian,2],AXIS["(E)",east,ORDER[1],LENGTHUNIT["raw game unit",1]],AXIS["(N)",north,ORDER[2],LENGTHUNIT["raw game unit",1]]]

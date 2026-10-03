@@ -1,0 +1,109 @@
+{
+  "reviewed": "2026-10-02",
+  "policy": "primary papers/official documentation; no climate-zone blog calibration; no source vendoring",
+  "sources": [
+    {
+      "url": "https://agupubs.onlinelibrary.wiley.com/doi/10.1029/98GL01908",
+      "used_in": [
+        "physical-basis.md"
+      ]
+    },
+    {
+      "url": "https://agupubs.onlinelibrary.wiley.com/doi/abs/10.1029/rg019i001p00091",
+      "used_in": [
+        "physical-basis.md"
+      ]
+    },
+    {
+      "url": "https://climlab.readthedocs.io/en/latest/api/climlab.model.ebm.html",
+      "used_in": [
+        "physical-basis.md"
+      ]
+    },
+    {
+      "url": "https://exoplasim.readthedocs.io/en/latest/_modules/exoplasim/randomcontinents.html#writeSRA",
+      "used_in": [
+        "gcm-validation.md"
+      ]
+    },
+    {
+      "url": "https://exoplasim.readthedocs.io/en/latest/index.html",
+      "used_in": [
+        "gcm-validation.md",
+        "physical-basis.md"
+      ]
+    },
+    {
+      "url": "https://exoplasim.readthedocs.io/en/latest/source/exoplasim.html",
+      "used_in": [
+        "gcm-validation.md"
+      ]
+    },
+    {
+      "url": "https://github.com/alphaparrot/ExoPlaSim",
+      "used_in": [
+        "physical-basis.md"
+      ]
+    },
+    {
+      "url": "https://github.com/alphaparrot/ExoPlaSim/blob/master/LICENSE.TXT",
+      "used_in": [
+        "gcm-validation.md"
+      ]
+    },
+    {
+      "url": "https://hess.copernicus.org/articles/11/1633/2007/",
+      "used_in": [
+        "physical-basis.md"
+      ]
+    },
+    {
+      "url": "https://hess.copernicus.org/articles/28/4349/2024/",
+      "used_in": [
+        "physical-basis.md"
+      ]
+    },
+    {
+      "url": "https://hess.copernicus.org/preprints/4/439/2007/hessd-4-439-2007.pdf",
+      "used_in": [
+        "physical-basis.md"
+      ]
+    },
+    {
+      "url": "https://journals.ametsoc.org/abstract/journals/atsc/36/7/1520-0469_1979_036_1189_dbsama_2_0_co_2.xml",
+      "used_in": [
+        "physical-basis.md"
+      ]
+    },
+    {
+      "url": "https://journals.ametsoc.org/view/journals/mwre/100/2/1520-0493_1972_100_0081_otaosh_2_3_co_2.xml",
+      "used_in": [
+        "physical-basis.md"
+      ]
+    },
+    {
+      "url": "https://science.nasa.gov/earth/earth-observatory/climate-and-earths-energy-budget/",
+      "used_in": [
+        "physical-basis.md"
+      ]
+    },
+    {
+      "url": "https://weather.metoffice.gov.uk/learn-about/weather/atmosphere/global-circulation-patterns",
+      "used_in": [
+        "physical-basis.md"
+      ]
+    },
+    {
+      "url": "https://www.noaa.gov/jetstream/global/climate-zones",
+      "used_in": [
+        "physical-basis.md"
+      ]
+    },
+    {
+      "url": "https://www.noaa.gov/jetstream/global/global-atmospheric-circulations",
+      "used_in": [
+        "physical-basis.md"
+      ]
+    }
+  ]
+}

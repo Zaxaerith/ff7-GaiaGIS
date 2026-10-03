@@ -1,0 +1,35 @@
+# Soft environmental hypotheses, not latitude targets or canon.
+# Every criterion is evaluated from modeled climate, not input latitude.
+[snow]
+terrain_id = 10
+weight = 3.0
+maximum_warm_month_c = 10.0
+minimum_snow_months = 3.0
+[jungle]
+terrain_id = 25
+weight = 3.0
+minimum_cold_month_c = 15.0
+minimum_annual_precipitation_mm = 1500.0
+maximum_dry_months = 3.0
+[desert]
+terrain_id = 8
+weight = 3.0
+maximum_aridity_index = 0.5
+[swamp]
+terrain_id = 7
+weight = 1.5
+minimum_aridity_index = 0.8
+[forest]
+terrain_id = 1
+weight = 1.0
+minimum_aridity_index = 0.5
+minimum_warm_month_c = 10.0
+[grass]
+terrain_id = 0
+weight = 0.25
+minimum_aridity_index = 0.2
+minimum_warm_month_c = 8.0
+[wasteland]
+terrain_id = 9
+weight = 0.25
+maximum_aridity_index = 0.7

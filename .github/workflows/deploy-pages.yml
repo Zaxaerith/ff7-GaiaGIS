@@ -1,0 +1,50 @@
+name: Gaia Viewer — manual reviewed deployment
+on:
+  workflow_dispatch:
+    inputs:
+      confirm_derived_data_review:
+        description: "Confirm redistribution review and dataset staging were completed separately"
+        required: true
+        default: false
+        type: boolean
+permissions:
+  contents: read
+jobs:
+  build:
+    # Disabled until BOTH a repository variable and explicit manual approval
+    # are provided. No push/PR trigger, no automatic game data generation.
+    if: inputs.confirm_derived_data_review && vars.GAIA_DERIVED_DATA_APPROVED == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - name: Require separately reviewed data to be staged
+        run: test -f web/public/data/gaia-mesh.bin && test -f web/public/data/gaia-meta.json
+      - run: npm ci
+        working-directory: web
+      - run: npm run build
+        working-directory: web
+        env:
+          GAIA_BASE_PATH: ${{ endsWith(github.event.repository.name, '.github.io') && '/' || format('/{0}/', github.event.repository.name) }}
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: web/dist
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy reviewed artifact
+        id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,19 @@
+[gaia]
+radius_m = 6371008.8
+vertical_scale_m_per_raw_unit = 1.0
+flip_latitude = false
+
+[mapping]
+method = "inverse_mercator"
+
+[polar_caps]
+enabled = true
+ring_count = 8
+
+[longitude]
+antimeridian_game_east = 0.0
+
+[projections]
+mercator_max_latitude_deg = 85.0511287798066
+orthographic_longitude_deg = 0.0
+orthographic_latitude_deg = 0.0
