@@ -5,6 +5,16 @@ on:
 permissions:
   contents: read
 jobs:
+  poi-parser:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.14'
+      - run: python -B -m unittest discover -s tests -p test_poi.py -v
   web:
     runs-on: windows-latest
     steps:

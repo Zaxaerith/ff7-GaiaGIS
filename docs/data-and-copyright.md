@@ -24,7 +24,7 @@ MAP, BOT, LGP, TEX, executable/DLL and other proprietary source assets are **not
 
 GeoPackage, GLB, transport binaries, metadata containing game geometry, rendered screenshots and any future dataset releases require a **separate distribution review**. Original code licensing does not automatically determine the rights or license of game-derived data. This stage makes no claim that those products are freely redistributable.
 
-Local generation is permitted by this project's workflow. `output/`, `web/public/data/` generated files, `web/dist/`, screenshot PNGs and research caches are ignored by Git. The public data directory's README is source documentation and is retained.
+Local generation is permitted by this project's workflow. `output/`, `web/public/data/` generated files, `web/dist/`, screenshot PNGs and research caches are ignored by Git. The public data directory's README is source documentation and is retained. This also covers v1.1's `gaia-poi.json`: complete game-derived world entrance coordinates are not part of the public release; users generate and load their own private file.
 
 **Web v1.0 preparation: no push, no public upload of derived data, no Pages activation or deployment.** Source/tooling and a manual code-only workflow are prepared locally.
 

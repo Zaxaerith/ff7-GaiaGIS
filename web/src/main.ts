@@ -8,6 +8,7 @@ import {GaiaViewer} from './viewer/GaiaViewer';
 import {terrainPalette,distinguishedCapColor} from './styles/terrainPalette';
 import {projections} from './projections';
 import type {ProjectionId} from './projections/Projection';
+import {mountLocations} from './ui/locations';
 
 const root=document.querySelector<HTMLElement>('#app')!;
 const element=<T extends HTMLElement=HTMLElement>(id:string)=>document.getElementById(id) as T;
@@ -46,6 +47,7 @@ async function start(provided?:{mesh:GaiaMesh;meta:GaiaMeta}){
     if(request!==operation)return;
     const viewer=new GaiaViewer(element('viewport'),mesh,meta);
     activeViewer=viewer;viewer.onError=message=>fail(message);setBusy(false);
+    const locationControls=mountLocations(viewer,meta,()=>request===operation);
     viewer.renderer.domElement.addEventListener('keydown',e=>{if(['n','N','ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key))element<HTMLInputElement>('auto-rotate').checked=false;});
     element('loading').hidden=true;
     element('dataset-count').textContent=`${mesh.triangleCount.toLocaleString()} canonical triangles`;
@@ -93,6 +95,7 @@ async function start(provided?:{mesh:GaiaMesh;meta:GaiaMeta}){
     viewer.onProjection('globe',false);
     viewer.onStats=stats=>{element('fps').textContent=`${stats.fps.toFixed(0)} FPS`;root.dataset.fps=stats.fps.toFixed(1);root.dataset.drawCalls=String(stats.drawCalls);root.dataset.renderTriangles=String(stats.renderTriangles);};
     viewer.onSelection=source=>{
+      locationControls.clear();
       element('selection-empty').hidden=source!==null;element('selection-details').hidden=source===null;
       element('info-panel').classList.toggle('mobile-open',source!==null);
       if(source===null){element('coordinates').textContent='';return;}

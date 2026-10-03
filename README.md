@@ -6,7 +6,7 @@ A mathematical GIS reconstruction of Final Fantasy VII's polygonal world map, wi
 
 FINAL FANTASY VII WM0 → polygon mesh → periodic topology analysis → inverse-Mercator parameterization → Earth-sized Gaia sphere → GIS → interactive Web viewer → map projections.
 
-This is a **code-only public release**. The repository contains no FF7 game data or complete derived Gaia geometry. Users generate V1 data from their own installation and load it locally. [Release notes](docs/releases/v1.0.0.md) · [Data policy](docs/data-and-copyright.md).
+This is a **code-only public release**. The repository contains no FF7 game data, complete derived Gaia geometry or POI coordinate dataset. Users generate V1 data from their own installation and load it locally. [v1.1 release notes](docs/releases/v1.1.0.md) · [Stable v1.0 notes](docs/releases/v1.0.0.md) · [Data policy](docs/data-and-copyright.md).
 
 ## Viewer
 
@@ -18,6 +18,7 @@ This is a **code-only public release**. The repository contains no FF7 game data
 - Responsive mobile sheets, keyboard map navigation, reduced-motion handling, loading retry and graphics-context recovery.
 - About/help explains local setup, reconstruction assumptions, research status and licenses.
 - Browser-local loading of gaia-meta.json + gaia-mesh.bin. Files are verified with SHA-256 and never uploaded.
+- Optional named locations and field entrances, locally generated from your own installation: markers, major-location labels, category filters, name/alias/internal-field search, fly-to and entrance provenance inspection in all five projections.
 
 TypeScript, Vite and Three.js; no backend or UI framework. d3 is a test oracle only. The browser needs WebGL2 and HTTPS or localhost for checksum verification. GPU/device performance varies.
 
@@ -45,7 +46,15 @@ python -m venv --without-pip .venv
 
 The parser reads your game installation without modifying it. The default V1 build creates local GIS products; the Web exporter creates **web/public/data/gaia-meta.json** and **web/public/data/gaia-mesh.bin**. Run the Viewer as above, then use **About / help → Choose both V1 files** to select these two files together. They stay in your browser and are never uploaded. Local development also loads generated files automatically when present.
 
-Viewer v1.0 accepts the fingerprinted default V1 transport, not arbitrary reconstructed or climate-modified datasets. The core FF7 parser independently discovers compatible layouts without an AppID or fingerprint-only rejection rule. Do not change reconstruction parameters when generating v1.0 data.
+The Viewer accepts the fingerprinted default V1 transport, not arbitrary reconstructed or climate-modified datasets. The core FF7 parser independently discovers compatible layouts without an AppID or fingerprint-only rejection rule. Do not change reconstruction parameters when generating V1 data.
+
+### Optional locations (v1.1)
+
+```powershell
+python -B scripts/build_poi_assets.py --source 'YOUR_FF7_INSTALLATION'
+```
+
+This creates **web/public/data/gaia-poi.json** using WM0 trigger triangles, world scripts, FIELD.TBL and your English flevel.lgp/maplist. In the Viewer, use **Display → Load Locations** after loading the original two V1 files. The POI dataset is locally generated from the user's own FF7 installation and is not distributed publicly. Without it, the map works normally. Search supports names, aliases and internal field names; selected locations expose every resolved entrance and its provenance. Gold Saucer and Northern Cave remain unresolved in the static trigger extractor. [Data schema and provenance](docs/v1.1/poi-data.md) · [Entrance research](docs/v1.1/field-entrance-research.md).
 
 ## Production and release
 
