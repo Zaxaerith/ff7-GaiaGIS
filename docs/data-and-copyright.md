@@ -26,10 +26,10 @@ GeoPackage, GLB, transport binaries, metadata containing game geometry, rendered
 
 Local generation is permitted by this project's workflow. `output/`, `web/public/data/` generated files, `web/dist/`, screenshot PNGs and research caches are ignored by Git. The public data directory's README is source documentation and is retained.
 
-**Stage 2: no push, no public upload of derived data, no Pages activation or deployment.** Only source/tooling and a disabled-by-default manual workflow are prepared locally.
+**Web v1.0 preparation: no push, no public upload of derived data, no Pages activation or deployment.** Source/tooling and a manual code-only workflow are prepared locally.
 
 ## Later Pages deployment
 
-The workflow has no push/PR trigger. Both the manual review checkbox and repository variable GAIA_DERIVED_DATA_APPROVED=true are required; it also checks that separately reviewed data has been staged. With this source-only checkout, generated data is absent and the staging check intentionally fails. Future reviewed data delivery/staging must be decided separately; do not bypass it by force-adding assets.
+The Pages workflow has no push/PR trigger. It builds only `web/dist-release/`, with public-directory copying disabled, a strict asset allowlist and no geometry requests at startup. Users open their own local V1 files in the browser; no upload is made. This replaces the historical workflow that required separately staged derived data. No derived-data distribution permission is inferred or bypassed: the artifact contains no such data.
 
-The workflow uses GitHub Pages environment deployment and Vite's configurable base. It is a preparation artifact, not an executed or tested public release. Source-only UI tests can run without local game data; full geometry tests require locally generated assets.
+The workflow uses GitHub Pages environment deployment and Vite's configurable base. It is a preparation artifact, not an executed public release. Source-only builds and browser-local loading are tested locally under a repository subpath; external GitHub execution remains unverified. Full geometry integration tests require locally generated assets. Both `web/dist/` and `web/dist-release/` are ignored; only the latter is eligible for code-only publication.

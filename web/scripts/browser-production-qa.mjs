@@ -4,8 +4,10 @@ import {chromium,devices} from '@playwright/test';
 import {mkdirSync,writeFileSync} from 'node:fs';
 import {fileURLToPath} from 'node:url';
 const root=fileURLToPath(new URL('../../',import.meta.url));
-const output=`${root}output/web/qa`;
+const output=process.env.GAIA_QA_OUTPUT||`${root}output/web_release_v1/production-qa`;
 mkdirSync(output,{recursive:true});
+mkdirSync(`${output}/tmp`,{recursive:true});
+for(const key of ['TEMP','TMP','TMPDIR'])process.env[key]=`${output}/tmp`;
 const context=await chromium.launchPersistentContext(`${output}/production-profile`,{
   executablePath:process.env.GAIA_BROWSER_EXECUTABLE||'C:/Program Files/Google/Chrome/Application/chrome.exe',
   headless:true,...devices['iPhone 13'],viewport:{width:390,height:844},

@@ -1,6 +1,6 @@
 {
   "name": "gaiagis-viewer",
-  "version": "0.3.0",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
   "license": "GPL-3.0-only",
@@ -10,6 +10,9 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "tsc --noEmit && vite build",
+    "build:release": "tsc --noEmit && node scripts/build-release.mjs",
+    "audit:release": "node scripts/audit-release.mjs",
+    "preview:release": "vite preview --host 127.0.0.1 --port 5175 --strictPort --outDir dist-release",
     "preview": "vite preview --host 127.0.0.1",
     "test": "vitest run",
     "assets:measure": "node scripts/measure-assets.mjs",

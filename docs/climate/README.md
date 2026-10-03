@@ -1,11 +1,12 @@
-# Gaia V2 research entry point
+# Gaia climate research - Experimental / Inconclusive
 
-**Level A completed / GCM validation pending.** 当前 baseline 推荐保持 V1 纬度；不是已经确定的物理 Gaia。Web Viewer 本轮未修改。
+**Research concluded: V2, V2.1 and V2.2.** These experiments did not establish a sufficiently validated physical reconstruction to replace V1. V1 Geometric Gaia remains the project's canonical reconstruction. This is a project convention, not official FF7 canon.
 
-- [物理依据与来源](physical-basis.md)：FF7 evidence、Earth physics、Gaia assumptions 分开。
-- [模型与运行方式](model-design.md)：方程、参数化、网格、产品精度和 CLI。
-- [纬度搜索](latitude-optimization.md)：单调 PCHIP、regularization、评分与候选约束。
-- [GCM 状态](gcm-validation.md)：平台证据、SRA 接口与未来独立运行。
-- [实际结果](v2-results.md)：六方案、54 次敏感性、冲突、测试和 before/after hashes。
+There is no V2.3 plan, active climate ensemble, latitude optimization or outstanding GCM execution task. Historical reports describe the state at their original delivery date; their proposed future work is not an active roadmap. Climate warps are not selectable or included in the Web Viewer.
 
-新增代码：`src/gaiagis/climate/`；配置：`config/climate/`；研究来源：`research/climate/`；输出：`output/climate_v2/`（gitignored）。运行脚本为 `scripts/climate_v2.py`，完整回归日志仅写 V2。原始 FF7 dataset 始终只读，不包含游戏二进制资产。
+- [V2 results](v2-results.md): exploratory physical model, candidates and sensitivity studies.
+- [V2.1 report](v21/validation-report.md): Earth-calibrated research and validation limitations.
+- [V2.2 report](v22/validation-report.md): Earth Gate hardening; the gate remained FAIL with unresolved regional behavior.
+- [Physical basis](physical-basis.md), [model design](model-design.md), [latitude experiments](latitude-optimization.md) and [historical GCM note](gcm-validation.md) remain research records.
+
+All existing climate code, configurations, research records and local outputs are preserved. They are archival experimental tools, not canonical GIS data generators. This status update changes no physics, parameters, latitude mapping or research outputs. Local byte preservation evidence is in output/web_release_v1/preservation-before.json and safety-final.json; the prior source state is retained in Git commit c9f7ccd.

@@ -4,6 +4,7 @@
 /.cache/
 /web/node_modules/
 /web/dist/
+/web/dist-release/
 /web/public/data/*
 !/web/public/data/README.md
 /web/*.tsbuildinfo

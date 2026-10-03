@@ -14,6 +14,7 @@ import {addVisibilityMask} from './visibility';
 import {easeInOutCubic,interpolateBuffers} from './morph';
 import {graticulePoints,projectGraticule} from './graticule';
 import {NavigationOverlay,geographicViewCenter} from './navigation';
+import {regionColor} from '../data/regions';
 
 type Frame={positions:Float32Array;mask:Float32Array};
 interface Morph {start:number;from:Frame;to:Frame;gridFrom:Frame;gridTo:Frame;cameraFrom:Vector3;cameraTo:Vector3;targetFrom:Vector3;depthFrom:number;}
@@ -26,6 +27,9 @@ export class GaiaViewer {
   onSelection:(source:number|null)=>void=()=>{};
   onStats:(stats:ViewerStats)=>void=()=>{};
   onProjection:(id:ProjectionId,morphing:boolean)=>void=()=>{};
+  onError:(message:string)=>void=()=>{};
+  private colorLayer:'terrain'|'region'='terrain';
+  private reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   private scene=new Scene();
   private perspective=new PerspectiveCamera(45,1,0.005,100);
   private mapCamera=new OrthographicCamera(-1,1,1,-1,0.005,100);
@@ -102,6 +106,26 @@ export class GaiaViewer {
     this.renderer.setClearColor(0,0);
     this.renderer.domElement.setAttribute('aria-label','Interactive Gaia map. Drag to rotate or pan; scroll to zoom; tap a triangle to inspect.');
     this.renderer.domElement.tabIndex=0;
+    this.renderer.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();this.renderer.setAnimationLoop(null);this.onError('Graphics context interrupted. Retry the viewer to restore your local V1 dataset.');});
+    this.renderer.domElement.addEventListener('keydown',e=>{
+      const keys=['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','+','=','-','Home','n','N','Escape'];
+      if(!keys.includes(e.key))return;e.preventDefault();
+      if(e.key==='+'||e.key==='=')this.zoom(.83);
+      else if(e.key==='-')this.zoom(1.2);
+      else if(e.key==='Home')this.resetView();
+      else if(e.key==='Escape')this.clearSelection();
+      else if(e.key.toLowerCase()==='n'){this.setAutoRotate(false);this.northUp();}
+      else if(!this.morph){
+        this.setAutoRotate(false);
+        if(this.projectionId==='globe'||this.projectionId==='orthographic'){
+          const center=this.projectionId==='globe'?geographicViewCenter(this.perspective.position.x,this.perspective.position.y,this.perspective.position.z):{lon:this.context.centerLon,lat:this.context.centerLat};
+          this.focusLocation((center.lon??0)+(e.key==='ArrowLeft'?-5:e.key==='ArrowRight'?5:0),center.lat+(e.key==='ArrowUp'?5:e.key==='ArrowDown'?-5:0));
+        }else{
+          const step=this.fit().halfHeight*.12/this.mapCamera.zoom,dx=e.key==='ArrowLeft'?-step:e.key==='ArrowRight'?step:0,dy=e.key==='ArrowUp'?step:e.key==='ArrowDown'?-step:0;
+          this.mapCamera.position.x+=dx;this.mapCamera.position.y+=dy;this.mapControls.target.x+=dx;this.mapControls.target.y+=dy;this.mapControls.update();
+        }
+      }
+    });
     container.append(this.renderer.domElement);
     this.globeControls=new OrbitControls(this.perspective,this.renderer.domElement);
     this.globeControls.enableDamping=true;this.globeControls.dampingFactor=0.08;this.globeControls.enablePan=false;
@@ -175,6 +199,22 @@ export class GaiaViewer {
     this.onProjection(id,true);
   }
   setTerrain(value:boolean){this.terrain=value;this.colorSurface();}
+  setColorLayer(layer:'terrain'|'region'){this.colorLayer=layer;this.colorSurface();}
+  focusLocation(lon:number,lat:number){
+    if(this.morph||!Number.isFinite(lon)||!Number.isFinite(lat))return;
+    lon=wrapLongitude(lon);lat=Math.max(-89,Math.min(89,lat));this.setAutoRotate(false);
+    if(this.projectionId==='globe'){
+      this.globeControls.enableDamping=false;this.globeControls.update();this.globeControls.enableDamping=true;
+      const p=projections.globe.project(lon,lat,0,this.context),distance=this.perspective.position.length();
+      this.globeControls.target.set(0,0,0);this.perspective.up.set(0,1,0);this.perspective.position.set(...p).multiplyScalar(distance);this.perspective.lookAt(0,0,0);this.globeControls.update();
+    }else if(this.projectionId==='orthographic'){
+      this.context.centerLon=lon;this.context.centerLat=lat;
+      projectDisplay(this.display,projections.orthographic,this.context,this.frame.positions,this.frame.mask);
+      const grid=projectGraticule(this.gridGeo,projections.orthographic,this.context);this.gridFrame.positions.set(grid.positions);this.gridFrame.mask.set(grid.mask);this.changed();
+    }else{
+      const [x,y]=projections[this.projectionId].project(lon,lat,0,this.context);this.mapCamera.position.set(x,y,8);this.mapControls.target.set(x,y,0);this.mapCamera.lookAt(x,y,0);this.mapControls.update();
+    }
+  }
   setCapDistinction(value:boolean){this.distinguishCaps=value;this.colorSurface();}
   setTriangleGrid(value:boolean){this.triangleGrid.visible=value;}
   setGraticule(value:boolean){this.graticule.visible=value;}
@@ -202,12 +242,12 @@ export class GaiaViewer {
   clearSelection(){this.selected=null;this.highlight.visible=false;this.onSelection(null);}
   private colorSurface(){
     const colors=this.surface.geometry.getAttribute('color').array as Float32Array;
-    const palette=new Map<number,Color>();for(const [id,color] of Object.entries(terrainPalette)) palette.set(+id,new Color(color));
+    const palette=new Map<number,Color>();for(let id=0;id<32;id++)palette.set(id,new Color(this.colorLayer==='region'?regionColor(id):terrainPalette[id]));
     const cap=new Color(this.distinguishCaps?distinguishedCapColor:syntheticOceanColor),neutral=new Color('#83939a');
     let previous=-1,color=neutral;
     for(let t=0;t<this.display.renderToSource.length;t++) {
       const source=this.display.renderToSource[t];
-      if(source!==previous){const a=this.mesh.attributes(source);color=a.origin?this.distinguishCaps?cap:this.terrain?cap:neutral:this.terrain?palette.get(a.terrain!)||neutral:neutral;previous=source;}
+      if(source!==previous){const a=this.mesh.attributes(source);const colored=this.colorLayer==='region'||this.terrain;color=a.origin?this.distinguishCaps?cap:colored?cap:neutral:colored?palette.get(this.colorLayer==='region'?a.region!:a.terrain!)||neutral:neutral;previous=source;}
       for(let j=0;j<9;j+=3){const i=t*9+j;colors[i]=color.r;colors[i+1]=color.g;colors[i+2]=color.b;}
     }
     this.surface.geometry.getAttribute('color').needsUpdate=true;
@@ -250,7 +290,7 @@ export class GaiaViewer {
     const delta=Math.min(100,time-this.previous);this.previous=time;
     this.frameTimes.push(delta);if(this.frameTimes.length>120)this.frameTimes.shift();
     if(this.morph){
-      const t=Math.min(1,Math.max(0,(time-this.morph.start)/1100)),ease=easeInOutCubic(t),m=this.morph;
+      const t=this.reducedMotion?1:Math.min(1,Math.max(0,(time-this.morph.start)/1100)),ease=easeInOutCubic(t),m=this.morph;
       this.sphereDepth.value=this.depthEnabled?m.depthFrom*(1-ease)+(this.projectionId==='globe'?ease:0):0;
       interpolateBuffers(m.from.positions,m.to.positions,this.frame.positions,ease);interpolateBuffers(m.from.mask,m.to.mask,this.frame.mask,ease);
       interpolateBuffers(m.gridFrom.positions,m.gridTo.positions,this.gridFrame.positions,ease);interpolateBuffers(m.gridFrom.mask,m.gridTo.mask,this.gridFrame.mask,ease);
@@ -270,5 +310,5 @@ export class GaiaViewer {
     this.navigation.update(time,this.projectionId,this.context,this.camera,!!this.morph,this.graticule.visible);
     if(time-this.statsLast>600){this.statsLast=time;const fps=1000/(this.frameTimes.reduce((a,b)=>a+b,0)/Math.max(1,this.frameTimes.length));this.onStats({fps,renderTriangles:this.display.renderToSource.length,drawCalls:this.renderer.info.render.calls,morphing:!!this.morph,projection:this.projectionId});}
   }
-  dispose(){this.renderer.setAnimationLoop(null);this.resizeObserver.disconnect();this.globeControls.dispose();this.mapControls.dispose();this.scene.traverse(object=>{if(object instanceof Mesh||object instanceof LineSegments){object.geometry.dispose();object.material.dispose();}});this.renderer.dispose();}
+  dispose(){this.renderer.setAnimationLoop(null);this.resizeObserver.disconnect();this.globeControls.dispose();this.mapControls.dispose();this.scene.traverse(object=>{if(object instanceof Mesh||object instanceof LineSegments){object.geometry.dispose();object.material.dispose();}});this.renderer.dispose();this.renderer.domElement.remove();}
 }

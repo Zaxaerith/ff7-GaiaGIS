@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
+import {V1_CANONICAL,validateCanonicalMetadata} from './canonical';
 export interface GaiaMeta {
   version: number; sha256: string; byte_length: number; vertex_count: number; triangle_count: number;
   ff7_triangle_count: number; synthetic_triangle_count: number;
@@ -59,14 +60,28 @@ export async function loadMesh(onStatus:(s:string)=>void):Promise<{mesh:GaiaMesh
   const base=import.meta.env.BASE_URL;
   onStatus('Loading local Gaia dataset…');
   const [metaResponse,meshResponse]=await Promise.all([fetch(`${base}data/gaia-meta.json`),fetch(`${base}data/gaia-mesh.bin`)]);
-  if(!metaResponse.ok||!meshResponse.ok) throw new Error('Gaia data is missing. Run scripts/build_web_assets.py locally, then restart the server.');
+  if(!metaResponse.ok||!meshResponse.ok||!metaResponse.headers.get('content-type')?.includes('application/json')) throw new MissingDatasetError();
   const meta:GaiaMeta=await metaResponse.json();
+  validateCanonicalMetadata(meta);
   const buffer=await meshResponse.arrayBuffer();
-  if(crypto.subtle) {
-    const digest=await crypto.subtle.digest('SHA-256',buffer);
-    const hex=Array.from(new Uint8Array(digest),v=>v.toString(16).padStart(2,'0')).join('');
-    if(hex!==meta.sha256) throw new Error('Gaia mesh checksum does not match metadata');
-  }
   onStatus('Preparing geographic mesh…');
+  return decodeDataset(buffer,meta);
+}
+export class MissingDatasetError extends Error {
+  constructor(){super('Open your local V1 dataset to explore Gaia. Game-derived geometry is not included in the source-only release.');}
+}
+export async function decodeDataset(buffer:ArrayBuffer,meta:GaiaMeta){
+  validateCanonicalMetadata(meta);
+  if(!globalThis.crypto?.subtle)throw new Error('Checksum verification requires HTTPS or localhost.');
+  const digest=await crypto.subtle.digest('SHA-256',buffer);
+  const hex=Array.from(new Uint8Array(digest),v=>v.toString(16).padStart(2,'0')).join('');
+  if(hex!==meta.sha256)throw new Error('Gaia mesh checksum does not match V1 metadata.');
   return {mesh:parseMesh(buffer,meta),meta};
+}
+export async function readLocalDataset(files:FileList|File[]){
+  const selected=Array.from(files),json=selected.find(f=>f.name==='gaia-meta.json'),binary=selected.find(f=>f.name==='gaia-mesh.bin');
+  if(selected.length!==2||!json||!binary)throw new Error('Choose both gaia-meta.json and gaia-mesh.bin together.');
+  if(json.size>100_000||binary.size!==V1_CANONICAL.byteLength)throw new Error('These files do not match the supported V1 dataset size.');
+  const meta=JSON.parse(await json.text()) as GaiaMeta;
+  return decodeDataset(await binary.arrayBuffer(),meta);
 }

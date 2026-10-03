@@ -1,106 +1,72 @@
 # GaiaGIS
 
-**A mathematical GIS reconstruction of Final Fantasy VII's polygonal world map.**
+An interactive globe and GIS reconstruction of Final Fantasy VII's original world polygons. **Web v1.0 uses V1 Geometric Gaia only.** Five projections display the same geometric dataset; climate warps are not offered.
 
-FF7 WM0 → raw polygon mesh → inverse Mercator spherical reconstruction → Gaia GIS → interactive Web globe → map projections.
+V2/V2.1/V2.2 climate research has concluded as **Experimental / Inconclusive**. Code and reports remain preserved in [Research](docs/climate/README.md). There is no active climate modeling roadmap.
 
-## Overview
+## Viewer
 
-GaiaGIS treats the original game's world polygons as spatial data. The current local Viewer lets you rotate Gaia, inspect individual FF7 triangles and smoothly unfold the sphere into standard map projections. Its geometry is reconstructed from the source mesh, not a fan-map texture on a sphere.
+- Globe, Equirectangular, Mercator, Mollweide and draggable Orthographic hemisphere.
+- Orbit/pan, wheel and touch pinch zoom, projection morphing, reset and north-up compass.
+- Labeled 30-degree graticule, equator/0-degree longitude highlights, hemisphere coordinates and optional globe shading.
+- FF7 gameplay terrain or region colors, complete observed-category legend, approximate region-center navigation, triangle grid and synthetic-cap distinction.
+- Click/tap inspector retains source map/section/mesh/triangle lineage. Synthetic caps have no fabricated FF7 attributes.
+- Responsive mobile sheets, keyboard map navigation, reduced-motion handling, loading retry and graphics-context recovery.
+- About/help explains local setup, reconstruction assumptions, research status and licenses.
+- Browser-local loading of gaia-meta.json + gaia-mesh.bin. Files are verified with SHA-256 and never uploaded.
 
-Observed source geometry, reconstructed coordinates, assumed physical scales and synthetic polar ocean remain distinct. No claim is made about canonical Gaia radius, equator, poles or physical height units.
+TypeScript, Vite and Three.js; no backend or UI framework. d3 is a test oracle only. The browser needs WebGL2 and HTTPS or localhost for checksum verification. GPU/device performance varies.
 
-## Screenshots
+## Run locally
 
-Local QA screenshots, generated from your installed data and excluded from public source distribution:
-
-![Gaia Globe](docs/screenshots/globe.png)
-
-[Equirectangular](docs/screenshots/equirectangular.png) · [Mollweide](docs/screenshots/mollweide.png) · [Mobile](docs/screenshots/mobile.png)
-
-## Web Viewer
-
-- Globe orbit, wheel/pinch zoom, optional gentle auto rotation (default off).
-- Equirectangular, spherical Mercator, Mollweide and an interactive Orthographic hemisphere.
-- 1.1s eased morph, with pan/zoom controls for maps and drag-to-change-hemisphere for Orthographic.
-- FF7 gameplay terrain colors, original triangle grid, 30° graticule and synthetic-cap distinction.
-- Click/tap picking with terrain, region, section/mesh/triangle, geometry origin and approximate geographic centroid. Synthetic faces never receive fake FF7 IDs.
-- Responsive panels and a mobile inspector sheet; device pixel ratio is capped.
-- A persistent compass/north-up button and current hemisphere coordinates help maintain orientation. The labeled 30° graticule starts on, has a direct viewport toggle, and highlights the equator in gold and the 0° longitude line in cyan. Optional Globe depth adds gentle camera-relative shading; flat maps retain unshaded categorical colors.
-
-TypeScript + Vite + Three.js. No UI framework or backend. d3 dependencies are test oracles only; projection math is implemented by GaiaGIS and checked against Stage 1 PROJ outputs. The browser requires only static assets, not Python, QGIS, GDAL or GeoPackage support.
-
-## How it works
-
-`scripts/build_web_assets.py` reads **existing Stage 1 Geographic products** in read-only SQLite mode and exports an indexed geographic mesh plus typed triangle attributes. The Viewer loads it once, creates a small set of Three.js BufferGeometry objects, and computes display positions from one canonical lon/lat/height/topology dataset.
-
-The original base surface contains 142586 triangles. Reconstructed caps add 9792; all 152378 canonical identities survive display tessellation and picking. Source triangle connectivity is preserved; internal source anomalies are not repaired. The existing GLB remains an independent cross-check/reference product.
-
-## Mathematics
-
-Inverse Mercator: `λ=2π(x/W−1/2)`, `φ=atan(sinh((H/2−n)/(W/(2π))))`.
-
-Observed W=294912, H=229376 gives source latitudes **±80.071528814895°**. The N/S cycle is cut and synthetic ocean caps complete the sphere; E/W remains longitude-periodic. Default sphere radius **6371008.8m** and vertical scale **1m/raw unit** are assumptions, not FF7 canon.
-
-The Web reference radius is 1 for rendering precision. GIS radius stays in meters. Globe → map intermediate shapes are visual transitions, not actual projections. See [spherical reconstruction](docs/spherical-reconstruction.md), [Web format](docs/web-data-format.md) and [Viewer validation](docs/web-viewer-validation.md).
-
-## Local build
-
-With the existing Stage 1 outputs:
+Node.js 24 is used for validation (package minimum 22.12). From the project root:
 
 ```powershell
-Set-Location D:\Project\FF7Gaia
-. .\scripts\use_workspace_environment.ps1
-.\.venv\Scripts\python.exe -B scripts\build_web_assets.py
 Set-Location web
-npm install
+npm ci
+npm test
 npm run dev
 ```
 
-Open **http://127.0.0.1:5173/**. A missing-dataset page gives the exporter command instead of silently substituting fake geometry. On a fresh clone, generate Stage 0/1 products from your own local installation first; no game or derived binary dataset is supplied.
+Open http://127.0.0.1:5173/. Existing locally generated V1 data in web/public/data/ loads automatically. A fresh source checkout shows a local-file chooser and setup help; it contains no game-derived geometry.
 
-Node >=22.12 is required; tested with Node 24.19.0. `web/.npmrc` keeps npm cache within the workspace. Dependencies are pinned by package-lock.json; `npm ci` reproduces the installed graph.
-
-Dot-source `scripts/use_workspace_environment.ps1` in the current shell to isolate temporary files and browser/tool caches as shown above; it does not change global settings.
+To generate the default V1 dataset on your own computer, follow [local GIS setup](docs/local-gis-build.md). With the existing Python/QGIS environment, from the project root:
 
 ```powershell
-npm test
-npm run build
-npm run preview
-npm run assets:measure
-npm run notices
+. .\scripts\use_workspace_environment.ps1
+.\.venv\Scripts\python.exe -B scripts\build_gaia.py --source 'YOUR_FF7_INSTALLATION' --output output
+.\.venv\Scripts\python.exe -B scripts\build_web_assets.py
 ```
 
-Python exporter checks: `python -B -m unittest discover -s tests -p test_web_export.py -v` from the root. Browser QA: `node scripts/browser-qa.mjs` from `web/` while the dev server runs. It uses an installed Chrome executable and a workspace-only profile; set GAIA_BROWSER_EXECUTABLE for another location. No browser download is required.
+The source installation stays read-only. This Web phase uses existing V1 outputs and does not rebuild them. Viewer v1.0 accepts the fingerprinted default V1 transport, not arbitrary reconstructed or climate-modified datasets. The core FF7 parser independently discovers compatible layouts without an AppID or fingerprint-only rejection rule.
 
-## FF7 source requirements and safety
+## Production and release
 
-Local source: `D:\SteamLibrary\steamapps\common\FINAL FANTASY VII Steam Edition`, strictly read-only. Unique project workspace: `D:\Project\FF7Gaia`.
+```powershell
+Set-Location web
+npm run build          # local production; includes locally present data
+npm run preview        # local production preview
+npm run build:release  # public code-only artifact; excludes ALL public data
+npm run audit:release
+npm run preview:release
+```
 
-Common discovery supports the 2026 layout, classic `data/wm`, directly selected wm/workingdir and extracted layouts, with explicit case-insensitive lookup and structural validation. Fingerprints are compatibility references, not parser acceptance gates. Stage 2 reuses Stage 1 products and does not revisit binary research.
+dist/ is for private local use. **Publish only dist-release/**: it contains application code and license notices, with no game-derived geometry, metadata or screenshots. Users open their private V1 files in the browser. Both directories are ignored by Git. GAIA_BASE_PATH configures a repository subpath; the default is ./.
 
-MAP/BOT/LGP/TEX/executable assets are not copied, modified or included in Git. Source/core fingerprints are checked before and after work. All project/cache/temp/profile/output files stay in the workspace. Detailed earlier setup is preserved in [local GIS build](docs/local-gis-build.md) and [Stage 0 report](docs/validation-report.md).
+The manual [Pages workflow](.github/workflows/deploy-pages.yml) builds and audits the code-only artifact. [Web CI](.github/workflows/web-checks.yml) tests and builds a clean source checkout without FF7, QGIS or climate runs. No repository is created, pushed or deployed by the local preparation work. See [release guide](docs/web-release.md) and [release validation](docs/web-v1-release-validation.md).
 
-## GIS outputs
+## Geometry and assumptions
 
-Stage 1 retains raw/geographic/projection GeoPackages, custom Gaia WKT2, meter-based GLB and QGIS project. Browser data is a separate Float32 visualization transport. The measured binary is 5.40MB, gzip 1.20MB, Brotli 0.70MB, with max 0.424m spherical quantization error against Float64 coordinates. Stage 1 remains the GIS coordinate authority.
+WM0 has 142586 base triangles; V1 adds 9792 synthetic ocean cap triangles. Source connectivity and lineage are retained. Observed W=294912, H=229376 raw units lead to source latitudes +/-80.071528814895 degrees through inverse Mercator. The N/S cycle is cut; E/W stays longitude-periodic. Radius 6371008.8 m, vertical scale 1 m/raw unit and geographic orientation are reconstruction assumptions, not FF7 canon.
 
-## License
+Stage 1 Float64 GIS products remain the coordinate authority. Web transport is Float32, 5.40 MB, with previously measured maximum spherical quantization error 0.424 m. Region navigation uses area-weighted spherical chord centroids and can be diffuse for broad sea regions; these are not POIs or field entrances. Gameplay terrain is not GIS land cover.
 
-**GNU General Public License v3.0 only — GPL-3.0-only.** See [LICENSE](LICENSE).
+See [Stage 0 validation](docs/validation-report.md), [spherical reconstruction](docs/spherical-reconstruction.md), [Web format](docs/web-data-format.md) and [earlier Viewer validation](docs/web-viewer-validation.md). Historic screenshots and generated datasets remain local, ignored artifacts.
 
-The GPL license applies to GaiaGIS original source code. It does not grant rights to Final Fantasy VII or Square Enix assets.
+## Source and licensing boundaries
 
-## Third-party references
+FF7 datasets are read-only inputs. All local source, output, caches, browser profiles and temporary files stay in the project workspace. No proprietary MAP/BOT/LGP/TEX/executable assets, GIS products, transport binaries or screenshots enter Git.
 
-Libraries retain their own licenses and notices in [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Three.js is MIT; d3-geo/d3-geo-projection are ISC; Vite is MIT. Unlicensed FF7 reference repositories are format/behavior references only: no source is vendored or relicensed, and reference caches are excluded from release bundles.
+**GPL-3.0-only applies to GaiaGIS original code**, see [LICENSE](LICENSE). Third-party code retains its own licenses and notices, including Three.js MIT; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). This license grants no rights to FF7 or Square Enix assets.
 
-## Legal / trademark disclaimer and deployment
-
-Final Fantasy VII and related assets belong to their respective copyright holders.
-
-GaiaGIS is an independent fan / technical GIS visualization project and is not affiliated with or endorsed by Square Enix.
-
-Game-derived transport, GIS geometry and screenshots require a separate distribution review; they are ignored by Git. See [data and copyright](docs/data-and-copyright.md). This stage does **not** push data, enable Pages or publish a public deployment.
-
-`.github/workflows/deploy-pages.yml` is manual and disabled by default, with an explicit review checkbox, a repository-variable gate and a check for separately reviewed/staged assets. Vite base defaults to `./`; `GAIA_BASE_PATH` configures a Pages subpath. Dataset staging and public-release review remain a separate future step.
+Game-derived geometry publication status is **unresolved and separate** from code licensing. The code-only Pages workflow does not authorize future data publication. See [data and copyright](docs/data-and-copyright.md). GaiaGIS is an independent technical/fan project, not affiliated with or endorsed by Square Enix.
