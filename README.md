@@ -1,8 +1,12 @@
 # GaiaGIS
 
-An interactive globe and GIS reconstruction of Final Fantasy VII's original world polygons. **Web v1.0 uses V1 Geometric Gaia only.** Five projections display the same geometric dataset; climate warps are not offered.
+A mathematical GIS reconstruction of Final Fantasy VII's polygonal world map, with an interactive globe and multiple map projections.
 
-V2/V2.1/V2.2 climate research has concluded as **Experimental / Inconclusive**. Code and reports remain preserved in [Research](docs/climate/README.md). There is no active climate modeling roadmap.
+**V1 Geometric Gaia is the canonical GaiaGIS reconstruction. V1 is a mathematical reconstruction, not official/canonical Final Fantasy VII geography.** The Earth-sized reference radius is an assumption, not a measurement of Gaia.
+
+FINAL FANTASY VII WM0 → polygon mesh → periodic topology analysis → inverse-Mercator parameterization → Earth-sized Gaia sphere → GIS → interactive Web viewer → map projections.
+
+This is a **code-only public release**. The repository contains no FF7 game data or complete derived Gaia geometry. Users generate V1 data from their own installation and load it locally. [Release notes](docs/releases/v1.0.0.md) · [Data policy](docs/data-and-copyright.md).
 
 ## Viewer
 
@@ -30,15 +34,18 @@ npm run dev
 
 Open http://127.0.0.1:5173/. Existing locally generated V1 data in web/public/data/ loads automatically. A fresh source checkout shows a local-file chooser and setup help; it contains no game-derived geometry.
 
-To generate the default V1 dataset on your own computer, follow [local GIS setup](docs/local-gis-build.md). With the existing Python/QGIS environment, from the project root:
+To generate the default V1 dataset, use your own FF7 installation, Python 3.12+ and an installed Windows QGIS/OSGeo4W runtime with GDAL/PROJ/PyQGIS. See [local GIS setup](docs/local-gis-build.md) for supported layout and configuration. From the project root, substitute your actual installation paths:
 
 ```powershell
 . .\scripts\use_workspace_environment.ps1
-.\.venv\Scripts\python.exe -B scripts\build_gaia.py --source 'YOUR_FF7_INSTALLATION' --output output
+python -m venv --without-pip .venv
+.\.venv\Scripts\python.exe -B scripts\build_gaia.py --qgis-root 'YOUR_QGIS_ROOT' --source 'YOUR_FF7_INSTALLATION' --output output
 .\.venv\Scripts\python.exe -B scripts\build_web_assets.py
 ```
 
-The source installation stays read-only. This Web phase uses existing V1 outputs and does not rebuild them. Viewer v1.0 accepts the fingerprinted default V1 transport, not arbitrary reconstructed or climate-modified datasets. The core FF7 parser independently discovers compatible layouts without an AppID or fingerprint-only rejection rule.
+The parser reads your game installation without modifying it. The default V1 build creates local GIS products; the Web exporter creates **web/public/data/gaia-meta.json** and **web/public/data/gaia-mesh.bin**. Run the Viewer as above, then use **About / help → Choose both V1 files** to select these two files together. They stay in your browser and are never uploaded. Local development also loads generated files automatically when present.
+
+Viewer v1.0 accepts the fingerprinted default V1 transport, not arbitrary reconstructed or climate-modified datasets. The core FF7 parser independently discovers compatible layouts without an AppID or fingerprint-only rejection rule. Do not change reconstruction parameters when generating v1.0 data.
 
 ## Production and release
 
@@ -53,7 +60,7 @@ npm run preview:release
 
 dist/ is for private local use. **Publish only dist-release/**: it contains application code and license notices, with no game-derived geometry, metadata or screenshots. Users open their private V1 files in the browser. Both directories are ignored by Git. GAIA_BASE_PATH configures a repository subpath; the default is ./.
 
-The manual [Pages workflow](.github/workflows/deploy-pages.yml) builds and audits the code-only artifact. [Web CI](.github/workflows/web-checks.yml) tests and builds a clean source checkout without FF7, QGIS or climate runs. No repository is created, pushed or deployed by the local preparation work. See [release guide](docs/web-release.md) and [release validation](docs/web-v1-release-validation.md).
+The manual [Pages workflow](.github/workflows/deploy-pages.yml) builds and audits the code-only artifact. The hosted Viewer starts with a local-file chooser; it contains no geometry. [Web CI](.github/workflows/web-checks.yml) tests and builds a clean source checkout without FF7, QGIS or climate runs. See [release guide](docs/web-release.md) and [release validation](docs/web-v1-release-validation.md).
 
 ## Geometry and assumptions
 
@@ -65,8 +72,18 @@ See [Stage 0 validation](docs/validation-report.md), [spherical reconstruction](
 
 ## Source and licensing boundaries
 
+Climate V2/V2.1/V2.2 research is concluded **Experimental / Inconclusive**. It did not establish a physically robust replacement latitude mapping; no climate warp was adopted. Historical code and reports are preserved in [Research](docs/climate/README.md), outside the formal reconstruction and Viewer data.
+
 FF7 datasets are read-only inputs. All local source, output, caches, browser profiles and temporary files stay in the project workspace. No proprietary MAP/BOT/LGP/TEX/executable assets, GIS products, transport binaries or screenshots enter Git.
 
 **GPL-3.0-only applies to GaiaGIS original code**, see [LICENSE](LICENSE). Third-party code retains its own licenses and notices, including Three.js MIT; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). This license grants no rights to FF7 or Square Enix assets.
 
-Game-derived geometry publication status is **unresolved and separate** from code licensing. The code-only Pages workflow does not authorize future data publication. See [data and copyright](docs/data-and-copyright.md). GaiaGIS is an independent technical/fan project, not affiliated with or endorsed by Square Enix.
+Game-derived geometry publication status is **unresolved and separate** from code licensing. The code-only Pages workflow does not authorize future data publication. See [data and copyright](docs/data-and-copyright.md).
+
+GaiaGIS is an independent fan-made technical and GIS research project. It is not affiliated with, sponsored by, or endorsed by Square Enix. FINAL FANTASY VII and related names, characters, world designs and assets are property of their respective rights holders. GaiaGIS does not claim ownership of FF7 world design.
+
+© SQUARE ENIX  
+CHARACTER DESIGN: TETSUYA NOMURA  
+LOGO ILLUSTRATION: © YOSHITAKA AMANO
+
+GPL-3.0-only applies to GaiaGIS original source code, not to FINAL FANTASY VII or third-party materials.
