@@ -17,7 +17,8 @@ const mode=async(p,id)=>{await p.locator('#projection').selectOption(id);await p
 async function hook(p){
   // Test-side capture only. No debug hooks are added to the application.
   await p.evaluate(async()=>{
-    const {GaiaViewer}=await import('/src/viewer/GaiaViewer.ts');const original=GaiaViewer.prototype.setColorLayer;
+    const url=performance.getEntriesByType('resource').find(e=>e.name.includes('/src/viewer/GaiaViewer.ts'))?.name;
+    const {GaiaViewer}=await import(url||'/src/viewer/GaiaViewer.ts');const original=GaiaViewer.prototype.setColorLayer;
     GaiaViewer.prototype.setColorLayer=function(layer){window.__qaViewer=this;return original.call(this,layer);};
     document.getElementById('color-layer').dispatchEvent(new Event('change'));GaiaViewer.prototype.setColorLayer=original;
     const v=window.__qaViewer;window.__qaGeometry=v.surface.geometry;window.__qaPositions=v.surface.geometry.getAttribute('position').array;
@@ -68,7 +69,7 @@ async function target(p,key){
 }
 try{
   const ctx=await browser.newContext({viewport:{width:1440,height:1000}}),p=await ctx.newPage();watch(p);
-  const begin=Date.now();await p.goto('http://127.0.0.1:5173/');await ready(p);results.metrics.totalReadyMs=Date.now()-begin;
+  const begin=Date.now();await p.goto('http://127.0.0.1:5173/?lang=en');await ready(p);results.metrics.totalReadyMs=Date.now()-begin;
   await hook(p);results.cases=await p.evaluate(()=>window.__qaCases);
   await p.locator('#locations-toggle').uncheck();await p.waitForTimeout(1800);results.metrics.terrainFps=Number(await p.locator('#app').getAttribute('data-fps'));
   await p.locator('#color-layer').selectOption('encounter');await p.waitForTimeout(1800);results.metrics.encounterFps=Number(await p.locator('#app').getAttribute('data-fps'));
@@ -104,13 +105,13 @@ try{
   await p.locator('.encounter-group summary').first().click();check('record_weight_no_fake_percent',(await p.locator('.encounter-group').first().innerText()).includes('Weight'));
   await p.locator('#locations-toggle').check();await p.locator('#location-search').fill('Midgar');await p.locator('.location-result').first().click();
   check('location_inspector_preserved',await p.locator('#selection-details').getAttribute('data-location')==='midgar');
-  await p.locator('#local-encounters-file').setInputFiles({name:'gaia-encounters.json',mimeType:'application/json',buffer:Buffer.from('{}')});await p.waitForFunction(()=>document.getElementById('encounter-status').textContent.startsWith('Invalid'));
+  await p.locator('#local-encounters-file').setInputFiles({name:'gaia-encounters.json',mimeType:'application/json',buffer:Buffer.from('{}')});await p.waitForFunction(()=>document.getElementById('encounter-status').title.includes('Invalid'));
   check('corrupt_keeps_mesh_and_locations',await p.locator('canvas').count()===1&&await p.locator('#selection-details').getAttribute('data-location')==='midgar');
-  const bad=structuredClone(data);bad.sources['wm0.map']='f'.repeat(64);await p.locator('#local-encounters-file').setInputFiles({name:'gaia-encounters.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(bad))});await p.waitForFunction(()=>document.getElementById('encounter-status').textContent.includes('different'));
+  const bad=structuredClone(data);bad.sources['wm0.map']='f'.repeat(64);await p.locator('#local-encounters-file').setInputFiles({name:'gaia-encounters.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(bad))});await p.waitForFunction(()=>document.getElementById('encounter-status').title.includes('different'));
   check('incompatible_keeps_locations',await p.locator('#selection-details').getAttribute('data-location')==='midgar');
   const reloadBegan=Date.now();await p.locator('#local-encounters-file').setInputFiles(`${root}web/public/data/gaia-encounters.json`);await ready(p);results.metrics.encounterLocalLoadWallMs=Date.now()-reloadBegan;
   for(const width of [390,320]){
-    const mobile=await browser.newContext({viewport:{width,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:1}),m=await mobile.newPage();watch(m);await m.goto('http://127.0.0.1:5173/');await ready(m);await hook(m);
+    const mobile=await browser.newContext({viewport:{width,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:1}),m=await mobile.newPage();watch(m);await m.goto('http://127.0.0.1:5173/?lang=en');await ready(m);await hook(m);
     await m.locator('#mobile-display').tap();await m.locator('#locations-toggle').uncheck();await m.locator('#color-layer').selectOption('encounter-rate');await m.locator('#chocobo-tracks').check();
     check(`mobile_${width}_legend`,await m.locator('#terrain-legend').isVisible());
     check(`mobile_${width}_toggle`,await m.locator('#chocobo-tracks').isChecked());
@@ -125,7 +126,7 @@ try{
     await shot(m,`mobile-${width}`);await mobile.close();
   }
   const release=await browser.newContext({viewport:{width:1440,height:1000}}),r=await release.newPage(),requests=[];watch(r);r.on('request',q=>requests.push({method:q.method(),url:q.url()}));
-  await r.goto('http://127.0.0.1:5175/');await r.locator('#local-dataset-files').setInputFiles([`${root}web/public/data/gaia-meta.json`,`${root}web/public/data/gaia-mesh.bin`]);await r.locator('#loading').waitFor({state:'hidden',timeout:60000});
+  await r.goto('http://127.0.0.1:5175/?lang=en');await r.locator('#local-dataset-files').setInputFiles([`${root}web/public/data/gaia-meta.json`,`${root}web/public/data/gaia-mesh.bin`]);await r.locator('#loading').waitFor({state:'hidden',timeout:60000});
   check('source_only_optional_absent',(await r.locator('#encounter-status').innerText()).startsWith('Encounter data unavailable'));
   check('optional_encounter_layer_disabled',await r.locator('#color-layer option[value="encounter"]').isDisabled());
   await r.locator('#chocobo-tracks').check();check('tracks_independent_of_table',await r.locator('#tracks-legend').isVisible());

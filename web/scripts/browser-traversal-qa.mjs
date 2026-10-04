@@ -67,7 +67,7 @@ async function target(p,key){
 }
 try{
   const ctx=await browser.newContext({viewport:{width:1440,height:1000}}),p=await ctx.newPage();watch(p);
-  const begin=Date.now();await p.goto('http://127.0.0.1:5173/');await ready(p);results.metrics.totalReadyMs=Date.now()-begin;
+  const begin=Date.now();await p.goto('http://127.0.0.1:5173/?lang=en');await ready(p);results.metrics.totalReadyMs=Date.now()-begin;
   await hook(p);results.cases=await p.evaluate(()=>window.__qaCases);
   await p.locator('#locations-toggle').uncheck();await p.waitForTimeout(1500);
   results.metrics.terrainFps=Number(await p.locator('#app').getAttribute('data-fps'));
@@ -112,7 +112,7 @@ try{
   await p.locator('#color-layer').selectOption('encounter-rate');check('encounter_rate_preserved',(await p.locator('#terrain-legend').innerText()).includes('divisor'));
   await p.locator('#color-layer').selectOption('region');check('traversal_selector_hides',!(await p.locator('#movement-mode').isVisible()));
   for(const width of [390,320]){
-    const mobile=await browser.newContext({viewport:{width,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:1}),m=await mobile.newPage();watch(m);await m.goto('http://127.0.0.1:5173/');await ready(m);await hook(m);
+    const mobile=await browser.newContext({viewport:{width,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:1}),m=await mobile.newPage();watch(m);await m.goto('http://127.0.0.1:5173/?lang=en');await ready(m);await hook(m);
     await m.locator('#mobile-display').tap();await m.locator('#locations-toggle').uncheck();await m.locator('#color-layer').selectOption('traversal');await m.locator('#movement-mode').selectOption('highwind-landing');
     await m.locator('#terrain-legend').scrollIntoViewIfNeeded();check(`mobile_${width}_legend`,await m.locator('#terrain-legend').isVisible());
     check(`mobile_${width}_selector`,await m.locator('#movement-mode option').count()===10);await m.locator('#mobile-display').tap();
@@ -126,12 +126,12 @@ try{
     await shot(m,`mobile-${width}`);await mobile.close();
   }
   const release=await browser.newContext({viewport:{width:1440,height:1000}}),r=await release.newPage(),requests=[];watch(r);r.on('request',q=>requests.push({method:q.method(),url:q.url()}));
-  await r.goto('http://127.0.0.1:5175/');await r.locator('#local-dataset-files').setInputFiles([`${root}web/public/data/gaia-meta.json`,`${root}web/public/data/gaia-mesh.bin`]);await r.locator('#loading').waitFor({state:'hidden',timeout:60000});
+  await r.goto('http://127.0.0.1:5175/?lang=en');await r.locator('#local-dataset-files').setInputFiles([`${root}web/public/data/gaia-meta.json`,`${root}web/public/data/gaia-mesh.bin`]);await r.locator('#loading').waitFor({state:'hidden',timeout:60000});
   await r.locator('#color-layer').selectOption('traversal');await r.locator('#movement-mode').selectOption('chocobo-gold');
   check('source_only_no_extra_dataset_required',await r.locator('#movement-mode').isVisible());
   check('source_only_locations_encounters_optional',(await r.locator('#encounter-status').innerText()).startsWith('Encounter data unavailable')&&(await r.locator('#location-status').innerText()).startsWith('Locations unavailable'));
   check('no_game_data_requests_or_uploads',requests.every(q=>q.method==='GET'&&!q.url.includes('/data/')));
-  await r.locator('#local-encounters-file').setInputFiles({name:'bad.json',mimeType:'application/json',buffer:Buffer.from('{}')});await r.waitForFunction(()=>document.getElementById('encounter-status').textContent.startsWith('Invalid'));
+  await r.locator('#local-encounters-file').setInputFiles({name:'bad.json',mimeType:'application/json',buffer:Buffer.from('{}')});await r.waitForFunction(()=>document.getElementById('encounter-status').title.includes('Invalid'));
   check('corrupt_optional_does_not_break_traversal',await r.locator('#movement-mode').inputValue()==='chocobo-gold'&&await r.locator('canvas').count()===1);
   await shot(r,'source-only');check('no_page_errors',results.errors.length===0);results.success=true;
 }catch(error){results.failure=String(error);results.success=false;console.error(error);}

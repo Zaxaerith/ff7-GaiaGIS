@@ -4,4 +4,5 @@ import {equirectangular} from './equirectangular';
 import {mercator} from './mercator';
 import {mollweide} from './mollweide';
 import {orthographic} from './orthographic';
-export const projections={globe,equirectangular,mercator,mollweide,orthographic};
+import {equalEarth,winkelTripel,robinson,naturalEarth,sinusoidal,gallPeters,laea,aeqd} from './gallery';
+export const projections={globe,equirectangular,mercator,mollweide,orthographic,'equal-earth':equalEarth,'winkel-tripel':winkelTripel,robinson,'natural-earth':naturalEarth,sinusoidal,'gall-peters':gallPeters,laea,aeqd};

@@ -38,3 +38,5 @@ node_modules/
 gaia-poi.json
 gaia-encounters.json
 gaia-events.json
+gaia-routing.bin
+gaia-meta.json

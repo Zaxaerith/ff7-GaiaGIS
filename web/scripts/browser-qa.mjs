@@ -38,7 +38,7 @@ try{
   await page.mouse.wheel(0,-200);await page.waitForTimeout(300);
   results.checks.globe_drag_zoom=true;
   await page.locator('#north-up').click();await page.waitForTimeout(250);
-  if(!(await page.locator('#view-center').innerText()).includes('赤道 0°'))throw new Error('North-up button did not return to an equatorial view');
+  if(!(await page.locator('#view-center').innerText()).includes('Equator 0°'))throw new Error('North-up button did not return to an equatorial view');
   results.checks.north_up_readout=true;
   await page.locator('#reset-view').click();await page.waitForTimeout(500);
   const withDepth=await canvas.screenshot();await page.locator('#globe-depth').uncheck();await page.waitForTimeout(150);

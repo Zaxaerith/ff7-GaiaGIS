@@ -1,0 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-only
+// Entirely synthetic, no FF7-derived coordinates or edges.
+export function routingFixture(terrain=[0,0,0,0],pairs:[number,number,number][]=[[0,1,2],[1,2,3],[0,2,9],[2,3,4]]){
+ const n=terrain.length,adj=Array.from({length:n},()=>new Map<number,number>());for(const [a,b,w]of pairs){adj[a].set(b,w);adj[b].set(a,w);}const arcs=pairs.length*2,csr=128+n*16,neighbor=csr+(n+1)*4,weight=neighbor+arcs*4,buffer=new ArrayBuffer(weight+arcs*8),v=new DataView(buffer);new Uint8Array(buffer).set(new TextEncoder().encode('GAIARTG\0'));v.setUint16(8,1,true);v.setUint16(10,128,true);[n,arcs,128,csr,neighbor,weight,buffer.byteLength,0,1].forEach((x,i)=>v.setUint32(12+i*4,x,true));new Uint8Array(buffer,64,32).fill(0xaa);let edge=0;for(let i=0;i<n;i++){v.setUint16(128+i*16+4,i,true);v.setUint8(128+i*16+6,terrain[i]);v.setFloat64(128+i*16+8,100+i,true);v.setUint32(csr+i*4,edge,true);for(const [b,w]of [...adj[i]].sort((a,b)=>a[0]-b[0])){v.setUint32(neighbor+edge*4,b,true);v.setFloat64(weight+edge*8,w,true);edge++;}}v.setUint32(csr+n*4,edge,true);return buffer;
+}

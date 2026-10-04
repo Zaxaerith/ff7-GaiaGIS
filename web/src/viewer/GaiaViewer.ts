@@ -7,6 +7,7 @@ import type {GaiaMesh,GaiaMeta} from '../data/mesh';
 import {prepareDisplay,projectDisplay} from '../data/display';
 import type {DisplayMesh} from '../data/display';
 import {projections} from '../projections';
+import {rotatesCenter} from '../projections/registry';
 import {fitProjectionToViewport,wrapLongitude} from '../projections/Projection';
 import type {ProjectionId,ProjectionContext} from '../projections/Projection';
 import {distinguishedCapColor,syntheticOceanColor,terrainPalette} from '../styles/terrainPalette';
@@ -14,6 +15,7 @@ import {addVisibilityMask} from './visibility';
 import {easeInOutCubic,interpolateBuffers} from './morph';
 import {graticulePoints,projectGraticule} from './graticule';
 import {NavigationOverlay,geographicViewCenter} from './navigation';
+import {t} from '../i18n';
 import {regionColor} from '../data/regions';
 import {LocationsOverlay} from './locations';
 import {eventLocation,filterEvent} from '../data/events';
@@ -24,6 +26,7 @@ import {encounterColor,encounterPalette} from '../data/encounters';
 import type {ColorLayer,EncounterDataset} from '../data/encounters';
 import {profileById,traversalColor} from '../data/traversal';
 import {orderSurfaceHits} from './surfacePicking';
+import {RouteOverlay} from './route';
 
 type Frame={positions:Float32Array;mask:Float32Array};
 interface Morph {start:number;fromId:ProjectionId;from:Frame;to:Frame;gridFrom:Frame;gridTo:Frame;cameraFrom:Vector3;cameraTo:Vector3;targetFrom:Vector3;depthFrom:number;}
@@ -34,6 +37,9 @@ export class GaiaViewer {
   readonly display:DisplayMesh;
   readonly context:ProjectionContext;
   projectionId:ProjectionId='globe';
+  private route=new RouteOverlay();
+  private reachable:Uint8Array|null=null;
+  private corridor=new Set<number>();
   onSelection:(source:number|null)=>void=()=>{};
   onStats:(stats:ViewerStats)=>void=()=>{};
   onProjection:(id:ProjectionId,morphing:boolean)=>void=()=>{};
@@ -119,14 +125,14 @@ export class GaiaViewer {
     const gridMaterial=new LineBasicMaterial({vertexColors:true,transparent:true,opacity:0.6,depthWrite:false});
     addVisibilityMask(gridMaterial);
     this.graticule=new LineSegments(gridGeometry,gridMaterial);this.graticule.visible=true;this.graticule.frustumCulled=false;
-    this.scene.add(this.graticule);
+    this.scene.add(this.graticule);this.scene.add(this.route.line);
     const highlightMaterial=new MeshBasicMaterial({color:'#ffdf8f',side:DoubleSide,transparent:true,opacity:0.92,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-3,polygonOffsetUnits:-3});
     addVisibilityMask(highlightMaterial);
     this.highlight=new Mesh(new BufferGeometry(),highlightMaterial);this.highlight.visible=false;this.highlight.frustumCulled=false;
     this.scene.add(this.highlight);
     this.renderer=new WebGLRenderer({antialias:true,alpha:true,powerPreference:'high-performance'});
     this.renderer.setClearColor(0,0);
-    this.renderer.domElement.setAttribute('aria-label','Interactive Gaia map. Drag to rotate or pan; scroll to zoom; tap a triangle to inspect.');
+    this.renderer.domElement.setAttribute('aria-label',t('ui.canvasAria'));
     this.renderer.domElement.tabIndex=0;
     this.renderer.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();this.renderer.setAnimationLoop(null);this.onError('Graphics context interrupted. Retry the viewer to restore your local V1 dataset.');});
     this.renderer.domElement.addEventListener('keydown',e=>{
@@ -139,7 +145,7 @@ export class GaiaViewer {
       else if(e.key.toLowerCase()==='n'){this.setAutoRotate(false);this.northUp();}
       else if(!this.morph){
         this.setAutoRotate(false);
-        if(this.projectionId==='globe'||this.projectionId==='orthographic'){
+        if(this.projectionId==='globe'||rotatesCenter(this.projectionId)){
           const center=this.projectionId==='globe'?geographicViewCenter(this.perspective.position.x,this.perspective.position.y,this.perspective.position.z):{lon:this.context.centerLon,lat:this.context.centerLat};
           this.focusLocation((center.lon??0)+(e.key==='ArrowLeft'?-5:e.key==='ArrowRight'?5:0),center.lat+(e.key==='ArrowUp'?5:e.key==='ArrowDown'?-5:0));
         }else{
@@ -166,11 +172,11 @@ export class GaiaViewer {
       if(!this.pointerDown) return;
       const dx=e.clientX-this.pointerDown.x,dy=e.clientY-this.pointerDown.y;
       this.moved=Math.max(this.moved,Math.hypot(dx,dy));
-      if(this.projectionId==='orthographic'&&!this.morph&&this.pointers.size===1&&e.buttons!==2) {
+      if(rotatesCenter(this.projectionId)&&!this.morph&&this.pointers.size===1&&e.buttons!==2) {
         this.context.centerLon=wrapLongitude(this.pointerDown.lon-dx*0.22);
         this.context.centerLat=Math.max(-89,Math.min(89,this.pointerDown.lat+dy*0.22));
-        projectDisplay(this.display,projections.orthographic,this.context,this.frame.positions,this.frame.mask);
-        const grid=projectGraticule(this.gridGeo,projections.orthographic,this.context);
+        projectDisplay(this.display,projections[this.projectionId],this.context,this.frame.positions,this.frame.mask);
+        const grid=projectGraticule(this.gridGeo,projections[this.projectionId],this.context);
         this.gridFrame.positions.set(grid.positions);this.gridFrame.mask.set(grid.mask);
         this.changed();
       }
@@ -205,22 +211,22 @@ export class GaiaViewer {
     this.globeControls.target.set(0,0,0);this.mapControls.target.set(0,0,0);
     this.perspective.position.set(0,0.16,this.distance('globe'));this.perspective.lookAt(0,0,0);
     this.mapCamera.position.set(0,0,8);this.mapCamera.zoom=1;this.mapCamera.lookAt(0,0,0);this.resize();
-    if(this.projectionId==='orthographic') {projectDisplay(this.display,projections.orthographic,this.context,this.frame.positions,this.frame.mask);const grid=projectGraticule(this.gridGeo,projections.orthographic,this.context);this.gridFrame.positions.set(grid.positions);this.gridFrame.mask.set(grid.mask);this.changed();}
+    if(rotatesCenter(this.projectionId)) {projectDisplay(this.display,projections[this.projectionId],this.context,this.frame.positions,this.frame.mask);const grid=projectGraticule(this.gridGeo,projections[this.projectionId],this.context);this.gridFrame.positions.set(grid.positions);this.gridFrame.mask.set(grid.mask);this.changed();}
     this.globeControls.update();this.mapControls.update();
   }
   setProjection(id:ProjectionId){
     if(id===this.projectionId&&!this.morph) return;
     this.cancelFlight();
     this.locations.beginMorph(this.projectionId,id,this.context,!!this.morph);
-    this.events.beginMorph(this.projectionId,id,this.context,!!this.morph);
+    this.events.beginMorph(this.projectionId,id,this.context,!!this.morph);this.route.begin(this.projectionId,id,this.context,!!this.morph);
     const oldCamera=this.camera;
     if(oldCamera===this.mapCamera) {
       const distance=(this.mapCamera.top-this.mapCamera.bottom)/(2*this.mapCamera.zoom*Math.tan(this.perspective.fov*Math.PI/360));
       this.perspective.position.set(this.mapCamera.position.x,this.mapCamera.position.y,distance);
       this.perspective.lookAt(this.mapControls.target);
     }
-    const target=id==='orthographic'?projectDisplay(this.display,projections[id],this.context):this.cache.get(id)||projectDisplay(this.display,projections[id],this.context);
-    if(id!=='orthographic') this.cache.set(id,target);
+    const target=rotatesCenter(id)?projectDisplay(this.display,projections[id],this.context):this.cache.get(id)||projectDisplay(this.display,projections[id],this.context);
+    if(!rotatesCenter(id)) this.cache.set(id,target);
     const targetFrom=(oldCamera===this.mapCamera?this.mapControls.target:this.globeControls.target).clone();
     this.morph={start:performance.now(),fromId:this.projectionId,from:{positions:this.frame.positions.slice(),mask:this.frame.mask.slice()},to:target,
       gridFrom:{positions:this.gridFrame.positions.slice(),mask:this.gridFrame.mask.slice()},gridTo:projectGraticule(this.gridGeo,projections[id],this.context),
@@ -228,6 +234,7 @@ export class GaiaViewer {
     this.projectionId=id;this.globeControls.enabled=false;this.mapControls.enabled=false;
     this.onProjection(id,true);
   }
+  setAnalysis(reachable:Uint8Array|null,path:number[],start:string|null,target:string|null,locations:Set<string>|null){this.reachable=reachable;this.corridor=new Set(path);this.route.set(this.mesh,path);this.locations.setAnalysis(start,target,locations);this.colorSurface();if(this.morph)this.route.begin(this.morph.fromId,this.projectionId,this.context);}
   setTerrain(value:boolean){this.terrain=value;this.colorSurface();}
   setColorLayer(layer:ColorLayer){this.colorLayer=layer;this.colorSurface();}
   setEvents(events:WorldEvent[]){this.eventRecords=events;this.events.setLocations(events.map(eventLocation));if(this.morph)this.events.beginMorph(this.morph.fromId,this.projectionId,this.context);}
@@ -245,10 +252,10 @@ export class GaiaViewer {
       this.globeControls.enableDamping=false;this.globeControls.update();this.globeControls.enableDamping=true;
       const p=projections.globe.project(lon,lat,0,this.context),distance=this.perspective.position.length();
       this.globeControls.target.set(0,0,0);this.perspective.up.set(0,1,0);this.perspective.position.set(...p).multiplyScalar(distance);this.perspective.lookAt(0,0,0);this.globeControls.update();
-    }else if(this.projectionId==='orthographic'){
+    }else if(rotatesCenter(this.projectionId)){
       this.context.centerLon=lon;this.context.centerLat=lat;
-      projectDisplay(this.display,projections.orthographic,this.context,this.frame.positions,this.frame.mask);
-      const grid=projectGraticule(this.gridGeo,projections.orthographic,this.context);this.gridFrame.positions.set(grid.positions);this.gridFrame.mask.set(grid.mask);this.changed();
+      projectDisplay(this.display,projections[this.projectionId],this.context,this.frame.positions,this.frame.mask);
+      const grid=projectGraticule(this.gridGeo,projections[this.projectionId],this.context);this.gridFrame.positions.set(grid.positions);this.gridFrame.mask.set(grid.mask);this.changed();
     }else{
       const [x,y]=projections[this.projectionId].project(lon,lat,0,this.context);this.mapCamera.position.set(x,y,8);this.mapControls.target.set(x,y,0);this.mapCamera.lookAt(x,y,0);this.mapControls.update();
     }
@@ -285,10 +292,10 @@ export class GaiaViewer {
       const distance=this.perspective.position.length();
       this.perspective.up.set(0,1,0);this.perspective.position.set(Math.sin(lon)*distance,0,Math.cos(lon)*distance);
       this.perspective.lookAt(0,0,0);this.globeControls.update();
-    }else if(this.projectionId==='orthographic'){
+    }else if(rotatesCenter(this.projectionId)){
       this.context.centerLat=0;
-      projectDisplay(this.display,projections.orthographic,this.context,this.frame.positions,this.frame.mask);
-      const grid=projectGraticule(this.gridGeo,projections.orthographic,this.context);this.gridFrame.positions.set(grid.positions);this.gridFrame.mask.set(grid.mask);this.changed();
+      projectDisplay(this.display,projections[this.projectionId],this.context,this.frame.positions,this.frame.mask);
+      const grid=projectGraticule(this.gridGeo,projections[this.projectionId],this.context);this.gridFrame.positions.set(grid.positions);this.gridFrame.mask.set(grid.mask);this.changed();
     }
   }
   setAutoRotate(value:boolean){this.globeControls.autoRotate=value;}
@@ -310,8 +317,10 @@ export class GaiaViewer {
       if(source!==previous){const a=this.mesh.attributes(source);const colored=this.colorLayer!=='terrain'||this.terrain;color=a.origin?this.distinguishCaps?cap:colored?cap:neutral:colored?palette.get(this.colorLayer==='region'?a.region!:a.terrain!)||neutral:neutral;
         if(!a.origin&&gameplay){const key=`${a.region}:${a.terrain}:${a.script===0}`;if(!gameColors.has(key))gameColors.set(key,new Color(encounterColor(this.encounters,a,this.colorLayer==='encounter-rate')));color=gameColors.get(key)!;}
         if(this.colorLayer==='traversal'){const key=`traversal:${a.terrain}:${a.script}:${a.origin}`;if(!gameColors.has(key))gameColors.set(key,new Color(traversalColor(this.movementMode,a)));color=gameColors.get(key)!;}
+        if(this.reachable&&!a.origin&&!this.reachable[source])color=color.clone().multiplyScalar(.25);
         if(!a.origin&&this.chocoboTracks&&a.chocobo)color=tracks;
         if(this.showTriggers&&!a.origin&&(a.script!>=3||this.eventTriggers.has(`${a.section}/${a.mesh}/${a.triangle}`)))color=new Color(this.eventTriggers.has(`${a.section}/${a.mesh}/${a.triangle}`)?'#ff9bd6':'#9c7ee9');
+        if(this.corridor.has(source))color=new Color('#ffe18c');
         previous=source;}
       for(let j=0;j<9;j+=3){const i=t*9+j;colors[i]=color.r;colors[i+1]=color.g;colors[i+2]=color.b;}
     }
@@ -367,7 +376,7 @@ export class GaiaViewer {
       if(t===1){
         this.morph=null;this.mapCamera.position.set(0,0,8);this.mapCamera.zoom=1;this.mapControls.target.set(0,0,0);this.mapCamera.lookAt(0,0,0);this.globeControls.target.set(0,0,0);
         this.resize();this.globeControls.enabled=this.projectionId==='globe';this.mapControls.enabled=!this.globeControls.enabled;
-        this.mapControls.enablePan=this.projectionId!=='orthographic';this.onProjection(this.projectionId,false);
+        this.mapControls.enablePan=!rotatesCenter(this.projectionId);this.onProjection(this.projectionId,false);
         if(this.queuedLocation){const location=this.queuedLocation;this.queuedLocation=null;this.flyToLocation(location.lon,location.lat);}
       }
     } else {
@@ -376,10 +385,10 @@ export class GaiaViewer {
         const f=this.flight,t=Math.min(1,Math.max(0,(time-f.start)/flyDuration(this.reducedMotion))),ease=easeInOutCubic(t);
         if(this.projectionId==='globe'){
           this.perspective.position.copy(flyDirection(f.from,f.to,ease).multiplyScalar(f.distance));this.perspective.up.set(0,1,0);this.perspective.lookAt(0,0,0);
-        }else if(this.projectionId==='orthographic'){
+        }else if(rotatesCenter(this.projectionId)){
           this.context.centerLon=shortestLongitude(f.fromLon,f.lon,ease);this.context.centerLat=f.fromLat+(f.lat-f.fromLat)*ease;
-          projectDisplay(this.display,projections.orthographic,this.context,this.frame.positions,this.frame.mask);
-          const grid=projectGraticule(this.gridGeo,projections.orthographic,this.context);this.gridFrame.positions.set(grid.positions);this.gridFrame.mask.set(grid.mask);this.changed();
+          projectDisplay(this.display,projections[this.projectionId],this.context,this.frame.positions,this.frame.mask);
+          const grid=projectGraticule(this.gridGeo,projections[this.projectionId],this.context);this.gridFrame.positions.set(grid.positions);this.gridFrame.mask.set(grid.mask);this.changed();
         }else{
           const target=new Vector3().lerpVectors(f.from,f.to,ease);target.z=0;
           this.mapCamera.position.set(target.x,target.y,8);this.mapControls.target.copy(target);this.mapCamera.lookAt(target);
@@ -390,6 +399,7 @@ export class GaiaViewer {
     this.camera.updateMatrixWorld();
     this.locations.update(this.projectionId,this.context,this.camera,markerMorph);
     this.events.update(this.projectionId,this.context,this.camera,markerMorph);
+    this.route.update(this.projectionId,this.context,markerMorph?.ease);
     this.renderer.render(this.scene,this.camera);
     this.navigation.update(time,this.projectionId,this.context,this.camera,!!this.morph,this.graticule.visible);
     if(time-this.statsLast>600){this.statsLast=time;const fps=1000/(this.frameTimes.reduce((a,b)=>a+b,0)/Math.max(1,this.frameTimes.length));this.onStats({fps,renderTriangles:this.display.renderToSource.length,drawCalls:this.renderer.info.render.calls,morphing:!!this.morph,projection:this.projectionId});}

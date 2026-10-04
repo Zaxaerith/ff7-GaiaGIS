@@ -19,7 +19,7 @@ const choose=async(p,query)=>{
 };
 try{
   const context=await browser.newContext({viewport:{width:1440,height:1000}}),page=await context.newPage();watch(page);
-  const began=Date.now();await page.goto('http://127.0.0.1:5173/');await ready(page);results.metrics.totalReadyMs=Date.now()-began;
+  const began=Date.now();await page.goto('http://127.0.0.1:5173/?lang=en');await ready(page);results.metrics.totalReadyMs=Date.now()-began;
   await page.waitForTimeout(2200);results.metrics.fpsWithPoi=Number(await page.locator('#app').getAttribute('data-fps'));
   await page.locator('#locations-toggle').uncheck();await page.waitForTimeout(2200);results.metrics.fpsWithoutPoi=Number(await page.locator('#app').getAttribute('data-fps'));await page.locator('#locations-toggle').check();
   const targets=['midgar','junon','mythril-mine','temple-of-the-ancients'];
@@ -48,10 +48,10 @@ try{
   await page.locator('#locations-toggle').uncheck();await page.waitForTimeout(100);await page.locator('#clear-selection').click();const box=await page.locator('canvas').boundingBox();await page.mouse.click(box.x+box.width/2,box.y+box.height/2);await page.locator('#selection-details').waitFor({state:'visible'});
   check('triangle_inspector_preserved',await page.locator('#inspector-title').innerText()==='Triangle inspector');
   await page.locator('#locations-toggle').check();
-  await page.locator('#local-poi-file').setInputFiles({name:'gaia-poi.json',mimeType:'application/json',buffer:Buffer.from('{"schema":"bad"}')});await page.waitForFunction(()=>document.getElementById('location-status').textContent.includes('Invalid'));
+  await page.locator('#local-poi-file').setInputFiles({name:'gaia-poi.json',mimeType:'application/json',buffer:Buffer.from('{"schema":"bad"}')});await page.waitForFunction(()=>document.getElementById('location-status').title.includes('Invalid'));
   check('corrupt_poi_mesh_survives',await page.locator('canvas').count()===1);await page.locator('#local-poi-file').setInputFiles(`${root}web/public/data/gaia-poi.json`);await ready(page);
   for(const width of [390,320]){
-    const mobile=await browser.newContext({viewport:{width,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:1}),p=await mobile.newPage();watch(p);await p.goto('http://127.0.0.1:5173/');await ready(p);
+    const mobile=await browser.newContext({viewport:{width,height:844},isMobile:true,hasTouch:true,deviceScaleFactor:1}),p=await mobile.newPage();watch(p);await p.goto('http://127.0.0.1:5173/?lang=en');await ready(p);
     for(const id of ['globe','equirectangular','mercator','mollweide','orthographic']){
       await mode(p,id);
       for(const target of targets){
@@ -63,13 +63,13 @@ try{
     }
     check(`mobile_${width}_no_overflow`,await p.evaluate(()=>document.documentElement.scrollWidth<=innerWidth));await shot(p,`mobile-${width}`);await mobile.close();
   }
-  const reduced=await browser.newContext({viewport:{width:1440,height:1000},reducedMotion:'reduce'}),p=await reduced.newPage();watch(p);await p.goto('http://127.0.0.1:5173/#location=midgar');await ready(p);
+  const reduced=await browser.newContext({viewport:{width:1440,height:1000},reducedMotion:'reduce'}),p=await reduced.newPage();watch(p);await p.goto('http://127.0.0.1:5173/?lang=en#location=midgar');await ready(p);
   check('deep_link_reduced_motion',await p.locator('#selection-details').getAttribute('data-location')==='midgar');
   await p.locator('#location-search').fill('Junon');await p.locator('.location-result').first().click();await p.waitForTimeout(100);
   check('reduced_motion_endpoint',await p.locator('.location-marker[data-location="junon"]').isVisible());await reduced.close();
   // Separate source-only production server, no GET for data and no uploads.
   const release=await browser.newContext({viewport:{width:1440,height:1000}}),r=await release.newPage(),requests=[];watch(r);r.on('request',q=>requests.push({method:q.method(),url:q.url()}));
-  await r.goto('http://127.0.0.1:5175/');await r.locator('#loading').waitFor({state:'visible'});
+  await r.goto('http://127.0.0.1:5175/?lang=en');await r.locator('#loading').waitFor({state:'visible'});
   await r.locator('#local-dataset-files').setInputFiles([`${root}web/public/data/gaia-meta.json`,`${root}web/public/data/gaia-mesh.bin`]);await r.locator('#loading').waitFor({state:'hidden',timeout:60000});
   check('two_file_chooser_unchanged',await r.locator('canvas').count()===1);check('optional_missing_poi',await r.locator('#location-status').innerText()==='Locations unavailable · optional local file');
   await r.locator('#local-poi-file').setInputFiles(`${root}web/public/data/gaia-poi.json`);await ready(r);await choose(r,'Midgar');check('source_only_local_poi',await r.locator('#selection-details').getAttribute('data-location')==='midgar');

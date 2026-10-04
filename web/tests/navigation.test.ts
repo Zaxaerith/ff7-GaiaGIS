@@ -12,8 +12,8 @@ describe('Gaia direction cues',()=>{
     expect(geographicViewCenter(0,5,0)).toEqual({lon:null,lat:90});expect(geographicViewCenter(0,-5,0)).toEqual({lon:null,lat:-90});expect(()=>geographicViewCenter(0,0,0)).toThrow();
   });
   it('labels reconstructed north/south/east/west and the equator unambiguously',()=>{
-    expect(latitudeLabel(0)).toBe('赤道 0°');expect(latitudeLabel(30)).toBe('30°N');expect(latitudeLabel(-30)).toBe('30°S');
-    expect(longitudeLabel(60)).toBe('60°E');expect(longitudeLabel(-60)).toBe('60°W');expect(longitudeLabel(0)).toBe('0° 经线');
-    expect(longitudeLabel(-0.03,1)).toBe('0° 经线');expect(latitudeLabel(-0.03,1)).toBe('赤道 0°');
+    expect(latitudeLabel(0)).toBe('Equator 0°');expect(latitudeLabel(30)).toBe('30°N');expect(latitudeLabel(-30)).toBe('30°S');
+    expect(longitudeLabel(60)).toBe('60°E');expect(longitudeLabel(-60)).toBe('60°W');expect(longitudeLabel(0)).toBe('0° meridian');
+    expect(longitudeLabel(-0.03,1)).toBe('0° meridian');expect(latitudeLabel(-0.03,1)).toBe('Equator 0°');
   });
 });

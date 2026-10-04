@@ -6,11 +6,11 @@ A mathematical GIS reconstruction of Final Fantasy VII's polygonal world map, wi
 
 FINAL FANTASY VII WM0 → polygon mesh → periodic topology analysis → inverse-Mercator parameterization → Earth-sized Gaia sphere → GIS → interactive Web viewer → map projections.
 
-This is a **code-only project**. The repository contains no FF7 game data, complete derived Gaia geometry, POI coordinates, encounter tables or world-event coordinates. Users generate V1 data from their own installation and load it locally. v1.4 is a local release candidate pending publication approval; earlier versions remain preserved in history. [v1.1 release notes](docs/releases/v1.1.0.md) · [Stable v1.0 notes](docs/releases/v1.0.0.md) · [Data policy](docs/data-and-copyright.md).
+This is a **code-only project**. The repository contains no FF7 game data, complete derived Gaia geometry, POI coordinates, encounter tables, world-event coordinates or routing topology. Users generate V1 data from their own installation and load it locally. v1.5 is a local release candidate pending publication approval; earlier versions remain preserved in history. [v1.5 validation](docs/v1.5/validation.md) · [Stable v1.0 notes](docs/releases/v1.0.0.md) · [Data policy](docs/data-and-copyright.md).
 
 ## Viewer
 
-- Globe, Equirectangular, Mercator, Mollweide and draggable Orthographic hemisphere.
+- Thirteen views: Globe, Equirectangular, Mercator, Mollweide, Orthographic, **Equal Earth**, Winkel Tripel, Robinson, Natural Earth I, Sinusoidal, Gall–Peters, Lambert Azimuthal Equal-Area and Azimuthal Equidistant. Categorized projection selection, property information and rotating azimuthal centers.
 - Orbit/pan, wheel and touch pinch zoom, projection morphing, reset and north-up compass.
 - Labeled 30-degree graticule, equator/0-degree longitude highlights, hemisphere coordinates and optional globe shading.
 - FF7 gameplay terrain or region colors, complete observed-category legend, approximate region-center navigation, triangle grid and synthetic-cap distinction.
@@ -18,10 +18,12 @@ This is a **code-only project**. The repository contains no FF7 game data, compl
 - Responsive mobile sheets, keyboard map navigation, reduced-motion handling, loading retry and graphics-context recovery.
 - About/help explains local setup, reconstruction assumptions, research status and licenses.
 - Browser-local loading of gaia-meta.json + gaia-mesh.bin. Files are verified with SHA-256 and never uploaded.
-- Optional named locations and field entrances, locally generated from your own installation: markers, major-location labels, category filters, name/alias/internal-field search, fly-to and entrance provenance inspection in all five projections.
+- Optional named locations and field entrances, locally generated from your own installation: markers, major-location labels, category filters, name/alias/internal-field search, fly-to and entrance provenance inspection across projections.
 - Traversal & Vehicles: static classic-PC terrain compatibility for On Foot, Buggy, water Tiny Bronco, five Chocobo variants and Submarine surface; separate Highwind landing initiation, four-state legend and comparison Inspector. Runtime/story state and reachability are not simulated.
 - Optional World Encounters: Encounter Zones, raw Encounter Rate, independent Chocobo Tracks, and triangle encounter/Mystery Ninja/Chocobo metadata. Weights are not absolute probabilities; runtime state is not simulated.
 - Optional World Events & Scripted Objects: spatially anchored world-script events, conditional field transitions, script-defined model placements, trigger highlighting, category filters and provenance Inspector. Scripted battle support preserves raw IDs; events without a reliable anchor remain unresolved. Runtime story state and moving-object positions are not simulated.
+- Static Route Analysis: source-edge components, reachable locations and single-mode routes over verified entrance triangles. Nine ground/water movement profiles; conditional terrain excluded by default. Distances use the assumed reference sphere, not travel time or current gameplay availability.
+- Internationalization: English, 简体中文, 繁體中文, 日本語 and 한국어; immediate language switching, local preference persistence and English fallback.
 
 TypeScript, Vite and Three.js; no backend or UI framework. d3 is a test oracle only. The browser needs WebGL2 and HTTPS or localhost for checksum verification. GPU/device performance varies.
 
@@ -78,6 +80,20 @@ python -B scripts/build_event_assets.py --source 'YOUR_FF7_INSTALLATION'
 ```
 
 Generate private **web/public/data/gaia-events.json**, then use **Display → Load Events**. World Events defaults off; enable it to navigate event anchors. Script Triggers highlights existing source triangles without adding another mesh. The bounded analyzer reads WM0, wm0.ev, FIELD.TBL and English flevel.lgp/maplist, reusing the V1 transform. It reports potential events and unresolved candidates, not current gameplay availability. Northern Cave gains a separate terrain-gated event anchor; Gold Saucer has a script-defined model placement but its entrance linkage remains unresolved. The v1.1 POI extraction policy is unchanged. No derived event dataset is distributed. [Research](docs/v1.4/world-events-research.md) · [Schema and generation](docs/v1.4/world-events-data.md) · [Local validation](docs/v1.4/validation.md).
+
+### Route Analysis (v1.5)
+
+```powershell
+python -B scripts/build_routing_assets.py --source 'YOUR_FF7_INSTALLATION'
+```
+
+Generate private **web/public/data/gaia-routing.bin**, then use **Analysis → Load Routing** alongside V1 geometry and optional Locations. Choose From/To and one movement mode, highlight a reachable component or find a route. The graph uses exact source edges including height, joins the E/W seam, leaves N/S cut and excludes synthetic caps. Ambiguous edges are conservatively excluded. All verified entrances are candidates; no nearest-marker inference is used. Highwind Landing is not a route profile. Runtime/story/save state, boarding, bridge history and global gameplay reachability are not simulated. [Routing policy](docs/v1.5/routing-research.md) · [Transport and provenance](docs/v1.5/routing-data.md).
+
+### Internationalization and Projection Gallery (v1.5)
+
+Use **About/help → Language**, or an explicit URL such as `?lang=zh-CN`. Switching keeps loaded data and analysis intact; preferences stay in localStorage. Technical IDs and verified FF7 proper names remain unchanged. [i18n behavior](docs/v1.5/i18n.md).
+
+The projection gallery adds eight views, including Equal Earth, an equal-area projection introduced in 2018. No flat map preserves area, shape, distance and direction everywhere. Projection changes affect display, not the V1 reconstruction or routing graph; all views use a custom Gaia coordinate system. [Projection properties, numeric references and clipping limits](docs/v1.5/projections.md).
 
 ## Production and release
 

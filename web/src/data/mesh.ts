@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 import {V1_CANONICAL,validateCanonicalMetadata} from './canonical';
+import {t} from '../i18n';
 export interface GaiaMeta {
   version: number; sha256: string; byte_length: number; vertex_count: number; triangle_count: number;
   ff7_triangle_count: number; synthetic_triangle_count: number;
@@ -58,13 +59,13 @@ export function parseMesh(buffer:ArrayBuffer,meta?:GaiaMeta):GaiaMesh {
 }
 export async function loadMesh(onStatus:(s:string)=>void):Promise<{mesh:GaiaMesh;meta:GaiaMeta}> {
   const base=import.meta.env.BASE_URL;
-  onStatus('Loading local Gaia dataset…');
+  onStatus(t('ui.loadingData'));
   const [metaResponse,meshResponse]=await Promise.all([fetch(`${base}data/gaia-meta.json`),fetch(`${base}data/gaia-mesh.bin`)]);
   if(!metaResponse.ok||!meshResponse.ok||!metaResponse.headers.get('content-type')?.includes('application/json')) throw new MissingDatasetError();
   const meta:GaiaMeta=await metaResponse.json();
   validateCanonicalMetadata(meta);
   const buffer=await meshResponse.arrayBuffer();
-  onStatus('Preparing geographic mesh…');
+  onStatus(t('load.preparingMesh'));
   return decodeDataset(buffer,meta);
 }
 export class MissingDatasetError extends Error {

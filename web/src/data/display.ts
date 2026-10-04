@@ -68,6 +68,11 @@ export function projectDisplay(display:DisplayMesh,projection:GaiaProjection,con
   } else {
     for(let i=0;i<g.length;i+=3) {const p=projection.project(g[i],g[i+1],g[i+2],context);positions[i]=p[0];positions[i+1]=p[1];positions[i+2]=p[2];mask[i/3]=projection.visibility(g[i],g[i+1],context);}
     if(projection.id==='mercator') for(let i=0;i<mask.length;i+=3) {const visible=Math.min(mask[i],mask[i+1],mask[i+2]);mask[i]=mask[i+1]=mask[i+2]=visible;}
+    if(projection.id==='laea'||projection.id==='aeqd') for(let t=0;t<mask.length;t+=3){
+      const limit=projection.id==='laea'?2:Math.PI;let visible=Math.min(mask[t],mask[t+1],mask[t+2]);
+      for(const [a,b]of [[0,1],[1,2],[2,0]]){const i=(t+a)*3,j=(t+b)*3;if(Math.hypot(positions[i]-positions[j],positions[i+1]-positions[j+1])>limit)visible=-1;}
+      mask[t]=mask[t+1]=mask[t+2]=visible;
+    }
   }
   return {positions,mask};
 }

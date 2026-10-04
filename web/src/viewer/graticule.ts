@@ -10,5 +10,6 @@ export function graticulePoints() {
 export function projectGraticule(geo:Float32Array,p:GaiaProjection,c:ProjectionContext) {
   const positions=new Float32Array(geo.length),mask=new Float32Array(geo.length/3);
   for(let i=0;i<geo.length;i+=3){const point=p.project(geo[i],geo[i+1],geo[i+2],c);positions.set(point,i);if(p.id!=='globe')positions[i+2]=0.0005;mask[i/3]=p.visibility(geo[i],geo[i+1],c);}
+  if(p.id==='laea'||p.id==='aeqd')for(let i=0;i<positions.length;i+=6)if(Math.hypot(positions[i]-positions[i+3],positions[i+1]-positions[i+4])>(p.id==='laea'?2:Math.PI))mask[i/3]=mask[i/3+1]=-1;
   return {positions,mask};
 }

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
-export type ProjectionId='globe'|'equirectangular'|'mercator'|'mollweide'|'orthographic';
+export type ProjectionId='globe'|'equirectangular'|'mercator'|'mollweide'|'orthographic'|'equal-earth'|'winkel-tripel'|'robinson'|'natural-earth'|'sinusoidal'|'gall-peters'|'laea'|'aeqd';
 export type GeoPoint=[number,number,number];
 export type Position=[number,number,number];
 export interface ProjectionContext {radius:number;mercatorLimit:number;centerLon:number;centerLat:number;}

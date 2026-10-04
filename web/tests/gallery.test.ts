@@ -1,0 +1,23 @@
+// SPDX-License-Identifier: GPL-3.0-only
+import {describe,it,expect} from 'vitest';
+import {geoEqualEarthRaw,geoNaturalEarth1Raw,geoAzimuthalEqualAreaRaw,geoAzimuthalEquidistantRaw} from 'd3-geo';
+import {geoWinkel3Raw,geoRobinsonRaw,geoSinusoidalRaw,geoCylindricalEqualAreaRaw} from 'd3-geo-projection';
+import {projections} from '../src/projections';
+import {projectionRegistry,projectionIds} from '../src/projections/registry';
+import type {ProjectionId} from '../src/projections/Projection';
+import {markerPosition,markerVisible} from '../src/viewer/locations';
+import {projectGraticule} from '../src/viewer/graticule';
+import projOracle from './fixtures/gallery-proj.json';
+const c={radius:6371008.8,mercatorLimit:85.0511287798066,centerLon:0,centerLat:0};
+const oracles:Partial<Record<ProjectionId,(l:number,p:number)=>[number,number]>>={'equal-earth':geoEqualEarthRaw,'winkel-tripel':geoWinkel3Raw,robinson:geoRobinsonRaw,'natural-earth':geoNaturalEarth1Raw,sinusoidal:geoSinusoidalRaw,'gall-peters':geoCylindricalEqualAreaRaw(Math.PI/4),laea:geoAzimuthalEqualAreaRaw,aeqd:geoAzimuthalEquidistantRaw};
+describe('13-mode projection gallery',()=>{
+ it('registry includes implementations, rotation, classification and bounds',()=>{expect(projectionIds).toHaveLength(13);for(const id of projectionIds){const p=projectionRegistry[id];expect(p.forward).toBe(projections[id].project);expect(p.bounds(c)).toEqual(projections[id].bounds(c));expect(p.translationKey).toBe(`projection.${id}`);}expect(projectionRegistry['winkel-tripel'].property).toBe('compromise');});
+ it('agrees with independently installed GDAL/PROJ on all new spherical operations',()=>{for(const point of projOracle.points)for(const [name,want]of Object.entries(point.projections)){const actual=projections[name as ProjectionId].project(point.lon,point.lat,0,c);for(let j=0;j<2;j++)expect(Math.abs(actual[j]-want[j])).toBeLessThan(name==='robinson'?3e-4:2e-8);}});
+ // D3's Robinson raw coordinates normalize away the published 0.8487 scale.
+ for(const [key,reference] of Object.entries(oracles))it(`${key} agrees with independent D3 numerical oracle`,()=>{const id=key as ProjectionId;for(const [lon,lat]of [[0,0],[45,30],[-130,-55],[170,80],[60,45],[120,17.4]]){const a=projections[id].project(lon,lat,0,c),raw=reference(lon*Math.PI/180,lat*Math.PI/180),b=id==='robinson'?raw.map(v=>v*.8487):raw;for(let k=0;k<2;k++)expect(Math.abs(a[k]-b[k])).toBeLessThan(id==='robinson'?.002:1e-9);}});
+ for(const id of projectionIds)it(`${id} is finite and fits declared bounds at poles and seam`,()=>{const p=projections[id],b=p.bounds(c);for(const lon of [-180,-179.999,0,179.999,180])for(const lat of [-90,-89.999,0,89.999,90]){const v=p.project(lon,lat,0,c);expect(v.every(Number.isFinite)).toBe(true);if(id!=='globe'){expect(Math.abs(v[0])).toBeLessThanOrEqual(b.maxX+1e-5);expect(Math.abs(v[1])).toBeLessThanOrEqual(b.maxY+1e-5);}}});
+ for(const id of ['equal-earth','sinusoidal','gall-peters','laea','mollweide'] as const)it(`${id} equal-area Jacobian matches the sphere`,()=>{const p=projections[id],d=1e-5,deg=180/Math.PI;for(const [l,f]of [[.5,.3],[-1.1,-.6],[1.5,.9]]){const at=(ll:number,ff:number)=>p.project(ll*deg,ff*deg,0,c);const a=at(l+d,f),b=at(l-d,f),e=at(l,f+d),g=at(l,f-d);const jac=Math.abs(((a[0]-b[0])*(e[1]-g[1])-(a[1]-b[1])*(e[0]-g[0]))/(4*d*d));expect(jac/Math.cos(f)).toBeCloseTo(1,7);}});
+ it('azimuthal centers rotate and AEQD preserves distance from center',()=>{for(const id of ['laea','aeqd'] as const){const rotated={...c,centerLon:135,centerLat:40},p=projections[id];expect(Math.hypot(...p.project(135,40,0,rotated))).toBeLessThan(1e-10);expect(p.visibility(-45,-40,rotated)).toBe(-1);}expect(Math.hypot(...projections.aeqd.project(60,0,0,c))).toBeCloseTo(Math.PI/3,12);});
+ it('antipodes clip finitely and markers use identical forward functions',()=>{for(const id of projectionIds){const location={longitude:60,latitude:20,height:0};const position=markerPosition(location as never,id,c);expect(position.every(Number.isFinite)).toBe(true);if(id!=='globe')expect(position.slice(0,2)).toEqual(projections[id].project(60,20,0,c).slice(0,2));}expect(markerVisible({longitude:180,latitude:0} as never,'laea',c)).toBe(false);expect(markerVisible({longitude:180,latitude:0} as never,'aeqd',c)).toBe(false);});
+ it('new azimuthal graticules omit long antipodal segments',()=>{for(const id of ['laea','aeqd'] as const){const grid=projectGraticule(new Float32Array([179,0,0,-179,0,0]),projections[id],c);expect(grid.positions.every(Number.isFinite)).toBe(true);expect([...grid.mask].every(v=>v<0)).toBe(true);}});
+});

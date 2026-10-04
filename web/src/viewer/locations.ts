@@ -13,6 +13,7 @@ interface Marker {location:Location;button:HTMLButtonElement;point:Vector3;from:
 export class LocationsOverlay {
   private host=document.createElement('div');private markers:Marker[]=[];
   private show=true;private labels=true;private filter:LocationFilter='all';private selected:string|null=null;
+  private analysisStart:string|null=null;private analysisTarget:string|null=null;private reachable:Set<string>|null=null;
   private selectedPosition:Pick<Location,'longitude'|'latitude'|'height'>|null=null;
   constructor(private container:HTMLElement,private onSelect:(location:Location)=>void,private kind:'location'|'event'='location'){
     this.host.className=`location-markers ${kind}-overlay`;container.append(this.host);
@@ -36,6 +37,7 @@ export class LocationsOverlay {
     });
   }
   setDisplay(show:boolean,labels:boolean,filter:LocationFilter){this.show=show;this.labels=labels;this.filter=filter;}
+  setAnalysis(start:string|null,target:string|null,reachable:Set<string>|null){this.analysisStart=start;this.analysisTarget=target;this.reachable=reachable;}
   select(id:string|null,position?:Pick<Location,'longitude'|'latitude'|'height'>){this.selected=id;this.selectedPosition=position??null;}
   private target(m:Marker){return m.location.id===this.selected&&this.selectedPosition?{...m.location,...this.selectedPosition}:m.location;}
   beginMorph(fromId:ProjectionId,toId:ProjectionId,c:ProjectionContext,interrupted=false){for(const m of this.markers){m.from=interrupted?m.current:markerPosition(this.target(m),fromId,c);m.to=markerPosition(this.target(m),toId,c);}}
@@ -44,7 +46,7 @@ export class LocationsOverlay {
     // Selected label wins, followed by major settlements and then remaining names.
     const ordered=[...this.markers].sort((a,b)=>Number(b.location.id===this.selected)-Number(a.location.id===this.selected)||Number(['city','town','village'].includes(b.location.category))-Number(['city','town','village'].includes(a.location.category)));
     for(const m of ordered){
-      const selected=m.location.id===this.selected;m.button.classList.toggle('selected',selected);
+      const selected=m.location.id===this.selected;m.button.classList.toggle('selected',selected);m.button.classList.toggle('analysis-start',m.location.id===this.analysisStart);m.button.classList.toggle('analysis-target',m.location.id===this.analysisTarget);m.button.classList.toggle('analysis-unreachable',!!this.reachable&&!this.reachable.has(m.location.id));
       if(!this.show||!filterLocation(m.location,this.filter)){m.button.hidden=true;continue;}
       const location=this.target(m),p=markerPosition(location,id,c);
       if(morph)m.point.set(...m.from).lerp(new Vector3(...m.to),morph.ease);else m.point.set(...p);
