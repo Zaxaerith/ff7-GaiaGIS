@@ -16,6 +16,8 @@ import {graticulePoints,projectGraticule} from './graticule';
 import {NavigationOverlay,geographicViewCenter} from './navigation';
 import {regionColor} from '../data/regions';
 import {LocationsOverlay} from './locations';
+import {eventLocation,filterEvent} from '../data/events';
+import type {WorldEvent,EventFilter} from '../data/events';
 import {flyDirection,flyDuration,shortestLongitude} from './flyTo';
 import type {Location,LocationFilter} from '../data/poi';
 import {encounterColor,encounterPalette} from '../data/encounters';
@@ -38,6 +40,11 @@ export class GaiaViewer {
   onError:(message:string)=>void=()=>{};
   onLocation:(location:Location)=>void=()=>{};
   private locations:LocationsOverlay;
+  private events:LocationsOverlay;
+  private eventRecords:WorldEvent[]=[];
+  private eventTriggers=new Set<string>();
+  private showTriggers=false;
+  onEvent:(event:WorldEvent)=>void=()=>{};
   private flight:Flight|null=null;
   private queuedLocation:{lon:number;lat:number}|null=null;
   private colorLayer:ColorLayer='terrain';
@@ -176,6 +183,8 @@ export class GaiaViewer {
     this.resizeObserver=new ResizeObserver(()=>this.resize());this.resizeObserver.observe(container);
     this.navigation=new NavigationOverlay(container);
     this.locations=new LocationsOverlay(container,location=>this.onLocation(location));
+    this.events=new LocationsOverlay(container,location=>{const e=this.eventRecords.find(e=>e.id===location.id);if(e)this.onEvent(e);},'event');
+    this.events.setDisplay(false,false,'all');
     this.colorSurface();this.resize();this.resetView();
     this.renderer.setAnimationLoop(t=>this.animate(t));
   }
@@ -203,6 +212,7 @@ export class GaiaViewer {
     if(id===this.projectionId&&!this.morph) return;
     this.cancelFlight();
     this.locations.beginMorph(this.projectionId,id,this.context,!!this.morph);
+    this.events.beginMorph(this.projectionId,id,this.context,!!this.morph);
     const oldCamera=this.camera;
     if(oldCamera===this.mapCamera) {
       const distance=(this.mapCamera.top-this.mapCamera.bottom)/(2*this.mapCamera.zoom*Math.tan(this.perspective.fov*Math.PI/360));
@@ -220,6 +230,10 @@ export class GaiaViewer {
   }
   setTerrain(value:boolean){this.terrain=value;this.colorSurface();}
   setColorLayer(layer:ColorLayer){this.colorLayer=layer;this.colorSurface();}
+  setEvents(events:WorldEvent[]){this.eventRecords=events;this.events.setLocations(events.map(eventLocation));if(this.morph)this.events.beginMorph(this.morph.fromId,this.projectionId,this.context);}
+  setEventsDisplay(show:boolean,filter:EventFilter){this.events.setLocations(this.eventRecords.filter(e=>filterEvent(e,filter)).map(eventLocation));this.events.setDisplay(show,false,'all');if(this.morph)this.events.beginMorph(this.morph.fromId,this.projectionId,this.context);}
+  selectEvent(event:WorldEvent|null){this.events.select(event?.id??null);this.eventTriggers=new Set(event?.trigger_triangle_ids.map(id=>`${event.section_id}/${event.mesh_id}/${id}`)??[]);this.colorSurface();}
+  setScriptTriggers(show:boolean){this.showTriggers=show;this.colorSurface();}
   setMovementMode(id:string){profileById(id);this.movementMode=id;if(this.colorLayer==='traversal')this.colorSurface();}
   setEncounters(data:EncounterDataset|null){this.encounters=data;this.colorSurface();}
   setChocoboTracks(value:boolean){this.chocoboTracks=value;this.colorSurface();}
@@ -296,7 +310,9 @@ export class GaiaViewer {
       if(source!==previous){const a=this.mesh.attributes(source);const colored=this.colorLayer!=='terrain'||this.terrain;color=a.origin?this.distinguishCaps?cap:colored?cap:neutral:colored?palette.get(this.colorLayer==='region'?a.region!:a.terrain!)||neutral:neutral;
         if(!a.origin&&gameplay){const key=`${a.region}:${a.terrain}:${a.script===0}`;if(!gameColors.has(key))gameColors.set(key,new Color(encounterColor(this.encounters,a,this.colorLayer==='encounter-rate')));color=gameColors.get(key)!;}
         if(this.colorLayer==='traversal'){const key=`traversal:${a.terrain}:${a.script}:${a.origin}`;if(!gameColors.has(key))gameColors.set(key,new Color(traversalColor(this.movementMode,a)));color=gameColors.get(key)!;}
-        if(!a.origin&&this.chocoboTracks&&a.chocobo)color=tracks;previous=source;}
+        if(!a.origin&&this.chocoboTracks&&a.chocobo)color=tracks;
+        if(this.showTriggers&&!a.origin&&(a.script!>=3||this.eventTriggers.has(`${a.section}/${a.mesh}/${a.triangle}`)))color=new Color(this.eventTriggers.has(`${a.section}/${a.mesh}/${a.triangle}`)?'#ff9bd6':'#9c7ee9');
+        previous=source;}
       for(let j=0;j<9;j+=3){const i=t*9+j;colors[i]=color.r;colors[i+1]=color.g;colors[i+2]=color.b;}
     }
     this.surface.geometry.getAttribute('color').needsUpdate=true;
@@ -373,9 +389,10 @@ export class GaiaViewer {
     }
     this.camera.updateMatrixWorld();
     this.locations.update(this.projectionId,this.context,this.camera,markerMorph);
+    this.events.update(this.projectionId,this.context,this.camera,markerMorph);
     this.renderer.render(this.scene,this.camera);
     this.navigation.update(time,this.projectionId,this.context,this.camera,!!this.morph,this.graticule.visible);
     if(time-this.statsLast>600){this.statsLast=time;const fps=1000/(this.frameTimes.reduce((a,b)=>a+b,0)/Math.max(1,this.frameTimes.length));this.onStats({fps,renderTriangles:this.display.renderToSource.length,drawCalls:this.renderer.info.render.calls,morphing:!!this.morph,projection:this.projectionId});}
   }
-  dispose(){this.renderer.setAnimationLoop(null);this.locations.dispose();this.resizeObserver.disconnect();this.globeControls.dispose();this.mapControls.dispose();this.scene.traverse(object=>{if(object instanceof Mesh||object instanceof LineSegments){object.geometry.dispose();object.material.dispose();}});this.renderer.dispose();this.renderer.domElement.remove();}
+  dispose(){this.renderer.setAnimationLoop(null);this.locations.dispose();this.events.dispose();this.resizeObserver.disconnect();this.globeControls.dispose();this.mapControls.dispose();this.scene.traverse(object=>{if(object instanceof Mesh||object instanceof LineSegments){object.geometry.dispose();object.material.dispose();}});this.renderer.dispose();this.renderer.domElement.remove();}
 }

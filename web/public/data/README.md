@@ -14,3 +14,11 @@ Generate `gaia-encounters.json` locally with
 Load it independently with **Load Encounters**. Chocobo Tracks uses WM0 flags,
 not this table. Never commit or distribute the complete derived encounter file.
 The code-only release excludes every file in this data directory.
+
+# v1.4 optional world events
+
+Generate `gaia-events.json` locally with
+`python -B scripts/build_event_assets.py --source 'YOUR_FF7_INSTALLATION'`.
+Load independently with **Load Events**. Static event anchors, script-defined
+placements and unresolved candidates are private game-derived data. Do not
+commit or distribute this file. See `docs/v1.4/world-events-data.md`.

@@ -20,6 +20,12 @@ maciej-trebacz/ff7-landscaper and ergonomy-joe/ff7-worldmap are reverse-engineer
 
 The npm lockfile pins the full dependency graph. Individual transitive packages retain their licenses in node_modules; no third-party source is relicensed as GPL.
 
+The v1.4 EV decoder and bounded world-event analyzer independently implement
+format and behavior facts. Pinned engine/opcode references, effect-point
+semantics and current-runtime limitations are recorded in
+docs/v1.4/world-events-research.md. No decompiled or Landscaper implementation
+is bundled or used as a runtime dependency.
+
 ## three 0.186.1
 
 Original license notice, preserved verbatim:

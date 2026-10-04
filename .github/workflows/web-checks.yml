@@ -17,6 +17,7 @@ jobs:
       - run: python -B -m unittest discover -s tests -p test_poi.py -v
       - run: python -B -m unittest discover -s tests -p test_encounters.py -v
       - run: python -B -m unittest discover -s tests -p test_traversal.py -v
+      - run: python -B -m unittest discover -s tests -p test_world_events.py -v
   web:
     runs-on: windows-latest
     steps:

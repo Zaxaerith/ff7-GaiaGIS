@@ -14,8 +14,8 @@ export class LocationsOverlay {
   private host=document.createElement('div');private markers:Marker[]=[];
   private show=true;private labels=true;private filter:LocationFilter='all';private selected:string|null=null;
   private selectedPosition:Pick<Location,'longitude'|'latitude'|'height'>|null=null;
-  constructor(private container:HTMLElement,private onSelect:(location:Location)=>void){
-    this.host.className='location-markers';container.append(this.host);
+  constructor(private container:HTMLElement,private onSelect:(location:Location)=>void,private kind:'location'|'event'='location'){
+    this.host.className=`location-markers ${kind}-overlay`;container.append(this.host);
     this.host.addEventListener('pointermove',e=>{const nearest=this.nearest(e.clientX,e.clientY);for(const m of this.markers)m.button.classList.toggle('hovered',m===nearest);});
     this.host.addEventListener('pointerleave',()=>{for(const m of this.markers)m.button.classList.remove('hovered');});
   }
@@ -26,8 +26,9 @@ export class LocationsOverlay {
   }
   setLocations(locations:Location[]){
     this.host.replaceChildren();this.markers=locations.map(location=>{
-      const button=document.createElement('button');button.className='location-marker';button.dataset.location=location.id;button.setAttribute('aria-label',location.display_name);button.title=location.display_name;
+      const button=document.createElement('button');button.className=`location-marker ${this.kind}-marker`;button.dataset[this.kind]=location.id;button.setAttribute('aria-label',location.display_name);button.title=location.display_name;
       const dot=document.createElement('i'),label=document.createElement('span');dot.setAttribute('aria-hidden','true');label.textContent=location.display_name;button.append(dot,label);button.hidden=true;
+      if(this.kind==='event')button.dataset.eventType=(location as Location&{eventType?:string}).eventType;
       // Overlapping touch targets still select the closest visible dot. Keyboard
       // activation uses its own named button rather than pointer coordinates.
       button.addEventListener('click',e=>{e.stopPropagation();this.onSelect(e.detail?this.nearest(e.clientX,e.clientY)?.location??location:location);});this.host.append(button);

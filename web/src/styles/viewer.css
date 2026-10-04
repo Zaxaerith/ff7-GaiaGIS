@@ -37,3 +37,16 @@ dialog{color:#c6d9e3;background:#14232e;border:1px solid #426173;border-radius:1
 .traversal-inspector summary{cursor:pointer;min-height:28px;padding-top:6px}
 #traversal-controls select{width:100%;min-width:0}
 @media(max-width:767px){.traversal-inspector summary{min-height:38px}}
+/* Events share POI placement/culling; category color and diamond distinguish them. */
+.event-controls{border-top:1px solid var(--border);margin-top:14px;padding-top:8px}
+.event-marker i{border-radius:2px;transform:rotate(45deg);background:#6ce0e6;border-color:#132c3b}
+.event-marker[data-event-type="dynamic_entrance"] i{background:#8fe0a1}
+.event-marker[data-event-type="scripted_battle"] i{background:#ff8b8b}
+.event-marker[data-event-type="world_object"] i{background:#77cfef}
+.event-marker[data-event-type="vehicle_event"] i{background:#ffc379}
+.event-marker[data-event-type="script_trigger"] i{background:#b99afb}
+.event-marker.selected i{box-shadow:0 0 0 3px #ffffff90}
+.event-advanced{font-size:11px;margin-top:14px;color:#b9ccdb}
+.event-advanced summary{cursor:pointer;min-height:36px}
+#event-list{margin-top:8px;width:100%;min-width:0}
+#selection-details[data-event] .property-list dd{overflow-wrap:anywhere;min-width:0}

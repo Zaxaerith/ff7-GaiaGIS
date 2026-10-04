@@ -29,6 +29,10 @@ Local generation is permitted by this project's workflow. `output/`, `web/public
 The same boundary covers v1.2's `gaia-encounters.json`: complete FF7-derived
 encounter tables remain local-generated and excluded from code-only delivery.
 
+The same boundary covers v1.4's `gaia-events.json`, including script-derived
+event/placement coordinates and unresolved records. Public code supplies the
+independent analyzer, schema, UI, documentation and synthetic tests only.
+
 **Web v1.0 preparation: no push, no public upload of derived data, no Pages activation or deployment.** Source/tooling and a manual code-only workflow are prepared locally.
 
 ## Later Pages deployment

@@ -16,15 +16,10 @@ from .lzss import FormatError
 from .map_reader import parse_map
 from .reconstruction import Mapping, SphereConfig
 from .safety import output_path
+from .ev import decode_ev, CALL_TABLE_BYTES, PUSH_CONSTANT, ENTER_FIELD, RETURN, JUMP, BRANCH_FALSE
 
-CALL_TABLE_BYTES = 0x400
 FIELD_RECORD_BYTES = 12
 MAPLIST_NAME_BYTES = 32
-PUSH_CONSTANT = 0x110
-ENTER_FIELD = 0x318
-RETURN = 0x203
-JUMP = 0x200
-BRANCH_FALSE = 0x201
 
 # Editorial identity annotations only: no coordinate constants.
 # Cross-checked against actual maplist IDs and the sources cited in poi-data.md.
@@ -104,30 +99,14 @@ def mesh_field_calls(data: bytes) -> tuple[list[dict],list[dict],dict]:
     Dynamic stack arithmetic/calls are intentionally not resolved. Instruction
     boundaries are checked globally per function to reject branches into operands.
     """
-    if len(data) < CALL_TABLE_BYTES or len(data)%2:
-        raise FormatError('Truncated EV table/code')
-    words = struct.unpack_from('<'+'H'*((len(data)-CALL_TABLE_BYTES)//2),data,CALL_TABLE_BYTES)
-    functions = []
-    for table in range(1,256):  # actual table index includes initial dummy
-        header,start = struct.unpack_from('<HH',data,table*4)
-        if header == 0xffff:
-            continue
-        if header>>14 > 2 or not 0 < start < len(words):
-            raise FormatError('Invalid EV call record')
-        functions.append((table,header,start))
+    decoded,intervals = decode_ev(data)
+    functions = [(f.table,f.header,f.start) for f in decoded]
     calls,unresolved = [],[]
     for table,header,start in functions:
         if header>>14 != 2:
             continue
-        end = min([offset for _,_,offset in functions if offset>start]+[len(words)])
-        # Decode the contiguous function interval first; operands cannot be mistaken for opcodes.
-        instructions = {};pc=start
-        while pc<end:
-            op=words[pc];size=2 if (0x100<op<0x200 or op in (JUMP,BRANCH_FALSE)) else 1
-            if op>0x355 or pc+size>end:
-                raise FormatError(f'Invalid EV instruction at word {pc}')
-            instructions[pc]=(op,words[pc+1] if size==2 else None,pc+size)
-            pc+=size
+        end = next(f.end for f in decoded if f.table==table)
+        instructions = intervals[start]
         queue=deque([(start,())]);visited=set();resolved=set()
         while queue:
             pc,pending=queue.popleft()

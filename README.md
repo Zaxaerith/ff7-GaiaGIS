@@ -6,7 +6,7 @@ A mathematical GIS reconstruction of Final Fantasy VII's polygonal world map, wi
 
 FINAL FANTASY VII WM0 → polygon mesh → periodic topology analysis → inverse-Mercator parameterization → Earth-sized Gaia sphere → GIS → interactive Web viewer → map projections.
 
-This is a **code-only project**. The repository contains no FF7 game data, complete derived Gaia geometry, POI coordinates or derived encounter dataset. Users generate V1 data from their own installation and load it locally. v1.3 is a local release candidate pending publication approval; v1.2 remains preserved in local history. [v1.1 release notes](docs/releases/v1.1.0.md) · [Stable v1.0 notes](docs/releases/v1.0.0.md) · [Data policy](docs/data-and-copyright.md).
+This is a **code-only project**. The repository contains no FF7 game data, complete derived Gaia geometry, POI coordinates, encounter tables or world-event coordinates. Users generate V1 data from their own installation and load it locally. v1.4 is a local release candidate pending publication approval; earlier versions remain preserved in history. [v1.1 release notes](docs/releases/v1.1.0.md) · [Stable v1.0 notes](docs/releases/v1.0.0.md) · [Data policy](docs/data-and-copyright.md).
 
 ## Viewer
 
@@ -21,6 +21,7 @@ This is a **code-only project**. The repository contains no FF7 game data, compl
 - Optional named locations and field entrances, locally generated from your own installation: markers, major-location labels, category filters, name/alias/internal-field search, fly-to and entrance provenance inspection in all five projections.
 - Traversal & Vehicles: static classic-PC terrain compatibility for On Foot, Buggy, water Tiny Bronco, five Chocobo variants and Submarine surface; separate Highwind landing initiation, four-state legend and comparison Inspector. Runtime/story state and reachability are not simulated.
 - Optional World Encounters: Encounter Zones, raw Encounter Rate, independent Chocobo Tracks, and triangle encounter/Mystery Ninja/Chocobo metadata. Weights are not absolute probabilities; runtime state is not simulated.
+- Optional World Events & Scripted Objects: spatially anchored world-script events, conditional field transitions, script-defined model placements, trigger highlighting, category filters and provenance Inspector. Scripted battle support preserves raw IDs; events without a reliable anchor remain unresolved. Runtime story state and moving-object positions are not simulated.
 
 TypeScript, Vite and Three.js; no backend or UI framework. d3 is a test oracle only. The browser needs WebGL2 and HTTPS or localhost for checksum verification. GPU/device performance varies.
 
@@ -69,6 +70,14 @@ Generate **web/public/data/gaia-encounters.json**, then use **Display → Load E
 ### Traversal & Vehicles (v1.3)
 
 Select **Display → Color layer → Traversal**, then a Movement mode. The small public rule profile reuses your local V1 terrain/script/lineage; **no additional dataset file is required**. Allowed means an ordinary static terrain mask passes, not guaranteed movement or story/runtime reachability. Highwind Landing shows initiation eligibility rather than airborne travel. Bridge history, boarding/candidate points and a Chocobo exit height gate remain explicitly separate. Current Steam 2026 runtime equivalence is not verified. Chocobo Tracks and Encounters remain independent. [Research and 32-terrain matrix](docs/v1.3/traversal-research.md) · [Profile/data](docs/v1.3/traversal-data.md) · [Local validation](docs/v1.3/validation.md).
+
+### Optional world events (v1.4)
+
+```powershell
+python -B scripts/build_event_assets.py --source 'YOUR_FF7_INSTALLATION'
+```
+
+Generate private **web/public/data/gaia-events.json**, then use **Display → Load Events**. World Events defaults off; enable it to navigate event anchors. Script Triggers highlights existing source triangles without adding another mesh. The bounded analyzer reads WM0, wm0.ev, FIELD.TBL and English flevel.lgp/maplist, reusing the V1 transform. It reports potential events and unresolved candidates, not current gameplay availability. Northern Cave gains a separate terrain-gated event anchor; Gold Saucer has a script-defined model placement but its entrance linkage remains unresolved. The v1.1 POI extraction policy is unchanged. No derived event dataset is distributed. [Research](docs/v1.4/world-events-research.md) · [Schema and generation](docs/v1.4/world-events-data.md) · [Local validation](docs/v1.4/validation.md).
 
 ## Production and release
 
