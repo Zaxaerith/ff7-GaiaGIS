@@ -6,26 +6,35 @@ A mathematical GIS reconstruction of Final Fantasy VII's polygonal world map, wi
 
 FINAL FANTASY VII WM0 → polygon mesh → periodic topology analysis → inverse-Mercator parameterization → Earth-sized Gaia sphere → GIS → interactive Web viewer → map projections.
 
-This is a **code-only project**. The repository contains no FF7 game data, complete derived Gaia geometry, POI coordinates, encounter tables, world-event coordinates or routing topology. Users generate V1 data from their own installation and load it locally. v1.5 is a local release candidate pending publication approval; earlier versions remain preserved in history. [v1.5 validation](docs/v1.5/validation.md) · [Stable v1.0 notes](docs/releases/v1.0.0.md) · [Data policy](docs/data-and-copyright.md).
+This is a **code-only project**. The repository contains no FF7 game data, complete derived Gaia geometry, POI coordinates, encounter tables, world-event coordinates or routing topology. Users generate V1 data from their own installation and load it locally. v1.5 is published; v1.6 is developed locally and awaits publication approval. [v1.6 validation](docs/v1.6/validation.md) · [v1.5 validation](docs/v1.5/validation.md) · [Stable v1.0 notes](docs/releases/v1.0.0.md) · [Data policy](docs/data-and-copyright.md).
 
 ## Viewer
 
 - Thirteen views: Globe, Equirectangular, Mercator, Mollweide, Orthographic, **Equal Earth**, Winkel Tripel, Robinson, Natural Earth I, Sinusoidal, Gall–Peters, Lambert Azimuthal Equal-Area and Azimuthal Equidistant. Categorized projection selection, property information and rotating azimuthal centers.
 - Orbit/pan, wheel and touch pinch zoom, projection morphing, reset and north-up compass.
-- Labeled 30-degree graticule, equator/0-degree longitude highlights, hemisphere coordinates and optional globe shading.
+- Adaptive labeled graticule: Auto or fixed 90°–0.5° spacing, optional minor lines, equator/0-degree longitude highlights, hemisphere coordinates and optional globe shading.
 - FF7 gameplay terrain or region colors, complete observed-category legend, approximate region-center navigation, triangle grid and synthetic-cap distinction.
 - Click/tap inspector retains source map/section/mesh/triangle lineage. Synthetic caps have no fabricated FF7 attributes.
 - Responsive mobile sheets, keyboard map navigation, reduced-motion handling, loading retry and graphics-context recovery.
 - About/help explains local setup, reconstruction assumptions, research status and licenses.
 - Browser-local loading of gaia-meta.json + gaia-mesh.bin. Files are verified with SHA-256 and never uploaded.
 - Optional named locations and field entrances, locally generated from your own installation: markers, major-location labels, category filters, name/alias/internal-field search, fly-to and entrance provenance inspection across projections.
-- Traversal & Vehicles: static classic-PC terrain compatibility for On Foot, Buggy, water Tiny Bronco, five Chocobo variants and Submarine surface; separate Highwind landing initiation, four-state legend and comparison Inspector. Runtime/story state and reachability are not simulated.
+- Traversal & Vehicles: static classic-PC terrain compatibility for On Foot, Buggy, water Tiny Bronco, five Chocobo variants and Submarine surface; separate Highwind landing initiation, four-state legend and comparison Inspector. Runtime/story state is not simulated; static reachability is a separate analysis.
 - Optional World Encounters: Encounter Zones, raw Encounter Rate, independent Chocobo Tracks, and triangle encounter/Mystery Ninja/Chocobo metadata. Weights are not absolute probabilities; runtime state is not simulated.
 - Optional World Events & Scripted Objects: spatially anchored world-script events, conditional field transitions, script-defined model placements, trigger highlighting, category filters and provenance Inspector. Scripted battle support preserves raw IDs; events without a reliable anchor remain unresolved. Runtime story state and moving-object positions are not simulated.
 - Static Route Analysis: source-edge components, reachable locations and single-mode routes over verified entrance triangles. Nine ground/water movement profiles; conditional terrain excluded by default. Distances use the assumed reference sphere, not travel time or current gameplay availability.
+- Measurement: multi-point great-circle distance and simple spherical polygon area on the assumed reference sphere; values remain unchanged across all thirteen views.
+- Projection Analysis: numerical local scales, area scale, angular deformation and Tissot indicatrices. Equal Earth is equal-area and pseudocylindrical; Mercator preserves local angles while increasing area scale toward the poles.
+- Comparison: linked projection split views (stacked on mobile), four-class terrain/reachability comparison and nine independent movement routes with at most three displayed corridors.
 - Internationalization: English, 简体中文, 繁體中文, 日本語 and 한국어; immediate language switching, local preference persistence and English fallback.
 
 TypeScript, Vite and Three.js; no backend or UI framework. d3 is a test oracle only. The browser needs WebGL2 and HTTPS or localhost for checksum verification. GPU/device performance varies.
+
+### Analysis & Adaptive Cartography (v1.6)
+
+After loading V1 geometry, use **Display → Graticule spacing** or **Analysis → Measurement / Projection Analysis / Compare**. Measurement accepts surface taps, markers or exact longitude/latitude input; area reports the smaller spherical region, km² and sphere percentage. The assumed radius is 6,371,008.8 m, not official FF7 dimensions. Tissot and scale factors are local planar diagnostics; Globe has no intrinsic planar Jacobian.
+
+Navigate the left/top comparison view; the second shares its geographic center and normalized zoom, location selection, routes and measurements. Routing/Compare use the shared From/To and conditional-terrain controls. Terrain comparison counts static Allowed only, while reachable-area comparison uses the existing conservative graph. Route comparison additionally requires locally loaded Locations and Routing data. No new game-derived dataset is required. Runtime/story state, vehicle transfers and gameplay travel time remain outside scope. [Adaptive grid](docs/v1.6/adaptive-graticule.md) · [Measurement](docs/v1.6/measurement.md) · [Projection factors](docs/v1.6/projection-analysis.md) · [Comparison scope](docs/v1.6/comparison.md).
 
 ## Run locally
 

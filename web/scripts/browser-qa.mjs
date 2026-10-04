@@ -14,7 +14,7 @@ page.on('pageerror',error=>errors.push(String(error)));
 page.on('console',message=>{if(message.type()==='error')errors.push(message.text());});
 const results={checks:{},screenshots:[],metrics:{},browser:await context.browser()?.version(),mode:'Headless Chrome, isolated workspace profile'};
 try{
-  await page.goto('http://127.0.0.1:5173/',{waitUntil:'networkidle'});
+  await page.goto('http://127.0.0.1:5173/?lang=en',{waitUntil:'networkidle'});
   await page.locator('#loading').waitFor({state:'hidden',timeout:30000});
   await page.waitForFunction(()=>Number(document.querySelector('#app').dataset.fps)>0);
   await page.waitForTimeout(2200);
@@ -73,7 +73,7 @@ try{
   // Responsive + real tap path in a touch-enabled browser context.
   const mobile=await context.browser().newContext({...devices['iPhone 13'],viewport:{width:390,height:844}});
   const mobilePage=await mobile.newPage();mobilePage.on('pageerror',e=>errors.push(String(e)));
-  await mobilePage.goto('http://127.0.0.1:5173/',{waitUntil:'networkidle'});await mobilePage.locator('#loading').waitFor({state:'hidden',timeout:30000});
+  await mobilePage.goto('http://127.0.0.1:5173/?lang=en',{waitUntil:'networkidle'});await mobilePage.locator('#loading').waitFor({state:'hidden',timeout:30000});
   await mobilePage.waitForTimeout(800);
   if(await mobilePage.evaluate(()=>document.documentElement.scrollWidth>innerWidth))throw new Error('Mobile horizontal overflow');
   await mobilePage.locator('#toggle-graticule').tap();await mobilePage.waitForTimeout(150);

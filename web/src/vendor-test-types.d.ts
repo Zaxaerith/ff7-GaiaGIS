@@ -6,6 +6,8 @@ declare module 'd3-geo-projection' {
   export function geoCylindricalEqualAreaRaw(phi0:number):(lambda:number,phi:number)=>[number,number];
 }
 declare module 'd3-geo' {
+  export function geoArea(object:{type:'Polygon';coordinates:number[][][]}):number;
+  export function geoMercatorRaw(lambda:number,phi:number):[number,number];
   export function geoEqualEarthRaw(lambda:number,phi:number):[number,number];
   export function geoNaturalEarth1Raw(lambda:number,phi:number):[number,number];
   export function geoAzimuthalEqualAreaRaw(lambda:number,phi:number):[number,number];

@@ -25,11 +25,11 @@ export class NavigationOverlay {
     const host=container.querySelector('#graticule-labels')!;
     for(let i=0;i<11;i++){const label=document.createElement('span');label.className='coordinate-label';label.hidden=true;host.append(label);this.labels.push(label);}
   }
-  update(time:number,id:ProjectionId,context:ProjectionContext,camera:Camera,morphing:boolean,grid:boolean) {
+  update(time:number,id:ProjectionId,context:ProjectionContext,camera:Camera,morphing:boolean,grid:boolean,interval=30,viewCenter?:[number,number,number]) {
     if(time-this.last<100)return;
     this.last=time;
     const width=this.container.clientWidth,height=this.container.clientHeight;
-    const center=id==='globe'?geographicViewCenter(camera.position.x,camera.position.y,camera.position.z):{lon:context.centerLon,lat:context.centerLat};
+    const center=viewCenter?{lon:viewCenter[0],lat:viewCenter[1]}:id==='globe'?geographicViewCenter(camera.position.x,camera.position.y,camera.position.z):{lon:context.centerLon,lat:context.centerLat};
     const readout=this.container.querySelector<HTMLElement>('#view-center')!;
     readout.textContent=morphing?t('ui.morphing'):id==='globe'||rotatesCenter(id)
       ?t('nav.center',{latitude:latitudeLabel(center.lat,1),longitude:center.lon===null?t('nav.pole'):longitudeLabel(center.lon,1)}):t('nav.cardinal');
@@ -40,9 +40,9 @@ export class NavigationOverlay {
     this.container.querySelector<HTMLElement>('#compass-needle')!.style.transform=`rotate(${Math.atan2(north.x,north.y)*180/Math.PI}deg)`;
     for(const label of this.labels)label.hidden=true;
     if(!grid||morphing)return;
-    const anchor=wrapLongitude(Math.round((center.lon??0)/30)*30);
-    const candidates:[number,number,string][]=[0,30,-30,60,-60].map(lat=>[anchor,lat,latitudeLabel(lat)]);
-    for(let lon=-180;lon<180;lon+=60)if(Math.abs(wrapLongitude(lon-anchor))>15)candidates.push([lon,0,longitudeLabel(lon)]);
+    const anchor=wrapLongitude(Math.round((center.lon??0)/interval)*interval),digits=interval<.5?2:interval<1?1:0,latitudeAnchor=Math.round(center.lat/interval)*interval;
+    const candidates:[number,number,string][]=[0,1,-1,2,-2].map(n=>latitudeAnchor+n*interval).filter(lat=>Math.abs(lat)<90).map(lat=>[anchor,lat,latitudeLabel(lat,digits)]);
+    for(let n=-3;n<=3;n++){const lon=wrapLongitude(anchor+n*interval);if(n!==0)candidates.push([lon,latitudeAnchor,longitudeLabel(lon,digits)]);}
     const occupied:{x:number;y:number;width:number}[]=[];
     for(const [lon,lat,text]of candidates){
       if(projections[id].visibility(lon,lat,context)<0.12)continue;

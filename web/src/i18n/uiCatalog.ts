@@ -76,7 +76,7 @@ export const uiCatalog = [
 ['ui.directions','Map directions and graticule','地图方向与经纬网','地圖方向與經緯網','地図の方位と経緯線','지도 방향 및 경위선'],
 ['ui.northUp','North up; keep current longitude and zoom','北向上 · 保留当前经度与缩放','北向上 · 保留目前經度與縮放','北を上に · 経度と倍率を維持','북쪽 위로 · 경도 및 배율 유지'],
 ['ui.north','N','北 N','北 N','北 N','북 N'],
-['ui.graticuleHint','30° graticule · gold: equator · cyan: 0° meridian','30° 经纬网 · 金色：赤道 · 青色：0° 经线','30° 經緯網 · 金色：赤道 · 青色：0° 經線','30° 経緯線 · 金：赤道 · シアン：0° 経線','30° 경위선 · 금색: 적도 · 청록: 0° 경선'],
+['ui.graticuleHint','Adaptive graticule · gold: equator · cyan: 0° meridian','自适应经纬网 · 金色：赤道 · 青色：0° 经线','自適應經緯網 · 金色：赤道 · 青色：0° 經線','適応型経緯線 · 金：赤道 · シアン：0° 経線','적응형 경위선 · 금색: 적도 · 청록: 0° 경선'],
 ['ui.centerReference','V1 reconstructed Gaia coordinates and orientation','V1 重建的 Gaia 坐标与方向','V1 重建的 Gaia 座標與方向','V1 再構成 Gaia 座標と方位','V1 재구성 Gaia 좌표 및 방향'],
 ['ui.zoomIn','Zoom in','放大','放大','拡大','확대'],
 ['ui.zoomOut','Zoom out','缩小','縮小','縮小','축소'],

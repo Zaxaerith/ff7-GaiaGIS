@@ -65,4 +65,6 @@ export class LocationsOverlay {
     }
   }
   dispose(){this.host.remove();}
+  private mirroredSource:Marker[]|null=null;
+  mirrorTo(target:LocationsOverlay){if(target.mirroredSource!==this.markers){target.setLocations(this.markers.map(m=>m.location));target.mirroredSource=this.markers;}target.setDisplay(this.show,this.labels,this.filter);target.select(this.selected,this.selectedPosition??undefined);target.setAnalysis(this.analysisStart,this.analysisTarget,this.reachable);}
 }

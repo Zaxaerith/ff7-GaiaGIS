@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 import {t} from '../i18n';
+import packageInfo from '../../package.json';
 export function mountLayout(root:HTMLElement) {
   root.innerHTML=`
     <header class="topbar">
@@ -35,7 +36,7 @@ export function mountLayout(root:HTMLElement) {
         </section>
         <label class="switch-row"><span>${t('ui.gameTerrain')}</span><input id="terrain" type="checkbox" checked/></label>
         <label class="switch-row"><span>${t('ui.grid')}</span><input id="triangle-grid" type="checkbox"/></label>
-        <label class="switch-row"><span>${t('ui.graticule')} <small>30° · Graticule</small></span><input id="graticule" type="checkbox" checked/></label>
+        <label class="switch-row"><span>${t('ui.graticule')}</span><input id="graticule" type="checkbox" checked/></label>
         <label class="switch-row"><span>${t('ui.depth')}</span><input id="globe-depth" type="checkbox" checked/></label>
         <label class="switch-row"><span>${t('ui.caps')}</span><input id="cap-distinction" type="checkbox"/></label>
         <div class="divider"></div>
@@ -69,7 +70,7 @@ export function mountLayout(root:HTMLElement) {
     <input id="local-events-file" type="file" accept=".json" hidden aria-label="${t('ui.eventsAria')}"/>
     <dialog id="about-dialog" aria-labelledby="about-title">
       <div class="dialog-heading"><h2 id="about-title">GaiaGIS · V1 Geometric Gaia</h2><button id="close-about" aria-label="${t('ui.closeAbout')}">×</button></div>
-      <p class="version-badge">WEB VIEWER 1.5 · V1</p>
+      <p class="version-badge">WEB VIEWER ${packageInfo.version} · V1</p>
       <p>${t('help.intro')}</p><h3>${t('ui.openFiles')}</h3><p>${t('help.local')}</p>
       <button id="choose-local-data">${t('ui.chooseFiles')}</button><p id="local-data-status" role="status"></p>
       <p>${t('help.optional')}</p><p>${t('help.rules')}</p><p>${t('help.routing')}</p>
