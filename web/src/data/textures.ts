@@ -1,0 +1,40 @@
+// SPDX-License-Identifier: GPL-3.0-only
+import type {GaiaMesh,GaiaMeta} from './mesh';
+import type {DisplayMesh} from './display';
+import {unwrap} from './display';
+export interface TextureResource{id:number;name:string;width:number;height:number;x:number;y:number;u_offset:number;v_offset:number;has_alpha:boolean;format:{paletted:boolean;color_key:boolean};}
+export interface TexturePack{schema:string;version:number;mapId:string;reconstruction:string;mesh_sha256:string;sources:Record<string,string>;atlas:{width:number;height:number;padding:number};textures:TextureResource[];triangle_count:number;uv_record_bytes:number;uv_byte_length:number;image_byte_length:number;payload_sha256:string;}
+export interface DecodedTextures{metadata:TexturePack;uv:DataView;image:ImageBitmap;resources:Map<number,TextureResource>;records:Map<string,number>;alphas:Map<number,Uint8Array>;}
+export const WM0_TEXTURE_SOURCE='43e72295212311fcec3a513051a96ca4475185a72211ebc3a5e4f89a50eca78c';
+export function parseTextureTransport(buffer:ArrayBuffer,mesh:GaiaMesh,meta:GaiaMeta){
+ if(buffer.byteLength<16||buffer.byteLength>64_000_000)throw new Error('Invalid texture pack size');const v=new DataView(buffer);
+ if(new TextDecoder().decode(new Uint8Array(buffer,0,8))!=='GAIATEX\0'||v.getUint32(8,true)!==1)throw new Error('Unsupported texture pack');
+ const n=v.getUint32(12,true);if(n>500_000||16+n>buffer.byteLength)throw new Error('Invalid texture metadata length');
+ const m=JSON.parse(new TextDecoder().decode(new Uint8Array(buffer,16,n))) as TexturePack;
+ if(m.schema!=='gaiagis-textures'||m.version!==1||m.mapId!=='WM0'||m.reconstruction!=='V1 Geometric Gaia'||m.mesh_sha256!==meta.sha256||m.sources?.['wm0.map']!==WM0_TEXTURE_SOURCE||! /^[a-f0-9]{64}$/.test(m.sources?.['world_us.lgp']??''))throw new Error('Texture source/V1 fingerprint mismatch');
+ if(m.triangle_count!==mesh.sourceTriangleCount||m.uv_record_bytes!==14||m.uv_byte_length!==m.triangle_count*14||!Number.isSafeInteger(m.image_byte_length)||m.image_byte_length<50||16+n+m.uv_byte_length+m.image_byte_length+32!==buffer.byteLength||!/^[a-f0-9]{64}$/.test(m.payload_sha256))throw new Error('Invalid texture payload layout');
+ const a=m.atlas;if(!a||![a.width,a.height].every(x=>Number.isSafeInteger(x)&&x>=256&&x<=4096&&(x&(x-1))===0)||a.padding!==4||!Array.isArray(m.textures)||m.textures.length>512)throw new Error('Invalid texture atlas');
+ const resources=new Map<number,TextureResource>();
+ for(const r of m.textures){if(!Number.isInteger(r.id)||r.id<0||r.id>511||resources.has(r.id)||typeof r.has_alpha!=='boolean'||r.u_offset<0||r.v_offset<0||r.u_offset>65535||r.v_offset>65535||!r.format||typeof r.format.paletted!=='boolean'||typeof r.format.color_key!=='boolean'||typeof r.name!=='string'||! /^[a-zA-Z0-9_-]{1,32}$/.test(r.name)||![r.width,r.height,r.x,r.y,r.u_offset,r.v_offset].every(Number.isSafeInteger)||r.width<=0||r.height<=0||r.x<a.padding||r.y<a.padding||r.x+r.width+a.padding>a.width||r.y+r.height+a.padding>a.height)throw new Error('Invalid texture resource');for(const other of resources.values())if(r.x-a.padding<other.x+other.width+a.padding&&other.x-a.padding<r.x+r.width+a.padding&&r.y-a.padding<other.y+other.height+a.padding&&other.y-a.padding<r.y+r.height+a.padding)throw new Error('Overlapping atlas rectangles');resources.set(r.id,r);}
+ const uv=new DataView(buffer,16+n,m.uv_byte_length),records=new Map<string,number>();
+ for(let t=0;t<m.triangle_count;t++){const p=t*14,at=mesh.attributes(t),key=`${uv.getUint16(p,true)}/${uv.getUint16(p+2,true)}/${uv.getUint16(p+4,true)}`;if(key!==`${at.section}/${at.mesh}/${at.triangle}`||uv.getUint16(p+6,true)!==at.texture||records.has(key))throw new Error('Texture UV lineage mismatch');records.set(key,p);}
+ return {metadata:m,uv,resources,records,payload:new Uint8Array(buffer,16+n,m.uv_byte_length+m.image_byte_length),png:new Uint8Array(buffer,16+n+m.uv_byte_length,m.image_byte_length)};
+}
+export async function decodeTextures(buffer:ArrayBuffer,mesh:GaiaMesh,meta:GaiaMeta):Promise<DecodedTextures>{
+ const parsed=parseTextureTransport(buffer,mesh,meta),whole=new Uint8Array(await crypto.subtle.digest('SHA-256',buffer.slice(0,-32))),footer=new Uint8Array(buffer,buffer.byteLength-32);if(!whole.every((x,i)=>x===footer[i]))throw new Error('Texture metadata/payload checksum mismatch');const digest=await crypto.subtle.digest('SHA-256',parsed.payload);const hex=Array.from(new Uint8Array(digest),x=>x.toString(16).padStart(2,'0')).join('');if(hex!==parsed.metadata.payload_sha256)throw new Error('Texture payload checksum mismatch');
+ const image=await createImageBitmap(new Blob([parsed.png as Uint8Array<ArrayBuffer>],{type:'image/png'}),{colorSpaceConversion:'none',premultiplyAlpha:'none'});if(image.width!==parsed.metadata.atlas.width||image.height!==parsed.metadata.atlas.height){image.close();throw new Error('Texture image dimensions mismatch');}const alphas=new Map<number,Uint8Array>();if(parsed.metadata.textures.some(r=>r.has_alpha)){try{const canvas=new OffscreenCanvas(image.width,image.height),context=canvas.getContext('2d',{willReadFrequently:true});if(!context)throw new Error('Texture alpha sampling unavailable');context.drawImage(image,0,0);for(const r of parsed.metadata.textures.filter(r=>r.has_alpha)){const pixels=context.getImageData(r.x,r.y,r.width,r.height).data;alphas.set(r.id,Uint8Array.from({length:r.width*r.height},(_,i)=>pixels[i*4+3]));}canvas.width=canvas.height=1;}catch(e){image.close();throw e;}}return {...parsed,image,alphas};
+}
+export function textureAlpha(pack:Pick<DecodedTextures,'alphas'|'resources'>,id:number,u:number,v:number,linear=false){const alpha=pack.alphas.get(id),r=pack.resources.get(id);if(!alpha||!r)return 1;const x=((u%1)+1)%1*r.width,y=((v%1)+1)%1*r.height;const at=(a:number,b:number)=>alpha[Math.max(0,Math.min(r.height-1,b))*r.width+Math.max(0,Math.min(r.width-1,a))]/255;if(!linear)return at(Math.floor(x),Math.floor(y));const a=Math.floor(x-.5),b=Math.floor(y-.5),fx=x-.5-a,fy=y-.5-b;return (at(a,b)*(1-fx)+at(a+1,b)*fx)*(1-fy)+(at(a,b+1)*(1-fx)+at(a+1,b+1)*fx)*fy;}
+export function cornerWeights(lon:number,lat:number,points:[number,number,number][],height=0){
+ const p=unwrap(points);lon+=360*Math.round((p[0][0]-lon)/360);let [a,b,c]=p,d=(b[1]-c[1])*(a[0]-c[0])+(c[0]-b[0])*(a[1]-c[1]);
+ if(Math.abs(d)<1e-12){for(const axis of [0,1]){const q=p.map(v=>[v[axis],v[2],0] as [number,number,number]);const [qa,qb,qc]=q,det=(qb[1]-qc[1])*(qa[0]-qc[0])+(qc[0]-qb[0])*(qa[1]-qc[1]);if(Math.abs(det)>1e-12){[a,b,c]=q;d=det;lon=axis===0?lon:lat;lat=height;break;}}}
+ if(Math.abs(d)<1e-12){const distance=p.map(q=>Math.hypot(q[0]-lon,q[1]-lat)),i=distance.indexOf(Math.min(...distance));return [0,1,2].map(j=>j===i?1:0);}
+ const u=((b[1]-c[1])*(lon-c[0])+(c[0]-b[0])*(lat-c[1]))/d,v=((c[1]-a[1])*(lon-c[0])+(a[0]-c[0])*(lat-c[1]))/d;return [u,v,1-u-v];
+}
+export function displayTextureAttributes(pack:Pick<DecodedTextures,'metadata'|'uv'|'resources'|'records'>,mesh:GaiaMesh,display:DisplayMesh){
+ const uv=new Float32Array(display.geographic.length/3*2),rect=new Float32Array(display.geographic.length/3*4);
+ for(let t=0;t<display.renderToSource.length;t++){const source=display.renderToSource[t],at=mesh.attributes(source);if(at.origin!==0||at.texture===null)continue;const r=pack.resources.get(at.texture),p=pack.records.get(`${at.section}/${at.mesh}/${at.triangle}`);if(!r||p===undefined)continue;
+  const points=Array.from({length:3},(_,j)=>Array.from(mesh.geographic.slice(mesh.indices[source*3+j]*3,mesh.indices[source*3+j]*3+3)) as [number,number,number]);
+  for(let j=0;j<3;j++){const vertex=t*3+j,w=cornerWeights(display.geographic[vertex*3],display.geographic[vertex*3+1],points,display.geographic[vertex*3+2]);let u=0,v=0;for(let k=0;k<3;k++){u+=w[k]*(pack.uv.getUint8(p+8+k*2)-r.u_offset)/r.width;v+=w[k]*(pack.uv.getUint8(p+9+k*2)-r.v_offset)/r.height;}uv.set([u,v],vertex*2);rect.set([r.x/pack.metadata.atlas.width,r.y/pack.metadata.atlas.height,r.width/pack.metadata.atlas.width,r.height/pack.metadata.atlas.height],vertex*4);}}
+ return {uv,rect};
+}

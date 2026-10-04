@@ -3746,3 +3746,15 @@ Original license notice, preserved verbatim:
    limitations under the License.
 
 ```
+
+## v1.7 format research attribution
+
+FF7 TEX documentation at https://wiki.ffrtt.ru/index.php/FF7/TEX_format,
+ergonomy-joe/ff7-worldmap (wmfile tables and C_0075F090 drawing semantics),
+and maciej-trebacz/ff7-landscaper (TEX/UV behavior and catalog) were consulted as
+format/behavior references. No implementation from these repositories is
+incorporated or relicensed. The small WM0 TSV records necessary identity,
+dimension and page-offset format facts cross-checked independently and against
+local game inputs; it contains no pixels or triangle UV records. Original
+GaiaGIS decoder, packer, evaluator and renderer code remain GPL-3.0-only.
+FF7 artwork and game assets remain the rights holders' materials.

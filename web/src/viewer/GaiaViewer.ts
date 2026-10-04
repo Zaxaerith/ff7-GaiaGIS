@@ -29,6 +29,10 @@ import {orderSurfaceHits} from './surfacePicking';
 import {RouteOverlay} from './route';
 import {corridorPoints,routeSegments} from './route';
 import {createSurfaceMaterial} from './surfaceMaterial';
+import {TexturedSurface} from './texturedSurface';
+import {applyRelief,validateExaggeration} from './relief';
+import {displayTextureAttributes,textureAlpha} from '../data/textures';
+import type {DecodedTextures} from '../data/textures';
 import {CartographicLine} from './cartographicLines';
 import {ComparisonView} from './comparisonView';
 import type {LinkedView} from './comparisonView';
@@ -61,7 +65,7 @@ export class GaiaViewer {
   captureMeasurement=false;
   onGeographicPick:(point:GeoPoint)=>void=()=>{};
   onViewChange:(view:LinkedView)=>void=()=>{};
-  readonly diagnostics={mapId:0,gridInterval:30,gridSpacingPx:0,gridRegenerations:0,gridGenerationMs:0,tissotGenerationMs:0,comparisonDrawCalls:0};
+  readonly diagnostics={mapId:0,gridInterval:30,gridSpacingPx:0,gridRegenerations:0,gridGenerationMs:0,tissotGenerationMs:0,comparisonDrawCalls:0,reliefUpdateMs:0,textureUVPreparationMs:0,textureUploadSubmissionMs:0};
   private gridMode:GridMode='auto';private gridMinor=true;private gridLast=-Infinity;private gridKey='';private gridCameraKey='';
   private centerCache:GeoPoint=[0,0,0];private centerKey='';
   private centerResolved=true;
@@ -113,6 +117,8 @@ export class GaiaViewer {
   private resizeObserver:ResizeObserver;
   private navigation:NavigationOverlay;
   private depthEnabled=true;
+  relief=1; shading=false; originalTexture=false; texturePack:DecodedTextures|null=null;
+  private textured!:TexturedSurface;
   private sphereDepth={value:1};
   constructor(private container:HTMLElement,readonly mesh:GaiaMesh,readonly meta:GaiaMeta) {
     this.context={radius:meta.physical_reference_radius_m,mercatorLimit:meta.mercator_max_latitude_deg,centerLon:0,centerLat:0};
@@ -126,6 +132,7 @@ export class GaiaViewer {
     geometry.boundingSphere=new Sphere(new Vector3(),6);
     const material=createSurfaceMaterial(this.sphereDepth);
     this.surface=new Mesh(geometry,material);
+    this.textured=new TexturedSurface(material,geometry);
     this.surface.frustumCulled=false;
     this.scene.add(this.surface);
     const edges=new BufferGeometry();
@@ -223,6 +230,12 @@ export class GaiaViewer {
     this.colorSurface();this.resize();this.resetView();
     this.renderer.setAnimationLoop(t=>this.animate(t));
   }
+  loadTextures(pack:DecodedTextures){const start=performance.now(),attrs=displayTextureAttributes(pack,this.mesh,this.display);this.diagnostics.textureUVPreparationMs=performance.now()-start;this.textured.load(pack,this.surface.geometry,attrs);const upload=performance.now();this.renderer.initTexture(this.textured.texture!);this.diagnostics.textureUploadSubmissionMs=performance.now()-upload;const old=this.texturePack;this.texturePack=pack;old?.image.close();this.syncTexture();}
+  setSurfaceStyle(style:'terrain'|'region'|'texture'){this.originalTexture=style==='texture';if(style!=='texture')this.setColorLayer(style);else this.setColorLayer('terrain');this.syncTexture();}
+  setTextureFiltering(linear:boolean){this.textured.filtering(linear);}
+  setReliefShading(value:boolean){this.shading=value;this.syncTexture();}
+  private syncTexture(){this.textured.uniforms.gaiaTextureEnabled.value=this.originalTexture&&!!this.texturePack?1:0;this.textured.uniforms.gaiaShading.value=this.shading&&this.projectionId==='globe'?1:0;}
+  setRelief(value:number){this.relief=validateExaggeration(value);this.cache.delete('globe');const start=performance.now();if(this.morph){if(this.projectionId==='globe')applyRelief(this.display,this.morph.to.positions,this.context.radius,value);}else if(this.projectionId==='globe'){applyRelief(this.display,this.frame.positions,this.context.radius,value);this.changed();}this.locations.relief=this.events.relief=value;this.route.relief=value;for(const o of [this.measurement,this.tissot,...this.comparedRoutes])o.relief=value;this.diagnostics.reliefUpdateMs=performance.now()-start;}
   private get camera(){return this.morph||this.projectionId==='globe'?this.perspective:this.mapCamera;}
   viewState():LinkedView{const key=`${this.projectionId}:${this.camera.position.toArray().map(x=>x.toFixed(5))}:${this.mapCamera.zoom.toFixed(4)}:${this.context.centerLon.toFixed(4)}:${this.context.centerLat.toFixed(4)}`;if(key!==this.centerKey&&!this.morph){this.centerResolved=true;if(this.projectionId==='globe'){const c=geographicViewCenter(this.perspective.position.x,this.perspective.position.y,this.perspective.position.z);this.centerCache=[c.lon??0,c.lat,0];}else if(rotatesCenter(this.projectionId))this.centerCache=[this.context.centerLon,this.context.centerLat,0];else{const center=inverseDisplay(this.projectionId,this.mapControls.target.x,this.mapControls.target.y,this.context,this.centerCache);this.centerResolved=!!center;if(center)this.centerCache=center;}this.centerKey=key;}return {center:this.centerCache,centerResolved:this.centerResolved,zoom:this.projectionId==='globe'?this.distance('globe')/this.perspective.position.length():this.mapCamera.zoom};}
   setGridMode(mode:GridMode){this.gridMode=mode;this.graticule.visible=mode!=='off';this.gridKey=this.gridCameraKey='';this.gridLast=-Infinity;}
@@ -267,6 +280,7 @@ export class GaiaViewer {
       this.perspective.lookAt(this.mapControls.target);
     }
     const target=rotatesCenter(id)?projectDisplay(this.display,projections[id],this.context):this.cache.get(id)||projectDisplay(this.display,projections[id],this.context);
+    if(id==='globe')applyRelief(this.display,target.positions,this.context.radius,this.relief);
     if(!rotatesCenter(id)) this.cache.set(id,target);
     const targetFrom=(oldCamera===this.mapCamera?this.mapControls.target:this.globeControls.target).clone();
     this.morph={start:performance.now(),fromId:this.projectionId,from:{positions:this.frame.positions.slice(),mask:this.frame.mask.slice()},to:target,
@@ -349,10 +363,11 @@ export class GaiaViewer {
   clearSelection(){this.selected=null;this.highlight.visible=false;this.onSelection(null);}
   private colorSurface(){
     const colors=this.surface.geometry.getAttribute('color').array as Float32Array;
+    const tint=this.surface.geometry.getAttribute('gaiaTint').array as Float32Array;
     const palette=new Map<number,Color>();for(let id=0;id<32;id++)palette.set(id,new Color(this.colorLayer==='region'?regionColor(id):terrainPalette[id]));
     const cap=new Color(this.distinguishCaps?distinguishedCapColor:syntheticOceanColor),neutral=new Color('#83939a');
     const gameplay=this.colorLayer==='encounter'||this.colorLayer==='encounter-rate',gameColors=new Map<string,Color>(),tracks=new Color(encounterPalette.tracks);
-    let previous=-1,color=neutral;
+    let previous=-1,color=neutral,mix=0;
     for(let t=0;t<this.display.renderToSource.length;t++) {
       const source=this.display.renderToSource[t];
       if(source!==previous){const a=this.mesh.attributes(source);const colored=this.colorLayer!=='terrain'||this.terrain;color=a.origin?this.distinguishCaps?cap:colored?cap:neutral:colored?palette.get(this.colorLayer==='region'?a.region!:a.terrain!)||neutral:neutral;
@@ -363,10 +378,11 @@ export class GaiaViewer {
         if(!a.origin&&this.chocoboTracks&&a.chocobo)color=tracks;
         if(this.showTriggers&&!a.origin&&(a.script!>=3||this.eventTriggers.has(`${a.section}/${a.mesh}/${a.triangle}`)))color=new Color(this.eventTriggers.has(`${a.section}/${a.mesh}/${a.triangle}`)?'#ff9bd6':'#9c7ee9');
         if(this.corridor.has(source))color=new Color('#ffe18c');
+        mix=(this.colorLayer!=='terrain'||!!this.reachable||!!this.comparisonFlags||this.chocoboTracks&&!!a.chocobo||this.showTriggers&&a.script!==null&&a.script>=3||this.corridor.has(source)) ? .65 : 0;
         previous=source;}
-      for(let j=0;j<9;j+=3){const i=t*9+j;colors[i]=color.r;colors[i+1]=color.g;colors[i+2]=color.b;}
+      for(let j=0;j<9;j+=3){const i=t*9+j;colors[i]=color.r;colors[i+1]=color.g;colors[i+2]=color.b;tint[t*3+j/3]=mix;}
     }
-    this.surface.geometry.getAttribute('color').needsUpdate=true;
+    this.surface.geometry.getAttribute('color').needsUpdate=true;this.surface.geometry.getAttribute('gaiaTint').needsUpdate=true;
   }
   private pick(x:number,y:number){
     const rect=this.renderer.domElement.getBoundingClientRect(),ray=new Raycaster();
@@ -381,6 +397,8 @@ export class GaiaViewer {
       Triangle.getBarycoord(hit.point,a,b,c,bary);
       const mask=this.frame.mask[face*3]*bary.x+this.frame.mask[face*3+1]*bary.y+this.frame.mask[face*3+2]*bary.z;
       if(mask<0.01) continue;
+      if(this.originalTexture&&this.texturePack){const texture=this.mesh.attributes(this.display.renderToSource[face]).texture;if(texture!==null){const uv=this.surface.geometry.getAttribute('gaiaUV').array,offset=face*6,u=uv[offset]*bary.x+uv[offset+2]*bary.y+uv[offset+4]*bary.z,v=uv[offset+1]*bary.x+uv[offset+3]*bary.y+uv[offset+5]*bary.z;if(textureAlpha(this.texturePack,texture,u,v,this.textured.texture?.magFilter===1006)<.005)continue;}}
+
       let geographic:GeoPoint|null=null;
       if(this.projectionId==='globe'){const p=geographicViewCenter(hit.point.x,hit.point.y,hit.point.z);geographic=[p.lon??0,p.lat,0];}else geographic=inverseDisplay(this.projectionId,hit.point.x,hit.point.y,this.context);
       if(geographic){this.onGeographicPick(geographic);if(this.captureMeasurement)return;}
@@ -449,11 +467,12 @@ export class GaiaViewer {
     this.route.update(this.projectionId,this.context,markerMorph?.ease);
     for(const o of [this.measurement,this.tissot,...this.comparedRoutes])o.update(this.projectionId,this.context,markerMorph?.ease,this.camera.position);
     this.diagnostics.tissotGenerationMs=this.tissot.generationMs;
+    this.syncTexture();if(this.originalTexture||this.shading)this.sphereDepth.value=0;
     this.renderer.render(this.scene,this.camera);
     const view=this.viewState();this.onViewChange(view);
-    if(this.comparison){this.locations.mirrorTo(this.comparison.locations);this.events.mirrorTo(this.comparison.events);this.comparison.update(this.comparisonId,this.context,view,this.gridMode,this.gridMinor,this.graticule.visible);this.diagnostics.comparisonDrawCalls=this.comparison.drawCalls;}
+    if(this.comparison){this.locations.mirrorTo(this.comparison.locations);this.events.mirrorTo(this.comparison.events);this.comparison.setSurface(this.surface.geometry,this.textured.uniforms,this.relief,this.shading);this.comparison.update(this.comparisonId,this.context,view,this.gridMode,this.gridMinor,this.graticule.visible);this.diagnostics.comparisonDrawCalls=this.comparison.drawCalls;}
     this.navigation.update(time,this.projectionId,this.context,this.camera,!!this.morph,this.graticule.visible,this.diagnostics.gridInterval,view.center);
     if(time-this.statsLast>600){this.statsLast=time;const fps=1000/(this.frameTimes.reduce((a,b)=>a+b,0)/Math.max(1,this.frameTimes.length));this.onStats({fps,renderTriangles:this.display.renderToSource.length,drawCalls:this.renderer.info.render.calls,morphing:!!this.morph,projection:this.projectionId});}
   }
-  dispose(){this.renderer.setAnimationLoop(null);this.setProjectionComparison(null);this.locations.dispose();this.events.dispose();this.resizeObserver.disconnect();this.globeControls.dispose();this.mapControls.dispose();this.scene.traverse(object=>{if(object instanceof Mesh||object instanceof LineSegments){object.geometry.dispose();object.material.dispose();}});this.renderer.dispose();this.renderer.domElement.remove();}
+  dispose(){this.textured.dispose();this.texturePack?.image.close();this.renderer.setAnimationLoop(null);this.setProjectionComparison(null);this.locations.dispose();this.events.dispose();this.resizeObserver.disconnect();this.globeControls.dispose();this.mapControls.dispose();this.scene.traverse(object=>{if(object instanceof Mesh||object instanceof LineSegments){object.geometry.dispose();object.material.dispose();}});this.renderer.dispose();this.renderer.domElement.remove();}
 }

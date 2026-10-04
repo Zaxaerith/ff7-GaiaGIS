@@ -40,3 +40,6 @@ gaia-encounters.json
 gaia-events.json
 gaia-routing.bin
 gaia-meta.json
+gaia-texture*
+decoded-textures/
+texture-preview-cache/

@@ -1,3 +1,4 @@
+import {mountTextures} from './ui/textures';
 // SPDX-License-Identifier: GPL-3.0-only
 import './styles/viewer.css';
 import {mountLayout} from './ui/layout';
@@ -59,6 +60,7 @@ async function start(provided?:{mesh:GaiaMesh;meta:GaiaMeta}){
     await new Promise(resolve=>requestAnimationFrame(resolve));
     if(request!==operation)return;
     const viewer=new GaiaViewer(element('viewport'),mesh,meta);
+    const textureControls=mountTextures(viewer,()=>request===operation);
     activeViewer=viewer;viewer.onError=message=>fail(message);setBusy(false);
     const locationControls=mountLocations(viewer,meta,()=>request===operation);
     const encounterControls=mountEncounters(viewer,meta,()=>request===operation);
@@ -137,6 +139,7 @@ async function start(provided?:{mesh:GaiaMesh;meta:GaiaMeta}){
       detail.dataset.sourceTriangle=String(source);detail.dataset.origin=String(a.origin);
       encounterControls.inspect(source,detail);
       traversalControls.inspect(source,detail);
+      textureControls.inspect(source,detail);
     };
   } catch(error){if(request!==operation)return;activeViewer?.dispose();activeViewer=undefined;fail(error instanceof Error?error.message:String(error),error instanceof MissingDatasetError);}
 }

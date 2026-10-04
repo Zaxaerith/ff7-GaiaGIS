@@ -6,7 +6,7 @@ A mathematical GIS reconstruction of Final Fantasy VII's polygonal world map, wi
 
 FINAL FANTASY VII WM0 → polygon mesh → periodic topology analysis → inverse-Mercator parameterization → Earth-sized Gaia sphere → GIS → interactive Web viewer → map projections.
 
-This is a **code-only project**. The repository contains no FF7 game data, complete derived Gaia geometry, POI coordinates, encounter tables, world-event coordinates or routing topology. Users generate V1 data from their own installation and load it locally. v1.5 is published; v1.6 is developed locally and awaits publication approval. [v1.6 validation](docs/v1.6/validation.md) · [v1.5 validation](docs/v1.5/validation.md) · [Stable v1.0 notes](docs/releases/v1.0.0.md) · [Data policy](docs/data-and-copyright.md).
+This is a **code-only project**. The repository contains no FF7 game data, complete derived Gaia geometry, POI coordinates, encounter tables, world-event coordinates or routing topology. Users generate V1 data from their own installation and load it locally. v1.6 is published; v1.7 is developed locally and awaits publication approval. [v1.7 validation](docs/v1.7/validation.md) · [v1.6 validation](docs/v1.6/validation.md) · [v1.5 validation](docs/v1.5/validation.md) · [Stable v1.0 notes](docs/releases/v1.0.0.md) · [Data policy](docs/data-and-copyright.md).
 
 ## Viewer
 
@@ -35,6 +35,18 @@ TypeScript, Vite and Three.js; no backend or UI framework. d3 is a test oracle o
 After loading V1 geometry, use **Display → Graticule spacing** or **Analysis → Measurement / Projection Analysis / Compare**. Measurement accepts surface taps, markers or exact longitude/latitude input; area reports the smaller spherical region, km² and sphere percentage. The assumed radius is 6,371,008.8 m, not official FF7 dimensions. Tissot and scale factors are local planar diagnostics; Globe has no intrinsic planar Jacobian.
 
 Navigate the left/top comparison view; the second shares its geographic center and normalized zoom, location selection, routes and measurements. Routing/Compare use the shared From/To and conditional-terrain controls. Terrain comparison counts static Allowed only, while reachable-area comparison uses the existing conservative graph. Route comparison additionally requires locally loaded Locations and Routing data. No new game-derived dataset is required. Runtime/story state, vehicle transfers and gameplay travel time remain outside scope. [Adaptive grid](docs/v1.6/adaptive-graticule.md) · [Measurement](docs/v1.6/measurement.md) · [Projection factors](docs/v1.6/projection-analysis.md) · [Comparison scope](docs/v1.6/comparison.md).
+
+## Textured Relief Gaia
+
+Original WM0 artwork can be loaded locally and reprojected through V1 Geometric Gaia in all thirteen views. This is **not an official spherical Gaia texture**. Surface Style, Nearest/Linear filtering and optional faceted relief shading coexist with GIS overlays and projection comparison. Visual relief has 0×/1×/10×/25×/50×/100× presets and bounded Custom controls; canonical coordinates, measurements and routing remain unchanged.
+
+After generating your V1 geometry, run from the project root:
+
+```powershell
+python -B scripts/build_texture_assets.py "D:\SteamLibrary\steamapps\common\FINAL FANTASY VII Steam Edition"
+```
+
+Load `output/v1_7/gaia-textures.bin` with **Load Textures**. Use `--meta` if your V1 metadata is elsewhere. Textures are extracted locally from your own FF7 installation. **No FF7 texture assets, atlas, complete UV dataset or textured screenshots are distributed.** Animated source artwork uses a deterministic static first-frame preview. [Texture research](docs/v1.7/texture-research.md) · [Local pack](docs/v1.7/texture-data.md) · [Visual relief](docs/v1.7/relief.md).
 
 ## Run locally
 

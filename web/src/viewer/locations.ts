@@ -11,6 +11,7 @@ export function markerPosition(l:Pick<Location,'longitude'|'latitude'|'height'>,
 export function markerVisible(l:Pick<Location,'longitude'|'latitude'>,id:ProjectionId,c:ProjectionContext){return projections[id].visibility(l.longitude,l.latitude,c)>0.02;}
 interface Marker {location:Location;button:HTMLButtonElement;point:Vector3;from:Position;to:Position;current:Position;}
 export class LocationsOverlay {
+  relief=1;
   private host=document.createElement('div');private markers:Marker[]=[];
   private show=true;private labels=true;private filter:LocationFilter='all';private selected:string|null=null;
   private analysisStart:string|null=null;private analysisTarget:string|null=null;private reachable:Set<string>|null=null;
@@ -40,7 +41,7 @@ export class LocationsOverlay {
   setAnalysis(start:string|null,target:string|null,reachable:Set<string>|null){this.analysisStart=start;this.analysisTarget=target;this.reachable=reachable;}
   select(id:string|null,position?:Pick<Location,'longitude'|'latitude'|'height'>){this.selected=id;this.selectedPosition=position??null;}
   private target(m:Marker){return m.location.id===this.selected&&this.selectedPosition?{...m.location,...this.selectedPosition}:m.location;}
-  beginMorph(fromId:ProjectionId,toId:ProjectionId,c:ProjectionContext,interrupted=false){for(const m of this.markers){m.from=interrupted?m.current:markerPosition(this.target(m),fromId,c);m.to=markerPosition(this.target(m),toId,c);}}
+  beginMorph(fromId:ProjectionId,toId:ProjectionId,c:ProjectionContext,interrupted=false){for(const m of this.markers){m.from=interrupted?m.current:markerPosition({...this.target(m),height:fromId==='globe'?this.target(m).height*this.relief:this.target(m).height},fromId,c);m.to=markerPosition({...this.target(m),height:toId==='globe'?this.target(m).height*this.relief:this.target(m).height},toId,c);}}
   update(id:ProjectionId,c:ProjectionContext,camera:Camera,morph?:{ease:number;fromId:ProjectionId}){
     const w=this.container.clientWidth,h=this.container.clientHeight,occupied:{x:number;y:number;width:number}[]=[];
     // Selected label wins, followed by major settlements and then remaining names.
@@ -48,7 +49,7 @@ export class LocationsOverlay {
     for(const m of ordered){
       const selected=m.location.id===this.selected;m.button.classList.toggle('selected',selected);m.button.classList.toggle('analysis-start',m.location.id===this.analysisStart);m.button.classList.toggle('analysis-target',m.location.id===this.analysisTarget);m.button.classList.toggle('analysis-unreachable',!!this.reachable&&!this.reachable.has(m.location.id));
       if(!this.show||!filterLocation(m.location,this.filter)){m.button.hidden=true;continue;}
-      const location=this.target(m),p=markerPosition(location,id,c);
+      const location=this.target(m),p=markerPosition({...location,height:id==='globe'?location.height*this.relief:location.height},id,c);
       if(morph)m.point.set(...m.from).lerp(new Vector3(...m.to),morph.ease);else m.point.set(...p);
       m.current=m.point.toArray() as Position;
       const visibility=morph?(1-morph.ease)*projections[morph.fromId].visibility(location.longitude,location.latitude,c)+morph.ease*projections[id].visibility(location.longitude,location.latitude,c):projections[id].visibility(location.longitude,location.latitude,c);

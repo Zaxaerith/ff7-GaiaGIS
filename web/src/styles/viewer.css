@@ -62,3 +62,10 @@ dialog{color:#c6d9e3;background:#14232e;border:1px solid #426173;border-radius:1
 .projection-info{font-size:11px;margin-top:16px}.projection-info summary{cursor:pointer;min-height:32px}.projection-info p{overflow-wrap:anywhere}
 #language{margin:8px 0 20px;max-width:100%}footer #open-analysis{margin-left:8px;flex-shrink:0}
 @media(max-width:767px){.analysis-panel{top:auto;bottom:48px;left:8px;width:calc(100vw - 16px);max-width:calc(100vw - 16px);max-height:65vh}footer .footer-right{display:none}footer #coordinates{display:none}.projection-control{min-width:0}.projection-control select{max-width:100%}}
+
+/* Optional local texture controls share the compact display sheet. */
+.texture-controls{padding-bottom:14px;border-bottom:1px solid var(--border,#29414a);margin-bottom:16px;}
+.texture-controls button{width:100%;margin-top:10px;}
+.texture-controls output{display:block;font-size:12px;margin-top:5px;}
+.texture-controls input[type=range]{max-width:100%;width:100%;}
+.texture-inspector p{overflow-wrap:anywhere;}
