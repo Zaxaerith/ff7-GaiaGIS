@@ -1,6 +1,6 @@
 [project]
 name = "gaiagis"
-version = "2.1.0"
+version = "2.2.0"
 description = "Read-only FF7 geometry parsing, spherical GIS reconstruction and Web visualization assets"
 license = "GPL-3.0-only"
 requires-python = ">=3.12"
@@ -14,3 +14,6 @@ gaiagis-local = "gaiagis.local:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+gaiagis = ["atlas_data/*.json", "*.json", "*.tsv"]

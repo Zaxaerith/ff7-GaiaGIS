@@ -16,7 +16,7 @@ export class LocationsOverlay {
   private show=true;private labels=true;private filter:LocationFilter='all';private selected:string|null=null;
   private analysisStart:string|null=null;private analysisTarget:string|null=null;private reachable:Set<string>|null=null;
   private selectedPosition:Pick<Location,'longitude'|'latitude'|'height'>|null=null;
-  constructor(private container:HTMLElement,private onSelect:(location:Location)=>void,private kind:'location'|'event'='location'){
+  constructor(private container:HTMLElement,private onSelect:(location:Location)=>void,private kind:'location'|'event'|'atlas'='location'){
     this.host.className=`location-markers ${kind}-overlay`;container.append(this.host);
     this.host.addEventListener('pointermove',e=>{const nearest=this.nearest(e.clientX,e.clientY);for(const m of this.markers)m.button.classList.toggle('hovered',m===nearest);});
     this.host.addEventListener('pointerleave',()=>{for(const m of this.markers)m.button.classList.remove('hovered');});
@@ -57,12 +57,13 @@ export class LocationsOverlay {
       if(visibility<=.02||globeSide&&m.point.dot(camera.position)-m.point.lengthSq()<.005){m.button.hidden=true;continue;}
       m.point.project(camera);const x=(m.point.x+1)*w/2,y=(1-m.point.y)*h/2;
       if(m.point.z< -1||m.point.z>1||x<12||x>w-12||y<12||y>h-12){m.button.hidden=true;continue;}
+      if(this.kind==='atlas'&&occupied.some(o=>Math.hypot(x-o.x,y-o.y)<32)){m.button.hidden=true;continue;}
       m.button.hidden=false;m.button.style.left=`${x}px`;m.button.style.top=`${y}px`;
       const labelWidth=m.location.display_name.length*6.5+14;
       const major=['city','town','village','settlement'].includes(m.location.category);
       const fits=x+labelWidth<w-14&&y>112&&y<h-75&&!occupied.some(o=>Math.abs(y-o.y)<25&&Math.abs(x-o.x)<(labelWidth+o.width)/2+12);
       const visible=selected||this.labels&&major&&fits;m.button.classList.toggle('show-label',visible);
-      if(visible)occupied.push({x,y,width:labelWidth});
+      if(visible||this.kind==='atlas')occupied.push({x,y,width:labelWidth});
     }
   }
   dispose(){this.host.remove();}

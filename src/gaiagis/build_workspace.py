@@ -10,6 +10,7 @@ import sys
 from .dataset import discover, fingerprint, child_ci
 from .safety import WORKSPACE_ROOT, output_path
 from .web_export import build_web_assets, sha256
+from .atlas import GENERATOR_VERSION as ATLAS_VERSION, curated_hash, build_atlas
 
 TOOL_VERSION = '2.0.0'
 GENERATOR_VERSION = 'workspace-1'
@@ -28,6 +29,7 @@ ASSETS = {
     'gaia-transitions.json': ('transitions', 'shared', ['gaia-mesh.bin']),
     'gaia-explorer.bin': ('explorer', 'shared', ['gaia-mesh.bin']),
     'gaia-presentation.json': ('presentation', 'shared', []),
+    'gaia-atlas.json': ('atlas', 'WM0', ['gaia-poi.json']),
 }
 
 # Source dependencies, not a Steam-version switch. Generator/transport versions
@@ -43,6 +45,7 @@ SOURCE_DEPENDENCIES = {
     'gaia-transitions.json': ['wm0.map', 'wm2.map', 'wm3.map', 'world_us.lgp', 'flevel.lgp'],
     'gaia-explorer.bin': ['world_us.lgp','char.lgp','flevel.lgp'],
     'gaia-presentation.json': ['audio.dat','audio.fmt'],
+    'gaia-atlas.json': ['wm0.map', 'world_us.lgp', 'flevel.lgp', 'atlas-content.json', 'atlas-transitions.json'],
 }
 
 def write_manifest(directory, sources):
@@ -53,7 +56,7 @@ def write_manifest(directory, sources):
         if path.is_file():
             assets.append(dict(filename=filename, type=kind, mapId=map_id,
                                sha256=sha256(path), bytes=path.stat().st_size,
-                               dependencies=dependencies, generator_version='explorer-party-1' if kind=='explorer' else GENERATOR_VERSION))
+                               dependencies=dependencies, generator_version='explorer-party-1' if kind=='explorer' else ATLAS_VERSION if kind=='atlas' else GENERATOR_VERSION))
     names = {a['filename'] for a in assets}
     if any(set(a['dependencies']) - names for a in assets):
         raise ValueError('Workspace dependency missing; manifest was not written')
@@ -77,6 +80,7 @@ def reusable(manifest, sources, directory, names, _visited=None):
         if not record or not path.is_file() or record.get('bytes') != path.stat().st_size or record.get('sha256') != sha256(path):
             return False
         if name=='gaia-explorer.bin' and record.get('generator_version')!='explorer-party-1':return False
+        if name=='gaia-atlas.json' and record.get('generator_version')!=ATLAS_VERSION:return False
         dependencies = ASSETS[name][2]
         if record.get('dependencies') != dependencies:return False
         if dependencies and not reusable(manifest, sources, directory, dependencies, visited | {name}):return False
@@ -123,6 +127,7 @@ def build_workspace(source, destination, stage1=None, *, rebuild=False, allow_op
     cache = output_path(out / '.build');cache.mkdir(parents=True, exist_ok=True)
     dataset = discover(source)
     sources = {r['filename']: r['sha256'].lower() for r in fingerprint(dataset)['files']}
+    sources['atlas-content.json'] = curated_hash()
     field = child_ci(dataset.wm_directory.parent, 'field')
     field_archive = child_ci(field, 'flevel.lgp') if field else None
     if field_archive:sources['flevel.lgp'] = sha256(field_archive)
@@ -178,6 +183,9 @@ def build_workspace(source, destination, stage1=None, *, rebuild=False, allow_op
     step('explorer', ['gaia-explorer.bin'], lambda: build_explorer(source, out/'gaia-explorer.bin', version=2))
     from .presentation import build_presentation
     step('presentation',['gaia-presentation.json'],lambda:build_presentation(source,out/'gaia-presentation.json'))
+    # Knowledge changes invalidate only Atlas. Spatial authority stays in POI.
+    if (out/'gaia-transitions.json').is_file():sources['atlas-transitions.json']=sha256(out/'gaia-transitions.json')
+    step('atlas', ['gaia-atlas.json'], lambda: build_atlas(out))
     after = {r['filename']:r['sha256'].lower() for r in fingerprint(dataset)['files']}
     if any(after[k] != v for k,v in sources.items() if k in after):raise RuntimeError('Source fingerprint changed during workspace build')
     if field_archive and sha256(field_archive)!=sources['flevel.lgp']:raise RuntimeError('Field source fingerprint changed during workspace build')

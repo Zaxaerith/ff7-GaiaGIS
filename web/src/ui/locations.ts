@@ -42,16 +42,17 @@ export function mountLocations(viewer:GaiaViewer,meta:GaiaMeta,isCurrent:()=>boo
     const summary=document.createElement('summary');summary.textContent=t('message.allEntrances',{count:location.entrance_ids.length});entrances.append(summary);
     for(const id of location.entrance_ids){const item=dataset.entrances.find(e=>e.id===id)!;const button=document.createElement('button');button.textContent=t('message.entrance',{field:item.field_name,entry:item.entrance_table_id,scenario:item.scenario});button.setAttribute('aria-pressed',String(id===e.id));button.addEventListener('click',()=>inspect(location,item));entrances.append(button);}detail.append(entrances);
     element('coordinates').textContent=`${formatNumber(e.longitude,2)}° / ${formatNumber(e.latitude,2)}°`;
-    setNavigationSelection({location,entrance:e});appStore.dispatch({type:'select',selection:{kind:entrance?'entrance':'location',id:entrance?.id??location.id,mapId:'WM0',geographicPoint:[e.longitude,e.latitude,e.height]}});viewer.flyToLocation(e.longitude,e.latitude);close();
+    setNavigationSelection({location,entrance:e});appStore.dispatch({type:'select',selection:{kind:entrance?'entrance':'location',id:entrance?.id??location.id,mapId:'WM0',geographicPoint:[e.longitude,e.latitude,e.height]}});viewer.flyToLocation(e.longitude,e.latitude);close();document.dispatchEvent(new CustomEvent('gaiagis-location-inspect',{detail:location.id}));
     history.replaceState(null,'',`${window.location.pathname}${window.location.search}#location=${encodeURIComponent(location.id)}`);
   }
   // Use the browser's URL components, never values supplied by POI data.
   const select=(location:Location)=>inspect(location);
+  const navigateLocation=(event:Event)=>{const id=(event as CustomEvent<string>).detail;const l=dataset?.locations.find(l=>l.id===id);if(l)inspect(l);};document.addEventListener('gaiagis-inspect-location',navigateLocation);
   function draw(){
     close();matches=searchNavigation(input.value);if(filter.value!=='all'&&dataset){const ids=new Set(searchLocations(dataset.locations,input.value,filter.value as LocationFilter).map(l=>l.id));matches=matches.filter(e=>e.kind==='location'&&ids.has(e.id));}
     const visible=matches.slice(0,60);
     for(const [index,l]of visible.entries()){
-      const button=document.createElement('button');button.id=`location-result-${index}`;button.className='location-result';button.setAttribute('role','option');button.setAttribute('aria-selected','false');button.tabIndex=-1;button.textContent=l.name+(l.kind==='location'?'':' · '+t(l.kind==='entrance'?'ui.entrances':l.kind==='transition'?'map.transitions':'ui.events'));
+      const button=document.createElement('button');button.id=`location-result-${index}`;button.dataset.navigationId=l.id;button.className='location-result';button.setAttribute('role','option');button.setAttribute('aria-selected','false');button.tabIndex=-1;button.textContent=l.name+(l.kind==='location'?'':' · '+t(l.kind==='entrance'?'ui.entrances':l.kind==='transition'?'map.transitions':l.kind==='atlas'?'atlas.title':'ui.events'));
       button.addEventListener('click',()=>l.navigate());results.append(button);
     }
     if(!visible.length){const message=document.createElement('p');message.textContent=t('ui.noMatches');results.append(message);}
@@ -89,5 +90,7 @@ export function mountLocations(viewer:GaiaViewer,meta:GaiaMeta,isCurrent:()=>boo
   void loadOptionalPoi(meta).then(data=>{if(isCurrent()&&revision===loadRevision)adopt(data);}).catch(error=>{if(isCurrent()&&revision===loadRevision)status.textContent=t('ui.locationsUnavailable');status.title=error.message;});
   async function loadFile(selected:File,revision=++loadRevision){const data=await readLocalPoi(selected,meta);if(isCurrent()&&revision===loadRevision)adopt(data);}
   workspaceLoader.register("locations",async files=>loadFile(files[0]));
-  return {clear,loadFile};
+  document.addEventListener('gaiagis-navigation',navigationChanged);
+  function navigationChanged(){if(isCurrent()&&(document.activeElement===input||input.getAttribute('aria-expanded')==='true'))draw();}
+  return {clear,loadFile,dataset:()=>dataset,dispose(){document.removeEventListener('gaiagis-navigation',navigationChanged);document.removeEventListener('gaiagis-inspect-location',navigateLocation);}};
 }

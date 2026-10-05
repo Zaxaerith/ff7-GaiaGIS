@@ -1,0 +1,17 @@
+/* SPDX-License-Identifier: GPL-3.0-only */
+.atlas-card {border-top:1px solid #9ecafa;margin-top:12px;padding-top:8px;}
+.atlas-card h3 {font-size:1rem;margin:4px 0 8px;}
+.atlas-card details {margin:6px 0;padding:5px 0;border-bottom:1px solid #526489;}
+.atlas-card summary {cursor:pointer;font-weight:600;}
+.atlas-card p {margin:7px 0;line-height:1.45;overflow-wrap:anywhere;}
+.atlas-card button,.atlas-card a {display:block;margin:6px 0;max-width:100%;text-align:left;overflow-wrap:anywhere;}
+.atlas-card a {color:#bbdcff;}
+#atlas-filters select {width:100%;margin:4px 0 7px;}
+#atlas-filters label {display:block;}
+#atlas-layers label {display:flex;align-items:center;gap:6px;margin:7px 0;}
+.atlas-marker i {border-radius:0;transform:rotate(45deg);background:#79e2ef;border:2px solid #263959;box-shadow:0 0 0 1px white;}
+.atlas-marker {z-index:2;}
+@media(max-width:700px){
+ .atlas-card {max-height:45dvh;overflow-y:auto;overscroll-behavior:contain;padding-right:4px;}
+ .atlas-card button {min-height:36px;}
+}

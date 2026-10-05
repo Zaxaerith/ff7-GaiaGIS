@@ -1,5 +1,7 @@
 # GaiaGIS
 
+Current local release candidate: **v2.2.0 — Gaia Atlas**.
+
 An interactive GIS reconstruction of FINAL FANTASY VII's polygonal Gaia world map.
 Explore geography, original local artwork, gameplay attributes and source provenance
 in a globe, thirteen map views and native world maps.
@@ -189,3 +191,14 @@ CHARACTER DESIGN: TETSUYA NOMURA
 LOGO ILLUSTRATION: © YOSHITAKA AMANO
 
 GPL-3.0-only applies to GaiaGIS original code, not FINAL FANTASY VII or third-party materials.
+
+
+## Gaia Atlas (v2.2)
+
+Atlas adds offline authored place knowledge, secrets and collectible/reward discovery to Explore search. Search names, aliases, categories, regions and item names; one-edit spelling fallback follows literal matches. The shared Inspector shows localized overview, type/region, access, gameplay, discoveries, related places, precision/evidence and reviewed sources. Sources are external links opened only when requested. The default spoiler setting hides major story rewards, including their search aliases; select Show all deliberately to reveal them.
+
+Layers has Places, Secrets and Collectibles switches. Collectibles marks verified parent-place entrances only, never a chest or interior reward position. An entrance-level card enables existing route, measurement and Explorer actions. Parent-place/field-only cards offer Fly to parent place; unresolved records have no map point. Gold Saucer, Northern Cave, Ancient Forest and Sunken Gelnika retain searchable knowledge without guessed global placement. Native WM2/WM3 positions are never treated as geographic coordinates.
+
+The local launcher generates the optional ignored `gaia-atlas.json` through the existing workspace builder, with curated-content, POI, source, transition and generator fingerprints. Warm reuse remains offline. Old workspaces without Atlas retain bundled knowledge with currently validated POI bindings. Public source-only pages can search/read knowledge without a spatial pack. No save-state, treasure-collected state, battle or field renderer is included.
+
+See [research](docs/v2.2/atlas-research.md), [schema](docs/v2.2/atlas-schema.md), [spatial evidence](docs/v2.2/spatial-binding.md) and [local validation](docs/v2.2/validation.md). Source-only distribution remains mandatory; all generated packs and screenshots stay ignored.

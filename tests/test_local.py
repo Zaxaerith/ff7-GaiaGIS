@@ -111,6 +111,11 @@ class LocalTests(unittest.TestCase):
         stack.enter_context(patch('gaiagis.build_workspace.build_web_assets',side_effect=geometry))
         for module,fn,label in [('poi','build_poi','locations'),('encounters','build_encounters','encounters'),('world_events','build_events','events'),('routing','export_routing','routing'),('texture_pack','build_texture_pack','textures'),('explorer_export','build_explorer','explorer'),('presentation','build_presentation','presentation')]:
             stack.enter_context(patch('gaiagis.'+module+'.'+fn,side_effect=exporter(label)))
+        def atlas(target):
+            calls.append('atlas')
+            if not (target/'gaia-poi.json').is_file():raise ValueError('POI unavailable')
+            (target/'gaia-atlas.json').write_bytes(b'{}')
+        stack.enter_context(patch('gaiagis.build_workspace.build_atlas',side_effect=atlas))
         stack.enter_context(patch('gaiagis.build_workspace.subprocess.run',side_effect=native))
         self.addCleanup(stack.close)
         return source,out,calls
@@ -135,7 +140,7 @@ class LocalTests(unittest.TestCase):
         source,out,calls=self.build_fixture()
         with patch('gaiagis.presentation.build_presentation',side_effect=ValueError('Optional audio unavailable')):
             report=build_workspace(source,out)
-        self.assertEqual(report['assets'],13)
+        self.assertEqual(report['assets'],14)
         self.assertTrue((out/'gaia-mesh.bin').is_file())
     def test_optional_failure_is_not_published(self):
         source,out,_=self.build_fixture(True);report=build_workspace(source,out,allow_optional_failure=True)
@@ -144,7 +149,7 @@ class LocalTests(unittest.TestCase):
     def test_rebuild_and_clean_invalid(self):
         source,out,calls=self.build_fixture();build_workspace(source,out);calls.clear()
         report=build_workspace(source,out,rebuild=True,clean_invalid=True)
-        self.assertTrue(all(not r['reused'] for r in report['steps']));self.assertEqual(len(calls),12)
+        self.assertTrue(all(not r['reused'] for r in report['steps']));self.assertEqual(len(calls),13)
 
 
 class EndpointTests(unittest.TestCase):

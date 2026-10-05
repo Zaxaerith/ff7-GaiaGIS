@@ -64,3 +64,14 @@ not paths, selected coordinates, save-state data or file content.
 See [workspace](v2.0/workspace-format.md), [data compatibility](v2.0/data-compatibility.md)
 and [integration](v2.0/integration.md). Resource caching is scoped to active data
 owners; there is no disk scan, persistent decoded-asset cache or network upload.
+
+
+## Gaia Atlas (v2.2)
+
+Atlas adds offline authored place knowledge, secrets and collectible/reward discovery to Explore search. Search names, aliases, categories, regions and item names; one-edit spelling fallback follows literal matches. The shared Inspector shows localized overview, type/region, access, gameplay, discoveries, related places, precision/evidence and reviewed sources. Sources are external links opened only when requested. The default spoiler setting hides major story rewards, including their search aliases; select Show all deliberately to reveal them.
+
+Layers has Places, Secrets and Collectibles switches. Collectibles marks verified parent-place entrances only, never a chest or interior reward position. An entrance-level card enables existing route, measurement and Explorer actions. Parent-place/field-only cards offer Fly to parent place; unresolved records have no map point. Gold Saucer, Northern Cave, Ancient Forest and Sunken Gelnika retain searchable knowledge without guessed global placement. Native WM2/WM3 positions are never treated as geographic coordinates.
+
+The local launcher generates the optional ignored `gaia-atlas.json` through the existing workspace builder, with curated-content, POI, source, transition and generator fingerprints. Warm reuse remains offline. Old workspaces without Atlas retain bundled knowledge with currently validated POI bindings. Public source-only pages can search/read knowledge without a spatial pack. No save-state, treasure-collected state, battle or field renderer is included.
+
+See [research](v2.2/atlas-research.md), [schema](v2.2/atlas-schema.md), [spatial evidence](v2.2/spatial-binding.md) and [local validation](v2.2/validation.md). Source-only distribution remains mandatory; all generated packs and screenshots stay ignored.

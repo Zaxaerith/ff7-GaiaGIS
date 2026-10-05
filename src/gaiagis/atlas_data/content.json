@@ -1,0 +1,3044 @@
+{
+  "schema": "gaiagis-atlas-content",
+  "version": 1,
+  "sources": [
+    {
+      "id": "field-identity",
+      "provider": "GaiaGIS source evidence",
+      "title": "GaiaGIS validated original-game field identities",
+      "url": "https://github.com/Zaxaerith/ff7-GaiaGIS/blob/main/docs/v1.1/poi-data.md",
+      "reviewed": "2026-10-06",
+      "type": "game_identity",
+      "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
+    },
+    {
+      "id": "field-reference",
+      "provider": "FF7 flat wiki",
+      "title": "FF7 Field ID reference",
+      "url": "https://ff7-mods.github.io/ff7-flat-wiki/FF7/Field/Field_ID.html",
+      "reviewed": "2026-10-06",
+      "type": "reverse_engineering",
+      "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
+    },
+    {
+      "id": "wiki-caves",
+      "provider": "Final Fantasy Wiki",
+      "title": "Materia Cave",
+      "url": "https://finalfantasy.fandom.com/wiki/Materia_Cave",
+      "reviewed": "2026-10-06",
+      "type": "wiki",
+      "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
+    },
+    {
+      "id": "caves",
+      "provider": "Jegged",
+      "title": "The Materia Caves",
+      "url": "https://jegged.com/Games/Final-Fantasy-VII/Side-Quests/Materia-Caves.html",
+      "reviewed": "2026-10-06",
+      "type": "reference",
+      "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
+    },
+    {
+      "id": "wiki-forest",
+      "provider": "Final Fantasy Wiki",
+      "title": "Ancient Forest",
+      "url": "https://finalfantasy.fandom.com/wiki/Ancient_Forest",
+      "reviewed": "2026-10-06",
+      "type": "wiki",
+      "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
+    },
+    {
+      "id": "forest-guide",
+      "provider": "StrategyWiki",
+      "title": "Ancient Forest guide",
+      "url": "https://strategywiki.org/wiki/Final_Fantasy_VII/Ancient_Forest",
+      "reviewed": "2026-10-06",
+      "type": "wiki",
+      "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
+    },
+    {
+      "id": "lucrecia",
+      "provider": "Jegged",
+      "title": "Lucrecia’s Crystal Cave",
+      "url": "https://jegged.com/Games/Final-Fantasy-VII/Side-Quests/Lucrecias-Crystal-Cave.html",
+      "reviewed": "2026-10-06",
+      "type": "reference",
+      "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
+    },
+    {
+      "id": "old-man",
+      "provider": "Final Fantasy Wiki",
+      "title": "Old man’s house",
+      "url": "https://finalfantasy.fandom.com/wiki/Old_man%27s_house",
+      "reviewed": "2026-10-06",
+      "type": "wiki",
+      "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
+    },
+    {
+      "id": "weapon-seller",
+      "provider": "Final Fantasy Wiki",
+      "title": "Weapon seller",
+      "url": "https://finalfantasy.fandom.com/wiki/Weapon_seller",
+      "reviewed": "2026-10-06",
+      "type": "wiki",
+      "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
+    },
+    {
+      "id": "wiki-glacier",
+      "provider": "Final Fantasy Wiki",
+      "title": "Great Glacier (Final Fantasy VII)",
+      "url": "https://finalfantasy.fandom.com/wiki/Great_Glacier_(Final_Fantasy_VII)",
+      "reviewed": "2026-10-06",
+      "type": "wiki",
+      "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
+    },
+    {
+      "id": "midgar",
+      "provider": "Jegged",
+      "title": "Midgar",
+      "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Midgar.html",
+      "reviewed": "2026-10-06",
+      "type": "reference",
+      "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
+    },
+    {
+      "id": "kalm",
+      "provider": "Jegged",
+      "title": "Kalm",
+      "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Kalm.html",
+      "reviewed": "2026-10-06",
+      "type": "reference",
+      "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
+    },
+    {
+      "id": "chocobo-farm",
+      "provider": "Jegged",
+      "title": "Chocobo Farm",
+      "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Chocobo-Farm.html",
+      "reviewed": "2026-10-06",
+      "type": "reference",
+      "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
+    },
+    {
+      "id": "mythril-mine",
+      "provider": "Jegged",
+      "title": "Mythril Mine",
+      "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Mythril-Mine.html",
+      "reviewed": "2026-10-06",
+      "type": "reference",
+      "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
+    },
+    {
+      "id": "fort-condor",
+      "provider": "Jegged",
+      "title": "Fort Condor",
+      "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Fort-Condor.html",
+      "reviewed": "2026-10-06",
+      "type": "reference",
+      "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
+    },
+    {
+      "id": "junon",
+      "provider": "Jegged",
+      "title": "Junon",
+      "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Junon.html",
+      "reviewed": "2026-10-06",
+      "type": "reference",
+      "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
+    },
+    {
+      "id": "temple-of-the-ancients",
+      "provider": "Jegged",
+      "title": "Temple of the Ancients",
+      "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Temple-of-the-Ancients.html",
+      "reviewed": "2026-10-06",
+      "type": "reference",
+      "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
+    },
+    {
+      "id": "mideel",
+      "provider": "Jegged",
+      "title": "Mideel",
+      "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Mideel.html",
+      "reviewed": "2026-10-06",
+      "type": "reference",
+      "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
+    },
+    {
+      "id": "costa-del-sol",
+      "provider": "Jegged",
+      "title": "Costa del Sol",
+      "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Costa-del-Sol.html",
+      "reviewed": "2026-10-06",
+      "type": "reference",
+      "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
+    },
+    {
+      "id": "mt-corel",
+      "provider": "Jegged",
+      "title": "Mt. Corel",
+      "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Mount-Corel.html",
+      "reviewed": "2026-10-06",
+      "type": "reference",
+      "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
+    },
+    {
+      "id": "north-corel",
+      "provider": "Jegged",
+      "title": "North Corel",
+      "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/North-Corel.html",
+      "reviewed": "2026-10-06",
+      "type": "reference",
+      "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
+    },
+    {
+      "id": "corel-desert",
+      "provider": "Jegged",
+      "title": "Corel Desert",
+      "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Corel-Prison.html",
+      "reviewed": "2026-10-06",
+      "type": "reference",
+      "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
+    },
+    {
+      "id": "gongaga",
+      "provider": "Jegged",
+      "title": "Gongaga",
+      "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Gongaga.html",
+      "reviewed": "2026-10-06",
+      "type": "reference",
+      "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
+    },
+    {
+      "id": "cosmo-canyon",
+      "provider": "Jegged",
+      "title": "Cosmo Canyon",
+      "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Cosmo-Canyon.html",
+      "reviewed": "2026-10-06",
+      "type": "reference",
+      "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
+    },
+    {
+      "id": "nibelheim",
+      "provider": "Jegged",
+      "title": "Nibelheim",
+      "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Nibelheim.html",
+      "reviewed": "2026-10-06",
+      "type": "reference",
+      "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
+    },
+    {
+      "id": "rocket-town",
+      "provider": "Jegged",
+      "title": "Rocket Town",
+      "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Rocket-Town.html",
+      "reviewed": "2026-10-06",
+      "type": "reference",
+      "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
+    },
+    {
+      "id": "wutai",
+      "provider": "Jegged",
+      "title": "Wutai",
+      "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Wutai.html",
+      "reviewed": "2026-10-06",
+      "type": "reference",
+      "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
+    },
+    {
+      "id": "bone-village",
+      "provider": "Jegged",
+      "title": "Bone Village",
+      "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Bone-Village.html",
+      "reviewed": "2026-10-06",
+      "type": "reference",
+      "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
+    },
+    {
+      "id": "icicle-inn",
+      "provider": "Jegged",
+      "title": "Icicle Inn",
+      "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Icicle-Inn.html",
+      "reviewed": "2026-10-06",
+      "type": "reference",
+      "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
+    },
+    {
+      "id": "chocobo-sages-house",
+      "provider": "Jegged",
+      "title": "Chocobo Sage's House",
+      "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Chocobo-Sages-House.html",
+      "reviewed": "2026-10-06",
+      "type": "reference",
+      "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
+    },
+    {
+      "id": "mt-nibel",
+      "provider": "Jegged",
+      "title": "Mt. Nibel",
+      "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Mount-Nibel.html",
+      "reviewed": "2026-10-06",
+      "type": "reference",
+      "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
+    },
+    {
+      "id": "great-glacier",
+      "provider": "Jegged",
+      "title": "Great Glacier",
+      "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Great-Glacier.html",
+      "reviewed": "2026-10-06",
+      "type": "reference",
+      "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
+    },
+    {
+      "id": "corral-valley",
+      "provider": "Jegged",
+      "title": "Corral Valley",
+      "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Corel-Valley.html",
+      "reviewed": "2026-10-06",
+      "type": "reference",
+      "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
+    },
+    {
+      "id": "forgotten-capital",
+      "provider": "Jegged",
+      "title": "Forgotten Capital",
+      "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Forgotten-Capital.html",
+      "reviewed": "2026-10-06",
+      "type": "reference",
+      "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
+    },
+    {
+      "id": "sunken-gelnika",
+      "provider": "Jegged",
+      "title": "Sunken Gelnika",
+      "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Sunken-Gelnika.html",
+      "reviewed": "2026-10-06",
+      "type": "reference",
+      "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
+    },
+    {
+      "id": "gold-saucer",
+      "provider": "Jegged",
+      "title": "Gold Saucer",
+      "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Gold-Saucer.html",
+      "reviewed": "2026-10-06",
+      "type": "reference",
+      "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
+    },
+    {
+      "id": "northern-cave",
+      "provider": "Jegged",
+      "title": "Northern Cave",
+      "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Northern-Cave.html",
+      "reviewed": "2026-10-06",
+      "type": "reference",
+      "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
+    },
+    {
+      "id": "round-island",
+      "provider": "Jegged",
+      "title": "Round Island",
+      "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Round-Island.html",
+      "reviewed": "2026-10-06",
+      "type": "reference",
+      "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
+    }
+  ],
+  "entities": [
+    {
+      "id": "midgar",
+      "kind": "city",
+      "canonicalName": "Midgar",
+      "localizedNames": {
+        "en": "Midgar",
+        "zh-CN": "Midgar",
+        "zh-TW": "Midgar",
+        "ja": "Midgar",
+        "ko": "Midgar"
+      },
+      "aliases": [
+        "Sector 5 gate",
+        "mds5_5",
+        "米德加",
+        "ミッドガル",
+        "미드가르"
+      ],
+      "summary": {
+        "en": "A large city divided into eight sectors.",
+        "zh-CN": "分为八个区域的大都市。",
+        "zh-TW": "分為八個區域的大都市。",
+        "ja": "八つの区画に分かれた大都市。",
+        "ko": "여덟 구역으로 나뉜 대도시."
+      },
+      "region": "eastern",
+      "tags": [
+        "place"
+      ],
+      "spoilerLevel": "none",
+      "spatialBinding": {
+        "kind": "location",
+        "locationId": "midgar"
+      },
+      "relatedLocations": [
+        "midgar"
+      ],
+      "relatedEntities": [
+        "kalm"
+      ],
+      "collectibles": [],
+      "secrets": [],
+      "sources": [
+        "field-identity",
+        "midgar"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "kalm",
+      "kind": "town",
+      "canonicalName": "Kalm",
+      "localizedNames": {
+        "en": "Kalm",
+        "zh-CN": "Kalm",
+        "zh-TW": "Kalm",
+        "ja": "Kalm",
+        "ko": "Kalm"
+      },
+      "aliases": [
+        "elm",
+        "卡姆",
+        "カーム",
+        "캄"
+      ],
+      "summary": {
+        "en": "A town near Midgar, with an inn and shops.",
+        "zh-CN": "米德加附近设有旅馆与商店的小镇。",
+        "zh-TW": "米德加附近設有旅館與商店的小鎮。",
+        "ja": "ミッドガル近郊の、宿屋と店がある町。",
+        "ko": "미드가르 근처에 여관과 상점이 있는 마을."
+      },
+      "region": "eastern",
+      "tags": [
+        "place"
+      ],
+      "spoilerLevel": "none",
+      "spatialBinding": {
+        "kind": "location",
+        "locationId": "kalm"
+      },
+      "relatedLocations": [
+        "kalm"
+      ],
+      "relatedEntities": [
+        "midgar"
+      ],
+      "collectibles": [
+        "kalm-treasure"
+      ],
+      "secrets": [],
+      "sources": [
+        "field-identity",
+        "kalm"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "chocobo-farm",
+      "kind": "chocobo_site",
+      "canonicalName": "Chocobo Farm",
+      "localizedNames": {
+        "en": "Chocobo Farm",
+        "zh-CN": "Chocobo Farm",
+        "zh-TW": "Chocobo Farm",
+        "ja": "Chocobo Farm",
+        "ko": "Chocobo Farm"
+      },
+      "aliases": [
+        "Chocobo Ranch",
+        "farm"
+      ],
+      "summary": {
+        "en": "A farm supporting chocobo capture and breeding.",
+        "zh-CN": "提供陆行鸟捕捉与繁育支持的农场。",
+        "zh-TW": "提供陸行鳥捕捉與繁育支援的農場。",
+        "ja": "チョコボの捕獲と交配を支援する牧場。",
+        "ko": "초코보 포획과 교배를 돕는 농장."
+      },
+      "region": "eastern",
+      "tags": [
+        "place"
+      ],
+      "spoilerLevel": "none",
+      "spatialBinding": {
+        "kind": "location",
+        "locationId": "chocobo-farm"
+      },
+      "relatedLocations": [
+        "chocobo-farm"
+      ],
+      "relatedEntities": [
+        "chocobo-sages-house"
+      ],
+      "collectibles": [],
+      "secrets": [],
+      "sources": [
+        "field-identity",
+        "chocobo-farm"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "mythril-mine",
+      "kind": "dungeon",
+      "canonicalName": "Mythril Mine",
+      "localizedNames": {
+        "en": "Mythril Mine",
+        "zh-CN": "Mythril Mine",
+        "zh-TW": "Mythril Mine",
+        "ja": "Mythril Mine",
+        "ko": "Mythril Mine"
+      },
+      "aliases": [
+        "Mythril Mines",
+        "psdun_1",
+        "psdun_2"
+      ],
+      "summary": {
+        "en": "A mine passage connecting the marsh approach to the Junon area.",
+        "zh-CN": "连接沼泽一侧与朱农地区的矿洞通道。",
+        "zh-TW": "連接沼澤一側與朱農地區的礦洞通道。",
+        "ja": "湿地側とジュノン地方を結ぶ鉱山の通路。",
+        "ko": "습지 쪽과 주논 지역을 잇는 광산 통로."
+      },
+      "region": "eastern",
+      "tags": [
+        "place"
+      ],
+      "spoilerLevel": "none",
+      "spatialBinding": {
+        "kind": "location",
+        "locationId": "mythril-mine"
+      },
+      "relatedLocations": [
+        "mythril-mine"
+      ],
+      "relatedEntities": [],
+      "collectibles": [
+        "mine-materia"
+      ],
+      "secrets": [],
+      "sources": [
+        "field-identity",
+        "mythril-mine"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "fort-condor",
+      "kind": "world_map_site",
+      "canonicalName": "Fort Condor",
+      "localizedNames": {
+        "en": "Fort Condor",
+        "zh-CN": "Fort Condor",
+        "zh-TW": "Fort Condor",
+        "ja": "Fort Condor",
+        "ko": "Fort Condor"
+      },
+      "aliases": [
+        "condor1"
+      ],
+      "summary": {
+        "en": "A reactor site with a defensive battle minigame.",
+        "zh-CN": "设有防御战小游戏的魔晄炉地点。",
+        "zh-TW": "設有防禦戰小遊戲的魔晄爐地點。",
+        "ja": "防衛戦のミニゲームがある魔晄炉の拠点。",
+        "ko": "방어전 미니게임이 있는 마황로 거점."
+      },
+      "region": "eastern",
+      "tags": [
+        "place"
+      ],
+      "spoilerLevel": "none",
+      "spatialBinding": {
+        "kind": "location",
+        "locationId": "fort-condor"
+      },
+      "relatedLocations": [
+        "fort-condor"
+      ],
+      "relatedEntities": [],
+      "collectibles": [],
+      "secrets": [],
+      "sources": [
+        "field-identity",
+        "fort-condor"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "junon",
+      "kind": "city",
+      "canonicalName": "Junon",
+      "localizedNames": {
+        "en": "Junon",
+        "zh-CN": "Junon",
+        "zh-TW": "Junon",
+        "ja": "Junon",
+        "ko": "Junon"
+      },
+      "aliases": [
+        "Lower Junon",
+        "ujunon1",
+        "朱农",
+        "朱農",
+        "ジュノン",
+        "주논"
+      ],
+      "summary": {
+        "en": "A coastal military city with a port linking the continents.",
+        "zh-CN": "拥有跨大陆港口的沿海军事城市。",
+        "zh-TW": "擁有跨大陸港口的沿海軍事城市。",
+        "ja": "大陸間を結ぶ港がある沿岸の軍事都市。",
+        "ko": "대륙을 잇는 항구가 있는 해안 군사 도시."
+      },
+      "region": "eastern",
+      "tags": [
+        "place"
+      ],
+      "spoilerLevel": "none",
+      "spatialBinding": {
+        "kind": "location",
+        "locationId": "junon"
+      },
+      "relatedLocations": [
+        "junon"
+      ],
+      "relatedEntities": [
+        "costa-del-sol"
+      ],
+      "collectibles": [
+        "junon-enemy-skill"
+      ],
+      "secrets": [],
+      "sources": [
+        "field-identity",
+        "junon"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "temple-of-the-ancients",
+      "kind": "dungeon",
+      "canonicalName": "Temple of the Ancients",
+      "localizedNames": {
+        "en": "Temple of the Ancients",
+        "zh-CN": "Temple of the Ancients",
+        "zh-TW": "Temple of the Ancients",
+        "ja": "Temple of the Ancients",
+        "ko": "Temple of the Ancients"
+      },
+      "aliases": [
+        "jtempl"
+      ],
+      "summary": {
+        "en": "An island temple containing a dungeon.",
+        "zh-CN": "内部设有迷宫的岛上神殿。",
+        "zh-TW": "內部設有迷宮的島上神殿。",
+        "ja": "内部がダンジョンになっている島の神殿。",
+        "ko": "내부에 던전이 있는 섬의 신전."
+      },
+      "region": "islands",
+      "tags": [
+        "place"
+      ],
+      "spoilerLevel": "none",
+      "spatialBinding": {
+        "kind": "location",
+        "locationId": "temple-of-the-ancients"
+      },
+      "relatedLocations": [
+        "temple-of-the-ancients"
+      ],
+      "relatedEntities": [],
+      "collectibles": [
+        "temple-black-materia"
+      ],
+      "secrets": [],
+      "sources": [
+        "field-identity",
+        "temple-of-the-ancients"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "old-mans-house",
+      "kind": "settlement",
+      "canonicalName": "Old Man's House",
+      "localizedNames": {
+        "en": "Old Man's House",
+        "zh-CN": "Old Man's House",
+        "zh-TW": "Old Man's House",
+        "ja": "Old Man's House",
+        "ko": "Old Man's House"
+      },
+      "aliases": [
+        "zz1"
+      ],
+      "summary": {
+        "en": "A riverbank cave where an old man offers conditional rewards.",
+        "zh-CN": "老人按条件赠送奖励的河岸洞穴。",
+        "zh-TW": "老人依條件贈送獎勵的河岸洞穴。",
+        "ja": "老人から条件付きの報酬を受け取れる川辺の洞窟。",
+        "ko": "노인이 조건에 따라 보상을 주는 강변 동굴."
+      },
+      "region": "eastern",
+      "tags": [
+        "place",
+        "secret"
+      ],
+      "spoilerLevel": "none",
+      "spatialBinding": {
+        "kind": "location",
+        "locationId": "old-mans-house"
+      },
+      "relatedLocations": [
+        "old-mans-house"
+      ],
+      "relatedEntities": [
+        "weapon-sellers-house"
+      ],
+      "collectibles": [
+        "old-man-mythril"
+      ],
+      "secrets": [],
+      "sources": [
+        "field-identity",
+        "old-man"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "weapon-sellers-house",
+      "kind": "world_map_site",
+      "canonicalName": "Weapon Seller's House",
+      "localizedNames": {
+        "en": "Weapon Seller's House",
+        "zh-CN": "Weapon Seller's House",
+        "zh-TW": "Weapon Seller's House",
+        "ja": "Weapon Seller's House",
+        "ko": "Weapon Seller's House"
+      },
+      "aliases": [
+        "zz2"
+      ],
+      "summary": {
+        "en": "A house where Mythril can be exchanged for rewards.",
+        "zh-CN": "可用秘银换取奖励的房屋。",
+        "zh-TW": "可用秘銀換取獎勵的房屋。",
+        "ja": "ミスリルを報酬と交換できる小屋。",
+        "ko": "미스릴을 보상으로 교환할 수 있는 집."
+      },
+      "region": "western",
+      "tags": [
+        "place",
+        "secret"
+      ],
+      "spoilerLevel": "none",
+      "spatialBinding": {
+        "kind": "location",
+        "locationId": "weapon-sellers-house"
+      },
+      "relatedLocations": [
+        "weapon-sellers-house"
+      ],
+      "relatedEntities": [
+        "old-mans-house"
+      ],
+      "collectibles": [
+        "weapon-mythril"
+      ],
+      "secrets": [],
+      "sources": [
+        "field-identity",
+        "weapon-seller"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "mideel",
+      "kind": "town",
+      "canonicalName": "Mideel",
+      "localizedNames": {
+        "en": "Mideel",
+        "zh-CN": "Mideel",
+        "zh-TW": "Mideel",
+        "ja": "Mideel",
+        "ko": "Mideel"
+      },
+      "aliases": [
+        "itown1a",
+        "itown1b"
+      ],
+      "summary": {
+        "en": "A town on the southeastern island, reached by airship.",
+        "zh-CN": "位于东南岛屿、可乘飞空艇抵达的小镇。",
+        "zh-TW": "位於東南島嶼、可乘飛空艇抵達的小鎮。",
+        "ja": "南東の島にある、飛空艇で訪れる町。",
+        "ko": "남동쪽 섬에 있으며 비공정으로 방문하는 마을."
+      },
+      "region": "islands",
+      "tags": [
+        "place"
+      ],
+      "spoilerLevel": "none",
+      "spatialBinding": {
+        "kind": "location",
+        "locationId": "mideel"
+      },
+      "relatedLocations": [
+        "mideel"
+      ],
+      "relatedEntities": [],
+      "collectibles": [],
+      "secrets": [],
+      "sources": [
+        "field-identity",
+        "mideel"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "quadra-magic-cave",
+      "kind": "materia_cave",
+      "canonicalName": "Quadra Magic Cave",
+      "localizedNames": {
+        "en": "Quadra Magic Cave",
+        "zh-CN": "Quadra Magic Cave",
+        "zh-TW": "Quadra Magic Cave",
+        "ja": "Quadra Magic Cave",
+        "ko": "Quadra Magic Cave"
+      },
+      "aliases": [
+        "zz7"
+      ],
+      "summary": {
+        "en": "A Materia cave containing Quadra Magic.",
+        "zh-CN": "藏有四重魔法魔晶石的洞窟。",
+        "zh-TW": "藏有四重魔法魔晶石的洞窟。",
+        "ja": "まほうみだれうちのマテリアがある洞窟。",
+        "ko": "쿼드라 매직 마테리아가 있는 동굴."
+      },
+      "region": "islands",
+      "tags": [
+        "place",
+        "secret"
+      ],
+      "spoilerLevel": "none",
+      "spatialBinding": {
+        "kind": "location",
+        "locationId": "quadra-magic-cave"
+      },
+      "relatedLocations": [
+        "quadra-magic-cave"
+      ],
+      "relatedEntities": [],
+      "collectibles": [
+        "quadra-magic-cave-reward"
+      ],
+      "secrets": [],
+      "sources": [
+        "field-identity",
+        "caves"
+      ],
+      "facts": [
+        {
+          "kind": "access",
+          "text": {
+            "en": "Blue, black or gold chocobo.",
+            "zh-CN": "蓝、黑或金色陆行鸟。",
+            "zh-TW": "藍、黑或金色陸行鳥。",
+            "ja": "青・黒・金チョコボ。",
+            "ko": "파랑·검정·골드 초코보."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "caves",
+            "wiki-caves"
+          ]
+        }
+      ],
+      "notes": []
+    },
+    {
+      "id": "costa-del-sol",
+      "kind": "town",
+      "canonicalName": "Costa del Sol",
+      "localizedNames": {
+        "en": "Costa del Sol",
+        "zh-CN": "Costa del Sol",
+        "zh-TW": "Costa del Sol",
+        "ja": "Costa del Sol",
+        "ko": "Costa del Sol"
+      },
+      "aliases": [
+        "del2"
+      ],
+      "summary": {
+        "en": "A seaside resort and port connected to Junon by ship.",
+        "zh-CN": "与朱农通航的海滨度假港镇。",
+        "zh-TW": "與朱農通航的海濱度假港鎮。",
+        "ja": "ジュノンと船で結ばれる海辺の保養地と港町。",
+        "ko": "주논과 배로 연결되는 해변 휴양지이자 항구 마을."
+      },
+      "region": "western",
+      "tags": [
+        "place"
+      ],
+      "spoilerLevel": "none",
+      "spatialBinding": {
+        "kind": "location",
+        "locationId": "costa-del-sol"
+      },
+      "relatedLocations": [
+        "costa-del-sol"
+      ],
+      "relatedEntities": [
+        "junon"
+      ],
+      "collectibles": [],
+      "secrets": [],
+      "sources": [
+        "field-identity",
+        "costa-del-sol"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "mt-corel",
+      "kind": "landmark",
+      "canonicalName": "Mt. Corel",
+      "localizedNames": {
+        "en": "Mt. Corel",
+        "zh-CN": "Mt. Corel",
+        "zh-TW": "Mt. Corel",
+        "ja": "Mt. Corel",
+        "ko": "Mt. Corel"
+      },
+      "aliases": [
+        "Mount Corel",
+        "mtcrl_0"
+      ],
+      "summary": {
+        "en": "A mountain passage near North Corel with a Mako reactor.",
+        "zh-CN": "北科雷尔附近设有魔晄炉的山地通道。",
+        "zh-TW": "北科雷爾附近設有魔晄爐的山地通道。",
+        "ja": "北コレル近郊の、魔晄炉がある山道。",
+        "ko": "노스 코렐 근처에 마황로가 있는 산길."
+      },
+      "region": "western",
+      "tags": [
+        "place"
+      ],
+      "spoilerLevel": "none",
+      "spatialBinding": {
+        "kind": "location",
+        "locationId": "mt-corel"
+      },
+      "relatedLocations": [
+        "mt-corel"
+      ],
+      "relatedEntities": [
+        "north-corel"
+      ],
+      "collectibles": [],
+      "secrets": [],
+      "sources": [
+        "field-identity",
+        "mt-corel"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "north-corel",
+      "kind": "town",
+      "canonicalName": "North Corel",
+      "localizedNames": {
+        "en": "North Corel",
+        "zh-CN": "North Corel",
+        "zh-TW": "North Corel",
+        "ja": "North Corel",
+        "ko": "North Corel"
+      },
+      "aliases": [
+        "Corel",
+        "ncorel",
+        "ncorel2"
+      ],
+      "summary": {
+        "en": "A settlement on the route to Gold Saucer.",
+        "zh-CN": "通往金碟游乐场路线上的聚落。",
+        "zh-TW": "通往金碟遊樂場路線上的聚落。",
+        "ja": "ゴールドソーサーへの経路上にある集落。",
+        "ko": "골드 소서로 가는 길에 있는 마을."
+      },
+      "region": "western",
+      "tags": [
+        "place"
+      ],
+      "spoilerLevel": "none",
+      "spatialBinding": {
+        "kind": "location",
+        "locationId": "north-corel"
+      },
+      "relatedLocations": [
+        "north-corel"
+      ],
+      "relatedEntities": [
+        "mt-corel"
+      ],
+      "collectibles": [],
+      "secrets": [],
+      "sources": [
+        "field-identity",
+        "north-corel"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "corel-desert",
+      "kind": "landmark",
+      "canonicalName": "Corel Desert",
+      "localizedNames": {
+        "en": "Corel Desert",
+        "zh-CN": "Corel Desert",
+        "zh-TW": "Corel Desert",
+        "ja": "Corel Desert",
+        "ko": "Corel Desert"
+      },
+      "aliases": [
+        "desert2"
+      ],
+      "summary": {
+        "en": "The desert approach associated with Corel Prison.",
+        "zh-CN": "与科雷尔监狱相连的沙漠通路。",
+        "zh-TW": "與科雷爾監獄相連的沙漠通路。",
+        "ja": "コレルプリズンに関係する砂漠側の通路。",
+        "ko": "코렐 프리즌과 연결되는 사막 쪽 통로."
+      },
+      "region": "western",
+      "tags": [
+        "place"
+      ],
+      "spoilerLevel": "none",
+      "spatialBinding": {
+        "kind": "location",
+        "locationId": "corel-desert"
+      },
+      "relatedLocations": [
+        "corel-desert"
+      ],
+      "relatedEntities": [],
+      "collectibles": [],
+      "secrets": [],
+      "sources": [
+        "field-identity",
+        "corel-desert"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "gongaga",
+      "kind": "village",
+      "canonicalName": "Gongaga",
+      "localizedNames": {
+        "en": "Gongaga",
+        "zh-CN": "Gongaga",
+        "zh-TW": "Gongaga",
+        "ja": "Gongaga",
+        "ko": "Gongaga"
+      },
+      "aliases": [
+        "gonjun2"
+      ],
+      "summary": {
+        "en": "An optional settlement beside a ruined reactor.",
+        "zh-CN": "废弃魔晄炉旁可选择造访的村落。",
+        "zh-TW": "廢棄魔晄爐旁可選擇造訪的村落。",
+        "ja": "壊れた魔晄炉のそばにある任意訪問の集落。",
+        "ko": "폐허가 된 마황로 옆에 있는 선택 방문 마을."
+      },
+      "region": "western",
+      "tags": [
+        "place"
+      ],
+      "spoilerLevel": "none",
+      "spatialBinding": {
+        "kind": "location",
+        "locationId": "gongaga"
+      },
+      "relatedLocations": [
+        "gongaga"
+      ],
+      "relatedEntities": [],
+      "collectibles": [
+        "gongaga-titan"
+      ],
+      "secrets": [],
+      "sources": [
+        "field-identity",
+        "gongaga"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "cosmo-canyon",
+      "kind": "settlement",
+      "canonicalName": "Cosmo Canyon",
+      "localizedNames": {
+        "en": "Cosmo Canyon",
+        "zh-CN": "Cosmo Canyon",
+        "zh-TW": "Cosmo Canyon",
+        "ja": "Cosmo Canyon",
+        "ko": "Cosmo Canyon"
+      },
+      "aliases": [
+        "cos_btm"
+      ],
+      "summary": {
+        "en": "A canyon settlement with shops.",
+        "zh-CN": "设有商店的峡谷聚落。",
+        "zh-TW": "設有商店的峽谷聚落。",
+        "ja": "店がある峡谷の集落。",
+        "ko": "상점이 있는 협곡 마을."
+      },
+      "region": "western",
+      "tags": [
+        "place"
+      ],
+      "spoilerLevel": "none",
+      "spatialBinding": {
+        "kind": "location",
+        "locationId": "cosmo-canyon"
+      },
+      "relatedLocations": [
+        "cosmo-canyon"
+      ],
+      "relatedEntities": [],
+      "collectibles": [],
+      "secrets": [],
+      "sources": [
+        "field-identity",
+        "cosmo-canyon"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "nibelheim",
+      "kind": "town",
+      "canonicalName": "Nibelheim",
+      "localizedNames": {
+        "en": "Nibelheim",
+        "zh-CN": "Nibelheim",
+        "zh-TW": "Nibelheim",
+        "ja": "Nibelheim",
+        "ko": "Nibelheim"
+      },
+      "aliases": [
+        "nivl_3"
+      ],
+      "summary": {
+        "en": "A town adjoining Mt. Nibel and the Shinra Mansion.",
+        "zh-CN": "邻接尼布尔山与神罗公馆的小镇。",
+        "zh-TW": "鄰接尼布爾山與神羅公館的小鎮。",
+        "ja": "ニブル山と神羅屋敷に隣接する町。",
+        "ko": "니블 산과 신라 저택에 인접한 마을."
+      },
+      "region": "western",
+      "tags": [
+        "place"
+      ],
+      "spoilerLevel": "none",
+      "spatialBinding": {
+        "kind": "location",
+        "locationId": "nibelheim"
+      },
+      "relatedLocations": [
+        "nibelheim"
+      ],
+      "relatedEntities": [
+        "mt-nibel"
+      ],
+      "collectibles": [],
+      "secrets": [],
+      "sources": [
+        "field-identity",
+        "nibelheim"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "rocket-town",
+      "kind": "town",
+      "canonicalName": "Rocket Town",
+      "localizedNames": {
+        "en": "Rocket Town",
+        "zh-CN": "Rocket Town",
+        "zh-TW": "Rocket Town",
+        "ja": "Rocket Town",
+        "ko": "Rocket Town"
+      },
+      "aliases": [
+        "rckt",
+        "rckt2"
+      ],
+      "summary": {
+        "en": "A northern town on the western continent, home to Cid.",
+        "zh-CN": "西部大陆北端、希德居住的小镇。",
+        "zh-TW": "西部大陸北端、希德居住的小鎮。",
+        "ja": "西の大陸北部にあるシドの住む町。",
+        "ko": "서쪽 대륙 북부에 있는 시드가 사는 마을."
+      },
+      "region": "western",
+      "tags": [
+        "place"
+      ],
+      "spoilerLevel": "none",
+      "spatialBinding": {
+        "kind": "location",
+        "locationId": "rocket-town"
+      },
+      "relatedLocations": [
+        "rocket-town"
+      ],
+      "relatedEntities": [
+        "mt-nibel"
+      ],
+      "collectibles": [],
+      "secrets": [],
+      "sources": [
+        "field-identity",
+        "rocket-town"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "lucrecias-cave",
+      "kind": "dungeon",
+      "canonicalName": "Lucrecia's Cave",
+      "localizedNames": {
+        "en": "Lucrecia's Cave",
+        "zh-CN": "Lucrecia's Cave",
+        "zh-TW": "Lucrecia's Cave",
+        "ja": "Lucrecia's Cave",
+        "ko": "Lucrecia's Cave"
+      },
+      "aliases": [
+        "zz4"
+      ],
+      "summary": {
+        "en": "An optional cave associated with Vincent.",
+        "zh-CN": "与文森特相关的可选洞穴。",
+        "zh-TW": "與文森特相關的可選洞穴。",
+        "ja": "ヴィンセントに関係する任意訪問の洞窟。",
+        "ko": "빈센트와 관련된 선택 방문 동굴."
+      },
+      "region": "western",
+      "tags": [
+        "place",
+        "secret"
+      ],
+      "spoilerLevel": "none",
+      "spatialBinding": {
+        "kind": "location",
+        "locationId": "lucrecias-cave"
+      },
+      "relatedLocations": [
+        "lucrecias-cave"
+      ],
+      "relatedEntities": [],
+      "collectibles": [
+        "lucrecia-rewards"
+      ],
+      "secrets": [],
+      "sources": [
+        "field-identity",
+        "lucrecia"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "hp-mp-cave",
+      "kind": "materia_cave",
+      "canonicalName": "HP↔MP Cave",
+      "localizedNames": {
+        "en": "HP↔MP Cave",
+        "zh-CN": "HP↔MP Cave",
+        "zh-TW": "HP↔MP Cave",
+        "ja": "HP↔MP Cave",
+        "ko": "HP↔MP Cave"
+      },
+      "aliases": [
+        "HP MP Cave",
+        "zz6"
+      ],
+      "summary": {
+        "en": "A Materia cave containing HP↔MP.",
+        "zh-CN": "藏有 HP↔MP 魔晶石的洞窟。",
+        "zh-TW": "藏有 HP↔MP 魔晶石的洞窟。",
+        "ja": "HPMPいれかえのマテリアがある洞窟。",
+        "ko": "HP↔MP 마테리아가 있는 동굴."
+      },
+      "region": "western",
+      "tags": [
+        "place",
+        "secret"
+      ],
+      "spoilerLevel": "none",
+      "spatialBinding": {
+        "kind": "location",
+        "locationId": "hp-mp-cave"
+      },
+      "relatedLocations": [
+        "hp-mp-cave"
+      ],
+      "relatedEntities": [],
+      "collectibles": [
+        "hp-mp-cave-reward"
+      ],
+      "secrets": [],
+      "sources": [
+        "field-identity",
+        "caves"
+      ],
+      "facts": [
+        {
+          "kind": "access",
+          "text": {
+            "en": "Black or gold chocobo.",
+            "zh-CN": "黑色或金色陆行鸟。",
+            "zh-TW": "黑色或金色陸行鳥。",
+            "ja": "黒・金チョコボ。",
+            "ko": "검정·골드 초코보."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "caves",
+            "wiki-caves"
+          ]
+        }
+      ],
+      "notes": []
+    },
+    {
+      "id": "wutai",
+      "kind": "town",
+      "canonicalName": "Wutai",
+      "localizedNames": {
+        "en": "Wutai",
+        "zh-CN": "Wutai",
+        "zh-TW": "Wutai",
+        "ja": "Wutai",
+        "ko": "Wutai"
+      },
+      "aliases": [
+        "uutai1",
+        "yougan3",
+        "五台",
+        "ウータイ",
+        "우타이"
+      ],
+      "summary": {
+        "en": "An optional town with a pagoda challenge.",
+        "zh-CN": "设有宝塔挑战的可选城镇。",
+        "zh-TW": "設有寶塔挑戰的可選城鎮。",
+        "ja": "五強の塔の挑戦がある任意訪問の町。",
+        "ko": "탑 도전이 있는 선택 방문 마을."
+      },
+      "region": "wutai",
+      "tags": [
+        "place"
+      ],
+      "spoilerLevel": "none",
+      "spatialBinding": {
+        "kind": "location",
+        "locationId": "wutai"
+      },
+      "relatedLocations": [
+        "wutai"
+      ],
+      "relatedEntities": [
+        "wutai-outskirts"
+      ],
+      "collectibles": [
+        "wutai-pagoda"
+      ],
+      "secrets": [],
+      "sources": [
+        "field-identity",
+        "wutai"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "wutai-outskirts",
+      "kind": "world_map_site",
+      "canonicalName": "Wutai Outskirts",
+      "localizedNames": {
+        "en": "Wutai Outskirts",
+        "zh-CN": "Wutai Outskirts",
+        "zh-TW": "Wutai Outskirts",
+        "ja": "Wutai Outskirts",
+        "ko": "Wutai Outskirts"
+      },
+      "aliases": [
+        "yougan"
+      ],
+      "summary": {
+        "en": "A separate source-linked approach to Wutai.",
+        "zh-CN": "源数据记录的五台独立入口通路。",
+        "zh-TW": "來源資料記錄的五台獨立入口通路。",
+        "ja": "ソースで識別されたウータイへの別の進入路。",
+        "ko": "원본 데이터로 확인된 우타이의 별도 진입로."
+      },
+      "region": "wutai",
+      "tags": [
+        "place"
+      ],
+      "spoilerLevel": "none",
+      "spatialBinding": {
+        "kind": "location",
+        "locationId": "wutai-outskirts"
+      },
+      "relatedLocations": [
+        "wutai-outskirts"
+      ],
+      "relatedEntities": [
+        "wutai"
+      ],
+      "collectibles": [],
+      "secrets": [],
+      "sources": [
+        "field-identity",
+        "field-reference"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "mime-cave",
+      "kind": "materia_cave",
+      "canonicalName": "Mime Cave",
+      "localizedNames": {
+        "en": "Mime Cave",
+        "zh-CN": "Mime Cave",
+        "zh-TW": "Mime Cave",
+        "ja": "Mime Cave",
+        "ko": "Mime Cave"
+      },
+      "aliases": [
+        "zz5"
+      ],
+      "summary": {
+        "en": "A Materia cave containing Mime.",
+        "zh-CN": "藏有模仿魔晶石的洞窟。",
+        "zh-TW": "藏有模仿魔晶石的洞窟。",
+        "ja": "ものまねのマテリアがある洞窟。",
+        "ko": "흉내내기 마테리아가 있는 동굴."
+      },
+      "region": "wutai",
+      "tags": [
+        "place",
+        "secret"
+      ],
+      "spoilerLevel": "none",
+      "spatialBinding": {
+        "kind": "location",
+        "locationId": "mime-cave"
+      },
+      "relatedLocations": [
+        "mime-cave"
+      ],
+      "relatedEntities": [],
+      "collectibles": [
+        "mime-cave-reward"
+      ],
+      "secrets": [],
+      "sources": [
+        "field-identity",
+        "caves"
+      ],
+      "facts": [
+        {
+          "kind": "access",
+          "text": {
+            "en": "Green, black or gold chocobo.",
+            "zh-CN": "绿、黑或金色陆行鸟。",
+            "zh-TW": "綠、黑或金色陸行鳥。",
+            "ja": "緑・黒・金チョコボ。",
+            "ko": "초록·검정·골드 초코보."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "caves",
+            "wiki-caves"
+          ]
+        }
+      ],
+      "notes": []
+    },
+    {
+      "id": "bone-village",
+      "kind": "village",
+      "canonicalName": "Bone Village",
+      "localizedNames": {
+        "en": "Bone Village",
+        "zh-CN": "Bone Village",
+        "zh-TW": "Bone Village",
+        "ja": "Bone Village",
+        "ko": "Bone Village"
+      },
+      "aliases": [
+        "bonevil"
+      ],
+      "summary": {
+        "en": "An archaeological excavation settlement at the Sleeping Forest approach.",
+        "zh-CN": "位于沉睡森林通路的考古挖掘聚落。",
+        "zh-TW": "位於沉睡森林通路的考古挖掘聚落。",
+        "ja": "眠りの森への道にある発掘の集落。",
+        "ko": "잠의 숲으로 가는 길에 있는 발굴 마을."
+      },
+      "region": "northern",
+      "tags": [
+        "place"
+      ],
+      "spoilerLevel": "none",
+      "spatialBinding": {
+        "kind": "location",
+        "locationId": "bone-village"
+      },
+      "relatedLocations": [
+        "bone-village"
+      ],
+      "relatedEntities": [
+        "forgotten-capital"
+      ],
+      "collectibles": [
+        "bone-harp",
+        "bone-key"
+      ],
+      "secrets": [],
+      "sources": [
+        "field-identity",
+        "bone-village"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "corral-valley-cave",
+      "kind": "dungeon",
+      "canonicalName": "Corral Valley Cave",
+      "localizedNames": {
+        "en": "Corral Valley Cave",
+        "zh-CN": "Corral Valley Cave",
+        "zh-TW": "Corral Valley Cave",
+        "ja": "Corral Valley Cave",
+        "ko": "Corral Valley Cave"
+      },
+      "aliases": [
+        "sandun_2"
+      ],
+      "summary": {
+        "en": "A source-identified cave approach in the northern valley.",
+        "zh-CN": "北方谷地中由源数据识别的洞穴入口。",
+        "zh-TW": "北方谷地中由來源資料識別的洞穴入口。",
+        "ja": "北の谷でソースにより識別された洞窟への進入路。",
+        "ko": "북쪽 계곡에서 원본 데이터로 확인된 동굴 진입로."
+      },
+      "region": "northern",
+      "tags": [
+        "place"
+      ],
+      "spoilerLevel": "none",
+      "spatialBinding": {
+        "kind": "location",
+        "locationId": "corral-valley-cave"
+      },
+      "relatedLocations": [
+        "corral-valley-cave"
+      ],
+      "relatedEntities": [],
+      "collectibles": [],
+      "secrets": [],
+      "sources": [
+        "field-identity",
+        "field-reference"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "icicle-inn",
+      "kind": "town",
+      "canonicalName": "Icicle Inn",
+      "localizedNames": {
+        "en": "Icicle Inn",
+        "zh-CN": "Icicle Inn",
+        "zh-TW": "Icicle Inn",
+        "ja": "Icicle Inn",
+        "ko": "Icicle Inn"
+      },
+      "aliases": [
+        "snow"
+      ],
+      "summary": {
+        "en": "A northern town on the approach to Great Glacier.",
+        "zh-CN": "通往大冰川的北方小镇。",
+        "zh-TW": "通往大冰川的北方小鎮。",
+        "ja": "大氷河への経路にある北の町。",
+        "ko": "대빙하로 가는 길에 있는 북쪽 마을."
+      },
+      "region": "northern",
+      "tags": [
+        "place"
+      ],
+      "spoilerLevel": "none",
+      "spatialBinding": {
+        "kind": "location",
+        "locationId": "icicle-inn"
+      },
+      "relatedLocations": [
+        "icicle-inn"
+      ],
+      "relatedEntities": [],
+      "collectibles": [],
+      "secrets": [],
+      "sources": [
+        "field-identity",
+        "icicle-inn"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "chocobo-sages-house",
+      "kind": "chocobo_site",
+      "canonicalName": "Chocobo Sage's House",
+      "localizedNames": {
+        "en": "Chocobo Sage's House",
+        "zh-CN": "Chocobo Sage's House",
+        "zh-TW": "Chocobo Sage's House",
+        "ja": "Chocobo Sage's House",
+        "ko": "Chocobo Sage's House"
+      },
+      "aliases": [
+        "zz3"
+      ],
+      "summary": {
+        "en": "A remote house offering chocobo breeding advice and supplies.",
+        "zh-CN": "提供陆行鸟繁育建议与用品的偏远小屋。",
+        "zh-TW": "提供陸行鳥繁育建議與用品的偏遠小屋。",
+        "ja": "チョコボ交配の助言と用品を提供する辺境の小屋。",
+        "ko": "초코보 교배 조언과 용품을 제공하는 외딴집."
+      },
+      "region": "northern",
+      "tags": [
+        "place",
+        "secret"
+      ],
+      "spoilerLevel": "none",
+      "spatialBinding": {
+        "kind": "location",
+        "locationId": "chocobo-sages-house"
+      },
+      "relatedLocations": [
+        "chocobo-sages-house"
+      ],
+      "relatedEntities": [
+        "chocobo-farm"
+      ],
+      "collectibles": [
+        "sage-enemy-skill"
+      ],
+      "secrets": [],
+      "sources": [
+        "field-identity",
+        "chocobo-sages-house"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "round-island-cave",
+      "kind": "materia_cave",
+      "canonicalName": "Round Island Cave",
+      "localizedNames": {
+        "en": "Round Island Cave",
+        "zh-CN": "Round Island Cave",
+        "zh-TW": "Round Island Cave",
+        "ja": "Round Island Cave",
+        "ko": "Round Island Cave"
+      },
+      "aliases": [
+        "Knights of the Round Cave",
+        "zz8",
+        "Knights of Round",
+        "ナイツオブラウンド",
+        "圆桌骑士",
+        "圓桌騎士"
+      ],
+      "summary": {
+        "en": "A secret island cave containing Knights of the Round.",
+        "zh-CN": "藏有圆桌骑士魔晶石的隐秘岛屿洞窟。",
+        "zh-TW": "藏有圓桌騎士魔晶石的隱密島嶼洞窟。",
+        "ja": "ナイツオブラウンドのマテリアがある隠れた島の洞窟。",
+        "ko": "나이츠 오브 라운드 마테리아가 있는 숨겨진 섬 동굴."
+      },
+      "region": "islands",
+      "tags": [
+        "place",
+        "secret"
+      ],
+      "spoilerLevel": "none",
+      "spatialBinding": {
+        "kind": "location",
+        "locationId": "round-island-cave"
+      },
+      "relatedLocations": [
+        "round-island-cave"
+      ],
+      "relatedEntities": [
+        "round-island"
+      ],
+      "collectibles": [
+        "round-island-cave-reward"
+      ],
+      "secrets": [],
+      "sources": [
+        "field-identity",
+        "caves"
+      ],
+      "facts": [
+        {
+          "kind": "access",
+          "text": {
+            "en": "Gold chocobo.",
+            "zh-CN": "金色陆行鸟。",
+            "zh-TW": "金色陸行鳥。",
+            "ja": "金チョコボ。",
+            "ko": "골드 초코보."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "caves",
+            "wiki-caves"
+          ]
+        }
+      ],
+      "notes": []
+    },
+    {
+      "id": "impaled-zolom",
+      "kind": "landmark",
+      "canonicalName": "Impaled Zolom",
+      "localizedNames": {
+        "en": "Impaled Zolom",
+        "zh-CN": "Impaled Zolom",
+        "zh-TW": "Impaled Zolom",
+        "ja": "Impaled Zolom",
+        "ko": "Impaled Zolom"
+      },
+      "aliases": [
+        "sichi"
+      ],
+      "summary": {
+        "en": "A roadside scene between the marsh and Mythril Mine.",
+        "zh-CN": "沼泽与秘银矿洞之间的路旁场景。",
+        "zh-TW": "沼澤與秘銀礦洞之間的路旁場景。",
+        "ja": "湿地とミスリルマインの間にある道沿いの場面。",
+        "ko": "습지와 미스릴 광산 사이 길가의 장면."
+      },
+      "region": "eastern",
+      "tags": [
+        "place"
+      ],
+      "spoilerLevel": "minor",
+      "spatialBinding": {
+        "kind": "location",
+        "locationId": "impaled-zolom"
+      },
+      "relatedLocations": [
+        "impaled-zolom"
+      ],
+      "relatedEntities": [],
+      "collectibles": [],
+      "secrets": [],
+      "sources": [
+        "field-identity",
+        "field-reference"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "mt-nibel",
+      "kind": "landmark",
+      "canonicalName": "Mt. Nibel",
+      "localizedNames": {
+        "en": "Mt. Nibel",
+        "zh-CN": "Mt. Nibel",
+        "zh-TW": "Mt. Nibel",
+        "ja": "Mt. Nibel",
+        "ko": "Mt. Nibel"
+      },
+      "aliases": [
+        "Mount Nibel",
+        "mtnvl2",
+        "mtnvl4"
+      ],
+      "summary": {
+        "en": "A mountain passage between Nibelheim and the Rocket Town area.",
+        "zh-CN": "连接尼布尔海姆与火箭村地区的山地通道。",
+        "zh-TW": "連接尼布爾海姆與火箭村地區的山地通道。",
+        "ja": "ニブルヘイムとロケット村地方を結ぶ山道。",
+        "ko": "니블헤임과 로켓 마을 지역을 잇는 산길."
+      },
+      "region": "western",
+      "tags": [
+        "place"
+      ],
+      "spoilerLevel": "none",
+      "spatialBinding": {
+        "kind": "location",
+        "locationId": "mt-nibel"
+      },
+      "relatedLocations": [
+        "mt-nibel"
+      ],
+      "relatedEntities": [
+        "nibelheim",
+        "rocket-town"
+      ],
+      "collectibles": [],
+      "secrets": [],
+      "sources": [
+        "field-identity",
+        "mt-nibel"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "great-glacier",
+      "kind": "landmark",
+      "canonicalName": "Great Glacier",
+      "localizedNames": {
+        "en": "Great Glacier",
+        "zh-CN": "Great Glacier",
+        "zh-TW": "Great Glacier",
+        "ja": "Great Glacier",
+        "ko": "Great Glacier"
+      },
+      "aliases": [
+        "hyou1"
+      ],
+      "summary": {
+        "en": "A northern ice region with several field discoveries.",
+        "zh-CN": "含有多项场景内发现内容的北方冰雪地区。",
+        "zh-TW": "含有多項場景內發現內容的北方冰雪地區。",
+        "ja": "いくつかのフィールド内の発見がある北の氷雪地帯。",
+        "ko": "여러 필드 발견물이 있는 북쪽 얼음 지역."
+      },
+      "region": "northern",
+      "tags": [
+        "place"
+      ],
+      "spoilerLevel": "none",
+      "spatialBinding": {
+        "kind": "location",
+        "locationId": "great-glacier"
+      },
+      "relatedLocations": [
+        "great-glacier"
+      ],
+      "relatedEntities": [],
+      "collectibles": [
+        "glacier-materia"
+      ],
+      "secrets": [],
+      "sources": [
+        "field-identity",
+        "great-glacier",
+        "wiki-glacier"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "corral-valley",
+      "kind": "landmark",
+      "canonicalName": "Corral Valley",
+      "localizedNames": {
+        "en": "Corral Valley",
+        "zh-CN": "Corral Valley",
+        "zh-TW": "Corral Valley",
+        "ja": "Corral Valley",
+        "ko": "Corral Valley"
+      },
+      "aliases": [
+        "sango2"
+      ],
+      "summary": {
+        "en": "A northern valley passage near the Forgotten Capital.",
+        "zh-CN": "遗忘之都附近的北方谷地通道。",
+        "zh-TW": "遺忘之都附近的北方谷地通道。",
+        "ja": "忘らるる都近郊の北の谷道。",
+        "ko": "잊혀진 도시 근처의 북쪽 계곡 통로."
+      },
+      "region": "northern",
+      "tags": [
+        "place"
+      ],
+      "spoilerLevel": "none",
+      "spatialBinding": {
+        "kind": "location",
+        "locationId": "corral-valley"
+      },
+      "relatedLocations": [
+        "corral-valley"
+      ],
+      "relatedEntities": [],
+      "collectibles": [],
+      "secrets": [],
+      "sources": [
+        "field-identity",
+        "corral-valley"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "forgotten-capital",
+      "kind": "dungeon",
+      "canonicalName": "Forgotten Capital",
+      "localizedNames": {
+        "en": "Forgotten Capital",
+        "zh-CN": "Forgotten Capital",
+        "zh-TW": "Forgotten Capital",
+        "ja": "Forgotten Capital",
+        "ko": "Forgotten Capital"
+      },
+      "aliases": [
+        "Forgotten City",
+        "City of the Ancients",
+        "lost1"
+      ],
+      "summary": {
+        "en": "A northern site also named the Forgotten City.",
+        "zh-CN": "亦称遗忘之城的北方地点。",
+        "zh-TW": "亦稱遺忘之城的北方地點。",
+        "ja": "忘らるる都市とも呼ばれる北の場所。",
+        "ko": "잊혀진 도시라고도 불리는 북쪽 장소."
+      },
+      "region": "northern",
+      "tags": [
+        "place"
+      ],
+      "spoilerLevel": "none",
+      "spatialBinding": {
+        "kind": "location",
+        "locationId": "forgotten-capital"
+      },
+      "relatedLocations": [
+        "forgotten-capital"
+      ],
+      "relatedEntities": [
+        "bone-village"
+      ],
+      "collectibles": [],
+      "secrets": [],
+      "sources": [
+        "field-identity",
+        "forgotten-capital"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "quadra-magic-cave-reward",
+      "kind": "collectible_site",
+      "canonicalName": "Quadra Magic",
+      "localizedNames": {
+        "en": "Quadra Magic",
+        "zh-CN": "Quadra Magic",
+        "zh-TW": "Quadra Magic",
+        "ja": "Quadra Magic",
+        "ko": "Quadra Magic"
+      },
+      "aliases": [
+        "zz7",
+        "Quadra Magic"
+      ],
+      "summary": {
+        "en": "Materia found inside this cave.",
+        "zh-CN": "在该洞窟内部取得的魔晶石。",
+        "zh-TW": "在該洞窟內部取得的魔晶石。",
+        "ja": "この洞窟の内部で入手するマテリア。",
+        "ko": "이 동굴 내부에서 얻는 마테리아."
+      },
+      "region": "islands",
+      "tags": [
+        "collectible",
+        "materia"
+      ],
+      "spoilerLevel": "minor",
+      "spatialBinding": {
+        "kind": "field_parent",
+        "locationId": "quadra-magic-cave",
+        "fieldNames": [
+          "zz7"
+        ]
+      },
+      "relatedLocations": [
+        "quadra-magic-cave"
+      ],
+      "relatedEntities": [
+        "quadra-magic-cave"
+      ],
+      "collectibles": [],
+      "secrets": [],
+      "sources": [
+        "caves",
+        "wiki-caves"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "hp-mp-cave-reward",
+      "kind": "collectible_site",
+      "canonicalName": "HP↔MP",
+      "localizedNames": {
+        "en": "HP↔MP",
+        "zh-CN": "HP↔MP",
+        "zh-TW": "HP↔MP",
+        "ja": "HP↔MP",
+        "ko": "HP↔MP"
+      },
+      "aliases": [
+        "HP MP Cave",
+        "zz6",
+        "HP<->MP"
+      ],
+      "summary": {
+        "en": "Materia found inside this cave.",
+        "zh-CN": "在该洞窟内部取得的魔晶石。",
+        "zh-TW": "在該洞窟內部取得的魔晶石。",
+        "ja": "この洞窟の内部で入手するマテリア。",
+        "ko": "이 동굴 내부에서 얻는 마테리아."
+      },
+      "region": "western",
+      "tags": [
+        "collectible",
+        "materia"
+      ],
+      "spoilerLevel": "minor",
+      "spatialBinding": {
+        "kind": "field_parent",
+        "locationId": "hp-mp-cave",
+        "fieldNames": [
+          "zz6"
+        ]
+      },
+      "relatedLocations": [
+        "hp-mp-cave"
+      ],
+      "relatedEntities": [
+        "hp-mp-cave"
+      ],
+      "collectibles": [],
+      "secrets": [],
+      "sources": [
+        "caves",
+        "wiki-caves"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "mime-cave-reward",
+      "kind": "collectible_site",
+      "canonicalName": "Mime",
+      "localizedNames": {
+        "en": "Mime",
+        "zh-CN": "Mime",
+        "zh-TW": "Mime",
+        "ja": "Mime",
+        "ko": "Mime"
+      },
+      "aliases": [
+        "zz5",
+        "Mime"
+      ],
+      "summary": {
+        "en": "Materia found inside this cave.",
+        "zh-CN": "在该洞窟内部取得的魔晶石。",
+        "zh-TW": "在該洞窟內部取得的魔晶石。",
+        "ja": "この洞窟の内部で入手するマテリア。",
+        "ko": "이 동굴 내부에서 얻는 마테리아."
+      },
+      "region": "wutai",
+      "tags": [
+        "collectible",
+        "materia"
+      ],
+      "spoilerLevel": "minor",
+      "spatialBinding": {
+        "kind": "field_parent",
+        "locationId": "mime-cave",
+        "fieldNames": [
+          "zz5"
+        ]
+      },
+      "relatedLocations": [
+        "mime-cave"
+      ],
+      "relatedEntities": [
+        "mime-cave"
+      ],
+      "collectibles": [],
+      "secrets": [],
+      "sources": [
+        "caves",
+        "wiki-caves"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "round-island-cave-reward",
+      "kind": "collectible_site",
+      "canonicalName": "Knights of the Round",
+      "localizedNames": {
+        "en": "Knights of the Round",
+        "zh-CN": "Knights of the Round",
+        "zh-TW": "Knights of the Round",
+        "ja": "Knights of the Round",
+        "ko": "Knights of the Round"
+      },
+      "aliases": [
+        "Knights of the Round Cave",
+        "zz8",
+        "Knights of Round",
+        "ナイツオブラウンド",
+        "圆桌骑士",
+        "圓桌騎士",
+        "Knights of the Round"
+      ],
+      "summary": {
+        "en": "Materia found inside this cave.",
+        "zh-CN": "在该洞窟内部取得的魔晶石。",
+        "zh-TW": "在該洞窟內部取得的魔晶石。",
+        "ja": "この洞窟の内部で入手するマテリア。",
+        "ko": "이 동굴 내부에서 얻는 마테리아."
+      },
+      "region": "islands",
+      "tags": [
+        "collectible",
+        "materia"
+      ],
+      "spoilerLevel": "minor",
+      "spatialBinding": {
+        "kind": "field_parent",
+        "locationId": "round-island-cave",
+        "fieldNames": [
+          "zz8"
+        ]
+      },
+      "relatedLocations": [
+        "round-island-cave"
+      ],
+      "relatedEntities": [
+        "round-island-cave"
+      ],
+      "collectibles": [],
+      "secrets": [],
+      "sources": [
+        "caves",
+        "wiki-caves"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "kalm-treasure",
+      "kind": "treasure_group",
+      "canonicalName": "Megalixir",
+      "localizedNames": {
+        "en": "Megalixir",
+        "zh-CN": "Megalixir",
+        "zh-TW": "Megalixir",
+        "ja": "Megalixir",
+        "ko": "Megalixir"
+      },
+      "aliases": [],
+      "summary": {
+        "en": "A reward recorded inside the parent place; no exact world position.",
+        "zh-CN": "记录于父地点内部的奖励；没有世界地图精确坐标。",
+        "zh-TW": "記錄於父地點內部的獎勵；沒有世界地圖精確座標。",
+        "ja": "親の場所の内部にある報酬。ワールド上の正確な位置は未確定。",
+        "ko": "상위 장소 내부의 보상이며 월드의 정확한 위치는 미확인."
+      },
+      "region": "eastern",
+      "tags": [
+        "collectible"
+      ],
+      "spoilerLevel": "minor",
+      "spatialBinding": {
+        "kind": "parent_location",
+        "locationId": "kalm"
+      },
+      "relatedLocations": [
+        "kalm"
+      ],
+      "relatedEntities": [
+        "kalm"
+      ],
+      "collectibles": [],
+      "secrets": [],
+      "sources": [
+        "kalm"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "mine-materia",
+      "kind": "treasure_group",
+      "canonicalName": "Long Range",
+      "localizedNames": {
+        "en": "Long Range",
+        "zh-CN": "Long Range",
+        "zh-TW": "Long Range",
+        "ja": "Long Range",
+        "ko": "Long Range"
+      },
+      "aliases": [],
+      "summary": {
+        "en": "A reward recorded inside the parent place; no exact world position.",
+        "zh-CN": "记录于父地点内部的奖励；没有世界地图精确坐标。",
+        "zh-TW": "記錄於父地點內部的獎勵；沒有世界地圖精確座標。",
+        "ja": "親の場所の内部にある報酬。ワールド上の正確な位置は未確定。",
+        "ko": "상위 장소 내부의 보상이며 월드의 정확한 위치는 미확인."
+      },
+      "region": "eastern",
+      "tags": [
+        "collectible"
+      ],
+      "spoilerLevel": "minor",
+      "spatialBinding": {
+        "kind": "parent_location",
+        "locationId": "mythril-mine"
+      },
+      "relatedLocations": [
+        "mythril-mine"
+      ],
+      "relatedEntities": [
+        "mythril-mine"
+      ],
+      "collectibles": [],
+      "secrets": [],
+      "sources": [
+        "mythril-mine"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "junon-enemy-skill",
+      "kind": "treasure_group",
+      "canonicalName": "Enemy Skill",
+      "localizedNames": {
+        "en": "Enemy Skill",
+        "zh-CN": "Enemy Skill",
+        "zh-TW": "Enemy Skill",
+        "ja": "Enemy Skill",
+        "ko": "Enemy Skill"
+      },
+      "aliases": [],
+      "summary": {
+        "en": "A reward recorded inside the parent place; no exact world position.",
+        "zh-CN": "记录于父地点内部的奖励；没有世界地图精确坐标。",
+        "zh-TW": "記錄於父地點內部的獎勵；沒有世界地圖精確座標。",
+        "ja": "親の場所の内部にある報酬。ワールド上の正確な位置は未確定。",
+        "ko": "상위 장소 내부의 보상이며 월드의 정확한 위치는 미확인."
+      },
+      "region": "eastern",
+      "tags": [
+        "collectible"
+      ],
+      "spoilerLevel": "minor",
+      "spatialBinding": {
+        "kind": "parent_location",
+        "locationId": "junon"
+      },
+      "relatedLocations": [
+        "junon"
+      ],
+      "relatedEntities": [
+        "junon"
+      ],
+      "collectibles": [],
+      "secrets": [],
+      "sources": [
+        "junon"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "bone-harp",
+      "kind": "treasure_group",
+      "canonicalName": "Lunar Harp",
+      "localizedNames": {
+        "en": "Lunar Harp",
+        "zh-CN": "Lunar Harp",
+        "zh-TW": "Lunar Harp",
+        "ja": "Lunar Harp",
+        "ko": "Lunar Harp"
+      },
+      "aliases": [],
+      "summary": {
+        "en": "A reward recorded inside the parent place; no exact world position.",
+        "zh-CN": "记录于父地点内部的奖励；没有世界地图精确坐标。",
+        "zh-TW": "記錄於父地點內部的獎勵；沒有世界地圖精確座標。",
+        "ja": "親の場所の内部にある報酬。ワールド上の正確な位置は未確定。",
+        "ko": "상위 장소 내부의 보상이며 월드의 정확한 위치는 미확인."
+      },
+      "region": "northern",
+      "tags": [
+        "collectible"
+      ],
+      "spoilerLevel": "minor",
+      "spatialBinding": {
+        "kind": "parent_location",
+        "locationId": "bone-village"
+      },
+      "relatedLocations": [
+        "bone-village"
+      ],
+      "relatedEntities": [
+        "bone-village"
+      ],
+      "collectibles": [],
+      "secrets": [],
+      "sources": [
+        "bone-village"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "bone-key",
+      "kind": "treasure_group",
+      "canonicalName": "Key to Sector 5",
+      "localizedNames": {
+        "en": "Key to Sector 5",
+        "zh-CN": "Key to Sector 5",
+        "zh-TW": "Key to Sector 5",
+        "ja": "Key to Sector 5",
+        "ko": "Key to Sector 5"
+      },
+      "aliases": [],
+      "summary": {
+        "en": "A reward recorded inside the parent place; no exact world position.",
+        "zh-CN": "记录于父地点内部的奖励；没有世界地图精确坐标。",
+        "zh-TW": "記錄於父地點內部的獎勵；沒有世界地圖精確座標。",
+        "ja": "親の場所の内部にある報酬。ワールド上の正確な位置は未確定。",
+        "ko": "상위 장소 내부의 보상이며 월드의 정확한 위치는 미확인."
+      },
+      "region": "northern",
+      "tags": [
+        "collectible"
+      ],
+      "spoilerLevel": "minor",
+      "spatialBinding": {
+        "kind": "parent_location",
+        "locationId": "bone-village"
+      },
+      "relatedLocations": [
+        "bone-village"
+      ],
+      "relatedEntities": [
+        "bone-village"
+      ],
+      "collectibles": [],
+      "secrets": [],
+      "sources": [
+        "bone-village"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "gongaga-titan",
+      "kind": "treasure_group",
+      "canonicalName": "Titan",
+      "localizedNames": {
+        "en": "Titan",
+        "zh-CN": "Titan",
+        "zh-TW": "Titan",
+        "ja": "Titan",
+        "ko": "Titan"
+      },
+      "aliases": [],
+      "summary": {
+        "en": "A reward recorded inside the parent place; no exact world position.",
+        "zh-CN": "记录于父地点内部的奖励；没有世界地图精确坐标。",
+        "zh-TW": "記錄於父地點內部的獎勵；沒有世界地圖精確座標。",
+        "ja": "親の場所の内部にある報酬。ワールド上の正確な位置は未確定。",
+        "ko": "상위 장소 내부의 보상이며 월드의 정확한 위치는 미확인."
+      },
+      "region": "western",
+      "tags": [
+        "collectible"
+      ],
+      "spoilerLevel": "minor",
+      "spatialBinding": {
+        "kind": "parent_location",
+        "locationId": "gongaga"
+      },
+      "relatedLocations": [
+        "gongaga"
+      ],
+      "relatedEntities": [
+        "gongaga"
+      ],
+      "collectibles": [],
+      "secrets": [],
+      "sources": [
+        "gongaga"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "wutai-pagoda",
+      "kind": "treasure_group",
+      "canonicalName": "Leviathan / All Creation",
+      "localizedNames": {
+        "en": "Leviathan / All Creation",
+        "zh-CN": "Leviathan / All Creation",
+        "zh-TW": "Leviathan / All Creation",
+        "ja": "Leviathan / All Creation",
+        "ko": "Leviathan / All Creation"
+      },
+      "aliases": [],
+      "summary": {
+        "en": "A reward recorded inside the parent place; no exact world position.",
+        "zh-CN": "记录于父地点内部的奖励；没有世界地图精确坐标。",
+        "zh-TW": "記錄於父地點內部的獎勵；沒有世界地圖精確座標。",
+        "ja": "親の場所の内部にある報酬。ワールド上の正確な位置は未確定。",
+        "ko": "상위 장소 내부의 보상이며 월드의 정확한 위치는 미확인."
+      },
+      "region": "wutai",
+      "tags": [
+        "collectible"
+      ],
+      "spoilerLevel": "minor",
+      "spatialBinding": {
+        "kind": "parent_location",
+        "locationId": "wutai"
+      },
+      "relatedLocations": [
+        "wutai"
+      ],
+      "relatedEntities": [
+        "wutai"
+      ],
+      "collectibles": [],
+      "secrets": [],
+      "sources": [
+        "wutai"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "glacier-materia",
+      "kind": "treasure_group",
+      "canonicalName": "Alexander / Added Cut / All",
+      "localizedNames": {
+        "en": "Alexander / Added Cut / All",
+        "zh-CN": "Alexander / Added Cut / All",
+        "zh-TW": "Alexander / Added Cut / All",
+        "ja": "Alexander / Added Cut / All",
+        "ko": "Alexander / Added Cut / All"
+      },
+      "aliases": [],
+      "summary": {
+        "en": "A reward recorded inside the parent place; no exact world position.",
+        "zh-CN": "记录于父地点内部的奖励；没有世界地图精确坐标。",
+        "zh-TW": "記錄於父地點內部的獎勵；沒有世界地圖精確座標。",
+        "ja": "親の場所の内部にある報酬。ワールド上の正確な位置は未確定。",
+        "ko": "상위 장소 내부의 보상이며 월드의 정확한 위치는 미확인."
+      },
+      "region": "northern",
+      "tags": [
+        "collectible"
+      ],
+      "spoilerLevel": "minor",
+      "spatialBinding": {
+        "kind": "parent_location",
+        "locationId": "great-glacier"
+      },
+      "relatedLocations": [
+        "great-glacier"
+      ],
+      "relatedEntities": [
+        "great-glacier"
+      ],
+      "collectibles": [],
+      "secrets": [],
+      "sources": [
+        "wiki-glacier"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "weapon-mythril",
+      "kind": "treasure_group",
+      "canonicalName": "Great Gospel / Gold Armlet",
+      "localizedNames": {
+        "en": "Great Gospel / Gold Armlet",
+        "zh-CN": "Great Gospel / Gold Armlet",
+        "zh-TW": "Great Gospel / Gold Armlet",
+        "ja": "Great Gospel / Gold Armlet",
+        "ko": "Great Gospel / Gold Armlet"
+      },
+      "aliases": [],
+      "summary": {
+        "en": "A reward recorded inside the parent place; no exact world position.",
+        "zh-CN": "记录于父地点内部的奖励；没有世界地图精确坐标。",
+        "zh-TW": "記錄於父地點內部的獎勵；沒有世界地圖精確座標。",
+        "ja": "親の場所の内部にある報酬。ワールド上の正確な位置は未確定。",
+        "ko": "상위 장소 내부의 보상이며 월드의 정확한 위치는 미확인."
+      },
+      "region": "western",
+      "tags": [
+        "collectible"
+      ],
+      "spoilerLevel": "minor",
+      "spatialBinding": {
+        "kind": "parent_location",
+        "locationId": "weapon-sellers-house"
+      },
+      "relatedLocations": [
+        "weapon-sellers-house"
+      ],
+      "relatedEntities": [
+        "weapon-sellers-house"
+      ],
+      "collectibles": [],
+      "secrets": [],
+      "sources": [
+        "weapon-seller"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "old-man-mythril",
+      "kind": "treasure_group",
+      "canonicalName": "Mythril / Bolt Ring",
+      "localizedNames": {
+        "en": "Mythril / Bolt Ring",
+        "zh-CN": "Mythril / Bolt Ring",
+        "zh-TW": "Mythril / Bolt Ring",
+        "ja": "Mythril / Bolt Ring",
+        "ko": "Mythril / Bolt Ring"
+      },
+      "aliases": [],
+      "summary": {
+        "en": "A reward recorded inside the parent place; no exact world position.",
+        "zh-CN": "记录于父地点内部的奖励；没有世界地图精确坐标。",
+        "zh-TW": "記錄於父地點內部的獎勵；沒有世界地圖精確座標。",
+        "ja": "親の場所の内部にある報酬。ワールド上の正確な位置は未確定。",
+        "ko": "상위 장소 내부의 보상이며 월드의 정확한 위치는 미확인."
+      },
+      "region": "eastern",
+      "tags": [
+        "collectible"
+      ],
+      "spoilerLevel": "minor",
+      "spatialBinding": {
+        "kind": "parent_location",
+        "locationId": "old-mans-house"
+      },
+      "relatedLocations": [
+        "old-mans-house"
+      ],
+      "relatedEntities": [
+        "old-mans-house"
+      ],
+      "collectibles": [],
+      "secrets": [],
+      "sources": [
+        "old-man"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "lucrecia-rewards",
+      "kind": "treasure_group",
+      "canonicalName": "Death Penalty / Chaos",
+      "localizedNames": {
+        "en": "Death Penalty / Chaos",
+        "zh-CN": "Death Penalty / Chaos",
+        "zh-TW": "Death Penalty / Chaos",
+        "ja": "Death Penalty / Chaos",
+        "ko": "Death Penalty / Chaos"
+      },
+      "aliases": [],
+      "summary": {
+        "en": "A reward recorded inside the parent place; no exact world position.",
+        "zh-CN": "记录于父地点内部的奖励；没有世界地图精确坐标。",
+        "zh-TW": "記錄於父地點內部的獎勵；沒有世界地圖精確座標。",
+        "ja": "親の場所の内部にある報酬。ワールド上の正確な位置は未確定。",
+        "ko": "상위 장소 내부의 보상이며 월드의 정확한 위치는 미확인."
+      },
+      "region": "western",
+      "tags": [
+        "collectible"
+      ],
+      "spoilerLevel": "minor",
+      "spatialBinding": {
+        "kind": "parent_location",
+        "locationId": "lucrecias-cave"
+      },
+      "relatedLocations": [
+        "lucrecias-cave"
+      ],
+      "relatedEntities": [
+        "lucrecias-cave"
+      ],
+      "collectibles": [],
+      "secrets": [],
+      "sources": [
+        "lucrecia"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "sage-enemy-skill",
+      "kind": "collectible_site",
+      "canonicalName": "Enemy Skill",
+      "localizedNames": {
+        "en": "Enemy Skill",
+        "zh-CN": "Enemy Skill",
+        "zh-TW": "Enemy Skill",
+        "ja": "Enemy Skill",
+        "ko": "Enemy Skill"
+      },
+      "aliases": [
+        "敌人技能",
+        "敵人技能",
+        "てきのわざ",
+        "적의 기술"
+      ],
+      "summary": {
+        "en": "The green chocobo inside the house gives Enemy Skill Materia.",
+        "zh-CN": "屋内绿陆行鸟赠送敌人技能魔晶石。",
+        "zh-TW": "屋內綠陸行鳥贈送敵人技能魔晶石。",
+        "ja": "小屋の緑チョコボからてきのわざを入手する。",
+        "ko": "집 안의 초록 초코보가 적의 기술 마테리아를 준다."
+      },
+      "region": "northern",
+      "tags": [
+        "collectible"
+      ],
+      "spoilerLevel": "minor",
+      "spatialBinding": {
+        "kind": "field_parent",
+        "locationId": "chocobo-sages-house",
+        "fieldNames": [
+          "zz3"
+        ]
+      },
+      "relatedLocations": [
+        "chocobo-sages-house"
+      ],
+      "relatedEntities": [
+        "chocobo-sages-house"
+      ],
+      "collectibles": [],
+      "secrets": [],
+      "sources": [
+        "chocobo-sages-house"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "temple-black-materia",
+      "kind": "collectible_site",
+      "canonicalName": "Black Materia",
+      "localizedNames": {
+        "en": "Black Materia",
+        "zh-CN": "Black Materia",
+        "zh-TW": "Black Materia",
+        "ja": "Black Materia",
+        "ko": "Black Materia"
+      },
+      "aliases": [],
+      "summary": {
+        "en": "The temple itself shrinks into the Black Materia during the story.",
+        "zh-CN": "剧情中神殿本身缩小为黑魔晶石。",
+        "zh-TW": "劇情中神殿本身縮小為黑魔晶石。",
+        "ja": "物語で神殿そのものが黒マテリアへと縮む。",
+        "ko": "이야기에서 신전 자체가 흑마테리아로 축소된다."
+      },
+      "region": "islands",
+      "tags": [
+        "collectible"
+      ],
+      "spoilerLevel": "major",
+      "spatialBinding": {
+        "kind": "field_parent",
+        "locationId": "temple-of-the-ancients",
+        "fieldNames": [
+          "jtempl"
+        ]
+      },
+      "relatedLocations": [
+        "temple-of-the-ancients"
+      ],
+      "relatedEntities": [
+        "temple-of-the-ancients"
+      ],
+      "collectibles": [],
+      "secrets": [],
+      "sources": [
+        "temple-of-the-ancients"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "ancient-forest",
+      "kind": "secret_area",
+      "canonicalName": "Ancient Forest",
+      "localizedNames": {
+        "en": "Ancient Forest",
+        "zh-CN": "Ancient Forest",
+        "zh-TW": "Ancient Forest",
+        "ja": "Ancient Forest",
+        "ko": "Ancient Forest"
+      },
+      "aliases": [],
+      "summary": {
+        "en": "An optional forest dungeon with plant puzzles.",
+        "zh-CN": "包含植物谜题的可选森林迷宫。",
+        "zh-TW": "包含植物謎題的可選森林迷宮。",
+        "ja": "植物のパズルがある任意訪問の森のダンジョン。",
+        "ko": "식물 퍼즐이 있는 선택 방문 숲 던전."
+      },
+      "region": "western",
+      "tags": [
+        "place",
+        "secret"
+      ],
+      "spoilerLevel": "none",
+      "spatialBinding": {
+        "kind": "unresolved"
+      },
+      "relatedLocations": [],
+      "relatedEntities": [],
+      "collectibles": [
+        "forest-rewards"
+      ],
+      "secrets": [],
+      "sources": [
+        "wiki-forest"
+      ],
+      "facts": [
+        {
+          "kind": "access",
+          "text": {
+            "en": "Green, black or gold chocobo, or defeat Ultimate Weapon.",
+            "zh-CN": "绿、黑或金色陆行鸟，或击败终极武器。",
+            "zh-TW": "綠、黑或金色陸行鳥，或擊敗終極武器。",
+            "ja": "緑・黒・金チョコボ、またはアルテマウェポン撃破。",
+            "ko": "초록·검정·골드 초코보, 또는 얼티마 웨폰 격파."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "wiki-forest"
+          ]
+        }
+      ],
+      "notes": []
+    },
+    {
+      "id": "sunken-gelnika",
+      "kind": "vehicle_site",
+      "canonicalName": "Sunken Gelnika",
+      "localizedNames": {
+        "en": "Sunken Gelnika",
+        "zh-CN": "Sunken Gelnika",
+        "zh-TW": "Sunken Gelnika",
+        "ja": "Sunken Gelnika",
+        "ko": "Sunken Gelnika"
+      },
+      "aliases": [],
+      "summary": {
+        "en": "An optional underwater wreck reached by submarine.",
+        "zh-CN": "可乘潜艇抵达的海底沉船地点。",
+        "zh-TW": "可乘潛艇抵達的海底沉船地點。",
+        "ja": "潜水艦で訪れる任意探索の海底の残骸。",
+        "ko": "잠수함으로 방문하는 선택 탐험 해저 잔해."
+      },
+      "region": "underwater",
+      "tags": [
+        "place",
+        "secret"
+      ],
+      "spoilerLevel": "none",
+      "spatialBinding": {
+        "kind": "unresolved"
+      },
+      "relatedLocations": [],
+      "relatedEntities": [],
+      "collectibles": [
+        "gelnika-rewards"
+      ],
+      "secrets": [],
+      "sources": [
+        "sunken-gelnika"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "gold-saucer",
+      "kind": "world_map_site",
+      "canonicalName": "Gold Saucer",
+      "localizedNames": {
+        "en": "Gold Saucer",
+        "zh-CN": "Gold Saucer",
+        "zh-TW": "Gold Saucer",
+        "ja": "Gold Saucer",
+        "ko": "Gold Saucer"
+      },
+      "aliases": [],
+      "summary": {
+        "en": "An amusement complex with minigames.",
+        "zh-CN": "设有小游戏的游乐设施。",
+        "zh-TW": "設有小遊戲的遊樂設施。",
+        "ja": "ミニゲームがある娯楽施設。",
+        "ko": "미니게임이 있는 놀이 시설."
+      },
+      "region": "western",
+      "tags": [
+        "place"
+      ],
+      "spoilerLevel": "none",
+      "spatialBinding": {
+        "kind": "unresolved"
+      },
+      "relatedLocations": [],
+      "relatedEntities": [],
+      "collectibles": [],
+      "secrets": [],
+      "sources": [
+        "gold-saucer"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "northern-cave",
+      "kind": "dungeon",
+      "canonicalName": "Northern Cave",
+      "localizedNames": {
+        "en": "Northern Cave",
+        "zh-CN": "Northern Cave",
+        "zh-TW": "Northern Cave",
+        "ja": "Northern Cave",
+        "ko": "Northern Cave"
+      },
+      "aliases": [],
+      "summary": {
+        "en": "A cavern dungeon at the northern crater.",
+        "zh-CN": "北方陨石坑中的洞穴迷宫。",
+        "zh-TW": "北方隕石坑中的洞穴迷宮。",
+        "ja": "北のクレーターにある洞窟のダンジョン。",
+        "ko": "북쪽 크레이터에 있는 동굴 던전."
+      },
+      "region": "northern",
+      "tags": [
+        "place"
+      ],
+      "spoilerLevel": "none",
+      "spatialBinding": {
+        "kind": "unresolved"
+      },
+      "relatedLocations": [],
+      "relatedEntities": [],
+      "collectibles": [],
+      "secrets": [],
+      "sources": [
+        "northern-cave"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "forest-rewards",
+      "kind": "treasure_group",
+      "canonicalName": "Slash-All / Typoon / Apocalypse",
+      "localizedNames": {
+        "en": "Slash-All / Typoon / Apocalypse",
+        "zh-CN": "Slash-All / Typoon / Apocalypse",
+        "zh-TW": "Slash-All / Typoon / Apocalypse",
+        "ja": "Slash-All / Typoon / Apocalypse",
+        "ko": "Slash-All / Typoon / Apocalypse"
+      },
+      "aliases": [
+        "Typhon",
+        "Typhoon"
+      ],
+      "summary": {
+        "en": "A reward recorded inside the parent place; no exact world position.",
+        "zh-CN": "记录于父地点内部的奖励；没有世界地图精确坐标。",
+        "zh-TW": "記錄於父地點內部的獎勵；沒有世界地圖精確座標。",
+        "ja": "親の場所の内部にある報酬。ワールド上の正確な位置は未確定。",
+        "ko": "상위 장소 내부의 보상이며 월드의 정확한 위치는 미확인."
+      },
+      "region": "western",
+      "tags": [
+        "collectible"
+      ],
+      "spoilerLevel": "minor",
+      "spatialBinding": {
+        "kind": "unresolved"
+      },
+      "relatedLocations": [],
+      "relatedEntities": [
+        "ancient-forest"
+      ],
+      "collectibles": [],
+      "secrets": [],
+      "sources": [
+        "forest-guide"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "gelnika-rewards",
+      "kind": "treasure_group",
+      "canonicalName": "Double Cut / Hades / Highwind",
+      "localizedNames": {
+        "en": "Double Cut / Hades / Highwind",
+        "zh-CN": "Double Cut / Hades / Highwind",
+        "zh-TW": "Double Cut / Hades / Highwind",
+        "ja": "Double Cut / Hades / Highwind",
+        "ko": "Double Cut / Hades / Highwind"
+      },
+      "aliases": [],
+      "summary": {
+        "en": "A reward recorded inside the parent place; no exact world position.",
+        "zh-CN": "记录于父地点内部的奖励；没有世界地图精确坐标。",
+        "zh-TW": "記錄於父地點內部的獎勵；沒有世界地圖精確座標。",
+        "ja": "親の場所の内部にある報酬。ワールド上の正確な位置は未確定。",
+        "ko": "상위 장소 내부의 보상이며 월드의 정확한 위치는 미확인."
+      },
+      "region": "underwater",
+      "tags": [
+        "collectible"
+      ],
+      "spoilerLevel": "minor",
+      "spatialBinding": {
+        "kind": "unresolved"
+      },
+      "relatedLocations": [],
+      "relatedEntities": [
+        "sunken-gelnika"
+      ],
+      "collectibles": [],
+      "secrets": [],
+      "sources": [
+        "sunken-gelnika"
+      ],
+      "facts": [],
+      "notes": []
+    },
+    {
+      "id": "round-island",
+      "kind": "landmark",
+      "canonicalName": "Round Island",
+      "localizedNames": {
+        "en": "Round Island",
+        "zh-CN": "Round Island",
+        "zh-TW": "Round Island",
+        "ja": "Round Island",
+        "ko": "Round Island"
+      },
+      "aliases": [],
+      "summary": {
+        "en": "A hidden island containing the Knights of the Round cave.",
+        "zh-CN": "藏有圆桌骑士洞窟的隐秘岛屿。",
+        "zh-TW": "藏有圓桌騎士洞窟的隱密島嶼。",
+        "ja": "ナイツオブラウンドの洞窟がある隠れた島。",
+        "ko": "나이츠 오브 라운드 동굴이 있는 숨겨진 섬."
+      },
+      "region": "islands",
+      "tags": [
+        "place",
+        "secret"
+      ],
+      "spoilerLevel": "minor",
+      "spatialBinding": {
+        "kind": "parent_location",
+        "locationId": "round-island-cave"
+      },
+      "relatedLocations": [],
+      "relatedEntities": [
+        "round-island-cave"
+      ],
+      "collectibles": [],
+      "secrets": [],
+      "sources": [
+        "round-island"
+      ],
+      "facts": [],
+      "notes": []
+    }
+  ],
+  "exclusions": []
+}

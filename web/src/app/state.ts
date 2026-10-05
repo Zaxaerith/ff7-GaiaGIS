@@ -2,10 +2,10 @@
 import type {MapId} from '../data/nativeMaps';
 import type {ProjectionId} from '../projections/Projection';
 
-export type AssetId='geometry'|'locations'|'encounters'|'events'|'routing'|'textures'|'WM2'|'WM3'|'textures-WM2'|'textures-WM3'|'transitions'|'explorer'|'presentation';
+export type AssetId='geometry'|'locations'|'encounters'|'events'|'routing'|'textures'|'WM2'|'WM3'|'textures-WM2'|'textures-WM3'|'transitions'|'explorer'|'presentation'|'atlas';
 export type DataStatus='missing'|'optional'|'loading'|'loaded'|'incompatible'|'corrupt'|'legacy'|'unsupported';
 export interface AssetState {status:DataStatus;bytes:number;version?:number;reason?:string;sourceHashes?:Record<string,string>;}
-export type SelectionKind='triangle'|'location'|'entrance'|'encounter'|'event'|'transition'|'route'|'measurement'|'explorer';
+export type SelectionKind='triangle'|'location'|'entrance'|'encounter'|'event'|'transition'|'route'|'measurement'|'explorer'|'atlas';
 export interface Selection {kind:SelectionKind;id:string;mapId:MapId;geographicPoint?:[number,number,number];}
 export type PanelId='explore'|'layers'|'analysis'|'map'|'view'|'data';
 export interface PreferenceState {panel:PanelId;language:'en'|'zh-CN'|'zh-TW'|'ja'|'ko';graticule:string;surfaceStyle:'terrain'|'region'|'texture';}
@@ -61,6 +61,8 @@ export function capabilities(s:Readonly<AppState>):Record<Capability,boolean>{
 }
 export interface FeatureDefinition {id:string;labelKey:string;requiredCapabilities:Capability[];requiredData:AssetId[];supportedMaps:MapId[];defaultVisibility:boolean;panel:PanelId;}
 export const features:FeatureDefinition[]=[
+ {id:'atlas',labelKey:'atlas.title',requiredCapabilities:[],requiredData:[],supportedMaps:['WM0'],defaultVisibility:true,panel:'explore'},
+ {id:'atlas-markers',labelKey:'atlas.title',requiredCapabilities:['canShowLocations'],requiredData:['locations'],supportedMaps:['WM0'],defaultVisibility:false,panel:'layers'},
  {id:'locations',labelKey:'ui.locations',requiredCapabilities:['canShowLocations'],requiredData:['locations'],supportedMaps:['WM0'],defaultVisibility:true,panel:'explore'},
  {id:'encounters',labelKey:'ui.encounters',requiredCapabilities:['canShowEncounters'],requiredData:['encounters'],supportedMaps:['WM0'],defaultVisibility:false,panel:'layers'},
  {id:'tracks',labelKey:'ui.tracks',requiredCapabilities:['canInspectSurface'],requiredData:['geometry'],supportedMaps:['WM0'],defaultVisibility:false,panel:'layers'},
