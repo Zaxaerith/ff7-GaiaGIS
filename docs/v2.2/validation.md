@@ -46,7 +46,7 @@ Acceptance date: 2026-10-06 (Asia/Hong_Kong). Baseline: main / `5924fa6f29501085
 | 38 | Mobile QA | 390px and 320px: card, source links, keyboard search and no horizontal overflow; screenshots visually inspected. |
 | 39 | Python tests | 303 passed, 0 skipped/failures/errors; actual source enabled. Atlas targeted 17 pass. Climate tests executed: 0. |
 | 40 | Web tests | 560 passed / 5 skipped / 0 failed across 22 files; Atlas suite 23 passes. Five skipped tests require optional private fixtures at historical public-data test paths; actual current workspace is separately exercised in browser/Python. |
-| 41 | Browser checks | 57 / 57 pass: 48 Atlas and 10 fallback checks, zero page errors/external requests. |
+| 41 | Browser checks | 58 / 58 pass: 48 Atlas and 10 fallback checks, zero page errors/external requests. |
 | 42 | Regression | 303 non-climate Python + full Web suites, 13 projection transitions, real routing/Explorer, native WM2 switch, optional pack degradation and stale-context cleanup. 484 protected files unchanged. |
 | 43 | Desktop | 1440 × 900 actual local launcher, card/source/route/Explorer/layer/spoiler/locales pass. |
 | 44 | 390px | Actual launcher acceptance passes; no overflow. |
