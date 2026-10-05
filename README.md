@@ -1,197 +1,151 @@
 # GaiaGIS
 
-Multi-Map Gaia development adds WM2 Underwater and WM3 Great Glacier as
-independent native 3D/top-down maps with optional original textures, visual
-height exaggeration, source picking and transition provenance. Local maps are
-not automatically global Gaia layers: no WM2/WM3 geographic transform, physical
-measurements or gameplay/routing rules are assigned without evidence. WM0 V1
-and all 13 views retain their existing behavior.
+An interactive GIS reconstruction of FINAL FANTASY VII's polygonal Gaia world map.
+Explore geography, original local artwork, gameplay attributes and source provenance
+in a globe, thirteen map views and native world maps.
 
-Generate optional native datasets from your own installation:
+**V1 Geometric Gaia is the canonical GaiaGIS reconstruction. It is a mathematical
+reconstruction, not official/canonical Final Fantasy VII geography.** Its Earth-sized
+reference sphere is an assumption, not a measurement of Gaia.
 
-```powershell
-python -B scripts/build_multimap_assets.py "D:\SteamLibrary\steamapps\common\FINAL FANTASY VII Steam Edition"
-```
+FINAL FANTASY VII WM0 → polygon mesh → periodic topology analysis → inverse-Mercator
+parameterization → Earth-sized Gaia sphere → GIS → interactive Web viewer → map projections.
 
-Choose Underwater/Great Glacier in the Viewer, load its `gaia-map-WM2.bin` or
-`gaia-map-WM3.bin` from `output/v1_8/data/`, then optionally load its matching
-`gaia-textures-WM2.bin`/`gaia-textures-WM3.bin`. `gaia-transitions.json` is a
-separate optional local file. All these files remain excluded from public Git
-and source-only builds. See [multi-map data](docs/v1.8/multimap-data.md) and
-[coordinate spaces](docs/v1.8/coordinate-spaces.md).
+This public repository and its hosted Viewer are **code-only**. They contain no game
+assets or complete derived geometry, textures, models, animations, POI, encounters,
+events, routing, transitions or native/Explorer datasets. Generate a private local
+workspace from your own installation, then open its folder in the Viewer. Local files
+stay in the browser; there is no backend, upload, analytics or account system.
 
-A mathematical GIS reconstruction of Final Fantasy VII's polygonal world map, with an interactive globe and multiple map projections.
+## Explore and inspect
 
-**V1 Geometric Gaia is the canonical GaiaGIS reconstruction. V1 is a mathematical reconstruction, not official/canonical Final Fantasy VII geography.** The Earth-sized reference radius is an assumption, not a measurement of Gaia.
+- **Explore:** named locations and field entrances, search by name/alias/internal
+  field, shortest-path fly-to, provenance Inspector and verified-entrance context actions.
+- **Layers:** gameplay terrain/region, random encounter zones/raw rate, Chocobo Tracks,
+  static terrain compatibility for 10 movement profiles, Highwind landing, spatial world
+  events and source script-trigger highlighting.
+- **Analysis:** conservative static reachability/routes over source topology, spherical
+  distance/area, local projection scales/Tissot, linked projection comparison,
+  independent movement-route comparison and four-class reachability comparison.
+- **Map:** WM0 reconstructed Gaia, WM2 Underwater and WM3 Great Glacier as separate
+  native3D/top-down maps. Transition provenance retains unresolved transforms.
+- **View:** Globe, Equirectangular, Mercator, Mollweide, Orthographic, **Equal Earth**,
+  Winkel Tripel, Robinson, Natural Earth I, Sinusoidal, Gall–Peters, Lambert Azimuthal
+  Equal-Area and Azimuthal Equidistant. Adaptive labeled graticule, smooth morphing,
+  original locally generated textures, filtering and visual relief.
+- **Data:** one folder/multi-file workspace loader, per-asset status, source/hash checks
+  and path-free diagnostics. Existing individual file choosers remain available.
 
-FINAL FANTASY VII WM0 → polygon mesh → periodic topology analysis → inverse-Mercator parameterization → Earth-sized Gaia sphere → GIS → interactive Web viewer → map projections.
+**Explorer** offers third-person keyboard/touch previews using locally decoded original
+models, skeletons and animation frames: Cloud/Tifa/Cid, Buggy, Tiny Bronco, five Chocobo
+variants, Highwind, native WM2 Submarine and WM3 party previews. Explorer v2 borrows
+loaded map surfaces rather than duplicating them; legacy v1 packs remain supported.
+A persistent Exit HUD returns to the previous overview. Runtime gameplay is not simulated.
 
-This is a **code-only project**. The repository contains no FF7 game data, complete derived Gaia/native-map geometry, decoded textures, POI coordinates, encounter tables, world-event/transition coordinates or routing topology. Users generate data from their own installation and load it locally. v1.8 is the published baseline; v1.9 Explorer Mode is a local development candidate awaiting publication approval. [v1.8 validation](docs/v1.8/validation.md) · [v1.7 validation](docs/v1.7/validation.md) · [v1.6 validation](docs/v1.6/validation.md) · [Stable v1.0 notes](docs/releases/v1.0.0.md) · [Data policy](docs/data-and-copyright.md).
+One primary sidebar/mobile drawer and a common context Inspector unify these workflows.
+Desktop and320/390px mobile layouts, keyboard focus, reduced motion, and English,
+简体中文, 繁體中文, 日本語 and 한국어 are supported. Safe view/panel preferences persist locally.
 
-## Explorer Mode (v1.9)
+## Generate your local workspace
 
-Drop a locally generated original FF7 world-map model onto a source surface and
-explore with a third-person camera, keyboard or touch controls. WM0 supports
-Cloud/Tifa/Cid, Buggy, Tiny Bronco, five Chocobo traversal/tint variants and
-Highwind flight with static landing eligibility. WM2 Submarine and WM3 party
-exploration are explicitly native geometry previews; original movement/collision
-is not verified. Story/save/vehicle ownership is not simulated.
-
-```powershell
-python -B scripts/build_explorer_assets.py "YOUR_FF7_INSTALLATION"
-```
-
-Load `output/v1_9/gaia-explorer.bin` through **Explorer → Load Explorer pack**
-after your local geometry. Original models, skeletons, textures, animation frames
-and this pack remain local-only. Animation uses preserved source frames with
-explicit preview timing, not asserted Steam2026 runtime timing.
-[Model research](docs/v1.9/explorer-model-research.md) · [Local pack](docs/v1.9/explorer-data.md) · [Movement limits](docs/v1.9/movement.md) · [Validation](docs/v1.9/validation.md).
-
-## Viewer
-
-- Thirteen views: Globe, Equirectangular, Mercator, Mollweide, Orthographic, **Equal Earth**, Winkel Tripel, Robinson, Natural Earth I, Sinusoidal, Gall–Peters, Lambert Azimuthal Equal-Area and Azimuthal Equidistant. Categorized projection selection, property information and rotating azimuthal centers.
-- Orbit/pan, wheel and touch pinch zoom, projection morphing, reset and north-up compass.
-- Adaptive labeled graticule: Auto or fixed 90°–0.5° spacing, optional minor lines, equator/0-degree longitude highlights, hemisphere coordinates and optional globe shading.
-- FF7 gameplay terrain or region colors, complete observed-category legend, approximate region-center navigation, triangle grid and synthetic-cap distinction.
-- Click/tap inspector retains source map/section/mesh/triangle lineage. Synthetic caps have no fabricated FF7 attributes.
-- Responsive mobile sheets, keyboard map navigation, reduced-motion handling, loading retry and graphics-context recovery.
-- About/help explains local setup, reconstruction assumptions, research status and licenses.
-- Browser-local loading of gaia-meta.json + gaia-mesh.bin. Files are verified with SHA-256 and never uploaded.
-- Optional named locations and field entrances, locally generated from your own installation: markers, major-location labels, category filters, name/alias/internal-field search, fly-to and entrance provenance inspection across projections.
-- Traversal & Vehicles: static classic-PC terrain compatibility for On Foot, Buggy, water Tiny Bronco, five Chocobo variants and Submarine surface; separate Highwind landing initiation, four-state legend and comparison Inspector. Runtime/story state is not simulated; static reachability is a separate analysis.
-- Optional World Encounters: Encounter Zones, raw Encounter Rate, independent Chocobo Tracks, and triangle encounter/Mystery Ninja/Chocobo metadata. Weights are not absolute probabilities; runtime state is not simulated.
-- Optional World Events & Scripted Objects: spatially anchored world-script events, conditional field transitions, script-defined model placements, trigger highlighting, category filters and provenance Inspector. Scripted battle support preserves raw IDs; events without a reliable anchor remain unresolved. Runtime story state and moving-object positions are not simulated.
-- Static Route Analysis: source-edge components, reachable locations and single-mode routes over verified entrance triangles. Nine ground/water movement profiles; conditional terrain excluded by default. Distances use the assumed reference sphere, not travel time or current gameplay availability.
-- Measurement: multi-point great-circle distance and simple spherical polygon area on the assumed reference sphere; values remain unchanged across all thirteen views.
-- Projection Analysis: numerical local scales, area scale, angular deformation and Tissot indicatrices. Equal Earth is equal-area and pseudocylindrical; Mercator preserves local angles while increasing area scale toward the poles.
-- Comparison: linked projection split views (stacked on mobile), four-class terrain/reachability comparison and nine independent movement routes with at most three displayed corridors.
-- Internationalization: English, 简体中文, 繁體中文, 日本語 and 한국어; immediate language switching, local preference persistence and English fallback.
-
-TypeScript, Vite and Three.js; no backend or UI framework. d3 is a test oracle only. The browser needs WebGL2 and HTTPS or localhost for checksum verification. GPU/device performance varies.
-
-### Analysis & Adaptive Cartography (v1.6)
-
-After loading V1 geometry, use **Display → Graticule spacing** or **Analysis → Measurement / Projection Analysis / Compare**. Measurement accepts surface taps, markers or exact longitude/latitude input; area reports the smaller spherical region, km² and sphere percentage. The assumed radius is 6,371,008.8 m, not official FF7 dimensions. Tissot and scale factors are local planar diagnostics; Globe has no intrinsic planar Jacobian.
-
-Navigate the left/top comparison view; the second shares its geographic center and normalized zoom, location selection, routes and measurements. Routing/Compare use the shared From/To and conditional-terrain controls. Terrain comparison counts static Allowed only, while reachable-area comparison uses the existing conservative graph. Route comparison additionally requires locally loaded Locations and Routing data. No new game-derived dataset is required. Runtime/story state, vehicle transfers and gameplay travel time remain outside scope. [Adaptive grid](docs/v1.6/adaptive-graticule.md) · [Measurement](docs/v1.6/measurement.md) · [Projection factors](docs/v1.6/projection-analysis.md) · [Comparison scope](docs/v1.6/comparison.md).
-
-## Textured Relief Gaia
-
-Original WM0 artwork can be loaded locally and reprojected through V1 Geometric Gaia in all thirteen views. This is **not an official spherical Gaia texture**. Surface Style, Nearest/Linear filtering and optional faceted relief shading coexist with GIS overlays and projection comparison. Visual relief has 0×/1×/10×/25×/50×/100× presets and bounded Custom controls; canonical coordinates, measurements and routing remain unchanged.
-
-After generating your V1 geometry, run from the project root:
+Python 3.12+ and Node 22.12+ are required. Run from the repository root:
 
 ```powershell
-python -B scripts/build_texture_assets.py "D:\SteamLibrary\steamapps\common\FINAL FANTASY VII Steam Edition"
-```
-
-Load `output/v1_7/gaia-textures.bin` with **Load Textures**. Use `--meta` if your V1 metadata is elsewhere. Textures are extracted locally from your own FF7 installation. **No FF7 texture assets, atlas, complete UV dataset or textured screenshots are distributed.** Animated source artwork uses a deterministic static first-frame preview. [Texture research](docs/v1.7/texture-research.md) · [Local pack](docs/v1.7/texture-data.md) · [Visual relief](docs/v1.7/relief.md).
-
-## Run locally
-
-Node.js 24 is used for validation (package minimum 22.12). From the project root:
-
-```powershell
-Set-Location web
+. ./scripts/use_workspace_environment.ps1
+$env:PYTHONPATH = Join-Path (Get-Location).Path 'src'
+python -B -m gaiagis.build_workspace --source "YOUR_FF7_INSTALLATION" --output local-workspace
+cd web
 npm ci
-npm test
 npm run dev
 ```
 
-Open http://127.0.0.1:5173/. Existing locally generated V1 data in web/public/data/ loads automatically. A fresh source checkout shows a local-file chooser and setup help; it contains no game-derived geometry.
+Fresh GIS generation needs GDAL/PROJ, normally an existing QGIS runtime. On Windows,
+set `GAIAGIS_QGIS_ROOT` to your supported OSGeo4W/QGIS root if needed. The generator
+can also reuse a compatible Stage 1 cache with `--stage1`; it never installs or modifies
+QGIS or FF7. [Setup and usage](docs/user-guide.md) explains environment and compatibility.
 
-To generate the default V1 dataset, use your own FF7 installation, Python 3.12+ and an installed Windows QGIS/OSGeo4W runtime with GDAL/PROJ/PyQGIS. See [local GIS setup](docs/local-gis-build.md) for supported layout and configuration. From the project root, substitute your actual installation paths:
+In **Data → Open workspace folder**, select `local-workspace`. Alternatively choose
+`gaia-workspace.json` and its files together. The manifest binds13payloads through
+relative names, dependencies, sizes and hashes; optional files degrade independently.
+The minimum legacy workflow still loads `gaia-meta.json` + `gaia-mesh.bin`. Individual
+Locations/Encounters/Events/Textures/Routing/native/Explorer inputs remain supported.
 
-```powershell
-. .\scripts\use_workspace_environment.ps1
-python -m venv --without-pip .venv
-.\.venv\Scripts\python.exe -B scripts\build_gaia.py --qgis-root 'YOUR_QGIS_ROOT' --source 'YOUR_FF7_INSTALLATION' --output output
-.\.venv\Scripts\python.exe -B scripts\build_web_assets.py
-```
+The CLI runs existing stable exporters incrementally. Outputs, caches and temporary
+files stay inside the repository and are ignored by Git. FF7 is strictly read-only.
+Neither original files nor generated local datasets should be shared as release assets.
 
-The parser reads your game installation without modifying it. The default V1 build creates local GIS products; the Web exporter creates **web/public/data/gaia-meta.json** and **web/public/data/gaia-mesh.bin**. Run the Viewer as above, then use **About / help → Choose both V1 files** to select these two files together. They stay in your browser and are never uploaded. Local development also loads generated files automatically when present.
-
-The Viewer accepts the fingerprinted default V1 transport, not arbitrary reconstructed or climate-modified datasets. The core FF7 parser independently discovers compatible layouts without an AppID or fingerprint-only rejection rule. Do not change reconstruction parameters when generating V1 data.
-
-### Optional locations (v1.1)
-
-```powershell
-python -B scripts/build_poi_assets.py --source 'YOUR_FF7_INSTALLATION'
-```
-
-This creates **web/public/data/gaia-poi.json** using WM0 trigger triangles, world scripts, FIELD.TBL and your English flevel.lgp/maplist. In the Viewer, use **Display → Load Locations** after loading the original two V1 files. The POI dataset is locally generated from the user's own FF7 installation and is not distributed publicly. Without it, the map works normally. Search supports names, aliases and internal field names; selected locations expose every resolved entrance and its provenance. Gold Saucer and Northern Cave remain unresolved in the static trigger extractor. [Data schema and provenance](docs/v1.1/poi-data.md) · [Entrance research](docs/v1.1/field-entrance-research.md).
-
-### Optional encounters (v1.2)
+## Build and validate
 
 ```powershell
-python -B scripts/build_encounter_assets.py --source 'YOUR_FF7_INSTALLATION'
-```
-
-Generate **web/public/data/gaia-encounters.json**, then use **Display → Load Encounters**. This optional dataset binds enc_w.bin tables to existing triangle region/terrain lineage. Chocobo Tracks uses the independent MAP flag and works without the file. Gameplay terrain is not land cover, and encounter regions are not ecological regions. The lookup follows documented classic PC behavior; 2026 runtime code equivalence is not yet verified. No encounter dataset is distributed publicly. [Encounter research](docs/v1.2/encounter-research.md) · [Schema and generation](docs/v1.2/encounter-data.md) · [Local validation](docs/v1.2/validation.md).
-
-### Traversal & Vehicles (v1.3)
-
-Select **Display → Color layer → Traversal**, then a Movement mode. The small public rule profile reuses your local V1 terrain/script/lineage; **no additional dataset file is required**. Allowed means an ordinary static terrain mask passes, not guaranteed movement or story/runtime reachability. Highwind Landing shows initiation eligibility rather than airborne travel. Bridge history, boarding/candidate points and a Chocobo exit height gate remain explicitly separate. Current Steam 2026 runtime equivalence is not verified. Chocobo Tracks and Encounters remain independent. [Research and 32-terrain matrix](docs/v1.3/traversal-research.md) · [Profile/data](docs/v1.3/traversal-data.md) · [Local validation](docs/v1.3/validation.md).
-
-### Optional world events (v1.4)
-
-```powershell
-python -B scripts/build_event_assets.py --source 'YOUR_FF7_INSTALLATION'
-```
-
-Generate private **web/public/data/gaia-events.json**, then use **Display → Load Events**. World Events defaults off; enable it to navigate event anchors. Script Triggers highlights existing source triangles without adding another mesh. The bounded analyzer reads WM0, wm0.ev, FIELD.TBL and English flevel.lgp/maplist, reusing the V1 transform. It reports potential events and unresolved candidates, not current gameplay availability. Northern Cave gains a separate terrain-gated event anchor; Gold Saucer has a script-defined model placement but its entrance linkage remains unresolved. The v1.1 POI extraction policy is unchanged. No derived event dataset is distributed. [Research](docs/v1.4/world-events-research.md) · [Schema and generation](docs/v1.4/world-events-data.md) · [Local validation](docs/v1.4/validation.md).
-
-### Route Analysis (v1.5)
-
-```powershell
-python -B scripts/build_routing_assets.py --source 'YOUR_FF7_INSTALLATION'
-```
-
-Generate private **web/public/data/gaia-routing.bin**, then use **Analysis → Load Routing** alongside V1 geometry and optional Locations. Choose From/To and one movement mode, highlight a reachable component or find a route. The graph uses exact source edges including height, joins the E/W seam, leaves N/S cut and excludes synthetic caps. Ambiguous edges are conservatively excluded. All verified entrances are candidates; no nearest-marker inference is used. Highwind Landing is not a route profile. Runtime/story/save state, boarding, bridge history and global gameplay reachability are not simulated. [Routing policy](docs/v1.5/routing-research.md) · [Transport and provenance](docs/v1.5/routing-data.md).
-
-### Internationalization and Projection Gallery (v1.5)
-
-Use **About/help → Language**, or an explicit URL such as `?lang=zh-CN`. Switching keeps loaded data and analysis intact; preferences stay in localStorage. Technical IDs and verified FF7 proper names remain unchanged. [i18n behavior](docs/v1.5/i18n.md).
-
-The projection gallery adds eight views, including Equal Earth, an equal-area projection introduced in 2018. No flat map preserves area, shape, distance and direction everywhere. Projection changes affect display, not the V1 reconstruction or routing graph; all views use a custom Gaia coordinate system. [Projection properties, numeric references and clipping limits](docs/v1.5/projections.md).
-
-## Production and release
-
-```powershell
-Set-Location web
-npm run build          # local production; includes locally present data
-npm run preview        # local production preview
-npm run build:release  # public code-only artifact; excludes ALL public data
+cd web
+npm test
+npm run build
+npm run build:release
 npm run audit:release
 npm run preview:release
 ```
 
-dist/ is for private local use. **Publish only dist-release/**: it contains application code and license notices, with no game-derived geometry, metadata or screenshots. Users open their private V1 files in the browser. Both directories are ignored by Git. GAIA_BASE_PATH configures a repository subpath; the default is ./.
+`build:release` produces an audited code-only application. It intentionally starts
+without geography and supports local workspace loading. The manual Pages workflow
+keeps this same boundary. WebGL2 and HTTPS/localhost are required; performance depends
+on browser/GPU. [v2.0 validation](docs/v2.0/validation.md) records the local RC evidence.
+No remote publication follows development automatically.
 
-The manual [Pages workflow](.github/workflows/deploy-pages.yml) builds and audits the code-only artifact. The hosted Viewer starts with a local-file chooser; it contains no geometry. [Web CI](.github/workflows/web-checks.yml) tests and builds a clean source checkout without FF7, QGIS or climate runs. See [release guide](docs/web-release.md) and [release validation](docs/web-v1-release-validation.md).
+Public tests use synthetic fixtures; actual-source checks run locally when inputs
+exist and explicitly skip in a clean checkout. Climate simulations are excluded from
+application/release validation. Existing parser, geometry, gameplay and Viewer tests
+remain regression coverage.
 
-## Geometry and assumptions
+## Reconstruction and limits
 
-WM0 has 142586 base triangles; V1 adds 9792 synthetic ocean cap triangles. Source connectivity and lineage are retained. Observed W=294912, H=229376 raw units lead to source latitudes +/-80.071528814895 degrees through inverse Mercator. The N/S cycle is cut; E/W stays longitude-periodic. Radius 6371008.8 m, vertical scale 1 m/raw unit and geographic orientation are reconstruction assumptions, not FF7 canon.
+WM0's 142,586 base triangles form a raw periodic surface. V1 cuts the N/S ocean seam,
+retains E/W longitude periodicity and adds 9,792 synthetic cap triangles. Radius
+6,371,008.8m, vertical scale 1m/raw unit, orientation and polar closure are reconstruction
+assumptions. Stage 1 Float64 GIS is authoritative; Web transport is Float32.
 
-Stage 1 Float64 GIS products remain the coordinate authority. Web transport is Float32, 5.40 MB, with previously measured maximum spherical quantization error 0.424 m. Region navigation uses area-weighted spherical chord centroids and can be diffuse for broad sea regions; these are not POIs or field entrances. Gameplay terrain is not GIS land cover.
+Static classic-PC compatibility/routing is not current story/save/vehicle availability
+or guaranteed reachability. Encounter weights are not absolute probabilities; source
+terrain is not ecological land cover. Moving objects are static script anchors, not
+current positions. Original animation uses explicit 30fps preview timing. Current
+Steam 2026 executable runtime equivalence remains **NOT VERIFIED**.
 
-See [Stage 0 validation](docs/validation-report.md), [spherical reconstruction](docs/spherical-reconstruction.md), [Web format](docs/web-data-format.md) and [earlier Viewer validation](docs/web-viewer-validation.md). Historic screenshots and generated datasets remain local, ignored artifacts.
+WM2/WM3 retain native coordinates: no global mapping, bathymetry/polar fitting or physical
+measurement is fabricated. LAEA/AEQD conservatively clip their antipodal singular region.
+No projection preserves every area/shape/distance/direction property.
 
-## Source and licensing boundaries
+Climate V2/V2.1/V2.2 research is concluded **Experimental / Inconclusive**. It did not
+establish a physically robust replacement latitude mapping; no climate warp is adopted
+or selectable. Historical research remains preserved separately.
 
-Climate V2/V2.1/V2.2 research is concluded **Experimental / Inconclusive**. It did not establish a physically robust replacement latitude mapping; no climate warp was adopted. Historical code and reports are preserved in [Research](docs/climate/README.md), outside the formal reconstruction and Viewer data.
+## Documentation
 
-FF7 datasets are read-only inputs. All local source, output, caches, browser profiles and temporary files stay in the project workspace. No proprietary MAP/BOT/LGP/TEX/executable assets, GIS products, transport binaries or screenshots enter Git.
+[User guide](docs/user-guide.md) · [Methodology](docs/methodology.md) ·
+[Architecture](docs/architecture.md) · [Workspace](docs/v2.0/workspace-format.md) ·
+[Compatibility](docs/v2.0/data-compatibility.md) · [Integration](docs/v2.0/integration.md) ·
+[Performance](docs/v2.0/performance.md) · [Validation](docs/v2.0/validation.md).
 
-**GPL-3.0-only applies to GaiaGIS original code**, see [LICENSE](LICENSE). Third-party code retains its own licenses and notices, including Three.js MIT; see [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). This license grants no rights to FF7 or Square Enix assets.
+Earlier research remains available: [source validation](docs/validation-report.md),
+[V1 sphere](docs/spherical-reconstruction.md), [POI](docs/v1.1/poi-data.md),
+[encounters](docs/v1.2/encounter-data.md), [traversal](docs/v1.3/traversal-data.md),
+[events](docs/v1.4/world-events-data.md), [routing](docs/v1.5/routing-data.md),
+[cartography](docs/v1.6/projection-analysis.md), [textures](docs/v1.7/texture-data.md),
+[native maps](docs/v1.8/coordinate-spaces.md) and [Explorer](docs/v1.9/explorer-data.md).
 
-Game-derived geometry publication status is **unresolved and separate** from code licensing. The code-only Pages workflow does not authorize future data publication. See [data and copyright](docs/data-and-copyright.md).
+## Licensing and rights
 
-GaiaGIS is an independent fan-made technical and GIS research project. It is not affiliated with, sponsored by, or endorsed by Square Enix. FINAL FANTASY VII and related names, characters, world designs and assets are property of their respective rights holders. GaiaGIS does not claim ownership of FF7 world design.
+**GPL-3.0-only applies to GaiaGIS original source code**, see [LICENSE](LICENSE).
+Third-party code retains its own licenses, including Three.js MIT; see
+[THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). The license grants no rights to FF7
+or Square Enix assets. Game-derived dataset publication status remains unresolved
+and separate from code licensing. See [data and copyright](docs/data-and-copyright.md).
+
+GaiaGIS is an independent fan-made technical and GIS research project. It is not
+affiliated with, sponsored by, or endorsed by Square Enix. FINAL FANTASY VII and
+related names, characters, world designs and assets are property of their respective
+rights holders. GaiaGIS does not claim ownership of FF7 world design.
 
 © SQUARE ENIX  
 CHARACTER DESIGN: TETSUYA NOMURA  
 LOGO ILLUSTRATION: © YOSHITAKA AMANO
 
-GPL-3.0-only applies to GaiaGIS original source code, not to FINAL FANTASY VII or third-party materials.
+GPL-3.0-only applies to GaiaGIS original code, not FINAL FANTASY VII or third-party materials.

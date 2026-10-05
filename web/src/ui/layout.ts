@@ -74,7 +74,9 @@ export function mountLayout(root:HTMLElement) {
       <p>${t('help.intro')}</p><h3>${t('ui.openFiles')}</h3><p>${t('help.local')}</p>
       <button id="choose-local-data">${t('ui.chooseFiles')}</button><p id="local-data-status" role="status"></p>
       <p>${t('help.optional')}</p><p>${t('help.rules')}</p><p>${t('help.routing')}</p>
-      <details><summary>${t('ui.localGeneration')}</summary><pre>python -B scripts/build_gaia.py --source "YOUR_FF7_INSTALLATION"
+      <details><summary>${t('ui.localGeneration')}</summary><pre>python -B -m gaiagis.build_workspace --source "YOUR_FF7_INSTALLATION" --output local-workspace
+
+python -B scripts/build_gaia.py --source "YOUR_FF7_INSTALLATION"
 python -B scripts/build_web_assets.py
 python -B scripts/build_poi_assets.py --source "YOUR_FF7_INSTALLATION"
 python -B scripts/build_encounter_assets.py --source "YOUR_FF7_INSTALLATION"

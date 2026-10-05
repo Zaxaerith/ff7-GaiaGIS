@@ -58,3 +58,5 @@ animation-dumps/
 *.rsd
 *.p
 *.a
+gaia-workspace.json
+/local-workspace/

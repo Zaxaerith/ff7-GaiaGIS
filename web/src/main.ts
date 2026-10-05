@@ -1,13 +1,17 @@
+import {legendRow} from './ui/legend';
+import {appStore} from './app/state';
+import {workspaceLoader,loadedAsset} from './app/assets';
+import {mountShell} from './app/shell';
 import {mountTextures} from './ui/textures';
 import {mountMultimap} from './ui/multimap';
-import {ExplorerController} from './explorer/controller';
+import type {ExplorerController} from './explorer/controller';
 // SPDX-License-Identifier: GPL-3.0-only
 import './styles/viewer.css';
 import {mountLayout} from './ui/layout';
 import {loadMesh,readLocalDataset,MissingDatasetError} from './data/mesh';
 import type {GaiaMesh,GaiaMeta} from './data/mesh';
 import {summarizeRegions,regionColor} from './data/regions';
-import {GaiaViewer} from './viewer/GaiaViewer';
+import type {GaiaViewer} from './viewer/GaiaViewer';
 import {terrainPalette,distinguishedCapColor} from './styles/terrainPalette';
 import {projections} from './projections';
 import {rotatesCenter} from './projections/registry';
@@ -24,10 +28,11 @@ import {mountAnalysis} from './ui/analysis';
 const root=document.querySelector<HTMLElement>('#app')!;
 const element=<T extends HTMLElement=HTMLElement>(id:string)=>document.getElementById(id) as T;
 let activeViewer:GaiaViewer|undefined,loaded:{mesh:GaiaMesh;meta:GaiaMeta}|undefined,operation=0;
+let applicationShell:ReturnType<typeof mountShell>|undefined;
 let projectionLocale:(()=>void)|undefined;
 let galleryControls:ReturnType<typeof mountProjectionGallery>|undefined;
 let analysisControls:ReturnType<typeof mountAnalysis>|undefined;
-initializeLocale();observeTranslations();
+initializeLocale();const stopTranslations=observeTranslations();
 function setBusy(busy:boolean){
   root.dataset.ready=String(!busy);
   for(const control of root.querySelectorAll<HTMLInputElement|HTMLSelectElement|HTMLButtonElement>('.controls input,.controls select,.controls button,.projection-control select,.navigation-tools button,.zoom-controls button'))control.disabled=busy;
@@ -43,25 +48,25 @@ function bindCommon(){
   for(const id of ['about-button','loading-help'])element(id).addEventListener('click',()=>about.showModal());
   element('close-about').addEventListener('click',()=>about.close());
   for(const id of ['open-local-data','choose-local-data'])element(id).addEventListener('click',()=>element<HTMLInputElement>('local-dataset-files').click());
-  element('retry-viewer').addEventListener('click',()=>void start(loaded));
+  element('retry-viewer').addEventListener('click',()=>void (loaded?adoptGeometry(loaded):start()));
   element<HTMLInputElement>('local-dataset-files').addEventListener('change',async e=>{
     const input=e.target as HTMLInputElement;if(!input.files?.length)return;
     const request=operation;element('local-data-status').textContent=t('load.verify');
-    try{const data=await readLocalDataset(input.files);if(request===operation)void start(data);}
+    try{const data=await readLocalDataset(input.files);if(request===operation)void adoptGeometry(data);}
     catch(error){const message=error instanceof Error?error.message:String(error);element('local-data-status').textContent=t('error.dataset');element('local-data-status').title=message;if(!activeViewer)fail(message);}
     input.value='';
   });
 }
 async function start(provided?:{mesh:GaiaMesh;meta:GaiaMeta}){
-  document.dispatchEvent(new Event('gaiagis-map-changing'));const request=++operation;projectionLocale?.();galleryControls?.dispose();analysisControls?.dispose();activeViewer?.dispose();activeViewer=undefined;mountLayout(root);galleryControls=mountProjectionGallery();bindCommon();setBusy(true);
+  applicationShell?.dispose();applicationShell=undefined;document.dispatchEvent(new Event('gaiagis-map-changing'));const request=++operation;projectionLocale?.();galleryControls?.dispose();analysisControls?.dispose();activeViewer?.dispose();activeViewer=undefined;mountLayout(root);galleryControls=mountProjectionGallery();bindCommon();setBusy(true);
   try {
     if(!provided&&import.meta.env.VITE_GAIA_SOURCE_ONLY==='true')throw new MissingDatasetError();
     const {mesh,meta}=provided||await loadMesh(text=>{if(request===operation)element('loading-text').textContent=text;});
-    if(request!==operation)return;loaded={mesh,meta};
+    if(request!==operation)return;loaded={mesh,meta};loadedAsset("geometry",meta.byte_length,meta.version);
     // Yield so the loading state remains readable during CPU preparation.
     await new Promise(resolve=>requestAnimationFrame(resolve));
     if(request!==operation)return;
-    const viewer=new GaiaViewer(element('viewport'),mesh,meta);
+    const {GaiaViewer}=await import('./viewer/GaiaViewer');if(request!==operation)return;const viewer=new GaiaViewer(element('viewport'),mesh,meta);
     const textureControls=mountTextures(viewer,()=>request===operation);
     activeViewer=viewer;viewer.onError=message=>fail(message);setBusy(false);viewer.setSuspended((document.getElementById('map-selector') as HTMLSelectElement|null)?.value!=='WM0');
     const locationControls=mountLocations(viewer,meta,()=>request===operation);
@@ -79,7 +84,7 @@ async function start(provided?:{mesh:GaiaMesh;meta:GaiaMeta}){
     const drawLegend=(layer:'terrain'|'region')=>{
       legend.replaceChildren();element('legend-title').textContent=layer==='region'?t('ui.regions'):t('ui.terrain');
       const ids=layer==='region'?regions.map(r=>r.id):[...terrainIds].sort((a,b)=>a-b);
-      for(const id of ids){const row=document.createElement('div');row.className='legend-row';const swatch=document.createElement('i');swatch.style.background=layer==='region'?regionColor(id):terrainPalette[id];const label=document.createElement('span');label.textContent=`${id} · ${(layer==='region'?meta.region_names:meta.terrain_names)[id]||t('state.unknown')}`;row.append(swatch,label);legend.append(row);}
+      for(const id of ids)legendRow(legend,layer==='region'?regionColor(id):terrainPalette[id],`${id} · ${(layer==='region'?meta.region_names:meta.terrain_names)[id]||t('state.unknown')}`);
     };drawLegend('terrain');
     for(const region of regions){const option=document.createElement('option');option.value=String(region.id);option.textContent=`${region.name} (${formatNumber(region.triangles,0)})`;element<HTMLSelectElement>('region-focus').append(option);}
     element<HTMLSelectElement>('region-focus').addEventListener('change',e=>{
@@ -121,7 +126,7 @@ async function start(provided?:{mesh:GaiaMesh;meta:GaiaMeta}){
       eventControls.clear();
       element('selection-empty').hidden=source!==null;element('selection-details').hidden=source===null;
       element('info-panel').classList.toggle('mobile-open',source!==null);
-      if(source===null){element('coordinates').textContent='';return;}
+      if(source===null){appStore.dispatch({type:'select',selection:null});element('coordinates').textContent='';return;}
       document.querySelector('.controls')!.classList.remove('mobile-open');mobileButton.setAttribute('aria-expanded','false');
       const a=mesh.attributes(source);const detail=element('selection-details');detail.replaceChildren();
       const terrain=document.createElement('div');terrain.className='selected-terrain';
@@ -139,13 +144,24 @@ async function start(provided?:{mesh:GaiaMesh;meta:GaiaMeta}){
       addProperties([[t('ui.longitude'),`${formatNumber(lon,4)}°`],[t('ui.latitude'),`${formatNumber(lat,4)}°`],[t('inspect.heightAssumed'),`${formatNumber(height,2)} m`]]);
       element('coordinates').textContent=`${formatNumber(lon,2)}° / ${formatNumber(lat,2)}°`;
       detail.dataset.sourceTriangle=String(source);detail.dataset.origin=String(a.origin);
+      detail.dataset.longitude=String(lon);detail.dataset.latitude=String(lat);detail.dataset.height=String(height);
       encounterControls.inspect(source,detail);
       traversalControls.inspect(source,detail);
       textureControls.inspect(source,detail);
+      appStore.dispatch({type:'select',selection:{kind:'triangle',id:String(source),mapId:'WM0',geographicPoint:[lon,lat,height]}});
+      if(!a.origin&&appStore.state.data.assets.encounters?.status==='loaded'){const zone=document.createElement('button');zone.id='select-encounter-context';zone.textContent=t('ui.encounters');zone.onclick=()=>appStore.dispatch({type:'select',selection:{kind:'encounter',id:String(source),mapId:'WM0',geographicPoint:[lon,lat,height]}});detail.querySelector('.gameplay-inspector')?.prepend(zone);}
     };
-  } catch(error){if(request!==operation)return;activeViewer?.dispose();activeViewer=undefined;fail(error instanceof Error?error.message:String(error),error instanceof MissingDatasetError);}
+    applicationShell=mountShell();
+  } catch(error){if(request!==operation)return;activeViewer?.dispose();activeViewer=undefined;fail(error instanceof Error?error.message:String(error),error instanceof MissingDatasetError);applicationShell=mountShell();}
 }
-window.addEventListener('pagehide',()=>activeViewer?.dispose(),{once:true});
-void start();
+window.addEventListener('pagehide',()=>{operation++;workspaceLoader.cancel();explorer?.dispose();applicationShell?.dispose();multimaps.dispose();projectionLocale?.();galleryControls?.dispose();analysisControls?.dispose();activeViewer?.dispose();stopTranslations();},{once:true});
+async function adoptGeometry(data:{mesh:GaiaMesh;meta:GaiaMeta}){await multimaps.resetData();explorer?.resetData();appStore.dispatch({type:'reset-data'});await start(data);if(!activeViewer)throw Error('Geometry adoption failed');}
+workspaceLoader.register('geometry',async files=>adoptGeometry(await readLocalDataset(files)));
 const multimaps=mountMultimap(root,()=>activeViewer);
-new ExplorerController(()=>activeViewer,()=>multimaps.viewer);
+let explorer:ExplorerController|undefined,explorerPromise:Promise<ExplorerController>|undefined;
+const ensureExplorer=()=>explorerPromise??=import('./explorer/controller').then(({ExplorerController})=>{explorer=new ExplorerController(()=>activeViewer,()=>multimaps.viewer);document.getElementById('explorer-launch')?.remove();document.getElementById('app-group-explore')?.append(document.getElementById('explorer-panel')!);return explorer;});
+const launch=document.createElement('details');launch.id='explorer-launch';const summary=document.createElement('summary');summary.textContent=t('explore.title');launch.append(summary);document.querySelector('.multimap-bar')!.append(launch);launch.addEventListener('toggle',()=>{if(launch.open)void ensureExplorer().then(()=>{(document.getElementById('explorer-panel') as HTMLDetailsElement).open=true;});});
+workspaceLoader.register('explorer',async files=>(await ensureExplorer()).loadFile(files[0]));
+
+document.addEventListener('gaiagis-explore-entrance',e=>{const entrance=(e as CustomEvent<import('./data/poi').Entrance>).detail;void ensureExplorer().then(controller=>controller.fromEntrance(entrance));});
+void start();

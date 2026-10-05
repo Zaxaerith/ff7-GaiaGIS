@@ -1,3 +1,5 @@
+import {legendRow} from './legend';
+import {workspaceLoader,loadedAsset} from '../app/assets';
 import {t,formatNumber} from '../i18n';
 // SPDX-License-Identifier: GPL-3.0-only
 import type {GaiaMeta,TriangleAttributes} from '../data/mesh';
@@ -55,10 +57,11 @@ export function mountEncounters(viewer:GaiaViewer,meta:GaiaMeta,isCurrent:()=>bo
     if(!['encounter','encounter-rate'].includes(select.value))return;
     const rate=select.value==='encounter-rate',area=element('terrain-legend');area.replaceChildren();element('legend-title').textContent=rate?t('inspect.rawRate'):t('inspect.encStatic');
     const items=rate?[['#37cdd7',t('message.zeroRate')],['#96938e',t('message.rawDivisor',{value:128})],['#f55a46',t('message.rawDivisor',{value:255})],[encounterPalette.inactive,t('inspect.inactive')],[encounterPalette.script,t('inspect.nonzeroScript')]]:[[encounterPalette.active,t('inspect.activeScript')],[encounterPalette.inactive,t('inspect.inactive')],[encounterPalette.script,t('inspect.nonzeroScript')]];
-    for(const [color,label]of items){const row=document.createElement('div');row.className='legend-row';const swatch=document.createElement('i');swatch.style.background=color;const text=document.createElement('span');text.textContent=label;row.append(swatch,text);area.append(row);}
+    for(const [color,label]of items)legendRow(area,color,label);
     const note=document.createElement('p');note.className='control-note';note.textContent=rate?t('inspect.rateNote'):t('inspect.lookupNote');area.append(note);
   }
   function adopt(data:EncounterDataset|null){
+    if(data)loadedAsset("encounters");
     dataset=data;viewer.setEncounters(data);
     status.textContent=data?t('load.encountersLoaded'):t('ui.encountersUnavailable');
     for(const id of ['encounter','encounter-rate'])select.querySelector<HTMLOptionElement>(`option[value="${id}"]`)!.disabled=!data;
@@ -69,12 +72,14 @@ export function mountEncounters(viewer:GaiaViewer,meta:GaiaMeta,isCurrent:()=>bo
   element('load-encounters').addEventListener('click',()=>file.click());
   file.addEventListener('change',async()=>{
     const chosen=file.files?.[0];if(!chosen)return;const request=++revision;status.textContent=t('load.encounters');
-    try{const data=await readLocalEncounters(chosen,meta);if(isCurrent()&&request===revision)adopt(data);}
+    try{await loadFile(chosen,request);}
     catch(error){if(isCurrent()&&request===revision)status.textContent=t('error.dataset');status.title=error instanceof Error?error.message:String(error);}
     file.value='';
   });
   select.addEventListener('change',()=>{viewer.setColorLayer(select.value as ColorLayer);legend();});
   element<HTMLInputElement>('chocobo-tracks').addEventListener('change',e=>{const show=(e.target as HTMLInputElement).checked;viewer.setChocoboTracks(show);element('tracks-legend').hidden=!show;});
   const request=revision;void loadOptionalEncounters(meta).then(data=>{if(isCurrent()&&request===revision)adopt(data);}).catch(error=>{if(isCurrent()&&request===revision)status.textContent=t('ui.encountersUnavailable');status.title=error.message;});
-  return {inspect};
+  async function loadFile(chosen:File,request=++revision){const data=await readLocalEncounters(chosen,meta);if(isCurrent()&&request===revision)adopt(data);}
+  workspaceLoader.register("encounters",async files=>loadFile(files[0]));
+  return {inspect,loadFile};
 }

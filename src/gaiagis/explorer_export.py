@@ -47,7 +47,8 @@ def source_surface(world):
         out.extend(struct.pack('<9i3iBB3H',*(v for p in raw for v in p),*neighbors,terrain,script,section,mesh,triangle))
     return bytes(out),dict(stats,triangles=len(rows),duplicate_faces=len(duplicate))
 
-def build_explorer(source:Path,destination:Path,report_path:Path|None=None):
+def build_explorer(source:Path,destination:Path,report_path:Path|None=None,*,version:int=1):
+    if version not in (1,2):raise ValueError("Unsupported Explorer version")
     destination=output_path(destination);ds=discover(source);archive=ds.files['world_us.lgp']
     entries={e['filename'].lower():e for e in inventory(archive)['entries']};hashes={};cache={}
     def read(name):
@@ -93,7 +94,7 @@ def build_explorer(source:Path,destination:Path,report_path:Path|None=None):
     for mid in (0,2,3):
         path=ds.files[f'wm{mid}.map'];hashes[f'wm{mid}.map']=hashlib.sha256(path.read_bytes()).hexdigest();world=parse_map(path,mid)
         if world.failures:raise ValueError('Incomplete source map')
-        data,stats=source_surface(world);surfaces.append(dict(mapId=f'WM{mid}',extent=list(world.extent),source_sha256=hashes[f'wm{mid}.map'],record_bytes=SURFACE_BYTES,stats=stats,**blob(data)))
+        data,stats=source_surface(world) if version==1 else (b"",dict(triangles=sum(len(m.triangles) for m in world.base_meshes)));surfaces.append(dict(mapId=f'WM{mid}',extent=list(world.extent),source_sha256=hashes[f'wm{mid}.map'],record_bytes=SURFACE_BYTES,stats=stats,**blob(data)))
     model_references=defaultdict(list)
     for mid in (0,2,3):
         name=f'wm{mid}.ev';functions,_=decode_ev(read(name))
@@ -102,9 +103,12 @@ def build_explorer(source:Path,destination:Path,report_path:Path|None=None):
     model_inventory=[dict(model_id=mid,resources=[r+'.hrc' for r in MODEL_RESOURCES.get(mid,[])],resource_evidence='classic_pc_registry' if mid in MODEL_RESOURCES else 'unresolved_resource',known_script_references=model_references[mid],observed_map_usage=sorted({r['mapId'] for r in model_references[mid]}),identity='chocobo_related_resource_unresolved' if mid in (41,42) else 'unknown' if mid not in MODEL_RESOURCES else next(r['skeleton_name'] for r in inventory_rows if r['resource']==MODEL_RESOURCES[mid][0]+'.hrc')) for mid in range(43)]
     for row in inventory_rows:row['known_script_references']=[r for mid in row['model_ids'] for r in model_references[mid]]
     hashes['world_us.lgp']=hashlib.sha256(archive.read_bytes()).hexdigest()
-    metadata=dict(schema='gaiagis-explorer',version=1,reconstruction='v1-geometric-gaia',runtimeClaim=False,sources=dict(sorted(hashes.items())),models=models,textures=[texture_refs[n] for n in sorted(texture_refs)],surfaces=surfaces,preview_timing_fps=30)
+    metadata=dict(schema='gaiagis-explorer',version=version,reconstruction='v1-geometric-gaia',runtimeClaim=False,sources=dict(sorted(hashes.items())),models=models,textures=[texture_refs[n] for n in sorted(texture_refs)],surfaces=surfaces,preview_timing_fps=30)
+    if version==2:
+        metadata["map_bindings"]=[{k:v for k,v in s.items() if k not in ("offset","bytes","record_bytes")} for s in surfaces]
+        metadata["surfaces"]=[]
     encoded=json.dumps(metadata,sort_keys=True,separators=(',',':'),allow_nan=False).encode();padding=b'\0'*((-len(encoded))%4)
-    body=MAGIC+struct.pack('<2I',1,len(encoded))+encoded+padding+payload;result=body+hashlib.sha256(body).digest()
+    body=MAGIC+struct.pack('<2I',version,len(encoded))+encoded+padding+payload;result=body+hashlib.sha256(body).digest()
     destination.parent.mkdir(parents=True,exist_ok=True);destination.write_bytes(result)
     report=dict(bytes=len(result),sha256=hashlib.sha256(result).hexdigest(),models=len(models),animations=sum(len(m['clips']) for m in models),inventory=inventory_rows,model_inventory=model_inventory,surface_stats={s['mapId']:s['stats'] for s in surfaces},sources=metadata['sources'],textures=len(texture_refs))
     if report_path:output_path(report_path).write_text(json.dumps(report,sort_keys=True,indent=2),encoding='utf8')
