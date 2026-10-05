@@ -1,3 +1,5 @@
+import {initializePresentation} from './app/presentation';
+import './styles/presentation.css';
 import {localAdvertised,loadLocalWorkspace} from './app/localWorkspace';
 import {legendRow} from './ui/legend';
 import {appStore} from './app/state';
@@ -33,7 +35,7 @@ let applicationShell:ReturnType<typeof mountShell>|undefined;
 let projectionLocale:(()=>void)|undefined;
 let galleryControls:ReturnType<typeof mountProjectionGallery>|undefined;
 let analysisControls:ReturnType<typeof mountAnalysis>|undefined;
-initializeLocale();const stopTranslations=observeTranslations();
+initializeLocale();initializePresentation();const stopTranslations=observeTranslations();
 function setBusy(busy:boolean){
   root.dataset.ready=String(!busy);
   for(const control of root.querySelectorAll<HTMLInputElement|HTMLSelectElement|HTMLButtonElement>('.controls input,.controls select,.controls button,.projection-control select,.navigation-tools button,.zoom-controls button'))control.disabled=busy;

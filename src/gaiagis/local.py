@@ -234,6 +234,7 @@ def main(argv=None):
             report=build_workspace(source,out,rebuild=args.rebuild,clean_invalid=args.clean_invalid,allow_optional_failure=True)
         except ModuleNotFoundError as error:
             if error.name!='osgeo' or args.build_only:raise
+            if str(WORKSPACE_ROOT) not in sys.path:sys.path.insert(0,str(WORKSPACE_ROOT))
             from scripts.build_gaia import qgis_environment
             qgis=Path(os.environ.get('GAIAGIS_QGIS_ROOT',r'C:\MYAPPLY\QGIS 4.2.2'))
             runtime=qgis/'bin/python.exe'

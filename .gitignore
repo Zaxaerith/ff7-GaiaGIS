@@ -62,3 +62,6 @@ gaia-workspace.json
 /local-workspace/
 /.gaiagis-local.json
 *.egg-info/
+
+# Private original UI audio extracted locally
+gaia-presentation.json

@@ -111,7 +111,7 @@ HUD visible; exit restores the overview camera and prior controls.
 
 ## Explorer and analysis limits
 
-WM0 supports party leaders, Buggy, Tiny Bronco, five Chocobo variants and Highwind
+WM0 supports nine party characters, Buggy, Tiny Bronco, five Chocobo variants and Highwind
 flight/static landing. WM2 Submarine and WM3 party movement are explicitly native
 geometry previews. Original frames use 30fps preview timing, not verified 2026
 engine timing. No save file, story state, ownership, battle execution or live
@@ -123,6 +123,32 @@ Language, valid projection/grid/style choices and the last primary panel are
 stored as browser-local preferences. Texture style is restored only once a valid
 texture pack is loaded. Onboarding is shown once and can be skipped with Start
 Viewer. Browser storage permission failure does not prevent local operation.
+
+## Presentation and party characters
+
+In **View → Presentation**, choose FF7 Original-inspired or GaiaGIS Scientific.
+The blue windows are original CSS, not copied game graphics. Focus rings and
+disabled states remain explicit. Explorer Lighting offers Original-inspired
+(moderate ambient + directional), GIS Flat and Debug Bright. These change only
+models, not 2D map colors or reconstruction. A soft contact shadow is a viewer
+approximation; it follows the surface and fades/widens with Highwind altitude.
+
+The local launcher automatically generates/loads optional UI Sounds from your
+installation. Enable the checkbox and choose volume; no audio plays until a
+user gesture. Sounds may be completely disabled and never replace visible
+feedback. Confirmation, cancel and selection navigation have verified cue IDs;
+unresolved dialog-open audio stays silent. Missing audio/Public Pages remains
+silent. Theme, light, mute and volume preferences contain no installation path.
+
+Explorer has separate **Character / model** and **Movement profile** selectors.
+Party (Cloud, Barret, Tifa, Aerith, Red XIII, Yuffie, Cait Sith, Vincent, Cid),
+Vehicles and Chocobos are compact categorized groups. Six field-source additions
+show an **Extended Explorer model** note: original assets with their own animation
+bindings, not original world-map leaders. All share the established Foot preview;
+no save/party ownership or leader rules are simulated. Switching retains a valid
+source position; incompatible modes are rejected. Old packs show missing characters
+disabled rather than substituting fake models. Native WM2 Submarine/WM3 party
+previews remain available; Return to GIS disposes model/shadow and restores controls.
 
 ## Production and troubleshooting
 

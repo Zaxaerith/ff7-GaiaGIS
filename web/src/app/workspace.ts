@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 import type {AssetId,AssetState} from './state';
-export const assetFiles:Record<AssetId,string[]>={geometry:['gaia-meta.json','gaia-mesh.bin'],locations:['gaia-poi.json'],encounters:['gaia-encounters.json'],events:['gaia-events.json'],routing:['gaia-routing.bin'],textures:['gaia-textures.bin'],WM2:['gaia-map-WM2.bin'],WM3:['gaia-map-WM3.bin'],'textures-WM2':['gaia-textures-WM2.bin'],'textures-WM3':['gaia-textures-WM3.bin'],transitions:['gaia-transitions.json'],explorer:['gaia-explorer.bin']};
+export const assetFiles:Record<AssetId,string[]>={geometry:['gaia-meta.json','gaia-mesh.bin'],locations:['gaia-poi.json'],encounters:['gaia-encounters.json'],events:['gaia-events.json'],routing:['gaia-routing.bin'],textures:['gaia-textures.bin'],WM2:['gaia-map-WM2.bin'],WM3:['gaia-map-WM3.bin'],'textures-WM2':['gaia-textures-WM2.bin'],'textures-WM3':['gaia-textures-WM3.bin'],transitions:['gaia-transitions.json'],explorer:['gaia-explorer.bin'],presentation:['gaia-presentation.json']};
 export interface ManifestAsset {filename:string;type:AssetId|'metadata';mapId:'WM0'|'WM2'|'WM3'|'shared';sha256:string;bytes:number;dependencies:string[];}
 export interface WorkspaceManifest {schema:'gaiagis-workspace';version:1;tool_version:string;sources:Record<string,string>;assets:ManifestAsset[];timestamp_policy:'omitted';}
 export interface WorkspacePlan {files:Map<string,File>;manifest:WorkspaceManifest|null;issues:Partial<Record<AssetId,AssetState>>;}
@@ -14,7 +14,7 @@ export function parseManifest(value:unknown):WorkspaceManifest{
  const names=new Set<string>();for(const a of m.assets){
  const type=a.type==='metadata'?'geometry':a.type;
  if(!a||!Object.hasOwn(assetFiles,type)||!assetFiles[type].includes(a.filename)||!safeName(a.filename)||names.has(a.filename)||!hash(a.sha256)||!Number.isSafeInteger(a.bytes)||a.bytes<=0||a.bytes>160_000_000||!['WM0','WM2','WM3','shared'].includes(a.mapId)||!Array.isArray(a.dependencies)||!a.dependencies.every(safeName))throw Error('Invalid workspace asset');
- const expected=type==='WM2'||type==='textures-WM2'?'WM2':type==='WM3'||type==='textures-WM3'?'WM3':type==='explorer'||type==='transitions'?'shared':'WM0';
+ const expected=type==='WM2'||type==='textures-WM2'?'WM2':type==='WM3'||type==='textures-WM3'?'WM3':type==='explorer'||type==='transitions'||type==='presentation'?'shared':'WM0';
  if(a.mapId!==expected||a.type==='metadata'&&a.filename!=='gaia-meta.json')throw Error('Workspace map identity mismatch');names.add(a.filename);
  }
  for(const a of m.assets)if(a.dependencies.some(d=>d===a.filename||!names.has(d)))throw Error('Invalid workspace dependency');

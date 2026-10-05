@@ -1,3 +1,4 @@
+import {configureOutput} from '../explorer/lighting';
 // SPDX-License-Identifier: GPL-3.0-only
 import {BufferAttribute,BufferGeometry,Color,DoubleSide,DynamicDrawUsage,LineBasicMaterial,LineSegments,
   Mesh,MeshBasicMaterial,MOUSE,OrthographicCamera,PerspectiveCamera,Raycaster,Scene,Sphere,TOUCH,
@@ -173,7 +174,7 @@ export class GaiaViewer {
     this.highlight=new Mesh(new BufferGeometry(),highlightMaterial);this.highlight.visible=false;this.highlight.frustumCulled=false;
     this.scene.add(this.highlight);
     this.renderer=new WebGLRenderer({antialias:true,alpha:true,powerPreference:'high-performance'});
-    this.renderer.setClearColor(0,0);
+    configureOutput(this.renderer);this.renderer.setClearColor(0,0);
     this.renderer.domElement.setAttribute('aria-label',t('ui.canvasAria'));
     this.renderer.domElement.tabIndex=0;
     this.renderer.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();this.renderer.setAnimationLoop(null);this.onError('Graphics context interrupted. Retry the viewer to restore your local V1 dataset.');});

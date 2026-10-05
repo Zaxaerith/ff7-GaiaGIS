@@ -1,3 +1,4 @@
+import {configureOutput} from '../explorer/lighting';
 // SPDX-License-Identifier: GPL-3.0-only
 import {BufferAttribute,BufferGeometry,Color,DoubleSide,Mesh,MeshBasicMaterial,OrthographicCamera,PerspectiveCamera,Raycaster,Scene,Triangle,Vector2,Vector3,WebGLRenderer} from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
@@ -21,7 +22,7 @@ export class NativeViewer {
  onPick:(triangle:number)=>void=()=>{};onTransition:(record:MapTransition)=>void=()=>{};
  private markers:{node:HTMLButtonElement;record:MapTransition}[]=[];
  constructor(readonly container:HTMLElement,readonly map:NativeMap){
-  this.scale=Math.max(...map.header.extent);this.camera=this.perspective;
+  configureOutput(this.renderer);this.scale=Math.max(...map.header.extent);this.camera=this.perspective;
   const positions=new Float32Array(map.positions.length),colors=new Float32Array(positions.length);
   for(let t=0;t<map.sourceTriangleCount;t++){const c=new Color(terrainPalette[map.attributes(t).terrain!]);for(let j=0;j<3;j++)colors.set([c.r,c.g,c.b],t*9+j*3);}
   this.geometry.setAttribute('position',new BufferAttribute(positions,3));this.geometry.setAttribute('color',new BufferAttribute(colors,3));this.textured=new TexturedSurface(this.material,this.geometry);this.scene.add(this.surface);this.scene.background=new Color('#0a1724');

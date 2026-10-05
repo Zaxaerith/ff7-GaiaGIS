@@ -109,7 +109,7 @@ class LocalTests(unittest.TestCase):
         stack.enter_context(patch('gaiagis.build_workspace.fingerprint',return_value={'files':[{'filename':k,'sha256':v} for k,v in self.sources.items()]}))
         stack.enter_context(patch('gaiagis.build_workspace.ensure_stage1',return_value=self.root))
         stack.enter_context(patch('gaiagis.build_workspace.build_web_assets',side_effect=geometry))
-        for module,fn,label in [('poi','build_poi','locations'),('encounters','build_encounters','encounters'),('world_events','build_events','events'),('routing','export_routing','routing'),('texture_pack','build_texture_pack','textures'),('explorer_export','build_explorer','explorer')]:
+        for module,fn,label in [('poi','build_poi','locations'),('encounters','build_encounters','encounters'),('world_events','build_events','events'),('routing','export_routing','routing'),('texture_pack','build_texture_pack','textures'),('explorer_export','build_explorer','explorer'),('presentation','build_presentation','presentation')]:
             stack.enter_context(patch('gaiagis.'+module+'.'+fn,side_effect=exporter(label)))
         stack.enter_context(patch('gaiagis.build_workspace.subprocess.run',side_effect=native))
         self.addCleanup(stack.close)
@@ -119,14 +119,32 @@ class LocalTests(unittest.TestCase):
         report=build_workspace(source,out);self.assertTrue(all(r['reused'] for r in report['steps']));self.assertEqual(calls,[])
         (out/'gaia-events.json').write_bytes(b'bad');calls.clear();report=build_workspace(source,out)
         self.assertEqual(calls,['events']);self.assertEqual([r['step'] for r in report['steps'] if not r['reused']],['events'])
+    def test_explorer_generator_upgrade_only_rebuilds_explorer(self):
+        source,out,calls=self.build_fixture();build_workspace(source,out)
+        manifest=json.loads((out/'gaia-workspace.json').read_text())
+        next(a for a in manifest['assets'] if a['type']=='explorer')['generator_version']='workspace-1'
+        (out/'gaia-workspace.json').write_text(json.dumps(manifest));calls.clear()
+        build_workspace(source,out);self.assertEqual(calls,['explorer'])
+    def test_removed_audio_source_only_rebuilds_presentation(self):
+        source,out,calls=self.build_fixture();build_workspace(source,out);calls.clear()
+        manifest=json.loads((out/'gaia-workspace.json').read_text())
+        manifest['sources']['audio.dat']='f'*64
+        (out/'gaia-workspace.json').write_text(json.dumps(manifest))
+        build_workspace(source,out);self.assertEqual(calls,['presentation'])
+    def test_audio_optional_failure_preserves_core_without_flag(self):
+        source,out,calls=self.build_fixture()
+        with patch('gaiagis.presentation.build_presentation',side_effect=ValueError('Optional audio unavailable')):
+            report=build_workspace(source,out)
+        self.assertEqual(report['assets'],13)
+        self.assertTrue((out/'gaia-mesh.bin').is_file())
     def test_optional_failure_is_not_published(self):
         source,out,_=self.build_fixture(True);report=build_workspace(source,out,allow_optional_failure=True)
         manifest=json.loads((out/'gaia-workspace.json').read_text())
-        self.assertEqual(report['assets'],12);self.assertNotIn('gaia-poi.json',[a['filename'] for a in manifest['assets']])
+        self.assertEqual(report['assets'],13);self.assertNotIn('gaia-poi.json',[a['filename'] for a in manifest['assets']])
     def test_rebuild_and_clean_invalid(self):
         source,out,calls=self.build_fixture();build_workspace(source,out);calls.clear()
         report=build_workspace(source,out,rebuild=True,clean_invalid=True)
-        self.assertTrue(all(not r['reused'] for r in report['steps']));self.assertEqual(len(calls),11)
+        self.assertTrue(all(not r['reused'] for r in report['steps']));self.assertEqual(len(calls),12)
 
 
 class EndpointTests(unittest.TestCase):

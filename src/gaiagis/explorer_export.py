@@ -3,13 +3,14 @@
 from collections import Counter,defaultdict
 import hashlib,json,struct
 from pathlib import Path
-from .dataset import discover
+from .dataset import discover, child_ci
 from .lgp import inventory,read_entry
 from .map_reader import parse_map
 from .safety import output_path
 from .tex import decode_tex
 from .world_models import parse_hrc,parse_rsd,parse_p,parse_animation
 from .ev import decode_ev
+from .field_models import field_model_section,parse_field_models
 
 MAGIC=b'GAIAEXP\0'
 SURFACE_BYTES=56
@@ -19,6 +20,12 @@ PRIMARY=(('cloud',0,'bbe',512),('tifa',1,'dlb',512),('cid',2,'ata',512),
          ('tiny-bronco',5,'dva',640),('buggy',6,'aba',512),('submarine',13,'ddd',512))
 # Independently recorded resource correspondence facts, not copied loader code.
 MODEL_RESOURCES={0:['bbe'],1:['dlb'],2:['ata'],3:['cgd','cid'],4:['aja'],5:['dva'],6:['aba'],7:['aia'],8:['eke'],9:['dkc'],10:['bna'],11:['dyb'],12:['bkd'],13:['ddd'],14:['cfc'],15:['coc'],16:['cpc'],17:['cec'],18:['eje'],19:['aja'],20:['cmb'],21:['djc'],22:['djc'],23:['djc'],24:['aaa'],25:['cnb'],26:['ble'],27:['dic'],28:['dga'],29:['cqc'],30:['bud']}
+
+# Identity facts: actual field-loader model names plus HRC skeleton names.
+# Only these six source fields are read; this is not a field-map renderer.
+EXTENDED=(('barret','acgd','blackbg1'),('aerith','auff','blackbg1'),
+          ('red-xiii','adda','blackbg1'),('yuffie','abjb','blackbg4'),
+          ('cait-sith','aebc','blackbg5'),('vincent','aehd','blackbgi'))
 
 def source_surface(world):
     """Edge slots are opposite corners. Same conservative policy as routing.
@@ -76,8 +83,44 @@ def build_explorer(source:Path,destination:Path,report_path:Path|None=None,*,ver
         primary=next((p for p in PRIMARY if p[2]+'.hrc'==name),None)
         texture_dimensions={n:[decode_tex(read(n)).width,decode_tex(read(n)).height] for n in sorted(textures)}
         inventory_rows.append(dict(resource=name,skeleton_name=skeleton['name'],bone_count=skeleton['bone_count'],part_count=len(parts),mesh_resources=parts,triangle_count=triangles,material_count=sum(len(parse_p(read(p))['groups']) for p in parts),texture_resources=sorted(textures),texture_dimensions=texture_dimensions,animation_resources=clips,animation_count=len(clips),identity=primary[0] if primary else skeleton['name'],identity_evidence='actual_hrc_and_classic_pc_loader' if primary else 'actual_hrc_name_only',model_ids=[mid for mid,resources in MODEL_RESOURCES.items() if Path(name).stem in resources]))
-    for identity,model_id,stem,scale in PRIMARY:
-        name=stem+'.hrc';skeleton=parse_hrc(read(name));row=next(r for r in inventory_rows if r['resource']==name);parts=[];clips=[]
+    specs=list(PRIMARY);extended_rows={};extended_read=None;unavailable=[]
+    if version==2:
+        field=child_ci(ds.wm_directory.parent,'field')
+        char=child_ci(field,'char.lgp') if field else None
+        flevel=child_ci(field,'flevel.lgp') if field else None
+        if char and flevel:
+            hashes['char.lgp']=hashlib.sha256(char.read_bytes()).hexdigest()
+            hashes['flevel.lgp']=hashlib.sha256(flevel.read_bytes()).hexdigest()
+            ce={e['filename'].lower():e for e in inventory(char)['entries']}
+            fe={e['filename'].lower():e for e in inventory(flevel)['entries']}
+            ec={}
+            def extended_read(name):
+                if name not in ce:raise ValueError('Missing field model resource: '+name)
+                if name not in ec:
+                    ec[name]=read_entry(char,ce[name]);hashes['char-'+name]=hashlib.sha256(ec[name]).hexdigest()
+                return ec[name]
+            for identity,stem,field_name in EXTENDED:
+                try:
+                    raw=read_entry(flevel,fe[field_name]);bindings=parse_field_models(field_model_section(raw))
+                    binding=next(b for b in bindings if b['hrc']==stem+'.hrc')
+                    skeleton=parse_hrc(extended_read(binding['hrc']))
+                    clips=[a['resource'] for a in binding['animations'][:3]]
+                    if len(clips)<2:raise ValueError('Idle/move binding unavailable')
+                    for clip in clips:parse_animation(extended_read(clip),skeleton['bone_count'])
+                    for bone in skeleton['bones']:
+                        for ref in bone['resources']:
+                            rsd=parse_rsd(extended_read(ref));parse_p(extended_read(rsd['mesh']))
+                            for tex in rsd['textures']:decode_tex(extended_read(tex))
+                    hashes['field-'+field_name]=hashlib.sha256(raw).hexdigest()
+                    extended_rows[identity]=dict(animation_resources=clips,field=field_name,loader=binding,source_kind='extended_field')
+                    specs.append((identity,None,stem,512))
+                except (KeyError,StopIteration,ValueError) as error:
+                    unavailable.append(dict(id=identity,reason=str(error)))
+        else:unavailable=[dict(id=id,reason='Optional char.lgp/flevel.lgp unavailable') for id,_,_ in EXTENDED]
+    world_read=read
+    for identity,model_id,stem,scale in specs:
+        read=extended_read if identity in extended_rows else world_read
+        name=stem+'.hrc';skeleton=parse_hrc(read(name));row=extended_rows.get(identity) or next(r for r in inventory_rows if r['resource']==name);parts=[];clips=[]
         for bi,bone in enumerate(skeleton['bones']):
             for ref in bone['resources']:
                 rsd=parse_rsd(read(ref));mesh=parse_p(read(rsd['mesh']))
@@ -90,7 +133,12 @@ def build_explorer(source:Path,destination:Path,report_path:Path|None=None,*,ver
                     parts.append(dict(bone=bi,resource=rsd['mesh'],rsd=ref,group=g['group'],texture=texture,material=g['material'],vertices=len(values)//12,**floats(values)))
         for n in row['animation_resources']:
             clip=parse_animation(read(n),skeleton['bone_count']);values=clip.pop('values');clips.append(dict(name=n,**clip,**floats(values)))
-        models.append(dict(id=identity,model_id=model_id,hrc=name,source_scale=max(scale/512,1)*15.2,bones=skeleton['bones'],bone_count=skeleton['bone_count'],parts=parts,clips=clips,identity_evidence='actual_hrc_and_classic_pc_reference',animation_identity='stationary_0_moving_1' if identity in ('cloud','tifa','cid','chocobo') else 'neutral_clip_indices'))
+        models.append(dict(id=identity,model_id=model_id,hrc=name,source_scale=max(scale/512,1)*15.2,bones=skeleton['bones'],bone_count=skeleton['bone_count'],parts=parts,clips=clips,identity_evidence='actual_hrc_and_classic_pc_reference',animation_identity='stationary_0_moving_1' if identity in ('cloud','tifa','cid','chocobo') or identity in extended_rows else 'neutral_clip_indices'))
+        model=models[-1]
+        if version==2:
+            model.update(characterId=identity if identity in ('cloud','tifa','cid') or identity in extended_rows else None,displayNameKey='party.'+identity,sourceKind='extended_field' if identity in extended_rows else 'world_map',sourceResource=name,evidence='actual_field_loader_binding' if identity in extended_rows else 'classic_pc_world_loader',compatibility_class='extended_explorer' if identity in extended_rows else 'original_world_model',animation_tier='A_original_bound',display_transform=dict(scale_policy='normalized_field_display_height' if identity in extended_rows else 'source_world_scale',forward_axis='source_minus_z_after_basis',ground_origin='posed_mesh_bounds',target_height=270 if identity=='red-xiii' else 510 if identity=='barret' else 500 if identity=='cait-sith' else 450 if identity in extended_rows else None))
+            if identity in extended_rows:model['field_binding']=row['loader']|dict(source_field=row['field'])
+    read=world_read
     for mid in (0,2,3):
         path=ds.files[f'wm{mid}.map'];hashes[f'wm{mid}.map']=hashlib.sha256(path.read_bytes()).hexdigest();world=parse_map(path,mid)
         if world.failures:raise ValueError('Incomplete source map')
@@ -104,12 +152,13 @@ def build_explorer(source:Path,destination:Path,report_path:Path|None=None,*,ver
     for row in inventory_rows:row['known_script_references']=[r for mid in row['model_ids'] for r in model_references[mid]]
     hashes['world_us.lgp']=hashlib.sha256(archive.read_bytes()).hexdigest()
     metadata=dict(schema='gaiagis-explorer',version=version,reconstruction='v1-geometric-gaia',runtimeClaim=False,sources=dict(sorted(hashes.items())),models=models,textures=[texture_refs[n] for n in sorted(texture_refs)],surfaces=surfaces,preview_timing_fps=30)
+    if version==2:metadata.update(registry_version=2,unavailable_models=unavailable)
     if version==2:
         metadata["map_bindings"]=[{k:v for k,v in s.items() if k not in ("offset","bytes","record_bytes")} for s in surfaces]
         metadata["surfaces"]=[]
     encoded=json.dumps(metadata,sort_keys=True,separators=(',',':'),allow_nan=False).encode();padding=b'\0'*((-len(encoded))%4)
     body=MAGIC+struct.pack('<2I',version,len(encoded))+encoded+padding+payload;result=body+hashlib.sha256(body).digest()
     destination.parent.mkdir(parents=True,exist_ok=True);destination.write_bytes(result)
-    report=dict(bytes=len(result),sha256=hashlib.sha256(result).hexdigest(),models=len(models),animations=sum(len(m['clips']) for m in models),inventory=inventory_rows,model_inventory=model_inventory,surface_stats={s['mapId']:s['stats'] for s in surfaces},sources=metadata['sources'],textures=len(texture_refs))
+    report=dict(bytes=len(result),sha256=hashlib.sha256(result).hexdigest(),models=len(models),animations=sum(len(m['clips']) for m in models),inventory=inventory_rows,model_inventory=model_inventory,surface_stats={s['mapId']:s['stats'] for s in surfaces},sources=metadata['sources'],textures=len(texture_refs),unavailable_models=unavailable,party_models=[dict(id=m['id'],hrc=m['hrc'],sourceKind=m.get('sourceKind','world_map'),bones=m['bone_count'],clips=[c['name'] for c in m['clips']],source_scale=m['source_scale']) for m in models if m['id'] in ('cloud','tifa','cid') or m['id'] in extended_rows])
     if report_path:output_path(report_path).write_text(json.dumps(report,sort_keys=True,indent=2),encoding='utf8')
     return report

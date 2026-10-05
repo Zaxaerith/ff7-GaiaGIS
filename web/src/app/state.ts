@@ -2,7 +2,7 @@
 import type {MapId} from '../data/nativeMaps';
 import type {ProjectionId} from '../projections/Projection';
 
-export type AssetId='geometry'|'locations'|'encounters'|'events'|'routing'|'textures'|'WM2'|'WM3'|'textures-WM2'|'textures-WM3'|'transitions'|'explorer';
+export type AssetId='geometry'|'locations'|'encounters'|'events'|'routing'|'textures'|'WM2'|'WM3'|'textures-WM2'|'textures-WM3'|'transitions'|'explorer'|'presentation';
 export type DataStatus='missing'|'optional'|'loading'|'loaded'|'incompatible'|'corrupt'|'legacy'|'unsupported';
 export interface AssetState {status:DataStatus;bytes:number;version?:number;reason?:string;sourceHashes?:Record<string,string>;}
 export type SelectionKind='triangle'|'location'|'entrance'|'encounter'|'event'|'transition'|'route'|'measurement'|'explorer';

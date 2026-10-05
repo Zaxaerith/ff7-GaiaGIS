@@ -42,6 +42,31 @@ def main(argv=None):
     for path in sorted((ROOT / 'tests').glob('test_*.py')):
         if 'climate' not in path.name:
             suite.addTests(unittest.defaultTestLoader.discover(str(ROOT / 'tests'), pattern=path.name))
+    # The legacy CRS regression writes a tiny GPKG. Keep its original tests,
+    # but isolate their generated fixtures from frozen Stage 1 evidence.
+    import test_sphere
+    from shutil import copyfile
+    scratch = out / 'legacy-projection'
+    (scratch / 'config').mkdir(parents=True, exist_ok=True)
+    copyfile(ROOT / 'config/default.toml', scratch / 'config/default.toml')
+    # Only these two routines generate files. Dataset regressions continue to
+    # read the existing immutable V1 outputs; redirecting their module globally
+    # would instead hide the authoritative GIS/GLB regression inputs.
+    from functools import wraps
+    def isolate(function):
+        @wraps(function)
+        def call(*args, **kwargs):
+            previous = test_sphere.WORKSPACE_ROOT
+            test_sphere.WORKSPACE_ROOT = scratch
+            try:
+                return function(*args, **kwargs)
+            finally:
+                test_sphere.WORKSPACE_ROOT = previous
+        return call
+    projection = test_sphere.ProjectionTests
+    projection.setUpClass = classmethod(isolate(projection.setUpClass.__func__))
+    projection.test_geopackage_creation_enables_wkt2_extension = isolate(
+        projection.test_geopackage_creation_enables_wkt2_extension)
     with (out / 'tests.log').open('w', encoding='utf8') as stream:
         result = unittest.TextTestRunner(stream=stream, verbosity=2).run(suite)
     report = dict(tests=result.testsRun, skipped=len(result.skipped),

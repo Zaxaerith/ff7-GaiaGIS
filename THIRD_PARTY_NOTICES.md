@@ -3781,3 +3781,16 @@ format discrepancies are documented in docs/v1.9/explorer-model-research.md.
 All original FF7 meshes, skeletons, animation frames, model/terrain textures and
 locally derived Explorer data remain excluded from public delivery. Third-party
 reference and FF7 copyrights/licenses remain with their respective holders.
+
+## v2.1 presentation and field-model research
+
+The FF7 field model-loader format wiki, actual original field-loader bindings,
+ergonomy-joe/ff7-worldmap lighting/shadow/dialog research, maciej-trebacz/
+ff7-lgp-explorer's Ifalna-derived animation resource inventory, and Zaarbs/ff7
+classic-PC sound/menu research (commit d094a23d0b6dde9853fadb9632083d7fbc0e3580)
+were consulted as format/behavior references only. No source implementation,
+bitmap, font, audio sample or model/animation asset from these references is
+copied into public code. Independent field-section parsing, bounded ADPCM decoding,
+CSS windows, model color/light adapter and procedural shadows are GaiaGIS code.
+FF7 originals and all reference implementation rights/licenses remain with their
+holders. Original audio, field models, TEX and A frames are private/local only.

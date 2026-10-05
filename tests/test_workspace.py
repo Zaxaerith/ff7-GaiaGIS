@@ -53,7 +53,7 @@ class WorkspaceTests(unittest.TestCase):
         with self.assertRaises(ValueError):build_workspace(self.root/'extracted',target)
         self.assertFalse(target.exists())
     def test_inventory_covers_all_supported_asset_types(self):
-        self.assertEqual(len(ASSETS),13)
+        self.assertEqual(len(ASSETS),14)
         self.assertEqual(ASSETS['gaia-explorer.bin'][1],'shared')
         self.assertEqual(ASSETS['gaia-map-WM2.bin'][1],'WM2')
 

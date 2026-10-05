@@ -1,0 +1,17 @@
+/* SPDX-License-Identifier: GPL-3.0-only. Original CSS primitives; no game UI assets. */
+:root{--window-bg:#111b24;--window-gradient:linear-gradient(#152735,#111b24);--rim:#49606b;--inner:#65809055;--ink:#edf4fc;--subtle:#b7cadb;--selected:#256b72;--inactive:#8194a5;--ring:#ffdf87;--warning:#ffda91;--danger:#ffadad;--overlay:#07111ddd;--window-shadow:0 8px 25px #0008;--accent:#a9d8c8}
+:root[data-theme=ff7]{--window-bg:#090f37;--window-gradient:linear-gradient(135deg,#253b91 0%,#15245d 35%,#070d2a 100%);--rim:#d0d8ef;--inner:#ffffff66;--ink:#f3f5ff;--subtle:#c3cbe7;--selected:#4268ad;--inactive:#97a3c8;--ring:#ffe59a;--warning:#ffe3a4;--danger:#ffc1c1;--overlay:#080d28ed;--window-shadow:0 4px 16px #0009,inset 0 0 0 1px var(--inner);--accent:#f2db9a;--border:#9faacf}
+:root[data-theme=ff7] :is(.panel,.integrated-panel,.integrated-inspector,dialog,.native-panel,.explorer-hud,.gaia-intro,.multimap-bar,.explorer-panel[open]){background:var(--window-gradient);color:var(--ink);border:2px solid var(--rim);border-radius:6px;box-shadow:var(--window-shadow)}
+:root[data-theme=ff7] :is(.integrated-content,.info,.analysis-panel,.native-panel,.explorer-panel){color:var(--ink)}
+:root[data-theme=ff7] :is(.control-note,.property-list dt,dialog p,.explorer-panel p,.explorer-panel pre,.integrated-panel pre){color:var(--subtle)}
+:root[data-theme=ff7] :is(select,input:not([type=checkbox]):not([type=range]),button){color:var(--ink);background:var(--window-bg);border-color:var(--rim);border-radius:3px}
+:root[data-theme=ff7] :is(button[aria-selected=true],button[aria-pressed=true],.location-result[aria-selected=true]){background:var(--selected);box-shadow:inset 3px 0 0 var(--accent)}
+:root[data-theme=ff7] .integrated-panel nav button[aria-selected=true]::before{content:'▸';margin-right:.25em;color:var(--accent)}
+:root[data-theme=ff7] :is(button,select):disabled{color:var(--inactive);background:var(--window-bg);opacity:.65}
+:root[data-theme=ff7] :is(.error,[role=alert]){color:var(--danger)}
+:root[data-theme=ff7] :is(dialog,.gaia-intro)::backdrop{background:var(--overlay)}
+:root :is(button,select,input,summary,a,[tabindex]):focus-visible{outline:3px solid var(--ring);outline-offset:3px}
+.presentation-settings{margin:0 0 14px;padding:10px;border:1px solid var(--rim);border-radius:4px;font-size:12px;min-width:0}
+.presentation-settings summary{cursor:pointer;min-height:30px}.presentation-settings label{display:block;margin:10px 0 5px}.presentation-settings select,.presentation-settings input[type=range]{width:100%;min-width:0;max-width:100%;box-sizing:border-box}.presentation-settings p{line-height:1.6;overflow-wrap:anywhere;color:var(--subtle)}
+.explorer-panel optgroup{font-weight:600}.explorer-model-note{color:var(--subtle)}
+@media(prefers-reduced-motion:reduce){.panel,dialog,.presentation-settings{transition:none!important;animation:none!important}}

@@ -38,10 +38,18 @@ is no cloud service, analytics or account system.
   and path-free diagnostics. Existing individual file choosers remain available.
 
 **Explorer** offers third-person keyboard/touch previews using locally decoded original
-models, skeletons and animation frames: Cloud/Tifa/Cid, Buggy, Tiny Bronco, five Chocobo
+models, skeletons and animation frames: all nine party characters, Buggy, Tiny Bronco, five Chocobo
 variants, Highwind, native WM2 Submarine and WM3 party previews. Explorer v2 borrows
 loaded map surfaces rather than duplicating them; legacy v1 packs remain supported.
 A persistent Exit HUD returns to the previous overview. Runtime gameplay is not simulated.
+
+**FF7-inspired Presentation:** original CSS blue-gradient windows with a Scientific
+theme option, accessible focus states, model color correction, moderate lighting
+and soft contact shadows. Optional original UI sounds are generated privately
+from your installation and require a user gesture; public delivery stays silent.
+The six added party characters use verified original field assets and their own
+animation bindings, explicitly labeled **Extended Explorer models**, not recovered
+world-map leaders. See [v2.1 data/provenance](docs/v2.1/presentation-data.md).
 
 One primary sidebar/mobile drawer and a common context Inspector unify these workflows.
 Desktop and320/390px mobile layouts, keyboard focus, reduced motion, and English,
