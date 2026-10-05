@@ -1,4 +1,5 @@
 import {mountTextures} from './ui/textures';
+import {mountMultimap} from './ui/multimap';
 // SPDX-License-Identifier: GPL-3.0-only
 import './styles/viewer.css';
 import {mountLayout} from './ui/layout';
@@ -61,7 +62,7 @@ async function start(provided?:{mesh:GaiaMesh;meta:GaiaMeta}){
     if(request!==operation)return;
     const viewer=new GaiaViewer(element('viewport'),mesh,meta);
     const textureControls=mountTextures(viewer,()=>request===operation);
-    activeViewer=viewer;viewer.onError=message=>fail(message);setBusy(false);
+    activeViewer=viewer;viewer.onError=message=>fail(message);setBusy(false);viewer.setSuspended((document.getElementById('map-selector') as HTMLSelectElement|null)?.value!=='WM0');
     const locationControls=mountLocations(viewer,meta,()=>request===operation);
     const encounterControls=mountEncounters(viewer,meta,()=>request===operation);
     const traversalControls=mountTraversal(viewer,meta);
@@ -128,7 +129,7 @@ async function start(provided?:{mesh:GaiaMesh;meta:GaiaMeta}){
       const region=document.createElement('p');region.className='selected-region';region.textContent=a.origin?(a.origin===1?t('inspect.northCap'):t('inspect.southCap')):meta.region_names[a.region!]||`Region ${a.region}`;detail.append(region);
       const origin=document.createElement('span');origin.className='origin-badge'+(a.origin?' synthetic':'');origin.textContent=a.origin?t('inspect.cap'):t('inspect.geometry');detail.append(origin);
       const addProperties=(rows:[string,string][])=>{const list=document.createElement('dl');list.className='property-list';for(const [label,value]of rows){const row=document.createElement('div'),dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=value;row.append(dt,dd);list.append(row);}detail.append(list);};
-      if(!a.origin) addProperties([[t('ui.source'),`WM${a.map}`],[t('ui.section'),String(a.section)],[t('ui.mesh'),String(a.mesh)],[t('ui.triangle'),String(a.triangle)],[t('ui.terrainID'),String(a.terrain)],[t('ui.regionID'),String(a.region)],[t('ui.scriptTexture'),`${a.script} / ${a.texture}`]]);
+      if(!a.origin) addProperties([[t('ui.source'),`WM${a.map}`],[t('map.space'),'WM0Native → GaiaGeographic (V1)'],[t('ui.section'),String(a.section)],[t('ui.mesh'),String(a.mesh)],[t('ui.triangle'),String(a.triangle)],[t('ui.terrainID'),String(a.terrain)],[t('ui.regionID'),String(a.region)],[t('ui.scriptTexture'),`${a.script} / ${a.texture}`]]);
       else {const note=document.createElement('p');note.className='synthetic-note';note.textContent=t('inspect.synthetic');detail.append(note);addProperties([[t('inspect.capFace'),String(a.capTriangle)]]);}
       let sin=0,cos=0,lat=0,height=0;
       for(let j=0;j<3;j++){const i=mesh.indices[source*3+j]*3,l=mesh.geographic[i]*Math.PI/180,p=mesh.geographic[i+1]*Math.PI/180;sin+=Math.sin(l)*Math.cos(p);cos+=Math.cos(l)*Math.cos(p);lat+=mesh.geographic[i+1]/3;height+=mesh.geographic[i+2]/3;}
@@ -145,3 +146,4 @@ async function start(provided?:{mesh:GaiaMesh;meta:GaiaMeta}){
 }
 window.addEventListener('pagehide',()=>activeViewer?.dispose(),{once:true});
 void start();
+mountMultimap(root,()=>activeViewer);

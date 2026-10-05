@@ -61,12 +61,16 @@ def pop(stack,n):
     values=list(stack[-n:]) if n else []
     return (stack[:-n] if n else stack), [Value()]*max(0,n-len(values))+values
 
-def point_coordinates(mesh, local):
-    if mesh is None or local is None or not 0<=mesh[0]<36 or not 0<=mesh[1]<28:
+def point_coordinates(mesh, local, map_id='WM0'):
+    bounds={'WM0':(0,36,0,28),'WM2':(12,24,8,24),'WM3':(0,8,0,8)}
+    if map_id not in bounds:raise ValueError('Unsupported map identity')
+    x0,x1,z0,z1=bounds[map_id]
+    if mesh is None or local is None or not x0<=mesh[0]<x1 or not z0<=mesh[1]<z1:
         return None
     return mesh[0]*8192+(local[0]&8191),mesh[1]*8192+(local[1]&8191)
 
-def analyze_ev(data, max_states=MAX_STATES, max_instructions=MAX_INSTRUCTIONS):
+def analyze_ev(data, max_states=MAX_STATES, max_instructions=MAX_INSTRUCTIONS, map_id='WM0'):
+    if map_id not in ('WM0','WM2','WM3'):raise ValueError('Unsupported map identity')
     functions, intervals=decode_ev(data)
     by_header={f.header:f for f in functions}
     observations={};calls=set();reachable=set();unresolved=[];steps=0;function_stats=[]
@@ -154,7 +158,7 @@ def analyze_ev(data, max_states=MAX_STATES, max_instructions=MAX_INSTRUCTIONS):
                         pair=tuple(args) if all(x is not None for x in args) else None
                         if op==0x308: mesh=pair
                         else: local=pair
-                        placement=point_coordinates(mesh,local) if model is not None else None
+                        placement=point_coordinates(mesh,local,map_id) if model is not None else None
                         kind='world_object' if placement is not None else None
                         if op==0x309 and placement is None:
                             unresolved.append(dict(call_table_record=f.table,function_id=f.header,instruction_offset=pc,

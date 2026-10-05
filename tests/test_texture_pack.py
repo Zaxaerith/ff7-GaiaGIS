@@ -38,7 +38,8 @@ class AtlasTests(unittest.TestCase):
         with self.assertRaises(ValueError):atlas_layout([dict(id=0,width=4096,height=4096)])
     def test_map_specific_catalog(self):
         rows=catalog();self.assertEqual(len(set(r['id'] for r in rows)),len(rows))
-        with self.assertRaises(ValueError):catalog('WM2')
+        self.assertEqual(len(catalog('WM2')),8)
+        with self.assertRaises(ValueError):catalog('WM1')
     def test_png_size_rejection(self):
         with self.assertRaises(ValueError):png_rgba(2,2,b'')
 

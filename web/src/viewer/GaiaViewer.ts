@@ -474,5 +474,6 @@ export class GaiaViewer {
     this.navigation.update(time,this.projectionId,this.context,this.camera,!!this.morph,this.graticule.visible,this.diagnostics.gridInterval,view.center);
     if(time-this.statsLast>600){this.statsLast=time;const fps=1000/(this.frameTimes.reduce((a,b)=>a+b,0)/Math.max(1,this.frameTimes.length));this.onStats({fps,renderTriangles:this.display.renderToSource.length,drawCalls:this.renderer.info.render.calls,morphing:!!this.morph,projection:this.projectionId});}
   }
+  setSuspended(value:boolean){this.renderer.setAnimationLoop(value?null:t=>this.animate(t));if(value)this.comparison?.renderer.setAnimationLoop(null);}
   dispose(){this.textured.dispose();this.texturePack?.image.close();this.renderer.setAnimationLoop(null);this.setProjectionComparison(null);this.locations.dispose();this.events.dispose();this.resizeObserver.disconnect();this.globeControls.dispose();this.mapControls.dispose();this.scene.traverse(object=>{if(object instanceof Mesh||object instanceof LineSegments){object.geometry.dispose();object.material.dispose();}});this.renderer.dispose();this.renderer.domElement.remove();}
 }

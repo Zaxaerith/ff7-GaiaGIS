@@ -1,12 +1,32 @@
 # GaiaGIS
 
+Multi-Map Gaia development adds WM2 Underwater and WM3 Great Glacier as
+independent native 3D/top-down maps with optional original textures, visual
+height exaggeration, source picking and transition provenance. Local maps are
+not automatically global Gaia layers: no WM2/WM3 geographic transform, physical
+measurements or gameplay/routing rules are assigned without evidence. WM0 V1
+and all 13 views retain their existing behavior.
+
+Generate optional native datasets from your own installation:
+
+```powershell
+python -B scripts/build_multimap_assets.py "D:\SteamLibrary\steamapps\common\FINAL FANTASY VII Steam Edition"
+```
+
+Choose Underwater/Great Glacier in the Viewer, load its `gaia-map-WM2.bin` or
+`gaia-map-WM3.bin` from `output/v1_8/data/`, then optionally load its matching
+`gaia-textures-WM2.bin`/`gaia-textures-WM3.bin`. `gaia-transitions.json` is a
+separate optional local file. All these files remain excluded from public Git
+and source-only builds. See [multi-map data](docs/v1.8/multimap-data.md) and
+[coordinate spaces](docs/v1.8/coordinate-spaces.md).
+
 A mathematical GIS reconstruction of Final Fantasy VII's polygonal world map, with an interactive globe and multiple map projections.
 
 **V1 Geometric Gaia is the canonical GaiaGIS reconstruction. V1 is a mathematical reconstruction, not official/canonical Final Fantasy VII geography.** The Earth-sized reference radius is an assumption, not a measurement of Gaia.
 
 FINAL FANTASY VII WM0 → polygon mesh → periodic topology analysis → inverse-Mercator parameterization → Earth-sized Gaia sphere → GIS → interactive Web viewer → map projections.
 
-This is a **code-only project**. The repository contains no FF7 game data, complete derived Gaia geometry, POI coordinates, encounter tables, world-event coordinates or routing topology. Users generate V1 data from their own installation and load it locally. v1.6 is published; v1.7 is developed locally and awaits publication approval. [v1.7 validation](docs/v1.7/validation.md) · [v1.6 validation](docs/v1.6/validation.md) · [v1.5 validation](docs/v1.5/validation.md) · [Stable v1.0 notes](docs/releases/v1.0.0.md) · [Data policy](docs/data-and-copyright.md).
+This is a **code-only project**. The repository contains no FF7 game data, complete derived Gaia/native-map geometry, decoded textures, POI coordinates, encounter tables, world-event/transition coordinates or routing topology. Users generate data from their own installation and load it locally. v1.7 is published; v1.8 is developed locally and awaits publication approval. [v1.8 validation](docs/v1.8/validation.md) · [v1.7 validation](docs/v1.7/validation.md) · [v1.6 validation](docs/v1.6/validation.md) · [Stable v1.0 notes](docs/releases/v1.0.0.md) · [Data policy](docs/data-and-copyright.md).
 
 ## Viewer
 

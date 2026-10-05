@@ -3758,3 +3758,13 @@ dimension and page-offset format facts cross-checked independently and against
 local game inputs; it contains no pixels or triangle UV records. Original
 GaiaGIS decoder, packer, evaluator and renderer code remain GPL-3.0-only.
 FF7 artwork and game assets remain the rights holders' materials.
+# v1.8 multi-map research
+
+Classic-PC `C_007533AF`, `C_00750F3C`, `C_0074DB8C`, `C_00766C7A`,
+`C_007660DB/C_0076616A` and wmfile native texture name/offset tables were studied
+in ergonomy-joe/ff7-worldmap. Native texture directory facts were cross-checked
+against Landscaper and actual local TEX/MAP bytes; the WM3 ID2 offset disagreement
+is documented. These repositories are behavior/format references, not copied
+runtime dependencies. The independent evaluator/export/Viewer is original
+GaiaGIS code. FF7 assets and reference implementation copyrights remain with
+their respective holders; GPL-3.0-only does not relicense them.

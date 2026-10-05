@@ -43,3 +43,7 @@ gaia-meta.json
 gaia-texture*
 decoded-textures/
 texture-preview-cache/
+gaia-map-WM2*
+gaia-map-WM3*
+gaia-multimap*
+gaia-transitions*

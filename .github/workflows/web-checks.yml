@@ -21,6 +21,7 @@ jobs:
       - run: python -B -m unittest discover -s tests -p test_routing.py -v
       - run: python -B -m unittest discover -s tests -p test_tex.py -v
       - run: python -B -m unittest discover -s tests -p test_texture_pack.py -v
+      - run: python -B -m unittest discover -s tests -p test_multimap.py -v
   web:
     runs-on: windows-latest
     steps:

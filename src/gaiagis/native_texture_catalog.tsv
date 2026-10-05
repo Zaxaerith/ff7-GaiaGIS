@@ -1,0 +1,14 @@
+# Format facts only. Classic-PC wmfile D_0096A300/A320/A798/A7B8; TEX dimensions verified locally.
+# map id name width height u-offset v-offset
+WM2	0	cltr	128	128	0	0
+WM2	1	lake_a	128	256	0	0
+WM2	2	rock	256	256	0	0
+WM2	3	scave	256	256	0	0
+WM2	4	ssand	256	256	0	0
+WM2	5	swall02	256	256	0	0
+WM2	6	sng01	128	128	128	0
+WM2	7	sng02	128	128	128	0
+WM3	0	hokola01	64	64	0	0
+WM3	1	hokola02	64	64	0	128
+WM3	2	snwfldl	64	64	0	64
+WM3	3	snwfld2	64	64	0	192

@@ -18,11 +18,15 @@ ANIMATED_FRAME_COUNTS = dict(zip((264,275,265,276,67,257,129,236,196,56,205,235,
                                 (8,8,8,8,8,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4,4)))
 
 def catalog(map_id='WM0'):
-    if map_id != 'WM0':
-        raise ValueError('Only WM0 catalog is instantiated in v1.7')
+    if map_id not in ('WM0','WM2','WM3'):
+        raise ValueError('Unsupported map identity')
     records=[]
-    for line in Path(__file__).with_name('wm0_texture_catalog.tsv').read_text(encoding='utf8').splitlines():
+    filename='wm0_texture_catalog.tsv' if map_id=='WM0' else 'native_texture_catalog.tsv'
+    for line in Path(__file__).with_name(filename).read_text(encoding='utf8').splitlines():
         if not line or line.startswith('#'):continue
+        if map_id!='WM0':
+            identity,line=line.split('\t',1)
+            if identity!=map_id:continue
         i,name,w,h,u,v=line.split('\t')
         records.append(dict(id=int(i),name=name,width=int(w),height=int(h),u_offset=int(u),v_offset=int(v)))
     return records
@@ -59,14 +63,16 @@ def build_atlas(resources,images):
                 pixels[a:a+4]=image.rgba[b:b+4]
     return side,placements,bytes(pixels)
 
-def build_texture_pack(source_root,meta_path,output_path):
+def build_texture_pack(source_root,meta_path,output_path,map_id='WM0'):
     workspace=Path(__file__).resolve().parents[2]
     output_path=Path(output_path).resolve()
     if not output_path.is_relative_to(workspace):raise ValueError('Output must remain in GaiaGIS workspace')
     ds=discover(Path(source_root));lgp=ds.files['world_us.lgp'];entries={e['filename'].casefold():e for e in inventory(lgp)['entries']}
-    world=parse_map(ds.files['wm0.map'],0)
+    if map_id not in ('WM0','WM2','WM3'):raise ValueError('Unsupported map identity')
+    source_map=map_id.lower()+'.map'
+    world=parse_map(ds.files[source_map],int(map_id[2]))
     if world.failures:raise ValueError('WM0 parse failures prevent UV export')
-    definitions=catalog();images={};missing=[]
+    definitions=catalog(map_id);images={};missing=[]
     for r in definitions:
         e=entries.get(r['name']+'.tex')
         if not e:missing.append(dict(id=r['id'],reason='missing resource'));continue
@@ -74,7 +80,7 @@ def build_texture_pack(source_root,meta_path,output_path):
             payload=read_entry(lgp,e);image=decode_tex(payload)
             if (image.width,image.height)!=(r['width'],r['height']):raise ValueError('catalog/source dimension mismatch')
             images[r['id']]=image;r.update(source_sha256=hashlib.sha256(payload).hexdigest(),rgba_sha256=hashlib.sha256(image.rgba).hexdigest(),format=image.metadata,has_alpha=any(a<255 for a in image.rgba[3::4]))
-            if r['id'] in ANIMATED_FRAME_COUNTS:
+            if map_id=='WM0' and r['id'] in ANIMATED_FRAME_COUNTS:
                 r['frame_count']=ANIMATED_FRAME_COUNTS[r['id']]
                 r['frames']=[r['name'][:-1]+str(i)+'.tex' for i in range(1,r['frame_count']+1)]
                 r['missing_frames']=[name for name in r['frames'] if name not in entries]
@@ -85,8 +91,8 @@ def build_texture_pack(source_root,meta_path,output_path):
         for tri in mesh.triangles:
             uv.extend(UV_RECORD.pack(mesh.section_id,mesh.mesh_id,tri.triangle_id,tri.texture,*[n for pair in tri.uv for n in pair]))
     image=png_rgba(side,side,pixels);meta=json.loads(Path(meta_path).read_text(encoding='utf8'))
-    header=dict(schema='gaiagis-textures',version=1,mapId='WM0',reconstruction='V1 Geometric Gaia',
-        mesh_sha256=meta['sha256'],sources={name:hashlib.sha256(ds.files[name].read_bytes()).hexdigest() for name in ('wm0.map','world_us.lgp')},
+    header=dict(schema='gaiagis-textures',version=1,mapId=map_id,reconstruction='V1 Geometric Gaia' if map_id=='WM0' else map_id+'Native',
+        mesh_sha256=meta['sha256'],sources={name:hashlib.sha256(ds.files[name].read_bytes()).hexdigest() for name in (source_map,'world_us.lgp')},
         atlas=dict(width=side,height=side,padding=GUTTER,encoding='png',color_space='srgb',mipmaps=False),
         textures=table,missing=missing,triangle_count=len(uv)//UV_RECORD.size,uv_record_bytes=UV_RECORD.size,
         uv_byte_length=len(uv),image_byte_length=len(image),payload_sha256=hashlib.sha256(uv+image).hexdigest(),
