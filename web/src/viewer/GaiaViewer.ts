@@ -37,6 +37,7 @@ import {CartographicLine} from './cartographicLines';
 import {ComparisonView} from './comparisonView';
 import type {LinkedView} from './comparisonView';
 import type {GeoPoint} from '../projections/Projection';
+import {geographicSource,sourceGeographic} from '../explorer/coordinates';
 import {inverseDisplay} from '../analysis/distortion';
 import {measurementSegments} from '../analysis/sphere';
 import {adaptiveGrid,chooseInterval,minorInterval,visibleGridBounds} from '../analysis/adaptive';
@@ -49,6 +50,11 @@ interface Morph {start:number;fromId:ProjectionId;from:Frame;to:Frame;gridFrom:F
 interface Flight {start:number;lon:number;lat:number;fromLon:number;fromLat:number;from:Vector3;to:Vector3;distance:number;}
 export interface ViewerStats {fps:number;renderTriangles:number;drawCalls:number;morphing:boolean;projection:ProjectionId;}
 export class GaiaViewer {
+  captureExplorer=false;
+  onExplorerFrame:(seconds:number)=>void=()=>{};
+  onExplorerPick:(source:number,point:GeoPoint)=>void=()=>{};
+  get overviewBridge(){return {camera:this.camera,controls:this.projectionId==='globe'?this.globeControls:this.mapControls};}
+  get explorerBridge(){return {scene:this.scene,camera:this.perspective,controls:this.globeControls,container:this.container};}
   readonly renderer:WebGLRenderer;
   readonly display:DisplayMesh;
   readonly context:ProjectionContext;
@@ -172,6 +178,7 @@ export class GaiaViewer {
     this.renderer.domElement.tabIndex=0;
     this.renderer.domElement.addEventListener('webglcontextlost',e=>{e.preventDefault();this.renderer.setAnimationLoop(null);this.onError('Graphics context interrupted. Retry the viewer to restore your local V1 dataset.');});
     this.renderer.domElement.addEventListener('keydown',e=>{
+      if(this.captureExplorer)return;
       const keys=['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','+','=','-','Home','n','N','Escape'];
       if(!keys.includes(e.key))return;e.preventDefault();
       if(e.key==='+'||e.key==='=')this.zoom(.83);
@@ -333,7 +340,7 @@ export class GaiaViewer {
   }
   private cancelFlight(){
     this.flight=null;this.queuedLocation=null;
-    if(!this.morph){this.globeControls.enabled=this.projectionId==='globe';this.mapControls.enabled=!this.globeControls.enabled;}
+    if(!this.morph){this.globeControls.enabled=!this.captureExplorer&&this.projectionId==='globe';this.mapControls.enabled=!this.captureExplorer&&this.projectionId!=='globe';}
   }
   setCapDistinction(value:boolean){this.distinguishCaps=value;this.colorSurface();}
   setTriangleGrid(value:boolean){this.triangleGrid.visible=value;}
@@ -401,6 +408,16 @@ export class GaiaViewer {
 
       let geographic:GeoPoint|null=null;
       if(this.projectionId==='globe'){const p=geographicViewCenter(hit.point.x,hit.point.y,hit.point.z);geographic=[p.lon??0,p.lat,0];}else geographic=inverseDisplay(this.projectionId,hit.point.x,hit.point.y,this.context);
+      if(this.captureExplorer){
+        // Invert each display corner, then interpolate in source X/Z. Inverting
+        // the curved sphere hit itself would drift off the source triangle.
+        const source=this.display.renderToSource[face];if(source<this.mesh.sourceTriangleCount){
+          const corners=[0,1,2].map(j=>geographicSource(this.display.geographic[base+j*3],this.display.geographic[base+j*3+1]));
+          const width=294912,center=corners[0][0],w=[bary.x,bary.y,bary.z];let x=0,z=0;
+          for(let j=0;j<3;j++){x+=(corners[j][0]+Math.round((center-corners[j][0])/width)*width)*w[j];z+=corners[j][1]*w[j];}
+          this.onExplorerPick(source,sourceGeographic(x,z,0));
+        }return;
+      }
       if(geographic){this.onGeographicPick(geographic);if(this.captureMeasurement)return;}
       this.selected=this.display.renderToSource[face];
       this.highlightRefs=[];
@@ -438,7 +455,7 @@ export class GaiaViewer {
       this.changed();
       if(t===1){
         this.morph=null;this.mapCamera.position.set(0,0,8);this.mapCamera.zoom=1;this.mapControls.target.set(0,0,0);this.mapCamera.lookAt(0,0,0);this.globeControls.target.set(0,0,0);
-        this.resize();this.globeControls.enabled=this.projectionId==='globe';this.mapControls.enabled=!this.globeControls.enabled;
+        this.resize();this.globeControls.enabled=!this.captureExplorer&&this.projectionId==='globe';this.mapControls.enabled=!this.captureExplorer&&this.projectionId!=='globe';
         this.mapControls.enablePan=!rotatesCenter(this.projectionId);this.onProjection(this.projectionId,false);
         if(this.pendingLinked&&this.comparison){const v=this.pendingLinked;this.pendingLinked=null;this.focusLocation(v.center[0],v.center[1]);if(this.projectionId==='globe')this.perspective.position.multiplyScalar((this.distance('globe')/this.perspective.position.length())/v.zoom);else{this.mapCamera.zoom=v.zoom;this.mapCamera.updateProjectionMatrix();}}
         if(this.queuedLocation){const location=this.queuedLocation;this.queuedLocation=null;this.flyToLocation(location.lon,location.lat);}
@@ -457,9 +474,10 @@ export class GaiaViewer {
           const target=new Vector3().lerpVectors(f.from,f.to,ease);target.z=0;
           this.mapCamera.position.set(target.x,target.y,8);this.mapControls.target.copy(target);this.mapCamera.lookAt(target);
         }
-        if(t===1){this.flight=null;this.globeControls.enabled=this.projectionId==='globe';this.mapControls.enabled=!this.globeControls.enabled;}
-      }else if(this.projectionId==='globe')this.globeControls.update(delta/1000);else this.mapControls.update(delta/1000);
+        if(t===1){this.flight=null;this.globeControls.enabled=!this.captureExplorer&&this.projectionId==='globe';this.mapControls.enabled=!this.captureExplorer&&this.projectionId!=='globe';}
+      }else if(!this.captureExplorer){if(this.projectionId==='globe')this.globeControls.update(delta/1000);else this.mapControls.update(delta/1000);}
     }
+    if(this.captureExplorer&&!this.morph)this.onExplorerFrame(delta/1000);
     this.camera.updateMatrixWorld();
     this.updateAdaptiveGrid(time);
     this.locations.update(this.projectionId,this.context,this.camera,markerMorph);

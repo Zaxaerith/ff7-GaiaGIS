@@ -47,3 +47,14 @@ gaia-map-WM2*
 gaia-map-WM3*
 gaia-multimap*
 gaia-transitions*
+gaia-explorer*
+decoded-models/
+animation-dumps/
+*.obj
+*.gltf
+
+# Proprietary world skeleton/part/animation resources remain local.
+*.hrc
+*.rsd
+*.p
+*.a

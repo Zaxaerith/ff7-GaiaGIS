@@ -26,7 +26,26 @@ A mathematical GIS reconstruction of Final Fantasy VII's polygonal world map, wi
 
 FINAL FANTASY VII WM0 → polygon mesh → periodic topology analysis → inverse-Mercator parameterization → Earth-sized Gaia sphere → GIS → interactive Web viewer → map projections.
 
-This is a **code-only project**. The repository contains no FF7 game data, complete derived Gaia/native-map geometry, decoded textures, POI coordinates, encounter tables, world-event/transition coordinates or routing topology. Users generate data from their own installation and load it locally. v1.7 is published; v1.8 is developed locally and awaits publication approval. [v1.8 validation](docs/v1.8/validation.md) · [v1.7 validation](docs/v1.7/validation.md) · [v1.6 validation](docs/v1.6/validation.md) · [Stable v1.0 notes](docs/releases/v1.0.0.md) · [Data policy](docs/data-and-copyright.md).
+This is a **code-only project**. The repository contains no FF7 game data, complete derived Gaia/native-map geometry, decoded textures, POI coordinates, encounter tables, world-event/transition coordinates or routing topology. Users generate data from their own installation and load it locally. v1.8 is the published baseline; v1.9 Explorer Mode is a local development candidate awaiting publication approval. [v1.8 validation](docs/v1.8/validation.md) · [v1.7 validation](docs/v1.7/validation.md) · [v1.6 validation](docs/v1.6/validation.md) · [Stable v1.0 notes](docs/releases/v1.0.0.md) · [Data policy](docs/data-and-copyright.md).
+
+## Explorer Mode (v1.9)
+
+Drop a locally generated original FF7 world-map model onto a source surface and
+explore with a third-person camera, keyboard or touch controls. WM0 supports
+Cloud/Tifa/Cid, Buggy, Tiny Bronco, five Chocobo traversal/tint variants and
+Highwind flight with static landing eligibility. WM2 Submarine and WM3 party
+exploration are explicitly native geometry previews; original movement/collision
+is not verified. Story/save/vehicle ownership is not simulated.
+
+```powershell
+python -B scripts/build_explorer_assets.py "YOUR_FF7_INSTALLATION"
+```
+
+Load `output/v1_9/gaia-explorer.bin` through **Explorer → Load Explorer pack**
+after your local geometry. Original models, skeletons, textures, animation frames
+and this pack remain local-only. Animation uses preserved source frames with
+explicit preview timing, not asserted Steam2026 runtime timing.
+[Model research](docs/v1.9/explorer-model-research.md) · [Local pack](docs/v1.9/explorer-data.md) · [Movement limits](docs/v1.9/movement.md) · [Validation](docs/v1.9/validation.md).
 
 ## Viewer
 

@@ -1,5 +1,6 @@
 import {mountTextures} from './ui/textures';
 import {mountMultimap} from './ui/multimap';
+import {ExplorerController} from './explorer/controller';
 // SPDX-License-Identifier: GPL-3.0-only
 import './styles/viewer.css';
 import {mountLayout} from './ui/layout';
@@ -52,7 +53,7 @@ function bindCommon(){
   });
 }
 async function start(provided?:{mesh:GaiaMesh;meta:GaiaMeta}){
-  const request=++operation;projectionLocale?.();galleryControls?.dispose();analysisControls?.dispose();activeViewer?.dispose();activeViewer=undefined;mountLayout(root);galleryControls=mountProjectionGallery();bindCommon();setBusy(true);
+  document.dispatchEvent(new Event('gaiagis-map-changing'));const request=++operation;projectionLocale?.();galleryControls?.dispose();analysisControls?.dispose();activeViewer?.dispose();activeViewer=undefined;mountLayout(root);galleryControls=mountProjectionGallery();bindCommon();setBusy(true);
   try {
     if(!provided&&import.meta.env.VITE_GAIA_SOURCE_ONLY==='true')throw new MissingDatasetError();
     const {mesh,meta}=provided||await loadMesh(text=>{if(request===operation)element('loading-text').textContent=text;});
@@ -146,4 +147,5 @@ async function start(provided?:{mesh:GaiaMesh;meta:GaiaMeta}){
 }
 window.addEventListener('pagehide',()=>activeViewer?.dispose(),{once:true});
 void start();
-mountMultimap(root,()=>activeViewer);
+const multimaps=mountMultimap(root,()=>activeViewer);
+new ExplorerController(()=>activeViewer,()=>multimaps.viewer);

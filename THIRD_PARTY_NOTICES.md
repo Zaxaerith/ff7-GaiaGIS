@@ -3768,3 +3768,16 @@ is documented. These repositories are behavior/format references, not copied
 runtime dependencies. The independent evaluator/export/Viewer is original
 GaiaGIS code. FF7 assets and reference implementation copyrights remain with
 their respective holders; GPL-3.0-only does not relicense them.
+
+## v1.9 world-model format research
+
+Classic-PC HRC/RSD/P/A registry and animation/tint behavior in ergonomy-joe/
+ff7-worldmap, FF7 format wiki, KimeraCS FF7FieldSkeleton/Utils and Q-Gears HRC/A
+coordinate handling were consulted as format/behavior references only. Their
+implementations are not copied, incorporated, relicensed or runtime dependencies.
+The independently written parser, packer, model pose adapter and walker are
+original GaiaGIS code. The differing reference coordinate bases and actual P/HRC
+format discrepancies are documented in docs/v1.9/explorer-model-research.md.
+All original FF7 meshes, skeletons, animation frames, model/terrain textures and
+locally derived Explorer data remain excluded from public delivery. Third-party
+reference and FF7 copyrights/licenses remain with their respective holders.
