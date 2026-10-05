@@ -5,14 +5,55 @@ a private workspace from your own installation and load it in your browser.
 No file is uploaded. WM0 is the V1 mathematical globe reconstruction; WM2 and
 WM3 are separate native maps with no established global geographic transform.
 
-## Generate and run
+## Recommended Local Start
+
+Install Python 3.12+ and Node 22.12+. Once per checkout, run `npm ci` in `web/`.
+From the project root:
+
+```powershell
+python -m gaiagis.local --source "YOUR_FF7_INSTALLATION"
+```
+
+No `PYTHONPATH` setup or manual file picker is needed in a source checkout. The
+launcher checks source files/hashes, reuses valid generated assets, builds invalid
+components, starts a loopback HTTP server and opens the browser. Default output is
+`output/local-workspace`. Data reports **Local Workspace / Loaded automatically**.
+WM0/WM2/WM3 geometry and their textures, transitions and Explorer are all adopted
+when present. Map → Underwater or Great Glacier opens an already textured native map.
+
+```powershell
+./scripts/start_local.ps1 "YOUR_FF7_INSTALLATION"
+# Next time (the wrapper remembered the source):
+./scripts/start_local.ps1
+```
+
+The Python entry point remembers only when `--remember-source` is supplied. Its
+ignored `.gaiagis-local.json` stays in this checkout; no Steam path is stored in browser
+localStorage. If no source is available, an interactive terminal asks for its root.
+`--no-open` keeps the browser closed. `--workspace` accepts a private subdirectory of
+project `output/`, outside sealed evidence; `--rebuild` forces export, and
+`--clean-invalid` removes only named invalid assets before export. Ctrl+C closes the
+server. The default port is 5173, with conflict fallback. `--host 0.0.0.0` is an
+explicit opt-in to serving beyond loopback; the default is always 127.0.0.1.
+
+Fresh WM0 generation still needs QGIS/GDAL. Set `GAIAGIS_QGIS_ROOT` if necessary;
+existing compatible Stage 1 products do not need rebuilding. `--debug` retains a
+traceback for troubleshooting. A missing optional component is reported in the
+terminal and Data panel; valid components continue loading.
+
+Only Python reads the read-only installation. HTTP serves generated, manifest-listed
+assets and executable Viewer files, never MAP/BOT/LGP/TEX/model source files. Nothing
+is uploaded. Public Pages retains the manual workflow below and never scans disk.
+The local output is regenerable: deleting it causes the next launch to rebuild it.
+
+## Advanced / Manual Workflow
 
 From the repository root, with Python 3.12+ and Node 22.12+:
 
 ```powershell
 . ./scripts/use_workspace_environment.ps1
 $env:PYTHONPATH = Join-Path (Get-Location).Path 'src'
-python -B -m gaiagis.build_workspace --source "YOUR_FF7_INSTALLATION" --output local-workspace
+python -B -m gaiagis.build_workspace --source "YOUR_FF7_INSTALLATION" --output output/local-workspace
 cd web
 npm ci
 npm run dev
@@ -27,7 +68,7 @@ The generator reads the game, writes inside this repository and checks source
 hashes again. Never use the game installation as an output directory.
 
 Open the URL printed by Vite. Under **Data → Open workspace folder**, select
-`local-workspace`. If the directory picker is unavailable, the folder input or
+`output/local-workspace`. If the directory picker is unavailable, the folder input or
 **Choose workspace files** works: select `gaia-workspace.json` and its generated
 files. Chrome may show a folder-read confirmation; it is user initiated.
 Only recognized root files are read, never nested saves or arbitrary disk files.

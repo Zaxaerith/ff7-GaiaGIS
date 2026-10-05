@@ -34,6 +34,14 @@ export async function discoverWorkspace(selected:readonly File[]):Promise<Worksp
  for(const [id,names]of Object.entries(assetFiles) as [AssetId,string[]][]){if(names.some(n=>!files.has(n)))issues[id]??={status:id==='geometry'?'missing':'optional',bytes:0};if(manifest&&names.some(n=>files.has(n)&&!manifest.assets.some(a=>a.filename===n)))issues[id]={status:'incompatible',bytes:0,reason:'workspace.unlisted'};}
  return {files,manifest,issues};
 }
+/** Derive adoption order from manifest dependencies, keeping geometry bootstrap first. */
+export function workspaceOrder(manifest:WorkspaceManifest|null):AssetId[]{
+ const result:AssetId[]=['geometry'],visited=new Set<string>();
+ const visit=(name:string)=>{if(visited.has(name))return;visited.add(name);const a=manifest?.assets.find(a=>a.filename===name);if(!a)return;for(const dependency of a.dependencies)visit(dependency);const id=a.type==='metadata'?'geometry':a.type;if(!result.includes(id))result.push(id);};
+ for(const id of Object.keys(assetFiles) as AssetId[])for(const name of assetFiles[id])visit(name);
+ for(const id of Object.keys(assetFiles) as AssetId[])if(!result.includes(id))result.push(id);
+ return result;
+}
 export type AssetLoader=(files:File[])=>Promise<void>;
 export async function assetSources(file:File):Promise<Record<string,string>>{
  let value:Record<string,unknown>={};
@@ -57,7 +65,7 @@ export class WorkspaceLoader {
  cancel(){this.epoch++;}
  load(files:readonly File[]){const epoch=++this.epoch;const task=this.pending.catch(()=>{}).then(()=>this.perform(files,epoch));this.pending=task;return task;}
  private async perform(files:readonly File[],epoch:number){if(epoch!==this.epoch)return;const plan=await discoverWorkspace(files);if(epoch!==this.epoch)return;
-  const order=Object.keys(assetFiles) as AssetId[],sources={...plan.manifest?.sources};
+  const order=workspaceOrder(plan.manifest),sources={...plan.manifest?.sources};
   if(plan.issues.geometry){this.report('geometry',plan.issues.geometry);return plan;}
   for(const id of order){if(epoch!==this.epoch)return;const issue=plan.issues[id];if(issue){this.report(id,issue);continue;}const selected=assetFiles[id].map(n=>plan.files.get(n)!);const bytes=selected.reduce((sum,f)=>sum+f.size,0),loader=this.loaders.get(id);if(!loader){this.report(id,{status:'unsupported',bytes});continue;}
    this.report(id,{status:'loading',bytes});try{const bindings:Record<string,string>={};for(const f of selected)for(const [key,hash]of Object.entries(await assetSources(f))){if(sources[key]&&sources[key].toLowerCase()!==hash.toLowerCase())throw Error('Workspace cross-asset source fingerprint mismatch');bindings[key]=hash.toLowerCase();}await loader(selected);Object.assign(sources,bindings);if(epoch!==this.epoch)return;this.report(id,{status:plan.manifest?'loaded':'legacy',bytes,sourceHashes:bindings});}catch(e){if(epoch!==this.epoch)return;const text=e instanceof Error?e.message:String(e);this.report(id,{status:/mismatch|fingerprint|incompat|identity/i.test(text)?'incompatible':'corrupt',bytes,reason:'workspace.assetRejected'});if(id==='geometry')return plan;}

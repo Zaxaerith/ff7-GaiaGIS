@@ -14,8 +14,9 @@ parameterization → Earth-sized Gaia sphere → GIS → interactive Web viewer 
 This public repository and its hosted Viewer are **code-only**. They contain no game
 assets or complete derived geometry, textures, models, animations, POI, encounters,
 events, routing, transitions or native/Explorer datasets. Generate a private local
-workspace from your own installation, then open its folder in the Viewer. Local files
-stay in the browser; there is no backend, upload, analytics or account system.
+workspace from your own installation. The local launcher loads it automatically over
+localhost; the public Viewer retains folder/file loading. Nothing is uploaded; there
+is no cloud service, analytics or account system.
 
 ## Explore and inspect
 
@@ -46,14 +47,45 @@ One primary sidebar/mobile drawer and a common context Inspector unify these wor
 Desktop and320/390px mobile layouts, keyboard focus, reduced motion, and English,
 简体中文, 繁體中文, 日本語 and 한국어 are supported. Safe view/panel preferences persist locally.
 
-## Generate your local workspace
+## Recommended Local Start
+
+With Python 3.12+ and Node 22.12+, install Viewer dependencies once:
+
+```powershell
+cd web
+npm ci
+cd ..
+python -m gaiagis.local --source "YOUR_FF7_INSTALLATION"
+```
+
+Run the Python command from this repository root. It discovers and fingerprints
+MAP/BOT/LGP/flevel data, incrementally generates `output/local-workspace`, builds or
+reuses the code-only Viewer, starts `127.0.0.1`, and opens your browser. All available
+geometry, textures, Locations, Encounters, Events, Routing, WM2/WM3, Transitions and
+Explorer load automatically. Underwater and Great Glacier are immediately textured.
+Optional generation failures are reported without preventing the base Viewer.
+
+On Windows, `./scripts/start_local.ps1 "YOUR_FF7_INSTALLATION"` also remembers the
+source in ignored `.gaiagis-local.json`; subsequent runs need only
+`./scripts/start_local.ps1`. The Python command remembers only with `--remember-source`.
+Use `--no-open`, `--port`, `--workspace`, `--rebuild` or `--clean-invalid` as needed;
+Ctrl+C stops the local server. An occupied port advances to the next available port.
+
+**Privacy:** only the local Python process reads game files. The browser receives
+manifest-listed generated workspace assets from localhost. The installation is never
+served, absolute source paths stay out of the UI, and nothing is uploaded. Pages has
+no local auto-discovery: folder/file and individual loaders remain its fallback.
+
+[Local launcher details and validation](docs/v2.0/local-workspace.md).
+
+## Advanced / Manual Workflow
 
 Python 3.12+ and Node 22.12+ are required. Run from the repository root:
 
 ```powershell
 . ./scripts/use_workspace_environment.ps1
 $env:PYTHONPATH = Join-Path (Get-Location).Path 'src'
-python -B -m gaiagis.build_workspace --source "YOUR_FF7_INSTALLATION" --output local-workspace
+python -B -m gaiagis.build_workspace --source "YOUR_FF7_INSTALLATION" --output output/local-workspace
 cd web
 npm ci
 npm run dev
@@ -64,7 +96,7 @@ set `GAIAGIS_QGIS_ROOT` to your supported OSGeo4W/QGIS root if needed. The gener
 can also reuse a compatible Stage 1 cache with `--stage1`; it never installs or modifies
 QGIS or FF7. [Setup and usage](docs/user-guide.md) explains environment and compatibility.
 
-In **Data → Open workspace folder**, select `local-workspace`. Alternatively choose
+In **Data → Open workspace folder**, select `output/local-workspace`. Alternatively choose
 `gaia-workspace.json` and its files together. The manifest binds13payloads through
 relative names, dependencies, sizes and hashes; optional files degrade independently.
 The minimum legacy workflow still loads `gaia-meta.json` + `gaia-mesh.bin`. Individual

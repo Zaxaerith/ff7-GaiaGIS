@@ -10,6 +10,7 @@ export interface Selection {kind:SelectionKind;id:string;mapId:MapId;geographicP
 export type PanelId='explore'|'layers'|'analysis'|'map'|'view'|'data';
 export interface PreferenceState {panel:PanelId;language:'en'|'zh-CN'|'zh-TW'|'ja'|'ko';graticule:string;surfaceStyle:'terrain'|'region'|'texture';}
 export interface AppState {
+ localWorkspace:'none'|'loading'|'loaded'|'error';
  data:{assets:Partial<Record<AssetId,AssetState>>;generation:number;};
  map:{id:MapId;coordinateSpace:'GaiaGeographic'|'WM2Native'|'WM3Native';};
  view:{projection:ProjectionId;native:'3d'|'topdown';compare:boolean;};
@@ -18,10 +19,11 @@ export interface AppState {
  explorer:{phase:'idle'|'placing'|'active';};
  preferences:PreferenceState;
 }
-export function initialState():AppState{return {data:{assets:{},generation:0},map:{id:'WM0',coordinateSpace:'GaiaGeographic'},view:{projection:'globe',native:'3d',compare:false},selection:null,analysis:{tool:'none'},explorer:{phase:'idle'},preferences:{panel:'explore',language:'en',graticule:'auto',surfaceStyle:'terrain'}};}
+export function initialState():AppState{return {localWorkspace:'none',data:{assets:{},generation:0},map:{id:'WM0',coordinateSpace:'GaiaGeographic'},view:{projection:'globe',native:'3d',compare:false},selection:null,analysis:{tool:'none'},explorer:{phase:'idle'},preferences:{panel:'explore',language:'en',graticule:'auto',surfaceStyle:'terrain'}};}
 export type Action=
  |{type:'asset';id:AssetId;asset:AssetState}
  |{type:'reset-data'}
+ |{type:'local-workspace';phase:AppState['localWorkspace']}
  |{type:'map';id:MapId}
  |{type:'view';view:Partial<AppState['view']>}
  |{type:'select';selection:Selection|null}
@@ -31,8 +33,9 @@ export type Action=
  |{type:'preference';preferences:Partial<PreferenceState>};
 export function reduce(state:AppState,action:Action):AppState{
  switch(action.type){
+ case 'local-workspace':return {...state,localWorkspace:action.phase};
  case 'asset':return {...state,data:{...state.data,assets:{...state.data.assets,[action.id]:action.asset}}};
- case 'reset-data':return {...initialState(),preferences:state.preferences,data:{assets:{},generation:state.data.generation+1}};
+ case 'reset-data':return {...initialState(),localWorkspace:state.localWorkspace,preferences:state.preferences,data:{assets:{},generation:state.data.generation+1}};
  case 'map':return {...state,map:{id:action.id,coordinateSpace:action.id==='WM0'?'GaiaGeographic':action.id==='WM2'?'WM2Native':'WM3Native'},selection:null,analysis:{tool:'none'},explorer:{phase:'idle'},view:{...state.view,compare:false}};
  case 'view':return {...state,view:{...state.view,...action.view}};
  case 'select':return {...state,selection:action.selection?.mapId===state.map.id?action.selection:null};

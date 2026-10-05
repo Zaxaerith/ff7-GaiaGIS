@@ -1,3 +1,4 @@
+import {localAdvertised,loadLocalWorkspace} from './app/localWorkspace';
 import {legendRow} from './ui/legend';
 import {appStore} from './app/state';
 import {workspaceLoader,loadedAsset} from './app/assets';
@@ -164,4 +165,13 @@ const launch=document.createElement('details');launch.id='explorer-launch';const
 workspaceLoader.register('explorer',async files=>(await ensureExplorer()).loadFile(files[0]));
 
 document.addEventListener('gaiagis-explore-entrance',e=>{const entrance=(e as CustomEvent<import('./data/poi').Entrance>).detail;void ensureExplorer().then(controller=>controller.fromEntrance(entrance));});
-void start();
+const localAbort=new AbortController();
+window.addEventListener('pagehide',()=>localAbort.abort(),{once:true});
+async function boot(){
+ if(!localAdvertised()){await start();return;}
+ appStore.dispatch({type:'local-workspace',phase:'loading'});
+ mountLayout(root);bindCommon();setBusy(true);element('loading-text').textContent=t('workspace.autoLoading');applicationShell=mountShell();
+ try{await loadLocalWorkspace(workspaceLoader,fetch,localAbort.signal);if(!activeViewer)throw Error('Core geometry unavailable');appStore.dispatch({type:'local-workspace',phase:'loaded'});}
+ catch{if(localAbort.signal.aborted)return;appStore.dispatch({type:'local-workspace',phase:'error'});if(!activeViewer)await start();}
+}
+void boot();

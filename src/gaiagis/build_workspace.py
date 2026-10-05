@@ -29,6 +29,20 @@ ASSETS = {
     'gaia-explorer.bin': ('explorer', 'shared', ['gaia-mesh.bin']),
 }
 
+# Source dependencies, not a Steam-version switch. Generator/transport versions
+# stay unchanged because the produced geometry and schemas have not changed.
+SOURCE_DEPENDENCIES = {
+    'gaia-meta.json': ['wm0.map'], 'gaia-mesh.bin': ['wm0.map'],
+    'gaia-poi.json': ['wm0.map', 'world_us.lgp', 'flevel.lgp'],
+    'gaia-encounters.json': ['wm0.map', 'world_us.lgp'],
+    'gaia-events.json': ['wm0.map', 'world_us.lgp', 'flevel.lgp'],
+    'gaia-routing.bin': ['wm0.map'], 'gaia-textures.bin': ['world_us.lgp'],
+    'gaia-map-WM2.bin': ['wm2.map'], 'gaia-map-WM3.bin': ['wm3.map'],
+    'gaia-textures-WM2.bin': ['world_us.lgp'], 'gaia-textures-WM3.bin': ['world_us.lgp'],
+    'gaia-transitions.json': ['wm0.map', 'wm2.map', 'wm3.map', 'world_us.lgp', 'flevel.lgp'],
+    'gaia-explorer.bin': ['world_us.lgp'],
+}
+
 def write_manifest(directory, sources):
     """No wall-clock timestamp, absolute input path or machine identity."""
     assets = []
@@ -48,24 +62,32 @@ def write_manifest(directory, sources):
     path.write_text(json.dumps(manifest, sort_keys=True, indent=2) + '\n', encoding='utf8')
     return manifest
 
-def reusable(manifest, sources, directory, names):
-    if not manifest or manifest.get('schema') != 'gaiagis-workspace' or manifest.get('version') != 1 or manifest.get('tool_version') != TOOL_VERSION or manifest.get('generator_version') != GENERATOR_VERSION or manifest.get('sources') != sources:
+def reusable(manifest, sources, directory, names, _visited=None):
+    if not isinstance(manifest,dict) or not isinstance(manifest.get('sources'),dict) or not isinstance(manifest.get('assets'),list) or not all(isinstance(a,dict) for a in manifest['assets']) or manifest.get('schema') != 'gaiagis-workspace' or manifest.get('version') != 1 or manifest.get('tool_version') != TOOL_VERSION or manifest.get('generator_version') != GENERATOR_VERSION:
         return False
+    visited = set() if _visited is None else _visited
     for name in names:
+        if name not in ASSETS or name in visited:return False
+        previous = manifest.get('sources', {})
+        if any(previous.get(k) != sources.get(k) for k in SOURCE_DEPENDENCIES[name]):return False
         record = next((a for a in manifest.get('assets', []) if a.get('filename') == name), None)
         path = directory / name
         if not record or not path.is_file() or record.get('bytes') != path.stat().st_size or record.get('sha256') != sha256(path):
             return False
+        dependencies = ASSETS[name][2]
+        if record.get('dependencies') != dependencies:return False
+        if dependencies and not reusable(manifest, sources, directory, dependencies, visited | {name}):return False
     return True
 
 def ensure_stage1(source, stage1, cache):
-    metadata = stage1 / 'reconstruction' / 'build_metadata.json'
     dataset = discover(source)
-    if metadata.is_file() and (stage1 / 'gis/gaia_geographic.gpkg').is_file():
-        build = json.loads(metadata.read_text(encoding='utf8'))
-        previous = next((r['sha256'] for r in build['source_fingerprint']['before']['files'] if r['filename'] == 'wm0.map'), None)
-        if previous and previous.lower() == sha256(dataset.files['wm0.map']):
-            return stage1
+    for candidate in (stage1,cache):
+        metadata = candidate / 'reconstruction' / 'build_metadata.json'
+        if metadata.is_file() and (candidate / 'gis/gaia_geographic.gpkg').is_file():
+            build = json.loads(metadata.read_text(encoding='utf8'))
+            previous = next((r['sha256'] for r in build['source_fingerprint']['before']['files'] if r['filename'] == 'wm0.map'), None)
+            if previous and previous.lower() == sha256(dataset.files['wm0.map']):
+                return candidate
     # Same existing mapping/caps/GIS algorithms, in this workspace's private cache.
     # No QGIS project, root CRS file or prior generated product is overwritten.
     from .reconstruction import Mapping, read_config
@@ -88,9 +110,12 @@ def ensure_stage1(source, stage1, cache):
     target.write_text(json.dumps(build, sort_keys=True, indent=2), encoding='utf8')
     return cache
 
-def build_workspace(source, destination, stage1=None):
+def build_workspace(source, destination, stage1=None, *, rebuild=False, allow_optional_failure=False, clean_invalid=False):
     source = Path(source).resolve();out = output_path(Path(destination))
     if out.is_relative_to(source):raise ValueError('Workspace output must not be inside the selected source dataset')
+    # Existing filesystem links must not redirect an exporter into another tree.
+    for name in [*ASSETS,'gaia-workspace.json','gaia-map-WM2.json','gaia-map-WM3.json','build-report.json','local-launch.json','.build']:
+        if not output_path(out/name).is_relative_to(out):raise ValueError('Workspace asset link escapes output root')
     out.mkdir(parents=True, exist_ok=True)
     cache = output_path(out / '.build');cache.mkdir(parents=True, exist_ok=True)
     dataset = discover(source)
@@ -103,9 +128,23 @@ def build_workspace(source, destination, stage1=None):
     except (FileNotFoundError, ValueError):old = None
     results = []
     def step(label, names, action):
-        if reusable(old, sources, out, names):
+        if not rebuild and reusable(old, sources, out, names):
             print(f'Reuse {label}', flush=True);results.append(dict(step=label, reused=True));return
-        print(f'Build {label}', flush=True);action();results.append(dict(step=label, reused=False))
+        print(f'Build {label}', flush=True)
+        if clean_invalid:
+            for name in names:
+                target=output_path(out/name)
+                if target.is_file():target.unlink()
+        try:
+            action();results.append(dict(step=label, reused=False))
+        except Exception as error:
+            if label=='geometry' or not allow_optional_failure:raise
+            # Failed/stale optional assets must never enter a fresh manifest.
+            for name in names:
+                target=output_path(out/name)
+                if target.is_file():target.unlink()
+            print(f'Optional component unavailable: {label}: {error}', flush=True)
+            results.append(dict(step=label,reused=False,unavailable=True,error=str(error)))
     def geometry():
         base = ensure_stage1(source, Path(stage1).resolve() if stage1 else WORKSPACE_ROOT/'output', cache)
         build_web_assets(base, out)
@@ -121,13 +160,16 @@ def build_workspace(source, destination, stage1=None):
     step('events', ['gaia-events.json'], lambda: build_events(source, out/'gaia-events.json'))
     step('routing', ['gaia-routing.bin'], lambda: export_routing(source, out/'gaia-routing.bin'))
     step('textures', ['gaia-textures.bin'], lambda: build_texture_pack(source, out/'gaia-meta.json', out/'gaia-textures.bin'))
-    def native():
-        command = [sys.executable, '-B', str(WORKSPACE_ROOT/'scripts/build_multimap_assets.py'), str(source), '--output', str(out)]
-        subprocess.run(command, cwd=WORKSPACE_ROOT, check=True)
-    step('native-maps-and-transitions', ['gaia-map-WM2.bin','gaia-map-WM3.bin','gaia-textures-WM2.bin','gaia-textures-WM3.bin','gaia-transitions.json'], native)
+    for label,name in [('WM2','gaia-map-WM2.bin'),('textures-WM2','gaia-textures-WM2.bin'),('WM3','gaia-map-WM3.bin'),('textures-WM3','gaia-textures-WM3.bin'),('transitions','gaia-transitions.json')]:
+        def native(label=label,name=name):
+            if any(not (out/d).is_file() for d in ASSETS[name][2]):raise ValueError('Optional dependency unavailable')
+            command = [sys.executable, '-B', str(WORKSPACE_ROOT/'scripts/build_multimap_assets.py'), str(source), '--output', str(out), '--only', label]
+            subprocess.run(command, cwd=WORKSPACE_ROOT, check=True)
+        step(label,[name],native)
     step('explorer', ['gaia-explorer.bin'], lambda: build_explorer(source, out/'gaia-explorer.bin', version=2))
     after = {r['filename']:r['sha256'].lower() for r in fingerprint(dataset)['files']}
     if any(after[k] != v for k,v in sources.items() if k in after):raise RuntimeError('Source fingerprint changed during workspace build')
+    if field_archive and sha256(field_archive)!=sources['flevel.lgp']:raise RuntimeError('Field source fingerprint changed during workspace build')
     manifest = write_manifest(out, sources)
     return dict(assets=len(manifest['assets']), steps=results, manifest_sha256=sha256(old_path), ff7_source_modified='NO')
 

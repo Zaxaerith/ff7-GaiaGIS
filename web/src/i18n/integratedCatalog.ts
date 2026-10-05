@@ -1,5 +1,11 @@
 // SPDX-License-Identifier: GPL-3.0-only
 export const integratedCatalog=[
+ ['workspace.optionalUnavailable','Optional component unavailable','可选组件不可用','可選元件不可用','任意のコンポーネントは利用できません','선택 구성 요소를 사용할 수 없음'],
+ ['workspace.localMode','Local Workspace','本地工作区','本地工作區','ローカルワークスペース','로컬 작업 공간'],
+ ['workspace.localSource','Local FF7 installation detected','已检测到本地 FF7 安装','已偵測到本地 FF7 安裝','ローカル FF7 を検出','로컬 FF7 설치 감지됨'],
+ ['workspace.autoLoading','Loading workspace automatically…','正在自动加载工作区…','正在自動載入工作區…','ワークスペースを自動読み込み中…','작업 공간 자동 로드 중…'],
+ ['workspace.autoLoaded','Workspace loaded automatically','工作区已自动加载','工作區已自動載入','ワークスペースを自動読み込み済み','작업 공간 자동 로드됨'],
+ ['workspace.manual','Advanced / Manual Loading','高级 / 手动加载','進階 / 手動載入','詳細 / 手動読み込み','고급 / 수동 로드'],
  ['app.integrated','Unified GIS · Cartography · Multi-Map · Explorer','统一 GIS · 制图 · 多地图 · 探索','統一 GIS · 製圖 · 多地圖 · 探索','統合 GIS · 地図学 · 複数マップ · 探索','통합 GIS · 지도학 · 다중 지도 · 탐험'],
  ['app.explore','Explore','探索','探索','探索','탐험'],
  ['app.layers','Layers','图层','圖層','レイヤー','레이어'],

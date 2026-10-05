@@ -60,3 +60,5 @@ animation-dumps/
 *.a
 gaia-workspace.json
 /local-workspace/
+/.gaiagis-local.json
+*.egg-info/

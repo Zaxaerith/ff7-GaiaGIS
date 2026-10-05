@@ -24,6 +24,7 @@ jobs:
       - run: python -B -m unittest discover -s tests -p test_multimap.py -v
       - run: python -B -m unittest discover -s tests -p test_world_models.py -v
       - run: python -B -m unittest discover -s tests -p test_workspace.py -v
+      - run: python -B -m unittest discover -s tests -p test_local.py -v
   web:
     runs-on: windows-latest
     steps:
