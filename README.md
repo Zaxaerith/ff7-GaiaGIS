@@ -1,6 +1,7 @@
 # GaiaGIS
 
-Current main source: **v2.5.0 — Explorer Locomotion & Spatial Analysis**.
+Local main RC: **v2.6.0 — Personal GIS / User Mapping**.
+Remote main baseline: **v2.5.0 — Explorer Locomotion & Spatial Analysis**.
 Published baseline: **v2.4.0 — App Shell, UI Unification & Workspace UX**.
 
 An interactive GIS reconstruction of FINAL FANTASY VII's polygonal Gaia world map.
@@ -20,6 +21,20 @@ events, routing, transitions or native/Explorer datasets. Generate a private loc
 workspace from your own installation. The local launcher loads it automatically over
 localhost; the public Viewer retains folder/file loading. Nothing is uploaded; there
 is no cloud service, analytics or account system.
+
+## Personal GIS / User Mapping (v2.6 local RC)
+
+Create private WM0 points, lines and simple polygons in Explore → Drawing;
+manage visibility, opacity, ordering and metadata in Layers → My Layers and the
+existing Inspector. One GaiaGame geometry displays across thirteen projections,
+Globe and Compare. Measurements use the assumed reference sphere, not official
+FF7 physical distances. Point identities can join local Tours/Nearby; public
+ShareState excludes user geometry and notes. Explicit local GaiaJSON exchange
+is versioned, bounded and **not GeoJSON/WGS84**.
+
+See [user features](docs/v2.6/user-features.md), [GaiaJSON](docs/v2.6/gaiajson.md),
+[validation](docs/v2.6/validation.md) and [STATUS](docs/v2.6/STATUS.md).
+This RC is local only and awaits human acceptance; no v2.6 publication.
 
 ## Explorer Locomotion & Spatial Analysis (v2.5)
 

@@ -167,7 +167,7 @@ def make_server(root, dist, host='127.0.0.1', port=5173):
                 self.send_error(404);return
             try:
                 if path==PREFIX+'status':
-                    payload=json.dumps({'local_mode':True,'version':'2.5.0','workspace_path':str(root)}).encode();mime='application/json'
+                    payload=json.dumps({'local_mode':True,'version':'2.6.0','workspace_path':str(root)}).encode();mime='application/json'
                 elif path==PREFIX+'workspace':payload=json.dumps(manifest,sort_keys=True).encode();mime='application/json'
                 elif path.startswith(PREFIX+'assets/'):
                     name=path[len(PREFIX+'assets/'):]

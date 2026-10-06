@@ -269,3 +269,34 @@ All six analyses require local WM0 data; routing/encounter results also require
 their corresponding workspace resources. Public source-only mode displays clear
 unavailable cards. Native WM2/WM3 and Explorer disable these overview tools.
 No new workspace payload, account or upload is introduced.
+
+
+## Personal GIS / User Mapping (v2.6)
+
+With a loaded local WM0 overview, open Explore → Drawing and select a user layer.
+Point places once; Line/Polygon add vertices with clicks or taps. Finish/Enter or
+double-click completes; tap the first polygon vertex to close. Esc cancels a draft.
+Compact screens close overlay docks when a drawing/edit tool starts; reopen Explore
+for Finish or use the completion gesture. WM2/WM3 and Explorer drawing is unavailable.
+
+Select a user feature on the map or in Layers → My Layers. The existing Inspector
+labels it User-created and edits name, notes, comma-separated tags, layer and basic
+style. Save applies changes. Edit vertices exposes drag handles. Select a listed
+vertex before adding (then tap the map) or removing one. Move feature drags the
+whole shape. Invalid edits leave the old geometry intact. Duplicate and confirmed
+Delete are local actions; Fly to uses the first real vertex.
+
+My Layers supports create/rename/reorder/visibility/opacity and confirmed nonempty
+layer deletion. Names and tags enter unified Search. Actual Point placemarks can
+join local Tours and Nearby; lines/polygons do not masquerade as point distances.
+User geometry is never included in public Share links. All thirteen projections,
+Globe and Compare reuse one stored GaiaGame geometry, never WGS84/EPSG:4326.
+
+Export GaiaJSON downloads your authored layers/features as .gaiagis.json. Import
+validates and appends with new IDs; failed imports do not modify existing data.
+No automatic upload occurs. Data → Clear user data → My Layers selectively clears
+mapping after confirmation. The single existing browser record has bounded size
+and quota fallback; when the memory-only warning appears, export before closing.
+Reference-sphere lengths/areas use R = 6,371,008.8 m and are not official FF7
+physical measurements. See [schema/limits](v2.6/user-features.md) and
+[exchange format](v2.6/gaiajson.md). GeoPackage/custom-CRS GIS export remains future work.

@@ -1,6 +1,6 @@
 [project]
 name = "gaiagis"
-version = "2.5.0"
+version = "2.6.0"
 description = "Read-only FF7 geometry parsing, spherical GIS reconstruction and Web visualization assets"
 license = "GPL-3.0-only"
 requires-python = ">=3.12"

@@ -7,7 +7,7 @@ import type {LayerId} from './layers';
 export type AssetId='geometry'|'locations'|'encounters'|'events'|'routing'|'textures'|'WM2'|'WM3'|'textures-WM2'|'textures-WM3'|'transitions'|'explorer'|'presentation'|'atlas';
 export type DataStatus='missing'|'optional'|'loading'|'loaded'|'incompatible'|'corrupt'|'legacy'|'unsupported';
 export interface AssetState {status:DataStatus;bytes:number;version?:number;reason?:string;sourceHashes?:Record<string,string>;}
-export type SelectionKind='triangle'|'location'|'entrance'|'encounter'|'event'|'transition'|'route'|'measurement'|'explorer'|'atlas';
+export type SelectionKind='triangle'|'location'|'entrance'|'encounter'|'event'|'transition'|'route'|'measurement'|'explorer'|'atlas'|'user-feature';
 export interface Selection {kind:SelectionKind;id:string;mapId:MapId;geographicPoint?:[number,number,number];}
 export type PanelId='explore'|'layers'|'analysis'|'map'|'view'|'data';
 export interface PreferenceState {panel:PanelId;language:'en'|'zh-CN'|'zh-TW'|'ja'|'ko';graticule:string;surfaceStyle:'terrain'|'region'|'texture';layerOpacity?:Record<LayerId,number>;}
