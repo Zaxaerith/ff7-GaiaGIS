@@ -1,6 +1,7 @@
 # GaiaGIS
 
-Current local release candidate: **v2.3.0 — Navigation & Discovery**.
+Current local release candidate: **v2.4.0 — App Shell, UI Unification & Workspace UX**.
+Published baseline: **v2.3.0 — Navigation & Discovery**.
 
 An interactive GIS reconstruction of FINAL FANTASY VII's polygonal Gaia world map.
 Explore geography, original local artwork, gameplay attributes and source provenance
@@ -20,7 +21,21 @@ workspace from your own installation. The local launcher loads it automatically 
 localhost; the public Viewer retains folder/file loading. Nothing is uploaded; there
 is no cloud service, analytics or account system.
 
-## Navigation & Discovery (local v2.3 RC)
+## App Shell & Workspace UX (local v2.4 RC)
+
+The default FF7-inspired interface now shares one component palette across the
+header, docks, Inspector, cards, dialogs and controls. Docks stay inside the viewport,
+scroll internally and collapse independently; compact screens use overlay drawers.
+Scientific is an explicit theme choice using the same component system.
+
+Data shows the connection source, validated manifest and individual resource states.
+Use the launcher to generate and automatically connect **output/local-workspace**.
+For manual import, choose the generated folder containing **gaia-workspace.json**,
+not the FF7 installation or raw **wm** directory. Textures are available in View,
+native maps in Map, and characters in Explore → Explorer.
+See [workspace UX](docs/v2.4/workspace-ux.md) and [validation](docs/v2.4/validation.md).
+
+## Navigation & Discovery (v2.3)
 
 Explore now includes browser-local Bookmarks, Recently Viewed, Nearby and Guided
 Tours. View bookmarks preserve a local camera; safe Copy Link shares public IDs

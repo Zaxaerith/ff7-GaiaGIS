@@ -17,7 +17,8 @@ python -m gaiagis.local --source "YOUR_FF7_INSTALLATION"
 No `PYTHONPATH` setup or manual file picker is needed in a source checkout. The
 launcher checks source files/hashes, reuses valid generated assets, builds invalid
 components, starts a loopback HTTP server and opens the browser. Default output is
-`output/local-workspace`. Data reports **Local Workspace / Loaded automatically**.
+`output/local-workspace`. Data reports **Workspace connected / Automatic local
+workspace**, the validated manifest and the actual generated workspace folder.
 WM0/WM2/WM3 geometry and their textures, transitions and Explorer are all adopted
 when present. Map → Underwater or Great Glacier opens an already textured native map.
 
@@ -72,6 +73,10 @@ Open the URL printed by Vite. Under **Data → Open workspace folder**, select
 **Choose workspace files** works: select `gaia-workspace.json` and its generated
 files. Chrome may show a folder-read confirmation; it is user initiated.
 Only recognized root files are read, never nested saves or arbitrary disk files.
+Choose the **generated GaiaGIS workspace**, not the FF7 installation or its raw `wm`
+directory. The Data help entry explains how to generate it and which files belong
+there. A root `local-workspace` may be an older manual export; import it only if its
+manifest is valid. The launcher default is always `output/local-workspace`.
 The legacy two-file chooser for `gaia-meta.json` + `gaia-mesh.bin` still works.
 Optional files may also be loaded independently through their established inputs.
 

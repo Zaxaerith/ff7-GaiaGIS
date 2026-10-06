@@ -167,7 +167,7 @@ def make_server(root, dist, host='127.0.0.1', port=5173):
                 self.send_error(404);return
             try:
                 if path==PREFIX+'status':
-                    payload=json.dumps({'local_mode':True,'version':'2.0.1'}).encode();mime='application/json'
+                    payload=json.dumps({'local_mode':True,'version':'2.4.0','workspace_path':str(root)}).encode();mime='application/json'
                 elif path==PREFIX+'workspace':payload=json.dumps(manifest,sort_keys=True).encode();mime='application/json'
                 elif path.startswith(PREFIX+'assets/'):
                     name=path[len(PREFIX+'assets/'):]
@@ -211,7 +211,7 @@ def make_server(root, dist, host='127.0.0.1', port=5173):
 def parser():
     cli=argparse.ArgumentParser(description=__doc__)
     cli.add_argument('--source',type=Path)
-    cli.add_argument('--workspace',type=Path,default=WORKSPACE_ROOT/'output/local-workspace')
+    cli.add_argument('--workspace',type=Path,default=WORKSPACE_ROOT/'output/local-workspace',help='Generated GaiaGIS workspace folder; default: output/local-workspace (not the raw FF7 wm directory)')
     cli.add_argument('--host',default='127.0.0.1')
     cli.add_argument('--port',type=int,default=5173)
     for flag in ('no-open','rebuild','clean-invalid','remember-source','debug'):

@@ -1,0 +1,59 @@
+/* SPDX-License-Identifier: GPL-3.0-only. Shared product shell and design tokens. */
+:root{--space-1:4px;--space-2:8px;--space-3:12px;--space-4:16px;--space-5:24px;--shell-header:64px;--shell-footer:36px;--dock-left:0px;--dock-right:0px;--panel-radius:6px;--panel-border:2px;--surface-raised:#172d40;--title-bg:#172d40;--muted:var(--subtle);--border:var(--rim)}
+:root[data-theme=ff7]{--surface-raised:#121f54;--title-bg:#1c3071;--accent:#f2db9a;--muted:var(--subtle);--border:var(--rim)}
+body.gaia-shell{height:100dvh;overflow:hidden;color:var(--ink);background:var(--window-bg)}
+body.gaia-shell #app{height:100dvh;min-height:0;margin:0;overflow:hidden}
+body.gaia-shell .multimap-bar{display:none}
+body.gaia-shell .topbar{height:var(--shell-header);padding:8px 144px 8px 136px;gap:12px;background:var(--window-gradient);color:var(--ink);border-bottom:var(--panel-border) solid var(--rim)}
+body.gaia-shell .brand{margin:0;min-width:0;gap:8px}.gaia-shell .brand h1{color:var(--ink);font-size:21px}.gaia-shell .brand p{display:none}.gaia-shell .brand-mark{color:var(--accent);border-color:var(--rim)}
+body.gaia-shell .local-badge{display:none}body.gaia-shell footer{height:var(--shell-footer);min-height:var(--shell-footer);flex:0 0 var(--shell-footer);background:var(--window-gradient);border-top:var(--panel-border) solid var(--rim);color:var(--subtle);padding:4px 12px;overflow:hidden}
+body.gaia-shell .workspace{grid-template-columns:var(--dock-left) minmax(0,1fr) var(--dock-right);min-height:0;min-width:0;overflow:hidden}
+body.gaia-shell .workspace>.viewport,body.gaia-shell .workspace>.comparison-layout{grid-column:2;min-width:0;min-height:0;overflow:hidden}
+body.gaia-shell .native-host{inset:var(--shell-header) var(--dock-right) var(--shell-footer) var(--dock-left);padding:0;min-height:0;grid-template-columns:minmax(0,1fr)!important;grid-template-rows:minmax(0,1fr)}
+body.gaia-shell .native-viewport{width:100%;height:100%;min-width:0;min-height:0}
+#app-docks{position:fixed;inset:calc(var(--shell-header) + 8px) 8px calc(var(--shell-footer) + 8px);display:grid;grid-template-columns:var(--dock-left) minmax(0,1fr) var(--dock-right);pointer-events:none;min-height:0;z-index:45}
+body.gaia-shell :is(.integrated-panel,.integrated-inspector){position:relative;inset:auto;width:auto;max-width:100%;height:100%;max-height:100%;min-width:0;min-height:0;padding:var(--space-3);background:var(--window-gradient);border:var(--panel-border) solid var(--rim);border-radius:var(--panel-radius);box-shadow:var(--window-shadow);overflow:hidden;pointer-events:auto;color:var(--ink);display:none}
+body.gaia-shell .integrated-panel{grid-column:1;grid-row:1;margin-right:8px;flex-direction:column}
+body.gaia-shell .integrated-panel.open{display:flex}
+body.gaia-shell .integrated-inspector{grid-column:3;grid-row:1;margin-left:8px;overflow-y:auto;overscroll-behavior:contain;scrollbar-gutter:stable}
+body.gaia-shell .integrated-inspector.open{display:block}
+body.gaia-shell .integrated-content{flex:1;min-height:0;min-width:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-gutter:stable;padding-top:12px}
+body.gaia-shell #integrated-close{display:block;align-self:flex-end;flex-shrink:0;width:32px;min-height:32px;margin-bottom:6px}
+body.gaia-shell :is(#collapse-inspector,#clear-context){min-height:32px;width:32px;margin:0 4px 8px 0}
+body.gaia-shell #clear-context{display:none}
+body.gaia-shell .integrated-panel nav{flex-shrink:0;grid-template-columns:repeat(3,minmax(0,1fr));gap:4px;padding-bottom:8px;border-bottom:1px solid var(--rim)}
+body.gaia-shell .app-menu,body.gaia-shell .inspector-toggle{display:block;position:fixed;top:12px;z-index:55;min-height:38px;max-width:120px;padding:6px 12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body.gaia-shell .app-menu{left:8px}body.gaia-shell .inspector-toggle{right:8px}
+body.gaia-shell .map-breadcrumb{position:fixed;top:44px;left:136px;max-width:calc(100vw - 280px);margin:0;font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--subtle);z-index:54}
+body.gaia-shell :is(.info,.native-panel,.analysis-panel){position:static!important;inset:auto!important;width:auto!important;max-width:100%;max-height:none!important;height:auto;padding:0!important;background:transparent!important;border:0!important;box-shadow:none!important;overflow:visible!important;color:var(--ink)}
+body.gaia-shell .info{display:block;min-width:0}body.gaia-shell .panel-heading{margin:12px 0;padding:8px 0;border-bottom:1px solid var(--rim)}
+body.gaia-shell :is(h2,h3,h4,.panel-heading h2,.analysis-group>summary,.selected-region,.source-subtitle,.eyebrow){color:var(--ink)}
+body.gaia-shell :is(p,dt,dd,label,summary,li,.control-note,.switch-row,.encounter-group,.traversal-inspector details,.event-advanced,.model-note,.view-caption){color:var(--subtle)}
+body.gaia-shell :is(h2,h3,h4){line-height:1.35;overflow-wrap:anywhere}body.gaia-shell h2{font-size:17px}body.gaia-shell h3{font-size:14px}
+body.gaia-shell :is(.property-list,.analysis-result,pre){min-width:0;max-width:100%;overflow-wrap:anywhere}
+body.gaia-shell .property-list>div{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:8px;align-items:start;border-bottom:1px solid var(--inner);padding:8px 0}
+body.gaia-shell .property-list :is(dt,dd){min-width:0;margin:0;overflow-wrap:anywhere;white-space:normal;max-width:100%}
+body.gaia-shell :is(button,select,input:not([type=checkbox]):not([type=range]),textarea){min-width:0;max-width:100%;color:var(--ink);background:var(--window-bg);border:1px solid var(--rim);border-radius:4px;padding:8px;font:inherit}
+body.gaia-shell :is(select,input:not([type=checkbox]):not([type=range])){width:100%;font-size:13px}
+body.gaia-shell button{min-height:36px;white-space:normal;overflow-wrap:anywhere}
+body.gaia-shell :is(button,summary):hover{background:var(--surface-raised)}body.gaia-shell button:active{background:var(--selected)}body.gaia-shell button[aria-selected=true],body.gaia-shell button[aria-pressed=true]{background:var(--selected);box-shadow:inset 3px 0 var(--accent)}
+body.gaia-shell :is(button,input,select):disabled{color:var(--inactive);opacity:.65;cursor:default}
+body.gaia-shell :is(button,select,input,summary,a,[tabindex]):focus-visible{outline:3px solid var(--ring);outline-offset:2px}
+body.gaia-shell :is(.app-card,.saved-row,.presentation-settings,.compared-route){background:var(--surface-raised);border:1px solid var(--rim);border-radius:var(--panel-radius);padding:var(--space-3);margin:0 0 12px;min-width:0;max-width:100%;box-shadow:none}
+body.gaia-shell :is(.atlas-card,.analysis-group,.gameplay-inspector,.traversal-inspector,.event-controls){border-color:var(--rim);max-width:100%;min-width:0}
+body.gaia-shell .atlas-card{max-height:none;overflow:visible}.gaia-shell .atlas-card details{border-color:var(--inner)}
+body.gaia-shell :is(a,.atlas-card a){color:var(--accent)}body.gaia-shell :is(dialog,#user-state-dialog,.gaia-intro){background:var(--window-gradient);color:var(--ink);border:var(--panel-border) solid var(--rim);border-radius:var(--panel-radius);box-shadow:var(--window-shadow);max-height:calc(100dvh - 32px);max-width:calc(100vw - 24px);overflow:auto;padding:16px}
+body.gaia-shell dialog::backdrop{background:var(--overlay)}body.gaia-shell dialog p{color:var(--subtle)}
+body.gaia-shell :is(.loading,.view-center,.navigation-tools button,.zoom-controls button,.location-marker span,.event-marker span,.explorer-hud){color:var(--ink)}
+body.gaia-shell :is(.view-center,.location-marker span,.event-marker span,.explorer-hud){background:var(--window-bg);border-color:var(--rim)}
+:root[data-theme] body.gaia-shell :is(button.location-marker,button.event-marker,button.atlas-marker){padding:0;min-height:0;background:transparent;border:0;border-radius:0;box-shadow:none}
+body.gaia-shell .view-caption{left:16px;top:16px;max-width:calc(100% - 100px)}body.gaia-shell .view-caption h2{color:var(--ink)}
+body.gaia-shell :is(.integrated-content,.integrated-inspector,dialog){scrollbar-width:thin;scrollbar-color:var(--rim) var(--window-bg)}
+body.gaia-shell ::-webkit-scrollbar{width:8px;height:8px}body.gaia-shell ::-webkit-scrollbar-track{background:var(--window-bg)}body.gaia-shell ::-webkit-scrollbar-thumb{background:var(--rim);border:2px solid var(--window-bg);border-radius:8px}
+body.gaia-shell .workspace-status-card h2{margin:0 0 12px}body.gaia-shell .workspace-status-card[data-connected=true] h2{color:var(--accent)}body.gaia-shell #workspace-help pre{background:var(--window-bg);padding:8px;white-space:pre-wrap}body.gaia-shell #workspace-assets{margin:0}
+body.gaia-shell .route-endpoint{margin:8px 0;padding:8px;border:1px solid var(--inner);border-radius:4px}body.gaia-shell .analysis-result{padding:12px;border:1px solid var(--inner);border-radius:4px;white-space:pre-line}
+@media(min-width:1100px){body.gaia-shell:has(.integrated-panel.open){--dock-left:324px}body.gaia-shell:has(.integrated-inspector.open){--dock-right:316px}}
+@media(max-width:1099px){body.gaia-shell{--dock-left:0px;--dock-right:0px}#app-docks{display:block}body.gaia-shell :is(.integrated-panel,.integrated-inspector){position:absolute;inset:0 auto 0 0;width:min(340px,100%);margin:0;max-height:100%;z-index:2}body.gaia-shell .integrated-inspector{left:auto;right:0}body.gaia-shell:has(.integrated-panel.open) .integrated-inspector{display:none}body.gaia-shell .brand p{display:none}body.gaia-shell footer .footer-right{display:none}}
+@media(max-width:700px){:root{--shell-header:60px;--shell-footer:36px}body.gaia-shell .topbar{padding:8px 92px 8px 92px}body.gaia-shell .brand{justify-content:center}body.gaia-shell .brand-mark{display:none}body.gaia-shell .brand h1{font-size:18px}body.gaia-shell .map-breadcrumb{left:96px;max-width:calc(100vw - 192px);top:40px}body.gaia-shell .app-menu,body.gaia-shell .inspector-toggle{width:84px;max-width:84px;font-size:11px;padding:6px}body.gaia-shell :is(.integrated-panel,.integrated-inspector){top:auto;bottom:0;width:100%;height: min(72dvh,100%);max-height:100%;border-radius:6px}.gaia-shell .integrated-content{padding-top:8px}body.gaia-shell .mobile-only{display:none}body.gaia-shell :is(input:not([type=checkbox]):not([type=range]),select){font-size:16px}body.gaia-shell .integrated-panel button{min-height:40px}body.gaia-shell .view-caption p{display:none}}
+body.gaia-shell:has(.explorer-minimal){--dock-right:0px}
+body.gaia-shell:has(.explorer-minimal) .integrated-inspector{display:none}

@@ -169,6 +169,11 @@ class EndpointTests(unittest.TestCase):
     def test_manifest_asset_and_bootstrap_marker(self):
         with self.get('/__gaiagis_local__/assets/gaia-mesh.bin') as r:self.assertEqual(r.read(),b'{}')
         with self.get('/') as r:self.assertIn(b'name="gaiagis-local"',r.read())
+    def test_workspace_path_is_private_status_metadata_only(self):
+        with self.get('/__gaiagis_local__/status') as r:
+            status=json.load(r);self.assertEqual(status['workspace_path'],str(self.root.resolve()))
+            self.assertNotIn('source',status)
+        with self.get('/__gaiagis_local__/workspace') as r:self.assertNotIn(str(self.root).encode(),r.read())
     def test_path_traversal_and_game_files_rejected(self):
         for path in ('/../private.map','/%2e%2e/private.map','/%252e%252e/private.map','/__gaiagis_local__/assets/../gaia-mesh.bin','/__gaiagis_local__/assets/world_us.lgp','/__gaiagis_local__/assets/wm0.map','/__gaiagis_local__/assets/flevel.lgp','/private.map','/.gaiagis-local.json','/local-launch.json','/src/gaiagis/local.py'):
             with self.assertRaises(HTTPError) as error:self.get(path)

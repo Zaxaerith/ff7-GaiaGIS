@@ -10,6 +10,8 @@ import {mountMultimap} from './ui/multimap';
 import type {ExplorerController} from './explorer/controller';
 // SPDX-License-Identifier: GPL-3.0-only
 import './styles/viewer.css';
+import './styles/app-shell.css';
+import {updateWorkspaceConnection} from './app/workspaceUX';
 import {mountLayout} from './ui/layout';
 import {loadMesh,readLocalDataset,MissingDatasetError} from './data/mesh';
 import type {GaiaMesh,GaiaMeta} from './data/mesh';
@@ -178,6 +180,6 @@ async function boot(){
  appStore.dispatch({type:'local-workspace',phase:'loading'});
  mountLayout(root);bindCommon();setBusy(true);element('loading-text').textContent=t('workspace.autoLoading');applicationShell=mountShell();
  try{await loadLocalWorkspace(workspaceLoader,fetch,localAbort.signal);if(!activeViewer)throw Error('Core geometry unavailable');appStore.dispatch({type:'local-workspace',phase:'loaded'});}
- catch{if(localAbort.signal.aborted)return;appStore.dispatch({type:'local-workspace',phase:'error'});if(!activeViewer)await start();}
+ catch{if(localAbort.signal.aborted)return;updateWorkspaceConnection({loading:false});appStore.dispatch({type:'local-workspace',phase:'error'});if(!activeViewer)await start();}
 }
 void boot();

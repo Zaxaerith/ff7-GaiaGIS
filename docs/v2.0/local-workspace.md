@@ -1,5 +1,11 @@
 # Local Auto-Workspace — v2.0.1
 
+Current UI/launcher guidance is in [v2.4 Workspace UX](../v2.4/workspace-ux.md).
+The default remains `output/local-workspace`. V2.4 adds the generated workspace
+path to the private status response for local display only; the installation path
+remains absent, manifests remain path-free, and public pages still make no probes.
+The historical validation and transport account below describes v2.0.1.
+
 Validated locally on 2026-10-05, on main after v2.0.0 and the cleanup documentation
 commit. This is a launcher/UX patch, with unchanged reconstruction, GIS, gameplay,
 projection formulas, source geometry and sealed climate research. No remote publish
