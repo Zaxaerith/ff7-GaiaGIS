@@ -1,6 +1,6 @@
 # GaiaGIS
 
-Current local release candidate: **v2.5.0 — Explorer Locomotion & Spatial Analysis**.
+Current main source: **v2.5.0 — Explorer Locomotion & Spatial Analysis**.
 Published baseline: **v2.4.0 — App Shell, UI Unification & Workspace UX**.
 
 An interactive GIS reconstruction of FINAL FANTASY VII's polygonal Gaia world map.
@@ -21,7 +21,7 @@ workspace from your own installation. The local launcher loads it automatically 
 localhost; the public Viewer retains folder/file loading. Nothing is uploaded; there
 is no cloud service, analytics or account system.
 
-## Explorer Locomotion & Spatial Analysis (local v2.5 RC)
+## Explorer Locomotion & Spatial Analysis (v2.5)
 
 The six Extended party models now select their own reviewed fast locomotion clips.
 All nine party appearances retain identical Foot displacement. Cadence is explicitly
@@ -38,7 +38,13 @@ unavailable analyses without fabricating results.
 
 See [user guide](docs/user-guide.md), [locomotion](docs/v2.5/explorer-locomotion.md),
 [methods](docs/methodology.md) and [local RC validation](docs/v2.5/validation.md).
-This RC remains local until user acceptance; publication requires separate approval.
+The accepted v2.5 source is on main. Tagged releases and Pages deployment remain
+separate publication steps.
+
+Python tests and private QA/research harnesses are retained only in the existing
+local development checkout. GitHub CI runs the Web suite and build/release audits;
+fresh clones do not include the private test suite. See
+[local testing policy](docs/development/local-testing.md).
 
 ## App Shell & Workspace UX (v2.4)
 

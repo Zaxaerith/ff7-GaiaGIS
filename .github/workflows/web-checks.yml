@@ -5,26 +5,6 @@ on:
 permissions:
   contents: read
 jobs:
-  poi-parser:
-    runs-on: windows-latest
-    steps:
-      - uses: actions/checkout@v7
-        with:
-          persist-credentials: false
-      - uses: actions/setup-python@v6
-        with:
-          python-version: '3.14'
-      - run: python -B -m unittest discover -s tests -p test_poi.py -v
-      - run: python -B -m unittest discover -s tests -p test_encounters.py -v
-      - run: python -B -m unittest discover -s tests -p test_traversal.py -v
-      - run: python -B -m unittest discover -s tests -p test_world_events.py -v
-      - run: python -B -m unittest discover -s tests -p test_routing.py -v
-      - run: python -B -m unittest discover -s tests -p test_tex.py -v
-      - run: python -B -m unittest discover -s tests -p test_texture_pack.py -v
-      - run: python -B -m unittest discover -s tests -p test_multimap.py -v
-      - run: python -B -m unittest discover -s tests -p test_world_models.py -v
-      - run: python -B -m unittest discover -s tests -p test_workspace.py -v
-      - run: python -B -m unittest discover -s tests -p test_local.py -v
   web:
     runs-on: windows-latest
     steps:
