@@ -11,6 +11,7 @@ export function markerPosition(l:Pick<Location,'longitude'|'latitude'|'height'>,
 export function markerVisible(l:Pick<Location,'longitude'|'latitude'>,id:ProjectionId,c:ProjectionContext){return projections[id].visibility(l.longitude,l.latitude,c)>0.02;}
 interface Marker {location:Location;button:HTMLButtonElement;point:Vector3;from:Position;to:Position;current:Position;}
 export class LocationsOverlay {
+  setOpacity(value:number){this.host.style.setProperty('--overlay-opacity',String(value));}
   relief=1;
   private host=document.createElement('div');private markers:Marker[]=[];
   private show=true;private labels=true;private filter:LocationFilter='all';private selected:string|null=null;

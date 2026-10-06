@@ -1,3 +1,5 @@
+import {defaultOpacities} from '../app/layers';
+import type {LayerId} from '../app/layers';
 import {configureOutput} from '../explorer/lighting';
 // SPDX-License-Identifier: GPL-3.0-only
 import {BufferAttribute,BufferGeometry,Color,DoubleSide,DynamicDrawUsage,LineBasicMaterial,LineSegments,
@@ -51,6 +53,17 @@ interface Morph {start:number;fromId:ProjectionId;from:Frame;to:Frame;gridFrom:F
 interface Flight {start:number;lon:number;lat:number;fromLon:number;fromLat:number;from:Vector3;to:Vector3;distance:number;}
 export interface ViewerStats {fps:number;renderTriangles:number;drawCalls:number;morphing:boolean;projection:ProjectionId;}
 export class GaiaViewer {
+  onNavigationFrame:(seconds:number)=>void=()=>{};
+  onRouteChange:(points:GeoPoint[])=>void=()=>{};
+  routePoints:GeoPoint[]=[];
+  analysisVisibility={reachability:true,routes:true};
+  get hasReachability(){return !!this.reachable;}
+  setAnalysisVisibility(value:Partial<typeof this.analysisVisibility>){Object.assign(this.analysisVisibility,value);this.route.line.visible=this.analysisPath.length>1&&this.analysisVisibility.routes;this.route.progress.visible=false;if(this.comparison)this.comparison.route.line.visible=this.route.line.visible;this.colorSurface();}
+  private opacities=defaultOpacities();
+  get isMorphing(){return !!this.morph;}
+  cancelMotion(){this.cancelFlight();}
+  setRouteProgress(value:number){this.route.setProgress(value);}
+  setLayerOpacity(id:LayerId,value:number){if(this.opacities[id]===value)return;this.opacities[id]=Math.max(0,Math.min(1,value));this.colorSurface();this.events.setOpacity(this.opacities.events);this.atlas.setOpacity(this.opacities.atlas);this.route.line.material.opacity=.95*this.opacities.routes;this.route.progress.material.opacity=.95*this.opacities.routes;this.tissot.line.material.opacity=this.opacities.distortion;for(const line of this.comparedRoutes)line.line.material.opacity=this.opacities.routes;if(this.comparison){this.comparison.events.setOpacity(this.opacities.events);this.comparison.route.line.material.opacity=this.opacities.routes;this.comparison.tissot.line.material.opacity=this.opacities.distortion;}}
   captureExplorer=false;
   onExplorerFrame:(seconds:number)=>void=()=>{};
   onExplorerPick:(source:number,point:GeoPoint)=>void=()=>{};
@@ -168,7 +181,7 @@ export class GaiaViewer {
     const gridMaterial=new LineBasicMaterial({vertexColors:true,transparent:true,opacity:0.6,depthWrite:false});
     addVisibilityMask(gridMaterial);
     this.graticule=new LineSegments(gridGeometry,gridMaterial);this.graticule.visible=true;this.graticule.frustumCulled=false;
-    this.scene.add(this.graticule);this.scene.add(this.route.line);
+    this.scene.add(this.graticule);this.scene.add(this.route.line,this.route.progress);
     for(const o of [this.measurement,this.tissot,...this.comparedRoutes])this.scene.add(o.line);
     this.diagnostics.mapId=mesh.attributes(0).map??0;
     const highlightMaterial=new MeshBasicMaterial({color:'#ffdf8f',side:DoubleSide,transparent:true,opacity:0.92,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-3,polygonOffsetUnits:-3});
@@ -301,7 +314,7 @@ export class GaiaViewer {
     this.projectionId=id;this.globeControls.enabled=false;this.mapControls.enabled=false;
     this.onProjection(id,true);
   }
-  setAnalysis(reachable:Uint8Array|null,path:number[],start:string|null,target:string|null,locations:Set<string>|null){this.analysisPath=path;this.reachable=reachable;this.corridor=new Set(path);this.route.set(this.mesh,path);if(this.comparison)this.comparison.route.set(routeSegments(corridorPoints(this.mesh,path)));this.locations.setAnalysis(start,target,locations);this.colorSurface();if(this.morph)this.route.begin(this.morph.fromId,this.projectionId,this.context);}
+  setAnalysis(reachable:Uint8Array|null,path:number[],start:string|null,target:string|null,locations:Set<string>|null){this.analysisVisibility={reachability:true,routes:true};this.routePoints=corridorPoints(this.mesh,path);this.onRouteChange(this.routePoints);this.analysisPath=path;this.reachable=reachable;this.corridor=new Set(path);this.route.set(this.mesh,path);if(this.comparison)this.comparison.route.set(routeSegments(corridorPoints(this.mesh,path)));this.locations.setAnalysis(start,target,locations);this.colorSurface();if(this.morph)this.route.begin(this.morph.fromId,this.projectionId,this.context);}
   setTerrain(value:boolean){this.terrain=value;this.colorSurface();}
   setColorLayer(layer:ColorLayer){this.colorLayer=layer;this.colorSurface();}
   setEvents(events:WorldEvent[]){this.eventRecords=events;this.events.setLocations(events.map(eventLocation));if(this.morph)this.events.beginMorph(this.morph.fromId,this.projectionId,this.context);}
@@ -385,14 +398,17 @@ export class GaiaViewer {
     for(let t=0;t<this.display.renderToSource.length;t++) {
       const source=this.display.renderToSource[t];
       if(source!==previous){const a=this.mesh.attributes(source);const colored=this.colorLayer!=='terrain'||this.terrain;color=a.origin?this.distinguishCaps?cap:colored?cap:neutral:colored?palette.get(this.colorLayer==='region'?a.region!:a.terrain!)||neutral:neutral;
+        const base=color.clone();if(this.colorLayer==='terrain'&&this.terrain)color=neutral.clone().lerp(color,this.opacities.terrain);
         if(!a.origin&&gameplay){const key=`${a.region}:${a.terrain}:${a.script===0}`;if(!gameColors.has(key))gameColors.set(key,new Color(encounterColor(this.encounters,a,this.colorLayer==='encounter-rate')));color=gameColors.get(key)!;}
         if(this.colorLayer==='traversal'){const key=`traversal:${a.terrain}:${a.script}:${a.origin}`;if(!gameColors.has(key))gameColors.set(key,new Color(traversalColor(this.movementMode,a)));color=gameColors.get(key)!;}
-        if(this.reachable&&!a.origin&&!this.reachable[source])color=color.clone().multiplyScalar(.25);
+        if(gameplay)color=base.clone().lerp(color,this.opacities.encounters);if(this.colorLayer==='traversal')color=base.clone().lerp(color,this.opacities.traversal);
+        if(this.analysisVisibility.reachability&&this.reachable&&!a.origin&&!this.reachable[source])color=color.clone().multiplyScalar(1-.75*this.opacities.reachability);
         if(this.comparisonFlags&&!a.origin)color=new Color(comparisonPalette[this.comparisonFlags[source]]);
         if(!a.origin&&this.chocoboTracks&&a.chocobo)color=tracks;
         if(this.showTriggers&&!a.origin&&(a.script!>=3||this.eventTriggers.has(`${a.section}/${a.mesh}/${a.triangle}`)))color=new Color(this.eventTriggers.has(`${a.section}/${a.mesh}/${a.triangle}`)?'#ff9bd6':'#9c7ee9');
-        if(this.corridor.has(source))color=new Color('#ffe18c');
-        mix=(this.colorLayer!=='terrain'||!!this.reachable||!!this.comparisonFlags||this.chocoboTracks&&!!a.chocobo||this.showTriggers&&a.script!==null&&a.script>=3||this.corridor.has(source)) ? .65 : 0;
+        if(this.analysisVisibility.routes&&this.corridor.has(source))color=color.clone().lerp(new Color('#ffe18c'),this.opacities.routes);
+        mix=(this.colorLayer!=='terrain'||this.analysisVisibility.reachability&&!!this.reachable||!!this.comparisonFlags||this.chocoboTracks&&!!a.chocobo||this.showTriggers&&a.script!==null&&a.script>=3||this.analysisVisibility.routes&&this.corridor.has(source)) ? .65 : 0;
+        mix*=gameplay?this.opacities.encounters:this.colorLayer==='traversal'?this.opacities.traversal:this.corridor.has(source)?this.opacities.routes:1;
         previous=source;}
       for(let j=0;j<9;j+=3){const i=t*9+j;colors[i]=color.r;colors[i+1]=color.g;colors[i+2]=color.b;tint[t*3+j/3]=mix;}
     }
@@ -485,6 +501,7 @@ export class GaiaViewer {
       }else if(!this.captureExplorer){if(this.projectionId==='globe')this.globeControls.update(delta/1000);else this.mapControls.update(delta/1000);}
     }
     if(this.captureExplorer&&!this.morph)this.onExplorerFrame(delta/1000);
+    if(!this.captureExplorer&&!this.morph)this.onNavigationFrame(delta/1000);
     this.camera.updateMatrixWorld();
     this.updateAdaptiveGrid(time);
     this.locations.update(this.projectionId,this.context,this.camera,markerMorph);
@@ -497,6 +514,7 @@ export class GaiaViewer {
     this.renderer.render(this.scene,this.camera);
     const view=this.viewState();this.onViewChange(view);
     if(this.comparison){this.locations.mirrorTo(this.comparison.locations);this.events.mirrorTo(this.comparison.events);this.comparison.setSurface(this.surface.geometry,this.textured.uniforms,this.relief,this.shading);this.comparison.update(this.comparisonId,this.context,view,this.gridMode,this.gridMinor,this.graticule.visible);this.diagnostics.comparisonDrawCalls=this.comparison.drawCalls;}
+    if(this.comparison){this.comparison.events.setOpacity(this.opacities.events);this.comparison.route.line.material.opacity=this.opacities.routes;this.comparison.tissot.line.material.opacity=this.opacities.distortion;this.comparison.route.line.visible=this.analysisPath.length>1&&this.analysisVisibility.routes;}
     this.navigation.update(time,this.projectionId,this.context,this.camera,!!this.morph,this.graticule.visible,this.diagnostics.gridInterval,view.center);
     if(time-this.statsLast>600){this.statsLast=time;const fps=1000/(this.frameTimes.reduce((a,b)=>a+b,0)/Math.max(1,this.frameTimes.length));this.onStats({fps,renderTriangles:this.display.renderToSource.length,drawCalls:this.renderer.info.render.calls,morphing:!!this.morph,projection:this.projectionId});}
   }

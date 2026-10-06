@@ -1,0 +1,28 @@
+/* SPDX-License-Identifier: GPL-3.0-only */
+#discovery details,#share-controls,#user-data-controls {margin-top:.65rem;border-top:1px solid var(--border,#40545f);padding-top:.4rem}
+#discovery summary {cursor:pointer;font-weight:600;min-height:40px;display:flex;align-items:center}
+#discovery button,#discovery-context button,#discovery-route button,#user-data-controls button {min-height:44px;white-space:normal;overflow-wrap:anywhere}
+#bookmark-list,#recent-list,#nearby-results,#tour-list {display:grid;gap:.4rem;margin-top:.5rem}
+.saved-row {border:1px solid var(--border,#40545f);border-radius:6px;padding:.4rem;display:flex;flex-wrap:wrap;gap:.3rem;min-width:0}
+.saved-row p {flex-basis:100%;margin:.1rem;overflow-wrap:anywhere}
+.saved-row input {width:100%;min-width:0}
+.discovery-actions {display:flex;flex-wrap:wrap;gap:.4rem}
+.opacity-row {display:grid;grid-template-columns:minmax(0,1fr) 3rem;gap:.2rem;margin:.5rem 0}
+.opacity-row label {grid-column:1/-1;overflow-wrap:anywhere}
+.opacity-row input {width:100%;min-width:0;min-height:36px}
+.opacity-row output {align-self:center;font-size:.8rem}
+#discovery-legend>.legend {position:static;max-width:100%;width:auto;max-height:none;box-shadow:none;border:0;background:transparent}
+.local-scale {position:fixed;bottom:52px;left:50%;border:solid #def;border-width:0 1px 3px;text-align:center;font-size:11px;color:#fff;text-shadow:0 1px 3px #000;pointer-events:none;z-index:5;max-width:32vw}
+.local-scale[hidden] {display:none}
+#user-state-dialog {max-width:min(420px,calc(100vw - 32px));background:#172832;color:#ecf3f5;border:1px solid #7297a5;border-radius:8px;padding:1rem}
+#user-state-dialog form {display:grid;gap:.5rem}
+#user-state-dialog input,#share-link {box-sizing:border-box;width:100%;max-width:100%;min-width:0}
+#user-state-dialog button {min-height:44px}
+#user-state-dialog::backdrop {background:#0009}
+#share-link {height:5rem;overflow-wrap:anywhere}
+@media(max-width:700px){#discovery .saved-row button {flex:1 1 80px}.local-scale {bottom:52px;left:55%}}
+
+.location-marker,.event-marker,.atlas-marker {opacity:var(--overlay-opacity,1)}
+.location-marker.selected,.event-marker.selected,.atlas-marker.selected {opacity:1}
+
+#discovery details>summary::before {content:"▸";margin-right:.4rem}#discovery details[open]>summary::before {content:"▾"}

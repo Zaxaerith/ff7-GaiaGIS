@@ -1,6 +1,6 @@
 # GaiaGIS
 
-Current local release candidate: **v2.2.0 — Gaia Atlas**.
+Current local release candidate: **v2.3.0 — Navigation & Discovery**.
 
 An interactive GIS reconstruction of FINAL FANTASY VII's polygonal Gaia world map.
 Explore geography, original local artwork, gameplay attributes and source provenance
@@ -19,6 +19,23 @@ events, routing, transitions or native/Explorer datasets. Generate a private loc
 workspace from your own installation. The local launcher loads it automatically over
 localhost; the public Viewer retains folder/file loading. Nothing is uploaded; there
 is no cloud service, analytics or account system.
+
+## Navigation & Discovery (local v2.3 RC)
+
+Explore now includes browser-local Bookmarks, Recently Viewed, Nearby and Guided
+Tours. View bookmarks preserve a local camera; safe Copy Link shares public IDs
+and allowlisted interface settings without private coordinates. Routing adds
+playback over the existing solved corridor. Layers adds eight opacity controls
+and a consolidated legend; View adds a screen-local reference-sphere scale.
+
+Public source-only mode retains authored Atlas cards, identity bookmarks, recent
+history and informational tours. Spatial discovery requires an existing validated
+local anchor. User data is origin-local and is never uploaded.
+
+See [user state](docs/v2.3/navigation-state.md), [Nearby](docs/v2.3/nearby.md),
+[tours/playback](docs/v2.3/tours.md), [safe sharing](docs/v2.3/share-state.md),
+[scale/layers](docs/v2.3/scale.md) and [local validation](docs/v2.3/validation.md).
+This RC remains local until user acceptance; no v2.3 publication is implied.
 
 ## Explore and inspect
 

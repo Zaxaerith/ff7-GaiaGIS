@@ -178,3 +178,48 @@ Layers has Places, Secrets and Collectibles switches. Collectibles marks verifie
 The local launcher generates the optional ignored `gaia-atlas.json` through the existing workspace builder, with curated-content, POI, source, transition and generator fingerprints. Warm reuse remains offline. Old workspaces without Atlas retain bundled knowledge with currently validated POI bindings. Public source-only pages can search/read knowledge without a spatial pack. No save-state, treasure-collected state, battle or field renderer is included.
 
 See [research](v2.2/atlas-research.md), [schema](v2.2/atlas-schema.md), [spatial evidence](v2.2/spatial-binding.md) and [local validation](v2.2/validation.md). Source-only distribution remains mandatory; all generated packs and screenshots stay ignored.
+
+
+## Navigation & Discovery (v2.3)
+
+Search and inspect a place, then use Bookmark to save its identity, name and short
+note. Explore → Bookmarks opens, edits or deletes saved items. Save current view
+also preserves a bounded local camera and registered layer settings, including
+native view mode. Recently viewed returns to the most recent 30 identities or
+bookmarks, moving repeated entries to the front. Missing or spoiler-hidden IDs
+remain unavailable rather than resolving to an invented point.
+
+Nearby in the Inspector searches from a verified anchor. Explore → Nearby can use
+the view center or a one-shot What's Here map selection. Choose nearest results or
+50/100/250/500 km. Distances assume GaiaGIS's V1 reference sphere and require WM0
+anchors. Parent/field-only rewards and unresolved entities have no reward distance.
+Native maps and Explorer make the tool unavailable.
+
+Add to tour from an Inspector card or bookmark, or build a tour from identity
+bookmarks. Edit draft titles, stay duration and order, then save. Play/Pause,
+Previous/Next and Stop control the tour. Resolved stops reuse Fly-to; unresolved
+place cards remain informational. Reduced motion avoids large camera movement.
+Stop/completion restores the captured overview. Map changes and Explorer pause it.
+
+After Find Route, open Analysis → Route playback. Play, Pause, Restart, Stop,
+0.5/1/2/4× speed and optional Follow display progress through the already solved
+corridor. Follow camera movement is disabled by reduced motion. Playback does not
+change the route solver, route length or source graph.
+
+Layers → Layer opacity offers eight suitable render layers; Map legend groups
+existing terrain/gameplay keys and Atlas/analysis keys. Reset layers restores their
+registered visibility/opacity defaults, including Secrets and Collectibles visibility,
+without erasing the solved route. View → Local horizontal scale toggles a local
+reference-sphere screen scale. It varies by projection, latitude and camera, and
+hides where inversion/ray intersection is unresolved or in native/Explorer mode.
+
+Copy link in View or the Inspector shares public identities and allowed UI fields.
+It omits the current private camera, positions, hashes, path and route nodes. A public
+link opens an authored Atlas card without a fake map point; local mode resolves its
+current validated anchor. Sources links are fetched only after an explicit click.
+
+Data → Clear local user data selects All, Bookmarks, Recent, Tours or Navigation
+preferences and requires a second confirmation. It does not remove workspace files.
+Unavailable/quota-exceeded storage retains edits in this session and displays a
+warning. No account or cloud backup is provided. Optional tour import/export and an
+overview minimap are deferred. See the [v2.3 state schema](v2.3/navigation-state.md).

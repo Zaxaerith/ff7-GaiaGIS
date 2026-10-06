@@ -75,3 +75,32 @@ Layers has Places, Secrets and Collectibles switches. Collectibles marks verifie
 The local launcher generates the optional ignored `gaia-atlas.json` through the existing workspace builder, with curated-content, POI, source, transition and generator fingerprints. Warm reuse remains offline. Old workspaces without Atlas retain bundled knowledge with currently validated POI bindings. Public source-only pages can search/read knowledge without a spatial pack. No save-state, treasure-collected state, battle or field renderer is included.
 
 See [research](v2.2/atlas-research.md), [schema](v2.2/atlas-schema.md), [spatial evidence](v2.2/spatial-binding.md) and [local validation](v2.2/validation.md). Source-only distribution remains mandatory; all generated packs and screenshots stay ignored.
+
+
+## v2.3 Navigation & Discovery
+
+`app/userState.ts` owns versioned personal browser state independently of workspace
+and AppState asset lifetime. Validation/migration/fallback run before state is exposed;
+one localStorage key persists identities, local views, tours and navigation preferences.
+`app/navigation.ts` exposes current owner lookup and verified anchor metadata.
+`navigationActions.ts` and the extended Feature/Layer registry centralize capability
+and opacity defaults. AppState preference opacity mirrors central stored preferences;
+it does not introduce another persistence key.
+
+`shareState.ts` is a distinct public-ID/UI allowlist, never a generic AppState serializer.
+`navigation/nearby.ts` precomputes vectors for a bounded linear scan using existing
+sphere authority. `playback.ts` owns lightweight lifecycle state; its UI adapter uses
+existing owner inspection and Fly-to. GaiaViewer publishes only the current runtime
+corridor; RouteOverlay adds a prebuilt shared-buffer progress draw range.
+`navigation/scale.ts` samples existing inverseDisplay/reference-sphere rays.
+
+The lazy `ui/discovery.ts` owner integrates the existing six panels and cleans up
+listeners, animation hooks, route callbacks, dialogs and moved legend elements on
+replacement/disposal. Native maps retain separate cameras and no geographic transform.
+Explorer entry pauses overview playback and hides unavailable tools. Automatic local
+workspace completion precedes deep-link target application. No solver, projection,
+source pipeline, Atlas content or Explorer controller is modified.
+
+See [navigation state](v2.3/navigation-state.md), [spatial eligibility](v2.3/nearby.md),
+[playback lifecycle](v2.3/tours.md), [safe links](v2.3/share-state.md),
+[scale/layers](v2.3/scale.md) and [validation](v2.3/validation.md).
