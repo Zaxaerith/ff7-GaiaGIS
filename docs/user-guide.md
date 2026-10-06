@@ -211,7 +211,7 @@ After Find Route, open Analysis → Route playback. Play, Pause, Restart, Stop,
 corridor. Follow camera movement is disabled by reduced motion. Playback does not
 change the route solver, route length or source graph.
 
-Layers → Layer opacity offers eight suitable render layers; Map legend groups
+Layers → Layer opacity offers eleven suitable render layers; Map legend groups
 existing terrain/gameplay keys and Atlas/analysis keys. Reset layers restores their
 registered visibility/opacity defaults, including Secrets and Collectibles visibility,
 without erasing the solved route. View → Local horizontal scale toggles a local
@@ -228,3 +228,44 @@ preferences and requires a second confirmation. It does not remove workspace fil
 Unavailable/quota-exceeded storage retains edits in this session and displays a
 warning. No account or cloud backup is provided. Optional tour import/export and an
 overview minimap are deferred. See the [v2.3 state schema](v2.3/navigation-state.md).
+
+## Explorer Locomotion & Spatial Analysis (v2.5)
+
+Explorer separates appearance from movement: every party character uses the same
+Foot navigation speed. Barret, Aerith, Red XIII, Yuffie, Cait Sith and Vincent use
+their own reviewed original fast clips; Cloud, Tifa and Cid keep world-map clips.
+Shift increases the existing movement speed and preview cadence. Backward Foot
+motion reverses preview frames. This is Explorer preview timing, not verified Steam
+timing; uneven terrain can still show discrete-frame foot sliding. Red XIII and
+Cait Sith retain their own quadruped/hopping skeletons. See the
+[character evidence table](v2.5/explorer-locomotion.md).
+
+Load a generated workspace, open Analysis, select an origin, destination and
+movement profile, then Find Route. The result adds three cards:
+
+- Route Profile: cumulative corridor distance, configured Gaia display elevation,
+  minimum/maximum height and ascent/descent. Inspect the SVG with the pointer or
+  focus its range control and use arrow keys. Raw height assumes 1 m/raw for display.
+- Terrain Composition: source terrain distances and percentages weighted by
+  corridor segment length. The sampled corridor length is shown separately from
+  the unchanged graph cost and may be longer.
+- Encounter Exposure: static region/terrain set coverage, source scene tables and
+  Chocobo-eligible flag distance. These values do not predict battles or probability.
+
+Source Surface controls select Slope or Aspect. Slope is a direct source-TIN plane
+angle with configured horizontal/vertical ratio 1/1; it is not physical globe slope.
+Aspect uses north −Z/east +X, eight compass groups, and undefined flat/degenerate
+faces. Layers supplies registered opacity, legends and Reset defaults for both.
+Projection changes and Compare reuse the same source attributes.
+
+Service Area uses the selected route origin, movement profile and distance threshold
+(default 100 km). Calculate to highlight source triangles whose existing graph node
+centers are within the network distance budget. Foot, Buggy, Tiny Bronco and five
+Chocobos are supported. Include conditional matches the routing policy and is not a
+runtime guarantee. An ineligible origin can yield zero nodes. The highlight is not
+a continuous buffer, a precise boundary or a travel-time isochrone.
+
+All six analyses require local WM0 data; routing/encounter results also require
+their corresponding workspace resources. Public source-only mode displays clear
+unavailable cards. Native WM2/WM3 and Explorer disable these overview tools.
+No new workspace payload, account or upload is introduced.

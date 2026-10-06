@@ -1,7 +1,7 @@
 # GaiaGIS
 
-Current local release candidate: **v2.4.0 — App Shell, UI Unification & Workspace UX**.
-Published baseline: **v2.3.0 — Navigation & Discovery**.
+Current local release candidate: **v2.5.0 — Explorer Locomotion & Spatial Analysis**.
+Published baseline: **v2.4.0 — App Shell, UI Unification & Workspace UX**.
 
 An interactive GIS reconstruction of FINAL FANTASY VII's polygonal Gaia world map.
 Explore geography, original local artwork, gameplay attributes and source provenance
@@ -21,7 +21,26 @@ workspace from your own installation. The local launcher loads it automatically 
 localhost; the public Viewer retains folder/file loading. Nothing is uploaded; there
 is no cloud service, analytics or account system.
 
-## App Shell & Workspace UX (local v2.4 RC)
+## Explorer Locomotion & Spatial Analysis (local v2.5 RC)
+
+The six Extended party models now select their own reviewed fast locomotion clips.
+All nine party appearances retain identical Foot displacement. Cadence is explicitly
+Explorer preview timing; original Steam runtime timing and perfect foot lock remain
+unverified. No cross-character retargeting is used.
+
+Analysis adds source-TIN route elevation, distance-weighted terrain composition,
+static encounter-set exposure, source-space slope/aspect and network service areas
+over the existing routing graph. Heights use configured 1 m/raw display elevation;
+network distances use the existing assumed reference sphere. These are static
+analysis results, not encounter RNG, travel time or official FF7 physical geography.
+No new spatial pack is needed. Native maps and public source-only mode explain
+unavailable analyses without fabricating results.
+
+See [user guide](docs/user-guide.md), [locomotion](docs/v2.5/explorer-locomotion.md),
+[methods](docs/methodology.md) and [local RC validation](docs/v2.5/validation.md).
+This RC remains local until user acceptance; publication requires separate approval.
+
+## App Shell & Workspace UX (v2.4)
 
 The default FF7-inspired interface now shares one component palette across the
 header, docks, Inspector, cards, dialogs and controls. Docks stay inside the viewport,
@@ -50,7 +69,6 @@ local anchor. User data is origin-local and is never uploaded.
 See [user state](docs/v2.3/navigation-state.md), [Nearby](docs/v2.3/nearby.md),
 [tours/playback](docs/v2.3/tours.md), [safe sharing](docs/v2.3/share-state.md),
 [scale/layers](docs/v2.3/scale.md) and [local validation](docs/v2.3/validation.md).
-This RC remains local until user acceptance; no v2.3 publication is implied.
 
 ## Explore and inspect
 

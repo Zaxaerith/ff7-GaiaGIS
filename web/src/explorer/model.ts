@@ -3,7 +3,9 @@ import type {LightingPreset} from '../app/presentation';
 // SPDX-License-Identifier: GPL-3.0-only
 import {Box3,BufferAttribute,BufferGeometry,DataTexture,DoubleSide,Group,Mesh,MeshBasicMaterial,NearestFilter,RGBAFormat,SRGBColorSpace,UnsignedByteType,Vector3} from 'three';
 import type {ExplorerModel,ExplorerPack} from '../data/explorer';
+import {locomotion} from './locomotion';
 export class OriginalModel {
+ private previewGround:Float32Array|null=null;
  readonly object=new Group();readonly root=new Group();readonly orientation=new Group();readonly bones:Group[]=[];readonly meshes:Mesh[]=[];readonly textures:DataTexture[]=[];readonly geometryBytes:number;readonly textureBytes:number;readonly size:number;readonly groundOffset:number;readonly displayScale:number;readonly lights:ReturnType<typeof modelLighting>[]=[];
  constructor(readonly pack:ExplorerPack,readonly model:ExplorerModel){
   // Keep source-local rotations and -Z bones intact. Convert the complete
@@ -22,13 +24,21 @@ export class OriginalModel {
   // This is a display transform only, never a source coordinate/geometry change.
   const height=model.id==='red-xiii'?270:model.id==='barret'?510:model.id==='cait-sith'?500:450;this.displayScale=model.sourceKind==='extended_field'?height/Math.max(dims.y,1):model.source_scale;this.size=Math.max(...dims.toArray())*this.displayScale;
   this.geometryBytes=bytes;this.textureBytes=textureBytes;
+  // Own fast clips can put a foot below the idle-derived display origin.
+  // Cache display-only nonpenetration offsets; preserve source poses/airborne phases.
+  if(locomotion(model,true).clip===2&&model.sourceKind==='extended_field'){
+   const corrections=new Float32Array(model.clips[2].frame_count);
+   for(let f=0;f<corrections.length;f++){this.pose(2,(f+.001)/30);this.object.updateMatrixWorld(true);corrections[f]=Math.max(0,-new Box3().setFromObject(this.object).min.y);}
+   this.previewGround=corrections;this.pose(0,0);
+  }
  }
- pose(clipIndex:number,seconds:number){const clip=this.model.clips[Math.min(clipIndex,this.model.clips.length-1)],values=this.pack.floats(clip),stride=6+clip.bone_count*3,frame=Math.floor(seconds*30)%clip.frame_count,start=frame*stride;
+ pose(clipIndex:number,seconds:number,previewRate=1){const clip=this.model.clips[Math.min(clipIndex,this.model.clips.length-1)],values=this.pack.floats(clip),stride=6+clip.bone_count*3,frame=((Math.floor(seconds*30*previewRate)%clip.frame_count)+clip.frame_count)%clip.frame_count,start=frame*stride;
   // Raw A Euler composition follows the header order. Coordinate conversion
   // belongs to the parent frame, not independent sign flips on every joint.
   const order=clip.rotation_order.map(i=>'XYZ'[i]).join('') as 'XYZ',rotation=(node:Group,offset:number)=>node.rotation.set(values[offset]*Math.PI/180,values[offset+1]*Math.PI/180,values[offset+2]*Math.PI/180,order);
   rotation(this.root,start);this.root.position.set(values[start+3],-values[start+4],values[start+5]);
   if(clip.bone_count)for(let i=0;i<this.bones.length;i++)rotation(this.bones[i],start+6+i*3);
+  if(this.previewGround)this.orientation.position.y=this.groundOffset+(clipIndex===2?this.previewGround[frame]:0);
  }
  tint(index:number){
   // C_0075E4D6 additive source color facts; shared aja.hrc, not five skeletons.

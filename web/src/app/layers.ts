@@ -1,6 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-only
 import type {AppState,AssetId} from './state';
 export const layerDefinitions=[
+ {id:'slope',label:'sp25.slope',defaultOpacity:1,defaultVisibility:false,control:'spatial-slope'},
+ {id:'aspect',label:'sp25.aspect',defaultOpacity:1,defaultVisibility:false,control:'spatial-aspect'},
+ {id:'service-area',label:'sp25.service',defaultOpacity:1,defaultVisibility:false,control:'spatial-service-area'},
  {id:'terrain',label:'nav23.terrain',defaultOpacity:1,defaultVisibility:true,control:'terrain'},
  {id:'encounters',label:'ui.encounters',defaultOpacity:1,defaultVisibility:false,control:'color-layer'},
  {id:'traversal',label:'ui.traversal',defaultOpacity:1,defaultVisibility:false,control:'color-layer'},
@@ -18,4 +21,4 @@ export type VisibilityId=typeof visibilityDefinitions[number]['id'];
 export const visibilityIds=visibilityDefinitions.map(l=>l.id);
 export const defaultVisibility=()=>Object.fromEntries(visibilityDefinitions.map(l=>[l.id,l.defaultVisibility])) as Record<VisibilityId,boolean>;
 /** Opacity is presentation capability, resolved through existing asset authority. */
-export function layerAvailable(id:LayerId,state:Readonly<AppState>){const required:AssetId=id==='encounters'?'encounters':id==='events'?'events':id==='atlas'?'locations':id==='routes'||id==='reachability'?'routing':'geometry';return state.map.id==='WM0'&&state.explorer.phase==='idle'&&state.data.assets.geometry?.status==='loaded'&&state.data.assets[required]?.status==='loaded';}
+export function layerAvailable(id:LayerId,state:Readonly<AppState>){const required:AssetId=id==='encounters'?'encounters':id==='events'?'events':id==='atlas'?'locations':id==='routes'||id==='reachability'||id==='service-area'?'routing':'geometry';return state.map.id==='WM0'&&state.explorer.phase==='idle'&&state.data.assets.geometry?.status==='loaded'&&state.data.assets[required]?.status==='loaded';}

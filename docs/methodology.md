@@ -58,6 +58,40 @@ Detailed foundations remain in [Stage 0](validation-report.md),
 [Explorer movement](v1.9/movement.md). See [data and copyright](data-and-copyright.md)
 for the separate publication status of game-derived material.
 
+## Spatial analysis and locomotion (v2.5)
+
+Analysis borrows the loaded WM0 mesh and existing routing/encounter owners.
+Route sampling follows the solved source-face corridor through face centers and
+verified shared-edge midpoints, including the periodic E/W seam. Height is direct
+TIN interpolation in raw game units; configured display elevation uses 1 m/raw.
+Horizontal segment distance uses great circles on the unchanged V1 reference
+sphere. The summed sampled corridor may exceed the graph's centroid-edge cost;
+both are disclosed. Synthetic caps, visual relief and route-line clearance are
+excluded. Terrain and static encounter sets aggregate the same segment lengths,
+not face counts. Encounter exposure never simulates RNG, battles or save state.
+
+For source-plane height h = aX + bZ + c, configured slope is
+atan(hypot(a,b)) with horizontal/vertical scale ratio 1/1. Inverse Mercator is
+nonuniform, so this is source-space slope, not physical reference-sphere slope.
+North is −Z and east +X; downslope aspect is atan2(−a,b), wrapped to 0–360°.
+Flat gradients below 1e-8 have undefined aspect; degenerate horizontal faces have
+undefined slope/aspect. Surface values are computed once per mesh and remain
+invariant under all thirteen display projections and comparison.
+
+Service Area applies bounded Dijkstra to the existing routing CSR and weights,
+using its cached movement eligibility and conditional policy. Thresholds are
+reference-sphere path metres, not travel time. Highlighted whole source faces
+represent reachable graph-node centers, not a continuous distance boundary.
+No second graph, raster buffer, geographic transform or source pack is created.
+
+Extended locomotion is selected only for exact own-HRC/bone/clip bindings reviewed
+against field-loader context and posed source cycles. Preview cadence normalizes
+the fast cycle to about 2 Hz (Yuffie 14/15 playback rate); movement displacement
+remains the existing Foot owner. Cached display offsets prevent negative posed
+floor penetration without changing source bones/root frames or original airborne
+phases. Residual sliding is documented; original Steam runtime timing remains
+unverified. See the [v2.5 methods and validation](v2.5/validation.md).
+
 
 ## Gaia Atlas (v2.2)
 

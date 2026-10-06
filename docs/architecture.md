@@ -104,3 +104,26 @@ source pipeline, Atlas content or Explorer controller is modified.
 See [navigation state](v2.3/navigation-state.md), [spatial eligibility](v2.3/nearby.md),
 [playback lifecycle](v2.3/tours.md), [safe links](v2.3/share-state.md),
 [scale/layers](v2.3/scale.md) and [validation](v2.3/validation.md).
+
+## v2.5 analysis ownership
+
+`analysis/spatial.ts` provides pure source-TIN gradient and solved-corridor summary
+functions. GaiaViewer owns a lazy mesh-scoped slope/aspect cache and shares its
+color attributes with Compare. `analysis/serviceArea.ts` adds bounded Dijkstra
+through a distinct routing-worker request, borrowing existing graph/eligibility
+owners; the route solver and weights are preserved. No additional spatial pack
+or per-frame attribute computation is introduced.
+
+`ui/spatialAnalysis.ts` mounts into existing Analysis and Layers, borrows runtime
+owner datasets, rejects stale asynchronous results and clears/disposes controls
+with the active viewer. Source-only startup owns explicit unavailable cards.
+Native maps and Explorer use existing capability boundaries. Three registered
+layers share opacity/reset/legend defaults. Exact v2.4 stored layer records receive
+the new defaults during validation so saved views, bookmarks and tours survive;
+other malformed records remain rejected.
+
+`explorer/locomotion.ts` contains exact own-source binding selection and preview
+rate policy. Model instances cache display floor offsets for those reviewed clips;
+raw animation and skeleton data remain unchanged. The controller continues to own
+all displacement, terrain eligibility and lifecycle. No dependency or debug API
+is added. See [v2.5 durable status](v2.5/STATUS.md).

@@ -47,12 +47,20 @@ import {adaptiveGrid,chooseInterval,minorInterval,visibleGridBounds} from '../an
 import type {GridMode} from '../analysis/adaptive';
 import {comparisonPalette} from '../analysis/comparison';
 import {screenGridPolicy} from './gridPolicy';
+import {surfaceAttributes,slopeRamp,aspectRamp,aspectCategory,serviceColor,undefinedColor} from '../analysis/spatial';
 
 type Frame={positions:Float32Array;mask:Float32Array};
 interface Morph {start:number;fromId:ProjectionId;from:Frame;to:Frame;gridFrom:Frame;gridTo:Frame;cameraFrom:Vector3;cameraTo:Vector3;targetFrom:Vector3;depthFrom:number;}
 interface Flight {start:number;lon:number;lat:number;fromLon:number;fromLat:number;from:Vector3;to:Vector3;distance:number;}
 export interface ViewerStats {fps:number;renderTriangles:number;drawCalls:number;morphing:boolean;projection:ProjectionId;}
 export class GaiaViewer {
+  private spatialMode:'slope'|'aspect'|'service-area'|null=null;
+  private spatialCache:ReturnType<typeof surfaceAttributes>|null=null;
+  private serviceFlags:Uint8Array|null=null;
+  get encounterData(){return this.encounters;}
+  get sourceSurfaceAnalysis(){return this.spatialCache??=surfaceAttributes(this.mesh);}
+  setSpatialLayer(mode:typeof this.spatialMode){this.spatialMode=mode;if(mode==='slope'||mode==='aspect')void this.sourceSurfaceAnalysis;this.colorSurface();}
+  setServiceArea(flags:Uint8Array|null){if(flags&&flags.length!==this.mesh.sourceTriangleCount)throw Error('Service scope mismatch');this.serviceFlags=flags;this.colorSurface();}
   onNavigationFrame:(seconds:number)=>void=()=>{};
   onRouteChange:(points:GeoPoint[])=>void=()=>{};
   routePoints:GeoPoint[]=[];
@@ -322,7 +330,7 @@ export class GaiaViewer {
   selectEvent(event:WorldEvent|null){this.events.select(event?.id??null);this.eventTriggers=new Set(event?.trigger_triangle_ids.map(id=>`${event.section_id}/${event.mesh_id}/${id}`)??[]);this.colorSurface();}
   setScriptTriggers(show:boolean){this.showTriggers=show;this.colorSurface();}
   setMovementMode(id:string){profileById(id);this.movementMode=id;if(this.colorLayer==='traversal')this.colorSurface();}
-  setEncounters(data:EncounterDataset|null){this.encounters=data;this.colorSurface();}
+  setEncounters(data:EncounterDataset|null){this.encounters=data;this.colorSurface();document.dispatchEvent(new Event('gaiagis-encounters-loaded'));}
   setChocoboTracks(value:boolean){this.chocoboTracks=value;this.colorSurface();}
   focusLocation(lon:number,lat:number){
     if(this.morph||!Number.isFinite(lon)||!Number.isFinite(lat))return;
@@ -407,7 +415,9 @@ export class GaiaViewer {
         if(!a.origin&&this.chocoboTracks&&a.chocobo)color=tracks;
         if(this.showTriggers&&!a.origin&&(a.script!>=3||this.eventTriggers.has(`${a.section}/${a.mesh}/${a.triangle}`)))color=new Color(this.eventTriggers.has(`${a.section}/${a.mesh}/${a.triangle}`)?'#ff9bd6':'#9c7ee9');
         if(this.analysisVisibility.routes&&this.corridor.has(source))color=color.clone().lerp(new Color('#ffe18c'),this.opacities.routes);
+        if(this.spatialMode&&!a.origin){const id=this.spatialMode;let overlay=new Color(undefinedColor);if(id==='service-area'){overlay=new Color(serviceColor);if(!this.serviceFlags?.[source])overlay.multiplyScalar(.25);}else{const value=this.sourceSurfaceAnalysis[id][source];if(Number.isFinite(value)){if(id==='aspect')overlay=new Color(aspectRamp[aspectCategory(value)]);else{const f=Math.min(1,value/60)*(slopeRamp.length-1),k=Math.min(slopeRamp.length-2,Math.floor(f));overlay=new Color(slopeRamp[k]).lerp(new Color(slopeRamp[k+1]),f-k);}}}color=color.clone().lerp(overlay,this.opacities[id]);}
         mix=(this.colorLayer!=='terrain'||this.analysisVisibility.reachability&&!!this.reachable||!!this.comparisonFlags||this.chocoboTracks&&!!a.chocobo||this.showTriggers&&a.script!==null&&a.script>=3||this.analysisVisibility.routes&&this.corridor.has(source)) ? .65 : 0;
+        if(this.spatialMode&&!a.origin)mix=Math.max(mix,.8*this.opacities[this.spatialMode]);
         mix*=gameplay?this.opacities.encounters:this.colorLayer==='traversal'?this.opacities.traversal:this.corridor.has(source)?this.opacities.routes:1;
         previous=source;}
       for(let j=0;j<9;j+=3){const i=t*9+j;colors[i]=color.r;colors[i+1]=color.g;colors[i+2]=color.b;tint[t*3+j/3]=mix;}
