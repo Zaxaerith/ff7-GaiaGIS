@@ -14,7 +14,7 @@ Use Python 3.12+ and Node 24 in a source checkout. The launcher reads your insta
 
 ## Windows Release
 
-Approved Releases may provide `GaiaGIS-vX.Y.Z-windows-x64.zip` and `SHA256SUMS.txt`. Extract everything and run `GaiaGIS.exe`; select your own installation. The portable runtime needs no Python/Node installation. Official binaries are built by GitHub Actions from the exact annotated tag. Local candidate ZIPs are recipe-validation products only; the current v2.7 candidate remains pending publication.
+Approved Releases may provide `GaiaGIS-vX.Y.Z-windows-x64.zip` and `SHA256SUMS.txt`. Extract everything and run `GaiaGIS.exe`; select your own installation. The portable runtime needs no Python/Node installation. Official binaries are built by GitHub Actions from the exact annotated tag. Local candidate ZIPs are recipe-validation products only; local candidates remain pending explicit publication approval.
 
 [Releases](https://github.com/Zaxaerith/ff7-GaiaGIS/releases) · [Release process](docs/development/release-process.md)
 
@@ -34,6 +34,7 @@ The [public Viewer](https://zaxaerith.github.io/ff7-GaiaGIS/) is source-only: au
 - Explorer keyboard/touch previews using locally decoded original models; no game-runtime simulation.
 - User points/lines/polygons, layers, reference-sphere measurement and bounded local GaiaJSON exchange.
 - Read-only fifteen-slot PC/Steam 2013 Save Explorer. Verified WM0 world saves can locate Player Position; field/unknown/native records receive no fabricated marker.
+- Private Field Scene identities and verified gateway topology, linked to existing entrances, Atlas and Current Field in My Save; no interior global coordinates.
 - Unified FF7-inspired shell, explicit Scientific theme, desktop/320/390px layouts and five languages.
 
 ## Documentation

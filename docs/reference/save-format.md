@@ -137,3 +137,25 @@ The provided real saves are all field saves: a real world-module Steam 2013
 save-to-live-player comparison is **NOT VERIFIED**. Alternate story-dependent
 world geometry and Steam 2026 runtime equivalence are not claimed. Field,
 unknown, corrupt and WM2/WM3 slots never produce a fabricated global marker.
+
+
+## Field identity binding
+
+The field-module word (1) at slot 0xB94 and location word at 0xB96 are the only
+inputs to Current Field lookup. This is cross-checked against [ff7tk FF7Save.cpp](https://github.com/sithlord48/ff7tk/blob/cb876ba93f384b3a90a06ece216ccd1a160fbbcf/src/data/FF7Save.cpp)
+and its [FF7Location module/location identities](https://github.com/sithlord48/ff7tk/blob/cb876ba93f384b3a90a06ece216ccd1a160fbbcf/src/data/FF7Location.h),
+plus the [Qhimm Savemap](https://wiki.ffrtt.ru/index.php/FF7/Savemap).
+The locally generated maplist is the internal archive identity authority, not the
+save preview string. The reviewed classic-PC ordering is pinned by maplist SHA-256
+in the Field exporter; unknown/modded orderings leave every saveId null.
+
+References disagree on several internal names, including debug scenes and the
+ordering of datiao_2/datiao_3. IDs 88, 89, 90, 91, 404, 526, 593, 594 and 699 are
+therefore deliberately unverified for save lookup. Their own archive topology may
+still be browsed. Missing/corrupt scenes also have no saveId. The compact pack
+serializes only a reviewed equal-ID binding or null, not a copied reference name
+table. No Field X/Y, local triangle, camera or world coordinate is derived here.
+
+Only a valid/checksum-accepted field slot and an available exact saveId match can
+open Current Field. Field saves never reuse stale world packing for a marker.
+Unknown IDs remain raw. See [Field Context](atlas.md#field-context).

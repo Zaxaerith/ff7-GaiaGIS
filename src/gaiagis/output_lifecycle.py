@@ -35,7 +35,8 @@ class OutputRun:
                 os.environ.pop(key, None)
             else:
                 os.environ[key] = value
-        failure = checked_output(WORKSPACE_ROOT / 'output/dev' / ('failed-' + self.kind))
+        failure_root = 'output/dev/current' if self.kind == 'qa' else 'output/dev'
+        failure = checked_output(WORKSPACE_ROOT / failure_root / ('failed-' + self.kind))
         (self.path / '.owner.pid').unlink(missing_ok=True)
         if error_type is None or (error_type is SystemExit and error.code in (None, 0)):
             if not self.keep:

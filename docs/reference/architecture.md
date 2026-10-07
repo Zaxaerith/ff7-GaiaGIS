@@ -164,3 +164,27 @@ The shell is presentation and lifecycle infrastructure; mathematical and source 
 `_version.py` supplies setuptools metadata, local status, Vite build and portable manifest. Component/schema versions independently govern data compatibility. Climate runtime and candidate-orientation diagnostics are absent; only the sealed conclusion remains.
 
 Maintained freeze/audit/smoke tools are in `tools/build/`. Ordinary CI, source-only Pages and exact-tag Release packaging have separate workflows. Local outputs are ignored developer evidence; official ZIPs originate from the approved tag's Actions checkout. See [release process](../development/release-process.md).
+
+
+## Field / World integration
+
+`src/gaiagis/field_context.py` owns the bounded PC maplist/section-8 gateway
+reader and optional private `gaia-field-context.json` exporter. It extends the
+existing incremental workspace recipe, not a separate extractor or build system.
+Field identities are archive/maplist IDs and internal names; Field local
+coordinates are never transformed into GaiaGame or geographic coordinates.
+
+`web/src/data/fieldContext.ts` validates the compact identity/evidence contract,
+revalidates entrance bindings against loaded POI lineage, and builds incoming /
+outgoing adjacency and strongly connected components once. Components permit
+only explicitly labelled mutual topological association; they are not geographic
+containment. Names, proximity and world coordinates never establish membership.
+
+`ui/fieldContext.ts` owns the private index, existing Explore search registrations,
+Atlas Field Context, shared Inspector card and event-driven SVG topology browser.
+Pan/zoom respond to pointer/wheel/buttons; no graph library, backend, force loop
+or new main navigation page is introduced. Search entries have no geographic
+anchor, persistent identity target or ShareState entitlement. Disposal removes
+ports/listeners/diagram and invalidates pending loads; workspace replacement clears
+source-bound context. The Save owner borrows the in-memory index through the same
+scoped event boundary. See [Field contracts and evidence](atlas.md#field-context).

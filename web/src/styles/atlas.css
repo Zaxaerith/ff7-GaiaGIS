@@ -15,3 +15,16 @@
  .atlas-card {max-height:45dvh;overflow-y:auto;overscroll-behavior:contain;padding-right:4px;}
  .atlas-card button {min-height:36px;}
 }
+
+/* Field topology is a diagram, never a geographic map. */
+.field-place-context,.field-card{overflow-wrap:anywhere;max-width:100%;min-width:0}
+.field-place-context button,.field-card button{display:block;max-width:100%;margin:var(--space-2) 0;white-space:normal;text-align:left}
+#field-context select{width:100%;min-width:0}
+#field-graph{display:block;width:100%;height:220px;border:1px solid var(--rim);background:var(--window-bg);touch-action:none}
+.field-edge{stroke:var(--muted);stroke-width:1;fill:none}
+.field-edge.neighbor{stroke:var(--accent);stroke-width:2}
+.field-node rect{fill:var(--surface-raised);stroke:var(--rim);stroke-width:2;rx:5}
+.field-node text{fill:var(--ink);font-size:12px;pointer-events:none}
+.field-node{cursor:pointer;outline:none}
+.field-node.neighbor rect,.field-node[aria-pressed=true] rect,.field-node:focus rect{stroke:var(--accent);stroke-width:3}
+@media(max-width:700px){#field-graph{height:180px}.field-card button{min-height:36px}}

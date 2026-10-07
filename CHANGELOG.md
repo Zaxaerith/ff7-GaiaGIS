@@ -2,6 +2,13 @@
 
 Formal version changes; historical acceptance evidence remains in Git history and Releases.
 
+## v2.8.0 — candidate, not yet published
+
+- Private Field identities and verified section-8 gateway topology, linked to existing world entrances.
+- Field Context in Atlas, Explore search and Inspector, with a lightweight interactive scene graph.
+- Reviewed Current Field lookup for valid PC saves; conflicting and unknown IDs remain unverified.
+- Optional incremental workspace payload, public fallback and strict separation of Field and global coordinates.
+
 ## v2.7.0 — candidate, not yet published
 
 - Read-only PC/Steam 2013 Save Explorer with fifteen-slot checksum-aware parsing.

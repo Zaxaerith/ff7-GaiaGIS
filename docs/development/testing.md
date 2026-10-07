@@ -2,6 +2,13 @@
 
 Public Web regressions live in `web/tests/`. Run `npm --prefix web test`, ordinary build, `build:release` and `audit:release`. Tests cover coordinates/projections, routing/analysis, Atlas/navigation, user geometry and save parsing/privacy. Synthetic fixtures contain no private save bytes or complete derived game dataset.
 
+Field regressions extend the existing Atlas tests with bounded identity codecs,
+direct entrance evidence, directed gateways/cycles, ambiguous or missing parents,
+reviewed save-ID gates and the unchanged field-only spatial policy. The optional
+private Field/POI pair is checked only when an ignored local workspace exists;
+CI uses the synthetic cases. Browser checks also replace POI/workspace inputs to
+ensure stale scene cards, search entries and save bindings are invalidated.
+
 Private Python `tests/` remain local, ignored and untracked. Select non-climate suites and use disposable workspace-local output, optionally with read-only source. QGIS/GDAL is needed for established CRS/export regressions. Sealed climate tests and retired climate candidate diagnostics are excluded; do not re-add private tests to Git. Disposable output is not a place to store the test runner itself.
 
 Browser acceptance checks source-only and local workspace modes; Save Explorer, User Mapping, analysis, Atlas, Explorer, routing and map transitions; all thirteen projections, Globe, Compare, five locales, desktop and 390/320px containment. Verify source hashes before/after private-input tests. All QA profiles, screenshots, performance captures and logs use ignored `output/dev/current/`, then are removed on success. Retain only necessary failure evidence until the next successful check. Do not create permanent per-version output folders.

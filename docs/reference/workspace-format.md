@@ -36,16 +36,20 @@ independently; a missing or invalid base geometry prevents workspace adoption.
 | Native textures | gaia-textures-WM2.bin, gaia-textures-WM3.bin | respective native map |
 | Transitions | gaia-transitions.json | source hashes, unresolved transforms retained |
 | Explorer | gaia-explorer.bin | version2 borrows matching loaded map surfaces |
+| Presentation | gaia-presentation.json | optional locally generated UI audio |
+| Atlas | gaia-atlas.json | authored knowledge plus private POI identity bindings |
+| Field Context | gaia-field-context.json | private scene identities / gateway edges, depends on POI |
 
-Thirteen payload files comprise twelve logical groups. No geometry is duplicated
+Sixteen payload files comprise fifteen logical groups. No geometry is duplicated
 into a workspace wrapper. Folder loading reads recognized root files only, using
 the user-initiated directory picker or folder-input fallback. Multi-file loading
 works without File System Access API. Unmanifested legacy sets are labeled Legacy.
 
 ## Incremental and deterministic behavior
 
-The CLI calls stable individual exporters in eight steps. A step is reused only
-if manifest/schema/tool/generator/source bindings and every file size/hash match.
+The CLI calls the existing owners in component steps. A step is reused only
+if schema/generator/source bindings and every file size/hash match. The tool version
+is informational; generator and transport revisions govern component compatibility.
 Missing/corrupt output rebuilds its owning step. A failed build does not publish a
 new manifest. Outputs, private Stage 1 cache and temporary native reports remain
 inside the repository; output inside the selected source dataset is rejected.

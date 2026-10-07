@@ -90,3 +90,6 @@ gaia-atlas.json
 /web/scripts/browser-v24-qa.mjs
 /web/scripts/browser-v25-qa.mjs
 /web/scripts/measure-navigation23.mjs
+
+# Private Field identity/topology payload
+gaia-field-context.json

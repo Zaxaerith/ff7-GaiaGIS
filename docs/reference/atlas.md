@@ -165,3 +165,81 @@ The following is authored public knowledge and identity requests; it contains no
 | forest-rewards | Slash-All / Typoon / Apocalypse | treasure_group | unresolved | forest-guide |
 | gelnika-rewards | Double Cut / Hades / Highwind | treasure_group | unresolved | sunken-gelnika |
 | round-island | Round Island | landmark | parent_location | round-island |
+
+
+## Field Context
+
+A private workspace can connect an existing world Entrance to its destination
+Field and browse verified **gateway** connections. Field identity is
+`flevel.lgp` fingerprint + maplist index + internal archive name. Display names
+remain internal names unless a separate reviewed naming source exists. No Wiki
+name table, messages, scripts, backgrounds, textures or models are exported here.
+
+The optional logical asset `field-context` uses `gaia-field-context.json`, schema
+`gaiagis-field-context`, version **1**, coordinate space **FieldLocalIdentity**.
+Its compact contract contains:
+
+- `archive`, source SHA-256 bindings, `scriptTransitions: unverified`;
+- `nodes`: field `id`, internal `name`, available/missing/corrupt status, reviewed
+  PC `saveId` or null;
+- `edges`: `fromField`, destination `to`, gateway number and section-relative
+  evidence `offset`;
+- `exits`: world-entry pseudo-field identities, with the same evidence indices;
+- `unresolved`: invalid sections or missing destinations, never a guessed edge;
+- `bindings`: existing Entrance/Location IDs, destination Field ID and verified
+  direct/unresolved status.
+
+Incoming connections are derived from the directed edges. World-entry names such
+as `wm2` in maplist are **entry identities**, not a WM2-native coordinate transform.
+The payload contains no Field positions and no duplicated world entrance positions.
+Unknown extra properties, invented coordinate spaces, invalid/dangling verified
+edges, conflicting evidence indices and mismatched POI identities are rejected.
+Source basenames and fingerprints contain no private filesystem paths.
+
+### Evidence and bounds
+
+The independent GaiaGIS reader cross-checks [Makou Reactor FieldPC / InfFile /
+MapList](https://github.com/myst6re/makoureactor/tree/2452025714c033d698d1754a776bdcd5713427bd/src/core/field)
+and the original [Qhimm field-format investigation](https://forums.qhimm.com/index.php?topic=3247.0).
+PC files are bounded LZSS data with nine section offsets. Section 8 is 740 bytes
+(or the documented 536-byte variant); its twelve 24-byte gateway records begin at
+byte 56. Destination ID is the little-endian word at record +18. The inactive
+sentinel is 0x7FFF. Only a successfully decoded archive scene can be the endpoint
+of a verified scene edge. Scripts are not scanned for MAPJUMP byte patterns or
+interpreted. This is a partial connection graph, not complete field runtime or
+story/save availability.
+
+Direct binding requires the exact field ID/name, an available archive scene and
+existing verified WM0 entrance script evidence. [FIELD.TBL](https://ff7-mods.github.io/ff7-flat-wiki/FF7/WorldMap_Module/FIELD.TBL.html)
+connects world script entry/scenario to maplist ID; its local spawn coordinates
+are not global coordinates. The browser independently compares every binding to
+currently loaded, validated POI, including source hashes.
+
+`verified_parent` denotes a **unique mutual gateway association** to a directly
+bound place, computed through strongly connected components. The UI explicitly
+states that this does not establish geographic containment. One-way reachability
+alone is insufficient. Multiple candidate places are ambiguous; absence of a
+verified direct/mutual association is unresolved. Direct entrance evidence remains
+direct even if its component has other roots. Cycles do not cause repeated traversal.
+
+### Browsing and spatial policy
+
+Explore labels results **Field Scene**, indexing exact internal names and decimal /
+hex IDs. Inspector shows incoming/outgoing gateways, archive evidence, parent
+context and world-exit identities. Place/Atlas cards list their direct or mutually
+associated scenes; field-only Atlas records select their existing exact field-name
+requests. The SVG diagram supports pan, zoom, node selection, neighbor highlight
+and parent filtering. Its deterministic grid is a topology layout, never a map.
+
+Open parent place and Fly to verified world entrance borrow existing POI owners;
+these actions require active WM0. A Field selection contains no geographic point,
+never becomes a Nearby anchor and cannot enter public ShareState or user tours.
+An Atlas `field_only` record stays `field_only`, with marker=false. Parent bindings,
+unresolved Atlas records, WM2/WM3 and V1 reconstruction remain unchanged.
+
+Public source-only mode explains the missing Field dataset and retains authored
+Atlas knowledge. It never probes an installation or downloads a field graph.
+Generated Field context remains ignored/local, with one optional manifest asset;
+missing/invalid context does not invalidate the remaining workspace. Generator
+and POI/source fingerprints govern rebuild/reuse. No runtime API can read arbitrary
+files or expose flevel.lgp.

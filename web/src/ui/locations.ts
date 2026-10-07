@@ -52,7 +52,7 @@ export function mountLocations(viewer:GaiaViewer,meta:GaiaMeta,isCurrent:()=>boo
     close();matches=searchNavigation(input.value);if(filter.value!=='all'&&dataset){const ids=new Set(searchLocations(dataset.locations,input.value,filter.value as LocationFilter).map(l=>l.id));matches=matches.filter(e=>e.kind==='location'&&ids.has(e.id));}
     const visible=matches.slice(0,60);
     for(const [index,l]of visible.entries()){
-      const button=document.createElement('button');button.id=`location-result-${index}`;button.dataset.navigationId=l.id;button.className='location-result';button.setAttribute('role','option');button.setAttribute('aria-selected','false');button.tabIndex=-1;button.textContent=l.name+(l.kind==='location'?'':' · '+t(l.kind==='entrance'?'ui.entrances':l.kind==='transition'?'map.transitions':l.kind==='atlas'?'atlas.title':l.kind==='user-feature'?'user26.created':'ui.events'));
+      const button=document.createElement('button');button.id=`location-result-${index}`;button.dataset.navigationId=l.id;button.className='location-result';button.setAttribute('role','option');button.setAttribute('aria-selected','false');button.tabIndex=-1;button.textContent=l.name+(l.kind==='location'?'':' · '+t(l.kind==='field'?'field.scene':l.kind==='entrance'?'ui.entrances':l.kind==='transition'?'map.transitions':l.kind==='atlas'?'atlas.title':l.kind==='user-feature'?'user26.created':'ui.events'));
       button.addEventListener('click',()=>l.navigate());results.append(button);
     }
     if(!visible.length){const message=document.createElement('p');message.textContent=t('ui.noMatches');results.append(message);}

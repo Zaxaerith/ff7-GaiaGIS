@@ -12,6 +12,26 @@ With a verified position and local geometry, Fly to Player, Explore from Here an
 
 Atlas Save Context shows only parsed, verified state. Its existing spoiler filter remains authoritative; there is no guessed story-flag filter.
 
+## Current Field
+
+For a valid **field-module** slot, My Save can show **Current Field** and open its
+existing Inspector / Field Context. Load the workspace generated from the
+corresponding own installation. The reader uses the module and location ID, not
+the preview text or stale world objects. Source-only mode, missing scenes and
+unverified identity mappings retain the raw location ID with Unknown / Unverified.
+
+Field Context lists source-backed incoming/outgoing gateways and parent context.
+Explore also searches Field Scene names and IDs. Place Cards offer a scene list
+and a lightweight relationship diagram with parent filter, pan, zoom and neighbor
+selection. The graph is partial: script jumps and story conditions are unverified.
+Fly to verified world entrance visits the existing world entrance, never an
+invented interior point. WM2/WM3 do not acquire a global Field transform.
+
+The current PC maplist ordering is reviewed against pinned ff7tk module/location
+identities. Conflicting reference names and unreviewed maplists have no Save→Field
+binding. This does not claim Steam 2026 executable equivalence. World-module slots
+continue to use the established verified Player Position policy.
+
 ## Privacy
 
 Raw bytes and parsed state stay in current-session memory. They are not written to localStorage, share URLs, generated workspaces or packages. Save files and Steam Cloud data are never edited or repaired. Only explicit import reads a chosen file.

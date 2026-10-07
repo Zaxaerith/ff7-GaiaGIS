@@ -21,7 +21,7 @@ def qgis_environment(root):
                PYTHONPATH=os.pathsep.join((str(ROOT/"src"),str(root/"apps"/"qgis"/"python"))),
                QGIS_PREFIX_PATH=str(root/"apps"/"qgis"),QT_QPA_PLATFORM="offscreen",
                QT_PLUGIN_PATH=os.pathsep.join((str(root/"apps"/"qgis"/"qtplugins"),str(root/"apps"/"qt6"/"plugins"))),
-               QGIS_CUSTOM_CONFIG_PATH=str(ROOT/"output"/"qgis_profile"),
+               QGIS_CUSTOM_CONFIG_PATH=str(scratch/'qgis-profile'),
                GDAL_DATA=str(root/"apps"/"gdal"/"share"/"gdal"),PROJ_DATA=str(root/"share"/"proj"),
                PROJ_NETWORK="OFF",PYTHONUTF8="1")
     env["PATH"] = os.pathsep.join((str(root/"bin"),str(root/"apps"/"qgis"/"bin"),str(root/"apps"/"qt6"/"bin"),env.get("PATH","")))

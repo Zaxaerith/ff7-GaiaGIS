@@ -3,6 +3,7 @@
 import argparse
 from dataclasses import asdict
 import json
+import re
 from pathlib import Path
 import subprocess
 import sys
@@ -12,6 +13,7 @@ from .safety import WORKSPACE_ROOT, output_path
 from .web_export import build_web_assets, sha256
 from .atlas import GENERATOR_VERSION as ATLAS_VERSION, curated_hash, build_atlas
 
+from .field_context import GENERATOR_VERSION as FIELD_VERSION, build_field_context
 from ._version import __version__
 TOOL_VERSION = __version__
 GENERATOR_VERSION = 'workspace-1'
@@ -31,11 +33,13 @@ ASSETS = {
     'gaia-explorer.bin': ('explorer', 'shared', ['gaia-mesh.bin']),
     'gaia-presentation.json': ('presentation', 'shared', []),
     'gaia-atlas.json': ('atlas', 'WM0', ['gaia-poi.json']),
+    'gaia-field-context.json': ('field-context', 'WM0', ['gaia-poi.json']),
 }
 
 # Source dependencies, not a Steam-version switch. Generator/transport versions
 # stay unchanged because the produced geometry and schemas have not changed.
 SOURCE_DEPENDENCIES = {
+    'gaia-field-context.json': ['wm0.map', 'world_us.lgp', 'flevel.lgp', 'field-poi.json'],
     'gaia-meta.json': ['wm0.map'], 'gaia-mesh.bin': ['wm0.map'],
     'gaia-poi.json': ['wm0.map', 'world_us.lgp', 'flevel.lgp'],
     'gaia-encounters.json': ['wm0.map', 'world_us.lgp'],
@@ -57,7 +61,7 @@ def write_manifest(directory, sources):
         if path.is_file():
             assets.append(dict(filename=filename, type=kind, mapId=map_id,
                                sha256=sha256(path), bytes=path.stat().st_size,
-                               dependencies=dependencies, generator_version='explorer-party-1' if kind=='explorer' else ATLAS_VERSION if kind=='atlas' else GENERATOR_VERSION))
+                               dependencies=dependencies, generator_version='explorer-party-1' if kind=='explorer' else ATLAS_VERSION if kind=='atlas' else FIELD_VERSION if kind=='field-context' else GENERATOR_VERSION))
     names = {a['filename'] for a in assets}
     if any(set(a['dependencies']) - names for a in assets):
         raise ValueError('Workspace dependency missing; manifest was not written')
@@ -69,7 +73,7 @@ def write_manifest(directory, sources):
     return manifest
 
 def reusable(manifest, sources, directory, names, _visited=None):
-    if not isinstance(manifest,dict) or not isinstance(manifest.get('sources'),dict) or not isinstance(manifest.get('assets'),list) or not all(isinstance(a,dict) for a in manifest['assets']) or manifest.get('schema') != 'gaiagis-workspace' or manifest.get('version') != 1 or manifest.get('tool_version') not in (TOOL_VERSION,'2.0.0') or manifest.get('generator_version') != GENERATOR_VERSION:
+    if not isinstance(manifest,dict) or not isinstance(manifest.get('sources'),dict) or not isinstance(manifest.get('assets'),list) or not all(isinstance(a,dict) for a in manifest['assets']) or manifest.get('schema') != 'gaiagis-workspace' or manifest.get('version') != 1 or not isinstance(manifest.get('tool_version'),str) or not re.fullmatch(r'\d+\.\d+\.\d+',manifest['tool_version']) or manifest.get('generator_version') != GENERATOR_VERSION:
         return False
     visited = set() if _visited is None else _visited
     for name in names:
@@ -82,6 +86,7 @@ def reusable(manifest, sources, directory, names, _visited=None):
             return False
         if name=='gaia-explorer.bin' and record.get('generator_version')!='explorer-party-1':return False
         if name=='gaia-atlas.json' and record.get('generator_version')!=ATLAS_VERSION:return False
+        if name=='gaia-field-context.json' and record.get('generator_version')!=FIELD_VERSION:return False
         dependencies = ASSETS[name][2]
         if record.get('dependencies') != dependencies:return False
         if dependencies and not reusable(manifest, sources, directory, dependencies, visited | {name}):return False
@@ -192,6 +197,8 @@ def build_workspace(source, destination, stage1=None, *, rebuild=False, allow_op
     # Knowledge changes invalidate only Atlas. Spatial authority stays in POI.
     if (out/'gaia-transitions.json').is_file():sources['atlas-transitions.json']=sha256(out/'gaia-transitions.json')
     step('atlas', ['gaia-atlas.json'], lambda: build_atlas(out))
+    if (out/'gaia-poi.json').is_file():sources['field-poi.json']=sha256(out/'gaia-poi.json')
+    step('field-context', ['gaia-field-context.json'], lambda: build_field_context(source,out))
     after = {r['filename']:r['sha256'].lower() for r in fingerprint(dataset)['files']}
     if any(after[k] != v for k,v in sources.items() if k in after):raise RuntimeError('Source fingerprint changed during workspace build')
     if field_archive and sha256(field_archive)!=sources['flevel.lgp']:raise RuntimeError('Field source fingerprint changed during workspace build')
