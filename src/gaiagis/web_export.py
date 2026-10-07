@@ -31,12 +31,12 @@ def cartesian(point,radius):
     return ((radius+h)*math.cos(phi)*math.cos(lam),
             (radius+h)*math.cos(phi)*math.sin(lam),(radius+h)*math.sin(phi))
 
-def build_web_assets(stage1:Path,destination:Path):
+def build_web_assets(stage1:Path,destination:Path,*,portable=False):
     stage1 = stage1.resolve()
     destination = output_path(destination)
     destination.mkdir(parents=True,exist_ok=True)
     build_path = stage1/"reconstruction"/"build_metadata.json"
-    canonical_path = stage1/"gis"/"gaia_geographic.gpkg"
+    canonical_path = stage1/"geographic-transport.sqlite" if portable else stage1/"gis"/"gaia_geographic.gpkg"
     build = json.loads(build_path.read_text(encoding="utf-8"))
     radius = build["config"]["radius_m"]
     vertices,indices,attributes = [],[],[]
@@ -108,7 +108,7 @@ def build_web_assets(stage1:Path,destination:Path):
                     maximum_cartesian_quantization_error_m=error,
                     origin_codes={"0":"ff7","1":"north_polar_ocean","2":"south_polar_ocean"},
                     null_sentinels={"uint8":NULL8,"uint16":NULL16},terrain_names=TERRAIN_NAMES,region_names=REGION_NAMES,
-                    stage1=dict(build_metadata_sha256=sha256(build_path),geographic_gpkg_sha256=sha256(canonical_path),
+                    stage1=dict(build_metadata_sha256=sha256(build_path),**({'geographic_transport_sha256':sha256(canonical_path),'transport_backend':'stdlib Float64 SQLite; not GeoPackage'} if portable else {'geographic_gpkg_sha256':sha256(canonical_path)}),
                                 source_wm0_sha256=next(r["sha256"] for r in build["source_fingerprint"]["before"]["files"] if r["filename"]=="wm0.map")),
                     offsets=dict(header=0,vertices=vertex_offset,indices=index_offset,attributes=attribute_offset),
                     distribution="LOCAL ONLY — derived game geometry, redistribution requires separate review",

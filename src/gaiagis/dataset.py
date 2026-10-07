@@ -45,6 +45,11 @@ def discover(selected: Path) -> SourceDataset:
     if len(candidates) != 1:
         raise ValueError(f"Expected one complete world dataset, found {len(candidates)} under {selected}")
     directory, found = candidates[0]
+    from .safety import protect_input
+    protect_input(directory)
+    for name in ('field','sound'):
+        sibling=child_ci(directory.parent,name)
+        if sibling and sibling.is_dir():protect_input(sibling)
     layout = "Steam2026Layout" if tuple(p.casefold() for p in directory.parts[-4:]) == ("ff7", "workingdir", "data", "wm") else "ExtractedDataOrClassicLayout"
     return SourceDataset(selected, directory, found, layout)
 

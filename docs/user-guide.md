@@ -7,6 +7,16 @@ WM3 are separate native maps with no established global geographic transform.
 
 ## Recommended Local Start
 
+For the v2.7 Windows portable candidate, extract the ZIP to a writable folder
+and run `GaiaGIS/GaiaGIS.exe`. Select your own FF7 installation in the native
+folder picker. The EXE contains its runtime and compiled Viewer; it needs no
+Python/Node installation. Generated assets stay in its `output/local-workspace`.
+Do not extract into the game installation. See [distribution](v2.7/distribution.md)
+for build, license and isolated-process smoke details. The candidate is local
+only until approved for publication.
+
+Source-checkout development continues to use the following command.
+
 Install Python 3.12+ and Node 22.12+. Once per checkout, run `npm ci` in `web/`.
 From the project root:
 
@@ -300,3 +310,20 @@ and quota fallback; when the memory-only warning appears, export before closing.
 Reference-sphere lengths/areas use R = 6,371,008.8 m and are not official FF7
 physical measurements. See [schema/limits](v2.6/user-features.md) and
 [exchange format](v2.6/gaiajson.md). GeoPackage/custom-CRS GIS export remains future work.
+
+## My Save (v2.7)
+
+Open Data → My Save → Import PC save and choose your own save00.ff7–save09.ff7.
+The file contains fifteen slots; select a populated checksum-verified slot.
+Inspector shows party levels/HP/MP, Gil, time, location IDs and raw progress.
+Clear or reload removes the session. Nothing is uploaded, stored in user-state,
+written back or added to Share URLs.
+
+Field saves retain old world coordinates: they are displayed raw and cannot
+Fly. For a verified WM0 world-module record with local geometry loaded,
+Player Position can Fly, Explore from Here or Route from Player. Explorer is
+only a preview and follows existing terrain/profile rules. Atlas Save Context
+shows raw values without guessing chapters, unlocks or spoiler availability.
+WM2/WM3 and unknown bindings receive no invented global point. See the
+[format](v2.7/save-format.md) and [coordinate evidence](v2.7/save-spatial-binding.md)
+for precise support and verification limits.

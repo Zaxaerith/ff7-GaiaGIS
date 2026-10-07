@@ -1,8 +1,10 @@
 # GaiaGIS
 
-Local main RC: **v2.6.0 — Personal GIS / User Mapping**.
-Remote main baseline: **v2.5.0 — Explorer Locomotion & Spatial Analysis**.
-Published baseline: **v2.4.0 — App Shell, UI Unification & Workspace UX**.
+Local main candidate: **v2.7.0 — Save Game Explorer & Distribution**.
+Remote main and published baseline: **v2.6.0 — Personal GIS / User Mapping**.
+
+v2.5 and v2.6 have published code-only Releases. v2.7 remains local pending
+human acceptance; its Windows portable candidate has not been uploaded.
 
 An interactive GIS reconstruction of FINAL FANTASY VII's polygonal Gaia world map.
 Explore geography, original local artwork, gameplay attributes and source provenance
@@ -22,7 +24,24 @@ workspace from your own installation. The local launcher loads it automatically 
 localhost; the public Viewer retains folder/file loading. Nothing is uploaded; there
 is no cloud service, analytics or account system.
 
-## Personal GIS / User Mapping (v2.6 local RC)
+## Save Game Explorer & Distribution (v2.7 local candidate)
+
+Data → My Save inspects your own classic PC / Steam 2013 `.ff7` container:
+fifteen independent slots, checksum, party, HP/MP, Gil, play time and raw
+progress/world records. Imports stay in session memory, with no upload or
+write-back. Verified WM0 world-module bindings can Fly, initialize an Explorer
+preview or start a route; field/unknown/native records receive no fake global
+marker. Story and vehicle unlocks remain explicitly unverified.
+
+The Windows x64 portable candidate bundles its runtime and compiled Viewer.
+Run GaiaGIS.exe, select your own read-only installation, and generate a local
+workspace without installing Python/Node. See [save format](docs/v2.7/save-format.md),
+[spatial evidence](docs/v2.7/save-spatial-binding.md),
+[distribution and isolation limits](docs/v2.7/distribution.md), and
+[validation](docs/v2.7/validation.md). No FF7 assets, saves or private workspace
+are included in the package. v2.7 publication requires explicit approval.
+
+## Personal GIS / User Mapping (v2.6)
 
 Create private WM0 points, lines and simple polygons in Explore → Drawing;
 manage visibility, opacity, ordering and metadata in Layers → My Layers and the
@@ -34,7 +53,8 @@ is versioned, bounded and **not GeoJSON/WGS84**.
 
 See [user features](docs/v2.6/user-features.md), [GaiaJSON](docs/v2.6/gaiajson.md),
 [validation](docs/v2.6/validation.md) and [STATUS](docs/v2.6/STATUS.md).
-This RC is local only and awaits human acceptance; no v2.6 publication.
+The historical code-only release is published as v2.6.0; its retained local
+validation documents describe the original acceptance state.
 
 ## Explorer Locomotion & Spatial Analysis (v2.5)
 

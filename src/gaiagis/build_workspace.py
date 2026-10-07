@@ -160,8 +160,13 @@ def build_workspace(source, destination, stage1=None, *, rebuild=False, allow_op
             print(f'Optional component unavailable: {label}: {error}', flush=True)
             results.append(dict(step=label,reused=False,unavailable=True,error=str(error)))
     def geometry():
-        base = ensure_stage1(source, Path(stage1).resolve() if stage1 else WORKSPACE_ROOT/'output', cache)
-        build_web_assets(base, out)
+        if getattr(sys,'frozen',False):
+            from .portable_stage import build_portable_stage
+            base=build_portable_stage(source,cache)
+            build_web_assets(base,out,portable=True)
+        else:
+            base = ensure_stage1(source, Path(stage1).resolve() if stage1 else WORKSPACE_ROOT/'output', cache)
+            build_web_assets(base, out)
     step('geometry', ['gaia-meta.json', 'gaia-mesh.bin'], geometry)
     from .poi import build_poi
     from .encounters import build_encounters
@@ -177,8 +182,12 @@ def build_workspace(source, destination, stage1=None, *, rebuild=False, allow_op
     for label,name in [('WM2','gaia-map-WM2.bin'),('textures-WM2','gaia-textures-WM2.bin'),('WM3','gaia-map-WM3.bin'),('textures-WM3','gaia-textures-WM3.bin'),('transitions','gaia-transitions.json')]:
         def native(label=label,name=name):
             if any(not (out/d).is_file() for d in ASSETS[name][2]):raise ValueError('Optional dependency unavailable')
-            command = [sys.executable, '-B', str(WORKSPACE_ROOT/'scripts/build_multimap_assets.py'), str(source), '--output', str(out), '--only', label]
-            subprocess.run(command, cwd=WORKSPACE_ROOT, check=True)
+            if getattr(sys,'frozen',False):
+                from .portable_native import build_native_component
+                build_native_component(source,out,label)
+            else:
+                command = [sys.executable, '-B', str(WORKSPACE_ROOT/'scripts/build_multimap_assets.py'), str(source), '--output', str(out), '--only', label]
+                subprocess.run(command, cwd=WORKSPACE_ROOT, check=True)
         step(label,[name],native)
     step('explorer', ['gaia-explorer.bin'], lambda: build_explorer(source, out/'gaia-explorer.bin', version=2))
     from .presentation import build_presentation
@@ -208,7 +217,7 @@ def main(argv=None):
         import os
         sys.path.insert(0,str(WORKSPACE_ROOT))
         from scripts.build_gaia import qgis_environment
-        qgis=Path(os.environ.get('GAIAGIS_QGIS_ROOT',r'C:\MYAPPLY\QGIS 4.2.2'))
+        qgis=Path(os.environ.get('GAIAGIS_QGIS_ROOT',''))
         runtime=qgis/'bin/python.exe'
         if not runtime.is_file():raise RuntimeError('Fresh geometry generation needs GDAL/QGIS; set GAIAGIS_QGIS_ROOT or provide --stage1') from error
         resolved=['--source',str(args.source.resolve()),'--output',str(args.output.resolve())]

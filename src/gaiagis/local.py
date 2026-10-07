@@ -85,6 +85,8 @@ def choose_source(value, remember=False):
         value = input('FF7 installation root: ').strip().strip('"')
     source = Path(value).resolve()
     report = validate_source(source)
+    from .safety import protect_input
+    protect_input(source)
     if remember:
         runtime_path(CONFIG).write_text(json.dumps({'source':str(source)},indent=2)+'\n',encoding='utf8')
     return source, report
@@ -102,6 +104,9 @@ def web_signature():
 
 def prepare_viewer(env):
     web = WORKSPACE_ROOT / 'web'
+    if getattr(sys,'frozen',False):
+        from .portable import verified_viewer
+        return verified_viewer()
     stamp = runtime_path(WORKSPACE_ROOT / '.cache/local-viewer.json')
     signature = web_signature()
     dist = runtime_path(web / 'dist-release')
@@ -167,7 +172,7 @@ def make_server(root, dist, host='127.0.0.1', port=5173):
                 self.send_error(404);return
             try:
                 if path==PREFIX+'status':
-                    payload=json.dumps({'local_mode':True,'version':'2.6.0','workspace_path':str(root)}).encode();mime='application/json'
+                    payload=json.dumps({'local_mode':True,'version':'2.7.0','workspace_path':str(root)}).encode();mime='application/json'
                 elif path==PREFIX+'workspace':payload=json.dumps(manifest,sort_keys=True).encode();mime='application/json'
                 elif path.startswith(PREFIX+'assets/'):
                     name=path[len(PREFIX+'assets/'):]
@@ -236,7 +241,7 @@ def main(argv=None):
             if error.name!='osgeo' or args.build_only:raise
             if str(WORKSPACE_ROOT) not in sys.path:sys.path.insert(0,str(WORKSPACE_ROOT))
             from scripts.build_gaia import qgis_environment
-            qgis=Path(os.environ.get('GAIAGIS_QGIS_ROOT',r'C:\MYAPPLY\QGIS 4.2.2'))
+            qgis=Path(os.environ.get('GAIAGIS_QGIS_ROOT',''))
             runtime=qgis/'bin/python.exe'
             if not runtime.is_file():raise RuntimeError('QGIS/GDAL environment unavailable. Set GAIAGIS_QGIS_ROOT to your QGIS installation.') from error
             command=[str(runtime),'-B','-m','gaiagis.local','--source',str(source),'--workspace',str(out),'--build-only']

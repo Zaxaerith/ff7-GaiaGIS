@@ -14,9 +14,12 @@ export const V1_CANONICAL={
 export function validateCanonicalMetadata(value:unknown):void {
   if(!value||typeof value!=='object')throw new Error('Invalid Gaia metadata. Choose the generated gaia-meta.json.');
   const m=value as Record<string,unknown>,stage=m.stage1 as Record<string,unknown>|undefined;
+  const hash=(v:unknown)=>typeof v==='string'&&/^[a-f0-9]{64}$/.test(v);
+  const provenance=hash(stage?.geographic_gpkg_sha256)&&stage?.geographic_transport_sha256===undefined&&stage?.transport_backend===undefined||
+    stage?.geographic_gpkg_sha256===undefined&&hash(stage?.geographic_transport_sha256)&&stage?.transport_backend==='stdlib Float64 SQLite; not GeoPackage';
   if((m.canonical_reconstruction!==undefined&&m.canonical_reconstruction!==V1_CANONICAL.id)||
     m.sha256!==V1_CANONICAL.meshSha256||m.byte_length!==V1_CANONICAL.byteLength||
-    !/^[a-f0-9]{64}$/.test(String(stage?.build_metadata_sha256))||!/^[a-f0-9]{64}$/.test(String(stage?.geographic_gpkg_sha256))||
+    !hash(stage?.build_metadata_sha256)||!provenance||
     m.physical_reference_radius_m!==V1_CANONICAL.radius||m.phi_max_deg!==V1_CANONICAL.phiMax)
     throw new Error('This release accepts V1 Geometric Gaia only. Climate warps and other reconstructions are not supported.');
   // Stage 1 metadata includes time and local paths, and GeoPackage bytes can vary

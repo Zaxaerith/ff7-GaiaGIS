@@ -1,5 +1,24 @@
 # Third-party notices
 
+## v2.7 portable runtime and save research
+
+The optional Windows package bundles CPython 3.14.7 (PSF/Python license and
+its incorporated dependency notices), Tcl/Tk 9.0.4 (Tcl/Tk terms), OpenSSL
+3.5.7 (Apache-2.0), and the PyInstaller 6.22.3 bootloader (GPL with its
+distribution exception). Full texts are in the package's licenses directory.
+The Python license preserves notices for incorporated zlib, libffi and other
+stdlib components; SQLite is public domain. Microsoft runtime DLLs retain
+their Microsoft terms. Three.js MIT notice is retained in the compiled Viewer
+and this document. Build tools retain their own licenses and are not relicensed.
+
+ff7tk (revision cb876ba93f384b3a90a06ece216ccd1a160fbbcf, LGPL-3.0-or-later) and
+Qhimm savemap/world-map documentation were consulted to cross-check format
+facts. The classic-PC world-map reference (revision
+bc7576e68b118e776ccefecfbc982a702a7f9e0f) was consulted for packing/map/axis
+behavior only. No reader implementation, decompiled source, Wiki prose or
+private/reference cache is incorporated. The independently authored browser
+save reader and portable adapters are GaiaGIS GPL-3.0-only source.
+
 GaiaGIS original source uses GPL-3.0-only. The dependencies below retain their OWN licenses and copyright notices. Only Three.js is a Viewer runtime dependency. d3 is used for independent test comparisons; Vite and the other packages are development/test tools.
 
 | Name | Installed version | License | Purpose | Repository |

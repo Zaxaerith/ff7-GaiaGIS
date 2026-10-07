@@ -1,0 +1,51 @@
+name: Windows portable — manual build only
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  portable:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.14.7'
+      - name: Workspace-only environment
+        shell: pwsh
+        run: |
+          New-Item -ItemType Directory -Force output/runtime | Out-Null
+          "TEMP=$env:GITHUB_WORKSPACE\output\runtime" >> $env:GITHUB_ENV
+          "TMP=$env:GITHUB_WORKSPACE\output\runtime" >> $env:GITHUB_ENV
+          "NPM_CONFIG_CACHE=$env:GITHUB_WORKSPACE\.cache\npm" >> $env:GITHUB_ENV
+          "PYTHONDONTWRITEBYTECODE=1" >> $env:GITHUB_ENV
+          "PYTHONUTF8=1" >> $env:GITHUB_ENV
+      - run: npm ci
+        working-directory: web
+      - run: npm test
+        working-directory: web
+      - run: npm run build
+        working-directory: web
+      - run: python -B -m venv .cache/packaging-venv
+      - run: .cache/packaging-venv/Scripts/python.exe -B -m pip install --cache-dir .cache/pip -r scripts/packaging-requirements.txt
+      - run: .cache/packaging-venv/Scripts/python.exe -B scripts/build_windows.py
+      - name: Frozen smoke in fresh extracted directory
+        shell: pwsh
+        run: |
+          $gaiaVersion=(Get-Content web/package.json -Raw | ConvertFrom-Json).version
+          python -B scripts/smoke_windows.py "output/distribution/GaiaGIS-v$gaiaVersion-windows-x64.zip"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-portable-candidate
+          path: |
+            output/distribution/GaiaGIS-v*-windows-x64.zip
+            output/distribution/GaiaGIS-v*-windows-x64.zip.sha256
+            output/distribution/portable-smoke.json
+          if-no-files-found: error
+# No tag, Release, Pages or automatic trigger. A candidate artifact is not a release.
