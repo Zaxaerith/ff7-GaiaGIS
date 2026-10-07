@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
-// Read-only PC savemap reader. Offset evidence and revision links: docs/v2.7/save-format.md.
+// Read-only PC savemap reader. Offset evidence and revision links: docs/reference/save-format.md.
 import {sourceGeographic,WM0_EXTENT} from '../explorer/coordinates';
 export const PC_SAVE_SIZE=65109,PC_SLOT_SIZE=4340,PC_SLOTS=15;
 export const SAVE_CHARACTERS=['cloud','barret','tifa','aerith','red-xiii','yuffie','cait-sith','vincent','cid'] as const;

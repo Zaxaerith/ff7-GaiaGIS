@@ -6,7 +6,7 @@
       "id": "field-identity",
       "provider": "GaiaGIS source evidence",
       "title": "GaiaGIS validated original-game field identities",
-      "url": "https://github.com/Zaxaerith/ff7-GaiaGIS/blob/main/docs/v1.1/poi-data.md",
+      "url": "https://github.com/Zaxaerith/ff7-GaiaGIS/blob/main/docs/reference/atlas.md",
       "reviewed": "2026-10-06",
       "type": "game_identity",
       "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."

@@ -1,5 +1,6 @@
 """Private, read-only localhost launcher for the generated Gaia workspace."""
 # SPDX-License-Identifier: GPL-3.0-only
+from ._version import __version__
 import argparse
 import errno
 import hashlib
@@ -95,7 +96,7 @@ def choose_source(value, remember=False):
 def web_signature():
     web = WORKSPACE_ROOT / 'web'
     paths = list((web/'src').rglob('*')) + [web/n for n in ('package.json','package-lock.json','index.html','vite.config.ts','tsconfig.json')]
-    paths += [web/'scripts/build-release.mjs',web/'scripts/release-policy.mjs',WORKSPACE_ROOT/'LICENSE', WORKSPACE_ROOT/'THIRD_PARTY_NOTICES.md',web/'public/favicon.svg',web/'public/THREE-LICENSE.txt']
+    paths += [web/'scripts/build-release.mjs',web/'scripts/version.mjs',WORKSPACE_ROOT/'src/gaiagis/_version.py',web/'scripts/release-policy.mjs',WORKSPACE_ROOT/'LICENSE', WORKSPACE_ROOT/'THIRD_PARTY_NOTICES.md',web/'public/favicon.svg',web/'public/THREE-LICENSE.txt']
     digest = hashlib.sha256()
     for path in sorted(p for p in paths if p.is_file()):
         digest.update(path.relative_to(WORKSPACE_ROOT).as_posix().encode());digest.update(path.read_bytes())
@@ -172,7 +173,7 @@ def make_server(root, dist, host='127.0.0.1', port=5173):
                 self.send_error(404);return
             try:
                 if path==PREFIX+'status':
-                    payload=json.dumps({'local_mode':True,'version':'2.7.0','workspace_path':str(root)}).encode();mime='application/json'
+                    payload=json.dumps({'local_mode':True,'version':__version__,'workspace_path':str(root)}).encode();mime='application/json'
                 elif path==PREFIX+'workspace':payload=json.dumps(manifest,sort_keys=True).encode();mime='application/json'
                 elif path.startswith(PREFIX+'assets/'):
                     name=path[len(PREFIX+'assets/'):]
@@ -240,7 +241,7 @@ def main(argv=None):
         except ModuleNotFoundError as error:
             if error.name!='osgeo' or args.build_only:raise
             if str(WORKSPACE_ROOT) not in sys.path:sys.path.insert(0,str(WORKSPACE_ROOT))
-            from scripts.build_gaia import qgis_environment
+            from .runtime import qgis_environment
             qgis=Path(os.environ.get('GAIAGIS_QGIS_ROOT',''))
             runtime=qgis/'bin/python.exe'
             if not runtime.is_file():raise RuntimeError('QGIS/GDAL environment unavailable. Set GAIAGIS_QGIS_ROOT to your QGIS installation.') from error

@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
 import { defineConfig } from 'vite';
+import {projectVersion} from './scripts/version.mjs';
 export default defineConfig({
+  define: {'import.meta.env.VITE_GAIA_VERSION': JSON.stringify(projectVersion)},
   base: process.env.GAIA_BASE_PATH || './',
   server: { host: '127.0.0.1', port: 5173, strictPort: true },
   build: { target: 'es2022', chunkSizeWarningLimit: 650 },

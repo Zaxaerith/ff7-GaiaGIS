@@ -38,7 +38,7 @@ def create_project(output,crs,destination):
             categories.append(QgsRendererCategory(terrain,symbol,"Synthetic polar ocean" if terrain==-1 else f"{terrain}: {TERRAIN_NAMES[terrain]}"))
         layer.setRenderer(QgsCategorizedSymbolRenderer('coalesce("terrain_id", -1)',categories))
         metadata = layer.metadata()
-        metadata.setAbstract("Derived Gaia reconstruction. FF7 gameplay terrain classes; synthetic ocean has NULL FF7 terrain and lineage. See docs/spherical-reconstruction.md.")
+        metadata.setAbstract("Derived Gaia reconstruction. FF7 gameplay terrain classes; synthetic ocean has NULL FF7 terrain and lineage. See docs/reference/reconstruction.md.")
         layer.setMetadata(metadata)
         project.addMapLayer(layer,False)
         group.addLayer(layer).setItemVisibilityChecked(visible)

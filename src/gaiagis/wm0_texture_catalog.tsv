@@ -1,5 +1,5 @@
 # Format facts: classic-PC resource identity/page offset; dimensions verified against local TEX.
-# Sources: docs/v1.7/texture-research.md. No artwork/pixels/triangle UV data.
+# Sources: docs/research/world-map.md. No artwork/pixels/triangle UV data.
 # id	name	width	height	u_offset	v_offset
 0	pond	32	32	0	352
 1	riv_m2	32	32	128	64

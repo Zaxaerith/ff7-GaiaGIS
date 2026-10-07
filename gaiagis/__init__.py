@@ -8,3 +8,5 @@ __path__ = [str(_source)]
 __spec__ = spec_from_file_location(__name__, _source / '__init__.py', submodule_search_locations=__path__)
 __loader__ = __spec__.loader
 __file__ = __spec__.origin
+
+from ._version import __version__

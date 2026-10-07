@@ -1,6 +1,6 @@
 """Read-only WM0 entrance extraction; deliberately not a world-script interpreter.
 
-Format evidence and conservative resolution policy: docs/v1.1/field-entrance-research.md.
+Format evidence and conservative resolution policy: docs/research/world-map.md.
 """
 # SPDX-License-Identifier: GPL-3.0-only
 from collections import defaultdict, deque

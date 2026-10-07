@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
-// Independent spherical forward formulas; references in docs/v1.5/projections.md.
+// Independent spherical forward formulas; references in docs/reference/cartography.md.
 import {radians,wrapLongitude} from './Projection';
 import type {GaiaProjection,ProjectionContext,ProjectionId} from './Projection';
 type Formula=(lambda:number,phi:number)=>[number,number];

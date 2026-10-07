@@ -1,0 +1,130 @@
+name: Release — exact-tag Windows build
+on:
+  push:
+    tags: ['v*.*.*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Existing annotated release tag (must contain this recipe)
+        required: true
+        type: string
+      dry_run:
+        description: Build artifacts only; do not create a GitHub Release
+        type: boolean
+        default: true
+permissions:
+  contents: read
+concurrency:
+  group: release-${{ inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+jobs:
+  build:
+    runs-on: windows-latest
+    outputs:
+      tag: ${{ steps.verify.outputs.tag }}
+      sha: ${{ steps.verify.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.tag || github.ref_name }}
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.14.7'
+      - name: Verify annotated tag, version and exact source
+        id: verify
+        shell: pwsh
+        env:
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+        run: |
+          if ($env:RELEASE_TAG -notmatch '^v[0-9]+\.[0-9]+\.[0-9]+$') { throw 'Invalid tag' }
+          $gaiaVersion = python -B -m gaiagis --version
+          if ($LASTEXITCODE -ne 0 -or $env:RELEASE_TAG -ne "v$gaiaVersion") { throw 'Version mismatch' }
+          $gaiaType = git cat-file -t "refs/tags/$env:RELEASE_TAG"
+          if ($LASTEXITCODE -ne 0 -or $gaiaType -ne 'tag') { throw 'Annotated tag required' }
+          $gaiaHead = git rev-parse HEAD
+          $gaiaTarget = git rev-parse "refs/tags/$env:RELEASE_TAG^{commit}"
+          if ($LASTEXITCODE -ne 0 -or $gaiaHead -ne $gaiaTarget -or (git status --porcelain)) { throw 'Exact clean tag checkout required' }
+          "tag=$env:RELEASE_TAG" >> $env:GITHUB_OUTPUT
+          "sha=$gaiaHead" >> $env:GITHUB_OUTPUT
+      - name: Workspace-local build environment
+        shell: pwsh
+        run: |
+          . tools/build/environment.ps1
+          "TEMP=$env:TEMP" >> $env:GITHUB_ENV
+          "TMP=$env:TMP" >> $env:GITHUB_ENV
+          "NPM_CONFIG_CACHE=$env:NPM_CONFIG_CACHE" >> $env:GITHUB_ENV
+          "PYTHONDONTWRITEBYTECODE=1" >> $env:GITHUB_ENV
+          "PYTHONUTF8=1" >> $env:GITHUB_ENV
+      - run: npm ci
+        working-directory: web
+      - run: npm test
+        working-directory: web
+      - run: npm run build
+        working-directory: web
+      - run: npm run build:release
+        working-directory: web
+      - run: npm run audit:release
+        working-directory: web
+      - run: python -B -m venv .cache/packaging-venv
+      - run: .cache/packaging-venv/Scripts/python.exe -B -m pip install --cache-dir .cache/pip -r tools/build/requirements.txt
+      - name: Freeze, public audit, ZIP and SHA256
+        shell: pwsh
+        env:
+          RELEASE_TAG: ${{ steps.verify.outputs.tag }}
+        run: |
+          .cache/packaging-venv/Scripts/python.exe -B tools/build/local_package.py --skip-web-build --release-tag $env:RELEASE_TAG --output-dir output/release
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - name: Fresh extraction and portable launch without developer PATH
+        shell: pwsh
+        env:
+          RELEASE_TAG: ${{ steps.verify.outputs.tag }}
+        run: |
+          python -B tools/build/portable_smoke.py "output/release/GaiaGIS-$env:RELEASE_TAG-windows-x64.zip"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+      - uses: actions/upload-artifact@v6
+        with:
+          name: release-package
+          path: |
+            output/release/GaiaGIS-v*-windows-x64.zip
+            output/release/SHA256SUMS.txt
+          if-no-files-found: error
+  publish:
+    needs: build
+    if: github.event_name == 'push' || inputs.dry_run == false
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v6
+        with:
+          name: release-package
+          path: release-artifacts
+      - name: Verify downloaded artifact and publish new Release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ needs.build.outputs.tag }}
+          SOURCE_SHA: ${{ needs.build.outputs.sha }}
+        run: |
+          $gaiaLine = (Get-Content release-artifacts/SHA256SUMS.txt -Raw).Trim() -split '\s+'
+          $gaiaName = "GaiaGIS-$env:RELEASE_TAG-windows-x64.zip"
+          if ($gaiaLine.Count -ne 2 -or $gaiaLine[1] -ne $gaiaName) { throw 'Unexpected checksum manifest' }
+          $gaiaZip = Join-Path release-artifacts $gaiaName
+          if ((Get-FileHash -LiteralPath $gaiaZip -Algorithm SHA256).Hash.ToLower() -ne $gaiaLine[0]) { throw 'Checksum mismatch' }
+          Add-Type -AssemblyName System.IO.Compression.FileSystem
+          $gaiaArchive = [IO.Compression.ZipFile]::OpenRead((Resolve-Path $gaiaZip))
+          try {
+            $gaiaReader = [IO.StreamReader]::new($gaiaArchive.GetEntry('GaiaGIS/portable-manifest.json').Open())
+            try { $gaiaManifest = $gaiaReader.ReadToEnd() | ConvertFrom-Json } finally { $gaiaReader.Dispose() }
+          } finally { $gaiaArchive.Dispose() }
+          if ($gaiaManifest.artifact_kind -ne 'tag-release' -or $gaiaManifest.source_ref -ne $env:RELEASE_TAG -or $gaiaManifest.source_base_commit -ne $env:SOURCE_SHA -or $gaiaManifest.source_dirty) { throw 'Build provenance mismatch' }
+          gh release view $env:RELEASE_TAG *> $null
+          if ($LASTEXITCODE -eq 0) { throw 'Existing Release will not be overwritten' }
+          gh release create $env:RELEASE_TAG $gaiaZip release-artifacts/SHA256SUMS.txt --verify-tag --title "GaiaGIS $env:RELEASE_TAG" --generate-notes
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

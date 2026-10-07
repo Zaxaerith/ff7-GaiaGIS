@@ -1,4 +1,4 @@
-"""Format constants: see docs/research/sources.md for evidence and limitations."""
+"""Format constants: see docs/research/world-map.md for evidence and limitations."""
 SECTION_SIZE = 0xB800
 MESHES_PER_SECTION = 16
 MESH_SIDE = 4

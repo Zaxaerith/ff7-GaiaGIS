@@ -35,14 +35,14 @@ GaiaGIS original source uses GPL-3.0-only. The dependencies below retain their O
 
 ## Unlicensed FF7 references
 
-maciej-trebacz/ff7-landscaper and ergonomy-joe/ff7-worldmap are reverse-engineering references/validation oracles only. No source is vendored, relicensed or copied into the Viewer. Reference caches are excluded from Git and release bundles. The v1.3 traversal evaluator independently expresses necessary behavior facts; evidence, pinned reference revisions, model/tint mapping and runtime limitations are documented in docs/v1.3/traversal-research.md. No decompiled implementation is bundled.
+maciej-trebacz/ff7-landscaper and ergonomy-joe/ff7-worldmap are reverse-engineering references/validation oracles only. No source is vendored, relicensed or copied into the Viewer. Reference caches are excluded from Git and release bundles. The v1.3 traversal evaluator independently expresses necessary behavior facts; evidence, pinned reference revisions, model/tint mapping and runtime limitations are documented in docs/research/world-map.md. No decompiled implementation is bundled.
 
 The npm lockfile pins the full dependency graph. Individual transitive packages retain their licenses in node_modules; no third-party source is relicensed as GPL.
 
 The v1.4 EV decoder and bounded world-event analyzer independently implement
 format and behavior facts. Pinned engine/opcode references, effect-point
 semantics and current-runtime limitations are recorded in
-docs/v1.4/world-events-research.md. No decompiled or Landscaper implementation
+docs/research/world-map.md. No decompiled or Landscaper implementation
 is bundled or used as a runtime dependency.
 
 ## three 0.186.1
@@ -3796,7 +3796,7 @@ coordinate handling were consulted as format/behavior references only. Their
 implementations are not copied, incorporated, relicensed or runtime dependencies.
 The independently written parser, packer, model pose adapter and walker are
 original GaiaGIS code. The differing reference coordinate bases and actual P/HRC
-format discrepancies are documented in docs/v1.9/explorer-model-research.md.
+format discrepancies are documented in docs/research/explorer-assets.md.
 All original FF7 meshes, skeletons, animation frames, model/terrain textures and
 locally derived Explorer data remain excluded from public delivery. Third-party
 reference and FF7 copyrights/licenses remain with their respective holders.

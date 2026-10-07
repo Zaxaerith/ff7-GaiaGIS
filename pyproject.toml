@@ -1,12 +1,17 @@
+[build-system]
+requires = ["setuptools==84.0.0"]
+build-backend = "setuptools.build_meta"
+
 [project]
 name = "gaiagis"
-version = "2.7.0"
+dynamic = ["version"]
 description = "Read-only FF7 geometry parsing, spherical GIS reconstruction and Web visualization assets"
 license = "GPL-3.0-only"
 requires-python = ">=3.12"
 dependencies = []
 
 [project.scripts]
+gaiagis = "gaiagis.__main__:main"
 gaiagis-validate = "gaiagis.cli:main"
 gaiagis-build-sphere = "gaiagis.sphere_cli:main"
 gaiagis-build-workspace = "gaiagis.build_workspace:main"
@@ -17,3 +22,6 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 gaiagis = ["atlas_data/*.json", "*.json", "*.tsv"]
+
+[tool.setuptools.dynamic]
+version = {attr = "gaiagis._version.__version__"}

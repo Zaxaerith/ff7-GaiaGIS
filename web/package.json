@@ -1,6 +1,5 @@
 {
   "name": "gaiagis-viewer",
-  "version": "2.7.0",
   "private": true,
   "type": "module",
   "license": "GPL-3.0-only",

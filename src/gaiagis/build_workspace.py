@@ -12,7 +12,8 @@ from .safety import WORKSPACE_ROOT, output_path
 from .web_export import build_web_assets, sha256
 from .atlas import GENERATOR_VERSION as ATLAS_VERSION, curated_hash, build_atlas
 
-TOOL_VERSION = '2.0.0'
+from ._version import __version__
+TOOL_VERSION = __version__
 GENERATOR_VERSION = 'workspace-1'
 ASSETS = {
     'gaia-meta.json': ('metadata', 'WM0', []),
@@ -68,7 +69,7 @@ def write_manifest(directory, sources):
     return manifest
 
 def reusable(manifest, sources, directory, names, _visited=None):
-    if not isinstance(manifest,dict) or not isinstance(manifest.get('sources'),dict) or not isinstance(manifest.get('assets'),list) or not all(isinstance(a,dict) for a in manifest['assets']) or manifest.get('schema') != 'gaiagis-workspace' or manifest.get('version') != 1 or manifest.get('tool_version') != TOOL_VERSION or manifest.get('generator_version') != GENERATOR_VERSION:
+    if not isinstance(manifest,dict) or not isinstance(manifest.get('sources'),dict) or not isinstance(manifest.get('assets'),list) or not all(isinstance(a,dict) for a in manifest['assets']) or manifest.get('schema') != 'gaiagis-workspace' or manifest.get('version') != 1 or manifest.get('tool_version') not in (TOOL_VERSION,'2.0.0') or manifest.get('generator_version') != GENERATOR_VERSION:
         return False
     visited = set() if _visited is None else _visited
     for name in names:
@@ -182,12 +183,8 @@ def build_workspace(source, destination, stage1=None, *, rebuild=False, allow_op
     for label,name in [('WM2','gaia-map-WM2.bin'),('textures-WM2','gaia-textures-WM2.bin'),('WM3','gaia-map-WM3.bin'),('textures-WM3','gaia-textures-WM3.bin'),('transitions','gaia-transitions.json')]:
         def native(label=label,name=name):
             if any(not (out/d).is_file() for d in ASSETS[name][2]):raise ValueError('Optional dependency unavailable')
-            if getattr(sys,'frozen',False):
-                from .portable_native import build_native_component
-                build_native_component(source,out,label)
-            else:
-                command = [sys.executable, '-B', str(WORKSPACE_ROOT/'scripts/build_multimap_assets.py'), str(source), '--output', str(out), '--only', label]
-                subprocess.run(command, cwd=WORKSPACE_ROOT, check=True)
+            from .native_workspace import build_native_component
+            build_native_component(source,out,label)
         step(label,[name],native)
     step('explorer', ['gaia-explorer.bin'], lambda: build_explorer(source, out/'gaia-explorer.bin', version=2))
     from .presentation import build_presentation
@@ -216,7 +213,7 @@ def main(argv=None):
         # Reuse the installed QGIS environment helper; never install a framework.
         import os
         sys.path.insert(0,str(WORKSPACE_ROOT))
-        from scripts.build_gaia import qgis_environment
+        from .runtime import qgis_environment
         qgis=Path(os.environ.get('GAIAGIS_QGIS_ROOT',''))
         runtime=qgis/'bin/python.exe'
         if not runtime.is_file():raise RuntimeError('Fresh geometry generation needs GDAL/QGIS; set GAIAGIS_QGIS_ROOT or provide --stage1') from error

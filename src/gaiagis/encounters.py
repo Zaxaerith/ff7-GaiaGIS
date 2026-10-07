@@ -1,4 +1,4 @@
-"""Independent read-only enc_w.bin decoder. Behavioral evidence: docs/v1.2/.
+"""Independent read-only enc_w.bin decoder. Behavioral evidence: docs/research/world-map.md.
 
 No game execution, battle simulator, asset rewriting or projection mathematics.
 """

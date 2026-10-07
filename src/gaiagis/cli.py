@@ -9,8 +9,6 @@ from pathlib import Path
 from .analysis import geometry_summary, topology, geography
 from .dataset import discover, fingerprint
 from .map_reader import parse_map
-from .orientation import probe_orientation
-from .orientation import probe_orientation
 from .lgp import inventory, read_entry
 from .safety import WORKSPACE_ROOT, output_path
 from .lzss import FormatError
@@ -122,8 +120,6 @@ def main(argv=None):
         write_csv(out/"wm0_terrain.csv",terrains)
         write_csv(out/"wm0_region_centroids.csv",regions)
         write_csv(out/"mesh_grid.csv",grid)
-        write_json(out/"orientation_candidates.json",probe_orientation(worlds[0]))
-        write_json(out/"orientation_candidates.json",probe_orientation(worlds[0]))
         archive=inventory(dataset.files["world_us.lgp"])
         write_json(out/"world_us_inventory.json",archive)
         write_json(out/"world_us_preflight.json",preflight_lgp(dataset.files["world_us.lgp"],archive))
