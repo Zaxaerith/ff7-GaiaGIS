@@ -10,7 +10,10 @@ def qgis_environment(root):
     python_homes = sorted((root/"apps").glob("Python3*"))
     if len(python_homes)!=1 or not (root/"apps"/"qgis"/"python").is_dir():
         raise RuntimeError(f"Not a supported standalone OSGeo4W/QGIS layout: {root}")
-    scratch = output_path(ROOT/"output"/"runtime")
+    scratch = Path(env_temp) if (env_temp := os.environ.get('TEMP')) else ROOT/'output/dev/current/qgis'
+    if not scratch.resolve().is_relative_to(ROOT/'output'):
+        scratch = ROOT/'output/dev/current/qgis'
+    scratch = output_path(scratch)
     scratch.mkdir(parents=True,exist_ok=True)
     env = os.environ.copy()
     env.update(TEMP=str(scratch),TMP=str(scratch),TMPDIR=str(scratch),

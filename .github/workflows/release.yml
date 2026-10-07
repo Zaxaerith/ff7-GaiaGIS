@@ -72,19 +72,12 @@ jobs:
         working-directory: web
       - run: python -B -m venv .cache/packaging-venv
       - run: .cache/packaging-venv/Scripts/python.exe -B -m pip install --cache-dir .cache/pip -r tools/build/requirements.txt
-      - name: Freeze, public audit, ZIP and SHA256
+      - name: Freeze, public audit, ZIP, SHA256 and isolated portable launch
         shell: pwsh
         env:
           RELEASE_TAG: ${{ steps.verify.outputs.tag }}
         run: |
-          .cache/packaging-venv/Scripts/python.exe -B tools/build/local_package.py --skip-web-build --release-tag $env:RELEASE_TAG --output-dir output/release
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
-      - name: Fresh extraction and portable launch without developer PATH
-        shell: pwsh
-        env:
-          RELEASE_TAG: ${{ steps.verify.outputs.tag }}
-        run: |
-          python -B tools/build/portable_smoke.py "output/release/GaiaGIS-$env:RELEASE_TAG-windows-x64.zip"
+          .cache/packaging-venv/Scripts/python.exe -B tools/build/local_package.py --skip-web-build --keep-artifacts --release-tag $env:RELEASE_TAG --output-dir output/release
           if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - uses: actions/upload-artifact@v6
         with:

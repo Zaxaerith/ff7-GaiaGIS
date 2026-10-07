@@ -18,6 +18,8 @@ import zipfile
 ROOT=Path(__file__).resolve().parents[2]
 sys.path.insert(0,str(ROOT/'src'))
 from gaiagis._version import __version__
+from gaiagis.output_lifecycle import OutputRun
+from gaiagis.clean_output import checked_output, remove_output
 
 def loaded_modules(pid,package):
     """Prove the running frozen server resolves DLLs only inside its package/Windows."""
@@ -44,12 +46,10 @@ def loaded_modules(pid,package):
             else:raise RuntimeError('External runtime module: '+path.name)
         return names
     finally:kernel.CloseHandle(handle)
-def main():
-    cli=argparse.ArgumentParser(description=__doc__);cli.add_argument('zip',type=Path);cli.add_argument('--source',type=Path);cli.add_argument('--port',type=int,default=5207);args=cli.parse_args()
-    archive=args.zip.resolve()
+def verify(args, isolated):
+    archive=checked_output(args.zip)
     expected=next(line.split()[0] for line in (archive.parent/'SHA256SUMS.txt').read_text().splitlines() if line.split()[1]==archive.name)
     if hashlib.sha256(archive.read_bytes()).hexdigest()!=expected:raise ValueError('ZIP checksum mismatch')
-    isolated=ROOT/'output/portable-smoke'/str(time.time_ns());isolated.mkdir(parents=True)
     with zipfile.ZipFile(archive) as z:
         for n in z.namelist():
             p=(isolated/n).resolve()
@@ -96,5 +96,22 @@ def main():
         finally:server.terminate();server.wait(timeout=15);log.close()
         report['assets']=len(names)
     if not all(checks.values()):raise RuntimeError('Portable smoke failed: '+json.dumps(checks))
-    target=ROOT/'output/distribution/portable-smoke.json';target.write_text(json.dumps(report,indent=2)+'\n',encoding='utf8');print(json.dumps(report,indent=2))
-if __name__=='__main__':main()
+    print(json.dumps(report,indent=2))
+    return report
+def main(argv=None):
+    cli=argparse.ArgumentParser(description=__doc__)
+    cli.add_argument('zip',type=Path)
+    cli.add_argument('--source',type=Path)
+    cli.add_argument('--port',type=int,default=5207)
+    cli.add_argument('--keep-artifacts',action='store_true',help='Keep input ZIP/build artifacts; extracted smoke tree is always disposable')
+    args=cli.parse_args(argv)
+    archive=checked_output(args.zip)
+    with OutputRun('smoke') as job:
+        verify(args,job.path)
+    if not args.keep_artifacts and archive.parent in (ROOT/'output/distribution',ROOT/'output/release'):
+        remove_output(archive.parent)
+        print('Temporary package artifacts removed.')
+    print('Extracted smoke package/temp tree removed.')
+    return 0
+
+if __name__=='__main__':raise SystemExit(main())

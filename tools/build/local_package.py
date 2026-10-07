@@ -15,17 +15,16 @@ import time
 ROOT=Path(__file__).resolve().parents[2]
 sys.path.insert(0,str(ROOT/'src'))
 from gaiagis._version import __version__
+from gaiagis.output_lifecycle import OutputRun
+from gaiagis.clean_output import checked_output, reject_links, remove_output
 def run(args,**kwargs):subprocess.run(args,cwd=ROOT,check=True,**kwargs)
 def digest(path):return hashlib.sha256(path.read_bytes()).hexdigest()
-def main():
-    cli=argparse.ArgumentParser(description=__doc__)
-    cli.add_argument('--skip-web-build',action='store_true')
-    cli.add_argument('--release-tag',help='Exact annotated tag checked out by the release runner')
-    cli.add_argument('--output-dir',type=Path,default=ROOT/'output/distribution')
-    args=cli.parse_args()
+def build(args, scratch):
     if sys.platform!='win32' or platform.machine().upper() not in ('AMD64','X86_64'):raise RuntimeError('Build on Windows x64')
     if sys.version_info[:3]!=(3,14,7):raise RuntimeError('Use the pinned CPython 3.14.7 build runtime')
-    out=args.output_dir.resolve()
+    out=checked_output(args.output_dir)
+    if out not in (ROOT/'output/distribution',ROOT/'output/release'):raise ValueError('Use output/distribution or output/release for package artifacts')
+    reject_links(out)
     if not out.is_relative_to(ROOT/'output'):raise ValueError('Build outputs must stay within workspace/output')
     git=['git','-c',f'safe.directory={ROOT.as_posix()}']
     head=subprocess.check_output([*git,'rev-parse','HEAD'],cwd=ROOT,text=True).strip()
@@ -36,7 +35,7 @@ def main():
         if subprocess.check_output([*git,'cat-file','-t',ref],cwd=ROOT,text=True).strip()!='tag':raise ValueError('Release tag must be annotated')
         if subprocess.check_output([*git,'rev-parse',ref+'^{commit}'],cwd=ROOT,text=True).strip()!=head or dirty:raise ValueError('Release requires clean exact-tag checkout')
     out.mkdir(parents=True,exist_ok=True)
-    scratch=ROOT/'output/runtime';scratch.mkdir(parents=True,exist_ok=True)
+    scratch.mkdir(parents=True,exist_ok=True)
     os.environ.update(TEMP=str(scratch),TMP=str(scratch),TMPDIR=str(scratch),PYTHONDONTWRITEBYTECODE='1',PYINSTALLER_CONFIG_DIR=str(ROOT/'.cache/pyinstaller'),NPM_CONFIG_CACHE=str(ROOT/'.cache/npm'))
     epoch=int(subprocess.check_output(['git','-c',f'safe.directory={ROOT.as_posix()}','show','-s','--format=%ct','HEAD'],cwd=ROOT,text=True).strip())
     os.environ['SOURCE_DATE_EPOCH']=str(epoch)
@@ -95,4 +94,31 @@ def main():
     checksum=digest(archive);(out/(archive.name+'.sha256')).write_text(f'{checksum}  {archive.name}\n',encoding='ascii')
     (out/'SHA256SUMS.txt').write_text(f'{checksum}  {archive.name}\n',encoding='ascii')
     print(json.dumps(dict(zip=str(archive),bytes=archive.stat().st_size,sha256=checksum),indent=2))
-if __name__=='__main__':main()
+    return archive
+
+def main(argv=None):
+    cli=argparse.ArgumentParser(description=__doc__)
+    cli.add_argument('--skip-web-build',action='store_true')
+    cli.add_argument('--release-tag',help='Exact annotated tag checked out by the release runner')
+    cli.add_argument('--output-dir',type=Path,default=ROOT/'output/distribution')
+    cli.add_argument('--keep-artifacts',action='store_true',help='Explicitly retain ZIP and build files after successful smoke (required by Actions)')
+    args=cli.parse_args(argv)
+    out=checked_output(args.output_dir)
+    if out not in (ROOT/'output/distribution',ROOT/'output/release'):raise ValueError('Invalid package output directory')
+    reject_links(out)
+    with OutputRun('package') as job:
+        try:
+            archive=build(args,job.path/'tmp')
+            from portable_smoke import main as smoke
+            smoke([str(archive),'--keep-artifacts'])
+            if not args.keep_artifacts:
+                remove_output(out)
+                print('Package validated; ZIP and intermediate build removed. Use --keep-artifacts to retain them.')
+        except BaseException:
+            if out.exists():
+                reject_links(out)
+                out.rename(job.path/'artifacts')
+            raise
+    return 0
+
+if __name__=='__main__':raise SystemExit(main())

@@ -4,7 +4,7 @@ import argparse
 import importlib
 import sys
 from ._version import __version__
-COMMANDS={'local':'local','validate':'cli','build-workspace':'build_workspace','build-sphere':'sphere_cli'}
+COMMANDS={'local':'local','validate':'cli','build-workspace':'build_workspace','build-sphere':'sphere_cli','clean-output':'clean_output'}
 def main(argv=None):
     args=list(sys.argv[1:] if argv is None else argv)
     if args==['--version']:print(__version__);return 0

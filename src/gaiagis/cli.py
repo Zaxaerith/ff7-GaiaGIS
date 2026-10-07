@@ -89,12 +89,15 @@ def validation_svg(path,grid,regions):
                   '<text x="60" y="791" font-size="14">Linear/circular centroids and resultant concentration must be read together.</text>','</svg>'])
     output_path(path).write_text('\n'.join(parts),encoding='utf-8')
 
-def main(argv=None):
+def _main(argv=None, default_output=None):
     parser=argparse.ArgumentParser(description="Read-only FF7 world dataset validator; all outputs confined to this workspace")
     parser.add_argument("source",type=Path)
-    parser.add_argument("--output",type=Path,default=WORKSPACE_ROOT/"output"/"validation")
+    parser.add_argument("--output",type=Path,default=default_output)
+    parser.add_argument("--keep-artifacts",action="store_true",help="Explicitly retain this disposable validation run")
     args=parser.parse_args(argv)
     out=output_path(args.output)
+    if not out.is_relative_to(WORKSPACE_ROOT/'output/dev/current'):
+        raise ValueError('Validation output must use disposable output/dev/current')
     out.mkdir(parents=True,exist_ok=True)
     dataset=discover(args.source)
     before=fingerprint(dataset)
@@ -136,3 +139,13 @@ def main(argv=None):
             raise RuntimeError("Source fingerprints changed during validation")
     print(f"Outputs: {out}; FF7 source modified: NO")
     return 0
+
+
+def main(argv=None):
+    import sys
+    from .output_lifecycle import OutputRun
+    args=list(sys.argv[1:] if argv is None else argv)
+    keep='--keep-artifacts' in args
+    if keep:args.remove('--keep-artifacts')
+    with OutputRun('validation',keep=keep) as job:
+        return _main(args,job.path)

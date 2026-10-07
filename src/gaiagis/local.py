@@ -33,8 +33,8 @@ def runtime_path(path):
     return resolved
 
 
-def runtime_environment():
-    scratch = runtime_path(WORKSPACE_ROOT / 'output/runtime')
+def runtime_environment(scratch=None):
+    scratch = runtime_path(scratch or WORKSPACE_ROOT / 'output/dev/current/runtime')
     scratch.mkdir(parents=True, exist_ok=True)
     env = os.environ.copy()
     env.update(TEMP=str(scratch), TMP=str(scratch), TMPDIR=str(scratch),
@@ -226,10 +226,10 @@ def parser():
     return cli
 
 
-def main(argv=None):
+def _main(argv=None, scratch=None):
     args=parser().parse_args(argv);began=time.perf_counter();server=None
     if not 0<=args.port<=65535:raise SystemExit('Port must be between 0 and 65535')
-    env=runtime_environment()
+    env=runtime_environment(scratch)
     try:
         print('Detecting FF7 installation / checking source fingerprints',flush=True)
         source,before=choose_source(args.source,args.remember_source)
@@ -276,5 +276,16 @@ def main(argv=None):
         if server:server.server_close()
     return 0
 
+
+def main(argv=None):
+    from .output_lifecycle import OutputRun
+    class StartFailed(Exception):pass
+    try:
+        with OutputRun('runtime') as job:
+            code=_main(argv,job.path/'tmp')
+            if code:raise StartFailed()
+        return 0
+    except StartFailed:
+        return code
 
 if __name__=='__main__':raise SystemExit(main())

@@ -22,6 +22,10 @@ Node 24: `npm --prefix web ci`, `npm --prefix web test`, `npm --prefix web run b
 
 ## Local portable recipe verification
 
-Use pinned CPython 3.14.7, create `.cache/packaging-venv`, install `tools/build/requirements.txt`, and run its Python on `tools/build/local_package.py`. Then run `tools/build/portable_smoke.py output/distribution/GaiaGIS-vVERSION-windows-x64.zip`, optionally with a read-only `--source` to exercise a cold workspace build.
+Use pinned CPython 3.14.7, create `.cache/packaging-venv`, install `tools/build/requirements.txt`, and run its Python on `tools/build/local_package.py`. The recipe automatically performs portable launch smoke and removes the local ZIP/build on success. Add `--keep-artifacts` only when intentionally retaining a temporary candidate. A separately invoked `portable_smoke.py` accepts a read-only `--source` for cold workspace verification; it always removes its extracted tree on success, and removes input distribution artifacts unless `--keep-artifacts` is supplied.
 
-Local ZIPs, checksums, smoke reports and logs remain ignored. These validate the recipe only. See [release process](release-process.md) for the exact-tag Actions build that creates official artifacts.
+Local artifacts validate the recipe only. Jobs use disposable `output/dev/current/`; failures retain only current necessary evidence under `output/dev/failed-package/` or `failed-smoke/`. The next successful corresponding job clears its previous failure. See [release process](release-process.md) for the exact-tag Actions build that explicitly retains official upload artifacts.
+
+## Output cleanup
+
+`gaiagis clean-output` previews paths and expected bytes without deleting. `gaiagis clean-output --execute` deletes disposable output while retaining `output/local-workspace` and `output/dev/STATUS.md`. Add `--all` to include the regenerable workspace. Filesystem redirects and active job ownership are rejected. The command never acts outside workspace/output.
