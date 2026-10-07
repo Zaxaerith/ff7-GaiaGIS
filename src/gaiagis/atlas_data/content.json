@@ -343,6 +343,15 @@
       "reviewed": "2026-10-06",
       "type": "reference",
       "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
+    },
+    {
+      "id": "field-identity-review",
+      "provider": "GaiaGIS / ff7tk / FF7 field-format research",
+      "title": "Reviewed Field identities and original archive/script linkage",
+      "url": "https://github.com/sithlord48/ff7tk/blob/cb876ba93f384b3a90a06ece216ccd1a160fbbcf/src/data/FF7Location.h",
+      "reviewed": "2026-10-07",
+      "type": "reverse_engineering",
+      "notes": "Names are reviewed annotations, never coordinate authority. Private source validation checks exact maplist/archive identity. qa–qd headers identify q_1–q_4; WM2 entry 31 enters qa. Reward groups identify a scene set, not a chest or local object point."
     }
   ],
   "entities": [
@@ -2774,7 +2783,14 @@
       ],
       "spoilerLevel": "none",
       "spatialBinding": {
-        "kind": "unresolved"
+        "kind": "field_identity",
+        "fieldNames": [
+          "anfrst_1",
+          "anfrst_2",
+          "anfrst_3",
+          "anfrst_4",
+          "anfrst_5"
+        ]
       },
       "relatedLocations": [],
       "relatedEntities": [],
@@ -2783,7 +2799,8 @@
       ],
       "secrets": [],
       "sources": [
-        "wiki-forest"
+        "wiki-forest",
+        "field-identity-review"
       ],
       "facts": [
         {
@@ -2801,7 +2818,9 @@
           ]
         }
       ],
-      "notes": []
+      "notes": [
+        "Local Field Context required; no global anchor or individual reward position is implied."
+      ]
     },
     {
       "id": "sunken-gelnika",
@@ -2829,7 +2848,13 @@
       ],
       "spoilerLevel": "none",
       "spatialBinding": {
-        "kind": "unresolved"
+        "kind": "field_identity",
+        "fieldNames": [
+          "qa",
+          "qb",
+          "qc",
+          "qd"
+        ]
       },
       "relatedLocations": [],
       "relatedEntities": [],
@@ -2838,10 +2863,13 @@
       ],
       "secrets": [],
       "sources": [
-        "sunken-gelnika"
+        "sunken-gelnika",
+        "field-identity-review"
       ],
       "facts": [],
-      "notes": []
+      "notes": [
+        "Local Field Context required; no global anchor or individual reward position is implied."
+      ]
     },
     {
       "id": "gold-saucer",
@@ -2868,17 +2896,24 @@
       ],
       "spoilerLevel": "none",
       "spatialBinding": {
-        "kind": "unresolved"
+        "kind": "field_identity",
+        "fieldNames": [
+          "gldst",
+          "gldgate"
+        ]
       },
       "relatedLocations": [],
       "relatedEntities": [],
       "collectibles": [],
       "secrets": [],
       "sources": [
-        "gold-saucer"
+        "gold-saucer",
+        "field-identity-review"
       ],
       "facts": [],
-      "notes": []
+      "notes": [
+        "Local Field Context required; no global anchor or individual reward position is implied."
+      ]
     },
     {
       "id": "northern-cave",
@@ -2905,17 +2940,24 @@
       ],
       "spoilerLevel": "none",
       "spatialBinding": {
-        "kind": "unresolved"
+        "kind": "field_identity",
+        "fieldNames": [
+          "las0_2",
+          "las0_3"
+        ]
       },
       "relatedLocations": [],
       "relatedEntities": [],
       "collectibles": [],
       "secrets": [],
       "sources": [
-        "northern-cave"
+        "northern-cave",
+        "field-identity-review"
       ],
       "facts": [],
-      "notes": []
+      "notes": [
+        "Local Field Context required; no global anchor or individual reward position is implied."
+      ]
     },
     {
       "id": "forest-rewards",
@@ -2945,7 +2987,14 @@
       ],
       "spoilerLevel": "minor",
       "spatialBinding": {
-        "kind": "unresolved"
+        "kind": "field_identity",
+        "fieldNames": [
+          "anfrst_1",
+          "anfrst_2",
+          "anfrst_3",
+          "anfrst_4",
+          "anfrst_5"
+        ]
       },
       "relatedLocations": [],
       "relatedEntities": [
@@ -2954,10 +3003,13 @@
       "collectibles": [],
       "secrets": [],
       "sources": [
-        "forest-guide"
+        "forest-guide",
+        "field-identity-review"
       ],
       "facts": [],
-      "notes": []
+      "notes": [
+        "Local Field Context required; no global anchor or individual reward position is implied."
+      ]
     },
     {
       "id": "gelnika-rewards",
@@ -2984,7 +3036,13 @@
       ],
       "spoilerLevel": "minor",
       "spatialBinding": {
-        "kind": "unresolved"
+        "kind": "field_identity",
+        "fieldNames": [
+          "qa",
+          "qb",
+          "qc",
+          "qd"
+        ]
       },
       "relatedLocations": [],
       "relatedEntities": [
@@ -2993,10 +3051,13 @@
       "collectibles": [],
       "secrets": [],
       "sources": [
-        "sunken-gelnika"
+        "sunken-gelnika",
+        "field-identity-review"
       ],
       "facts": [],
-      "notes": []
+      "notes": [
+        "Local Field Context required; no global anchor or individual reward position is implied."
+      ]
     },
     {
       "id": "round-island",

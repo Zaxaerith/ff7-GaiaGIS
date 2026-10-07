@@ -19,7 +19,7 @@ LOCALES = ('en', 'zh-CN', 'zh-TW', 'ja', 'ko')
 KINDS = ('city', 'town', 'village', 'settlement', 'dungeon', 'landmark',
          'materia_cave', 'world_map_site', 'chocobo_site', 'vehicle_site',
          'secret_area', 'collectible_site', 'treasure_group')
-BINDINGS = ('location', 'parent_location', 'field_parent', 'non_spatial', 'unresolved')
+BINDINGS = ('location', 'parent_location', 'field_parent', 'field_identity', 'non_spatial', 'unresolved')
 SPOILERS = ('none', 'minor', 'major')
 FACT_KINDS = ('access', 'gameplay', 'reward', 'category', 'secret')
 GENERATOR_VERSION = 'atlas-1'
@@ -92,11 +92,13 @@ def validate_content(content):
         expected = {'kind'} if kind in ('unresolved', 'non_spatial') else {'kind', 'locationId'}
         if kind == 'field_parent':
             expected.add('fieldNames')
+        if kind == 'field_identity':
+            expected = {'kind', 'fieldNames'}
         _check(set(binding) == expected, 'binding contains unsupported spatial data')
-        if kind not in ('unresolved', 'non_spatial'):
+        if kind not in ('unresolved', 'non_spatial', 'field_identity'):
             _check(_id(binding['locationId']), 'location identity')
-        if kind == 'field_parent':
-            _check(_strings(binding['fieldNames']) and binding['fieldNames'], 'field names')
+        if kind in ('field_parent', 'field_identity'):
+            _check(_strings(binding['fieldNames']) and binding['fieldNames'] and all(re.fullmatch(r'[a-zA-Z0-9_-]{1,32}', name) for name in binding['fieldNames']), 'field names')
         _check(isinstance(entity['facts'], list) and len(entity['facts']) <= 30, 'facts')
         for fact in entity['facts']:
             _check(isinstance(fact, dict) and set(fact) == {'kind', 'text', 'spoilerLevel', 'sources'}, 'fact shape')

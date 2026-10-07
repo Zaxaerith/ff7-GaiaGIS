@@ -3,8 +3,10 @@
 Public Web regressions live in `web/tests/`. Run `npm --prefix web test`, ordinary build, `build:release` and `audit:release`. Tests cover coordinates/projections, routing/analysis, Atlas/navigation, user geometry and save parsing/privacy. Synthetic fixtures contain no private save bytes or complete derived game dataset.
 
 Field regressions extend the existing Atlas tests with bounded identity codecs,
-direct entrance evidence, directed gateways/cycles, ambiguous or missing parents,
-reviewed save-ID gates and the unchanged field-only spatial policy. The optional
+direct entrance evidence, directed gateways/cycles, entry-rooted MAPJUMP and
+instruction boundaries, conflicting native targets, ambiguous or missing parents,
+reviewed save/header alias gates, provenance chains, private contextual precision
+promotion and the unchanged no-coordinate Field policy. The optional
 private Field/POI pair is checked only when an ignored local workspace exists;
 CI uses the synthetic cases. Browser checks also replace POI/workspace inputs to
 ensure stale scene cards, search entries and save bindings are invalidated.

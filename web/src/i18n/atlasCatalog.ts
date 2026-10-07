@@ -68,7 +68,7 @@ export const atlasCatalog=[
  ['field.scene','Field Scene','Field 场景','Field 場景','フィールドシーン','필드 장면'],
  ['field.nonGlobal','Local scene identity. No global Field coordinates. The graph shows topology, not geography.','本地场景身份，没有 Field 全球坐标。关系图表示连接拓扑，不是地理地图。','本地場景身分，沒有 Field 全球座標。關係圖表示連接拓撲，不是地理地圖。','ローカルなシーン識別子です。全球座標はありません。図は地理ではなく接続関係を示します。','로컬 장면 식별자입니다. 필드의 전 지구 좌표는 없습니다. 그래프는 지리가 아닌 연결 관계입니다.'],
  ['field.unavailable','Field dataset unavailable. Generate and load your own local workspace; public mode includes no Field graph.','Field 数据不可用。请生成并加载自己的本地工作区；公开模式不包含场景图。','Field 資料不可用。請產生並載入自己的本地工作區；公開模式不包含場景圖。','フィールドデータなし。自分のローカルワークスペースを生成してください。公開モードに接続データは含まれません。','필드 데이터 없음. 본인의 로컬 작업 공간을 생성하세요. 공개 모드에는 필드 그래프가 없습니다.'],
- ['field.partial','Verified section-8 gateways only. Script jumps, story availability and unknown semantics are unverified; this is a partial graph.','仅含已验证的 section-8 gateway。脚本跳转、剧情可用性和未知语义未验证；这不是完整场景图。','僅含已驗證的 section-8 gateway。腳本跳轉、劇情可用性與未知語義未驗證；這不是完整場景圖。','検証済みセクション8のゲートウェイのみ。スクリプト移動・進行条件は未検証。部分的なグラフです。','검증된 섹션 8 게이트웨이만 포함. 스크립트 이동과 진행 조건은 미검증이며 부분 그래프입니다.'],
+ ['field.partial','Verified gateways and bounded MAPJUMP evidence. Story availability and other jump semantics remain unverified; this is a partial graph.','已验证 gateway 与有边界的 MAPJUMP 证据。剧情可用性及其它跳转语义未验证；这不是完整场景图。','已驗證 gateway 與有邊界的 MAPJUMP 證據。劇情可用性及其它跳轉語義未驗證；這不是完整場景圖。','検証済みゲートウェイと限定的な MAPJUMP 証拠。進行条件・他の移動命令は未検証。部分的なグラフです。','검증된 게이트웨이와 제한된 MAPJUMP 근거. 진행 조건과 다른 이동 의미는 미검증이며 부분 그래프입니다.'],
  ['field.graph','Browse scene connections','浏览场景连接','瀏覽場景連接','シーン接続を閲覧','장면 연결 탐색'],
  ['field.available','Archive scene verified','归档场景已验证','封存場景已驗證','アーカイブのシーン検証済み','아카이브 장면 검증됨'],
  ['field.missing','Scene absent from archive','归档中缺少场景','封存中缺少場景','アーカイブにシーンなし','아카이브에 장면 없음'],

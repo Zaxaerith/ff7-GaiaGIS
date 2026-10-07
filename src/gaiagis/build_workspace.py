@@ -39,7 +39,7 @@ ASSETS = {
 # Source dependencies, not a Steam-version switch. Generator/transport versions
 # stay unchanged because the produced geometry and schemas have not changed.
 SOURCE_DEPENDENCIES = {
-    'gaia-field-context.json': ['wm0.map', 'world_us.lgp', 'flevel.lgp', 'field-poi.json'],
+    'gaia-field-context.json': ['wm0.map', 'world_us.lgp', 'flevel.lgp', 'field-poi.json', 'field-transitions.json'],
     'gaia-meta.json': ['wm0.map'], 'gaia-mesh.bin': ['wm0.map'],
     'gaia-poi.json': ['wm0.map', 'world_us.lgp', 'flevel.lgp'],
     'gaia-encounters.json': ['wm0.map', 'world_us.lgp'],
@@ -198,6 +198,7 @@ def build_workspace(source, destination, stage1=None, *, rebuild=False, allow_op
     if (out/'gaia-transitions.json').is_file():sources['atlas-transitions.json']=sha256(out/'gaia-transitions.json')
     step('atlas', ['gaia-atlas.json'], lambda: build_atlas(out))
     if (out/'gaia-poi.json').is_file():sources['field-poi.json']=sha256(out/'gaia-poi.json')
+    if (out/'gaia-transitions.json').is_file():sources['field-transitions.json']=sha256(out/'gaia-transitions.json')
     step('field-context', ['gaia-field-context.json'], lambda: build_field_context(source,out))
     after = {r['filename']:r['sha256'].lower() for r in fingerprint(dataset)['files']}
     if any(after[k] != v for k,v in sources.items() if k in after):raise RuntimeError('Source fingerprint changed during workspace build')

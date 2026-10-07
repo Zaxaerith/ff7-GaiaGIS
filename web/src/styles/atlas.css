@@ -28,3 +28,5 @@
 .field-node{cursor:pointer;outline:none}
 .field-node.neighbor rect,.field-node[aria-pressed=true] rect,.field-node:focus rect{stroke:var(--accent);stroke-width:3}
 @media(max-width:700px){#field-graph{height:180px}.field-card button{min-height:36px}}
+
+.spatial-evidence li { overflow-wrap: anywhere; margin-block: .45rem; }

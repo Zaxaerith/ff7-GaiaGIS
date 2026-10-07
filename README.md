@@ -34,7 +34,7 @@ The [public Viewer](https://zaxaerith.github.io/ff7-GaiaGIS/) is source-only: au
 - Explorer keyboard/touch previews using locally decoded original models; no game-runtime simulation.
 - User points/lines/polygons, layers, reference-sphere measurement and bounded local GaiaJSON exchange.
 - Read-only fifteen-slot PC/Steam 2013 Save Explorer. Verified WM0 world saves can locate Player Position; field/unknown/native records receive no fabricated marker.
-- Private Field Scene identities and verified gateway topology, linked to existing entrances, Atlas and Current Field in My Save; no interior global coordinates.
+- Private Field Scene identities and verified gateway/MAPJUMP topology and Spatial Evidence, linked to existing entrances, Atlas and Current Field in My Save; no interior global coordinates.
 - Unified FF7-inspired shell, explicit Scientific theme, desktop/320/390px layouts and five languages.
 
 ## Documentation

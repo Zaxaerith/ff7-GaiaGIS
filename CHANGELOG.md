@@ -2,6 +2,13 @@
 
 Formal version changes; historical acceptance evidence remains in Git history and Releases.
 
+## v2.9.0 — candidate, not yet published
+
+- Bounded, source-indexed MAPJUMP archaeology alongside existing Field gateway topology.
+- Reviewed Field-only context for Ancient Forest, Gelnika, Gold Saucer, Northern Cave and two reward groups; no fabricated global anchors.
+- Inspector Spatial Evidence chains, source fingerprints, spatial-status filters and scoped scene graphs.
+- Four source-reviewed Gelnika Save identities, with native maps and private workspace boundaries preserved.
+
 ## v2.8.0 — candidate, not yet published
 
 - Private Field identities and verified section-8 gateway topology, linked to existing world entrances.

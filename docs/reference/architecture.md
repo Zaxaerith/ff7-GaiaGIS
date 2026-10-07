@@ -168,7 +168,7 @@ Maintained freeze/audit/smoke tools are in `tools/build/`. Ordinary CI, source-o
 
 ## Field / World integration
 
-`src/gaiagis/field_context.py` owns the bounded PC maplist/section-8 gateway
+`src/gaiagis/field_context.py` owns the bounded PC maplist, section-8 gateway and targeted section-1 MAPJUMP
 reader and optional private `gaia-field-context.json` exporter. It extends the
 existing incremental workspace recipe, not a separate extractor or build system.
 Field identities are archive/maplist IDs and internal names; Field local
@@ -176,7 +176,7 @@ coordinates are never transformed into GaiaGame or geographic coordinates.
 
 `web/src/data/fieldContext.ts` validates the compact identity/evidence contract,
 revalidates entrance bindings against loaded POI lineage, and builds incoming /
-outgoing adjacency and strongly connected components once. Components permit
+outgoing adjacency and gateway-only strongly connected components once. Components permit
 only explicitly labelled mutual topological association; they are not geographic
 containment. Names, proximity and world coordinates never establish membership.
 
@@ -188,3 +188,12 @@ anchor, persistent identity target or ShareState entitlement. Disposal removes
 ports/listeners/diagram and invalidates pending loads; workspace replacement clears
 source-bound context. The Save owner borrows the in-memory index through the same
 scoped event boundary. See [Field contracts and evidence](atlas.md#field-context).
+
+
+Spatial provenance remains in these same owners: authored Atlas Field identity
+requests, source-bound gateway/MAPJUMP/native-entry metadata, and shared Inspector
+evidence rows. The one Field payload is incrementally invalidated by POI and
+transition fingerprints. Conditional script edges do not change containment or
+Atlas geographic precision. Contextual field_only resolution is invalidated
+with the in-memory Field index; no second archaeology pack or storage system is
+introduced. Current contracts are documented in [Atlas/Field evidence](atlas.md).

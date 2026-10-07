@@ -729,3 +729,21 @@ re-entry pairing, runtime placement and vertical datum remain unverified.
 was cross-checked for format/identity. Its historical WM0 section-count and
 bit-field statements contain known discrepancies; actual bytes and independent
 reader invariants remain authoritative.
+
+
+## Targeted world / Field archaeology
+
+Source-first Field identities and static transitions now expose Ancient Forest,
+Sunken Gelnika, Gold Saucer and Northern Cave scene context. See the bounded
+reader and reviewed source links in [Atlas evidence](../reference/atlas.md#targeted-script-archaeology-and-precision).
+World EV ENTER_FIELD constants identify FIELD.TBL entry/scenario destinations.
+Ancient Forest entry 55 and the Northern Cave/Highwind entry 59 are currently
+unanchored system/model relationships, not new validated WM0 mesh Entrances.
+Gelnika entry 31 is evidenced in WM2 and remains native/Field-only. Gold Saucer's
+cablecar script path is topology rather than geographic containment in Corel.
+
+The source chain is useful even when global precision cannot be promoted.
+No Wiki map measurement, screen-pixel positioning, nearest-triangle selection,
+centroid anchor or Field-to-global transform is used. Existing V1 mathematics,
+world Entrance representatives and WM2/WM3 coordinate policy remain frozen.
+Script conditions are not game-state access logic or verified save unlocks.

@@ -1,12 +1,12 @@
 # Atlas schema v1
 
-`src/gaiagis/atlas_data/content.json` is the public authored registry. Python `atlas.validate_content` and browser `parseAtlasContent` reject malformed shapes, duplicate IDs, invalid kinds/regions/spoilers, missing five-locale text, missing source references, unsafe URLs, broken/self relations, incompatible binding shapes, public coordinate fields and duplicate named coverage. The current data has 58 entities, 38 sources and 290 summaries.
+`src/gaiagis/atlas_data/content.json` is the public authored registry. Python `atlas.validate_content` and browser `parseAtlasContent` reject malformed shapes, duplicate IDs, invalid kinds/regions/spoilers, missing five-locale text, missing source references, unsafe URLs, broken/self relations, incompatible binding shapes, public coordinate fields and duplicate named coverage. The current data has 58 entities, 39 sources and 290 summaries.
 
 An entity has `id`, `kind`, `canonicalName`, `localizedNames`, `aliases`, `summary`, `region`, `tags`, `spoilerLevel`, `spatialBinding`, `relatedLocations`, `relatedEntities`, `collectibles`, `secrets`, `sources`, `facts`, `notes`. Names/summaries and fact text require en, zh-CN, zh-TW, ja and ko. Names may retain canonical original-game names; UI labels and authored summaries are translated. `facts` have typed access/gameplay/reward/category/secret text, their own spoiler class and source references. Source records contain `id`, `provider`, `title`, HTTPS `url`, ISO `reviewed` date, `type` and `notes`; types are game_identity, reverse_engineering, wiki and reference. No article content is embedded.
 
 Kinds: city, town, village, settlement, dungeon, landmark, materia_cave, world_map_site, chocobo_site, vehicle_site, secret_area, collectible_site, treasure_group. Regions: eastern, western, northern, wutai, islands, underwater, unknown. Tags support places, secrets, collectibles and descriptive lookup. Spoilers: none, minor, major. Modes: hide-major (default), show-all, hide-all. Hidden reward names are removed from parent search aliases as well as cards/markers; Sources reflect only visible facts.
 
-Binding requests support location (`locationId`), parent_location (`locationId`), field_parent (`locationId`, `fieldNames`), non_spatial and unresolved. Direct entrance/transition/triangle bindings are deliberately not advertised without a researched entity requiring them. The initial pack uses established Location/Entrance lineage; related transitions provide context only. This is a bounded first Atlas schema, not a promise that unsupported binding variants resolve.
+Binding requests support location (`locationId`), parent_location (`locationId`), field_parent (`locationId`, `fieldNames`), field_identity (`fieldNames`, requiring private Field Context), non_spatial and unresolved. Direct entrance/transition/triangle bindings are deliberately not advertised without a researched entity requiring them. The initial pack uses established Location/Entrance lineage; related transitions provide context only. This is a bounded first Atlas schema, not a promise that unsupported binding variants resolve.
 
 The ignored `gaia-atlas.json` pack has schema `gaiagis-atlas`, version 1, `curated_sha256`, `content`, POI `sources` and entity-keyed `bindings`. Bindings contain kind, precision, evidence, locationId, entranceId, fieldNames, relatedEntrances, relatedTransitions and marker. They contain no longitude, latitude, XYZ or source-triangle coordinate data. Seven precision vocabulary classes exist: exact_source, verified_anchor, entrance_level, parent_place, field_only, non_spatial, unresolved. The first two have zero records because current evidence supports neither claim.
 
@@ -22,13 +22,13 @@ For `parent_location`, require the existing parent; emit parent_place / parent_o
 
 Unknown identities remain unresolved. Non-spatial knowledge remains non_spatial. Missing POI allows knowledge/search but no context position. Browser pack validation rederives every binding from validated POI and requires matching source hashes. Related entrance/transition IDs are lineage/context references, not new navigation coordinates. Native map switch hides Atlas markers and clears incompatible selection/context through the established lifecycle.
 
-Actual generated precision counts: exact_source 0; verified_anchor 0; entrance_level 34; parent_place 12; field_only 6; non_spatial 0; unresolved 6. 34/34 existing named Locations are covered; exclusions 0. The four cave rewards and Sage Enemy Skill/Temple Black Materia are field-only. Round Island and eleven reward groups are parent-place. All six unresolved records have marker=false and no location/entrance point. Collectibles layer marks only known parent places with visible discoveries, not chest positions.
+Base Atlas pack precision counts (before optional Field Context resolution): exact_source 0; verified_anchor 0; entrance_level 34; parent_place 12; field_only 6; non_spatial 0; unresolved 6. 34/34 existing named Locations are covered; exclusions 0. The four cave rewards and Sage Enemy Skill/Temple Black Materia are field-only. Round Island and eleven reward groups are parent-place. All six unresolved records have marker=false and no location/entrance point. Collectibles layer marks only known parent places with visible discoveries, not chest positions.
 
 Deterministic Atlas-only declutter suppresses overlapping anchors within 32 screen pixels in stable entity order. It is recalculated each frame as the camera/projection changes. Atlas markers morph through the existing 13-view pipeline and disappear in Explorer/native views. Declutter does not alter existing locations, events, geometry or projection mathematics.
 
 Synthetic tests reject coordinates in public requests, unsourced facts, missing coverage, field mismatch, fake precision/markers, mismatched source hashes and changed entrance identities. Actual source tests verify the 34 entrance bindings. Screenshots and generated packs are private ignored artifacts.
 
-## Gaia Atlas research (v2.2)
+## Gaia Atlas research
 
 Reviewed 2026-10-06. Target: original Final Fantasy VII, including classic PC field identities. Remake/Rebirth sections were excluded. Repository/source data establish identity and position; external references establish authored knowledge, never coordinates.
 
@@ -52,11 +52,11 @@ Local source identities are the highest authority for spatial binding. Field ID 
 | Materia cave access | Green for Mime, blue for Quadra Magic, black for HP↔MP, gold for Knights; higher compatible chocobos described explicitly. No unlock simulation. |
 | Lucrecia reward timing | Rewards documented; exact battle threshold omitted rather than inferred. |
 | Gold Saucer / Northern Cave | Knowledge included, WM0 authoritative anchor unresolved; no nearest Corel or crater point. |
-| Ancient Forest | Optional access/puzzle/rewards supported externally. No verified existing POI or transition identity; unresolved. |
+| Ancient Forest | Optional access/puzzle/rewards supported externally. WM0 entry 55 targets anfrst_3; a scene-only binding is available, but no validated WM0 Entrance anchor. |
 | Sunken Gelnika | WM2 knowledge retained. Never reinterpret native coordinates as WM0 geographic coordinates. |
 | Round Island | Associated with existing cave entry as parent-place context; no invented island-centre coordinate. |
 
-The six unresolved entities are Ancient Forest, Sunken Gelnika, Gold Saucer, Northern Cave, Ancient Forest rewards and Gelnika rewards. Unknown exact chest position, interior layout and unsupported availability detail remain unknown. Atlas makes no Steam 2026 executable-equivalence claim.
+The six base-unresolved entities are Ancient Forest, Sunken Gelnika, Gold Saucer, Northern Cave, Ancient Forest rewards and Gelnika rewards. With the reviewed private Field Context they become field_only; their global anchors remain unresolved. Unknown exact chest position, interior layout and unsupported availability detail remain unknown. Atlas makes no Steam 2026 executable-equivalence claim.
 
 ## Reviewed source registry
 
@@ -158,36 +158,41 @@ The following is authored public knowledge and identity requests; it contains no
 | lucrecia-rewards | Death Penalty / Chaos | treasure_group | parent_location | lucrecia |
 | sage-enemy-skill | Enemy Skill | collectible_site | field_parent | chocobo-sages-house |
 | temple-black-materia | Black Materia | collectible_site | field_parent | temple-of-the-ancients |
-| ancient-forest | Ancient Forest | secret_area | unresolved | wiki-forest |
-| sunken-gelnika | Sunken Gelnika | vehicle_site | unresolved | sunken-gelnika |
-| gold-saucer | Gold Saucer | world_map_site | unresolved | gold-saucer |
-| northern-cave | Northern Cave | dungeon | unresolved | northern-cave |
-| forest-rewards | Slash-All / Typoon / Apocalypse | treasure_group | unresolved | forest-guide |
-| gelnika-rewards | Double Cut / Hades / Highwind | treasure_group | unresolved | sunken-gelnika |
+| ancient-forest | Ancient Forest | secret_area | field_identity request | wiki-forest |
+| sunken-gelnika | Sunken Gelnika | vehicle_site | field_identity request | sunken-gelnika |
+| gold-saucer | Gold Saucer | world_map_site | field_identity request | gold-saucer |
+| northern-cave | Northern Cave | dungeon | field_identity request | northern-cave |
+| forest-rewards | Slash-All / Typoon / Apocalypse | treasure_group | field_identity request | forest-guide |
+| gelnika-rewards | Double Cut / Hades / Highwind | treasure_group | field_identity request | sunken-gelnika |
 | round-island | Round Island | landmark | parent_location | round-island |
 
 
 ## Field Context
 
 A private workspace can connect an existing world Entrance to its destination
-Field and browse verified **gateway** connections. Field identity is
+Field and browse verified **gateway** and bounded **MAPJUMP** connections. Field identity is
 `flevel.lgp` fingerprint + maplist index + internal archive name. Display names
 remain internal names unless a separate reviewed naming source exists. No Wiki
 name table, messages, scripts, backgrounds, textures or models are exported here.
 
 The optional logical asset `field-context` uses `gaia-field-context.json`, schema
-`gaiagis-field-context`, version **1**, coordinate space **FieldLocalIdentity**.
+`gaiagis-field-context`, version **2** (the reader also accepts version 1), coordinate space **FieldLocalIdentity**.
 Its compact contract contains:
 
-- `archive`, source SHA-256 bindings, `scriptTransitions: unverified`;
+- `archive`, source SHA-256 bindings, `scriptTransitions: bounded_mapjump`;
 - `nodes`: field `id`, internal `name`, available/missing/corrupt status, reviewed
-  PC `saveId` or null;
+  PC `saveId` or null, plus a bounded script-header `scriptName`;
 - `edges`: `fromField`, destination `to`, gateway number and section-relative
   evidence `offset`;
 - `exits`: world-entry pseudo-field identities, with the same evidence indices;
 - `unresolved`: invalid sections or missing destinations, never a guessed edge;
 - `bindings`: existing Entrance/Location IDs, destination Field ID and verified
-  direct/unresolved status.
+  direct/unresolved status;
+- `scriptEdges` / `scriptExits`: verified MAPJUMP destinations and section-1
+  offsets, without spawn coordinates or script bytes;
+- `scriptUnresolved`: unsupported/invalid boundaries or unavailable destinations;
+- `nativeRelations`: world EV function/offset, entry/scenario and destination
+  Field identity, without native or global positions.
 
 Incoming connections are derived from the directed edges. World-entry names such
 as `wm2` in maplist are **entry identities**, not a WM2-native coordinate transform.
@@ -205,8 +210,8 @@ PC files are bounded LZSS data with nine section offsets. Section 8 is 740 bytes
 (or the documented 536-byte variant); its twelve 24-byte gateway records begin at
 byte 56. Destination ID is the little-endian word at record +18. The inactive
 sentinel is 0x7FFF. Only a successfully decoded archive scene can be the endpoint
-of a verified scene edge. Scripts are not scanned for MAPJUMP byte patterns or
-interpreted. This is a partial connection graph, not complete field runtime or
+of a verified scene edge. Scripts are decoded only along bounded entry-rooted control flow, never scanned
+for MAPJUMP byte patterns or executed. This is a partial connection graph, not complete field runtime or
 story/save availability.
 
 Direct binding requires the exact field ID/name, an available archive scene and
@@ -224,18 +229,21 @@ direct even if its component has other roots. Cycles do not cause repeated trave
 
 ### Browsing and spatial policy
 
-Explore labels results **Field Scene**, indexing exact internal names and decimal /
+Explore labels results **Field Scene**, indexing exact internal names, reviewed Gelnika header aliases and decimal /
 hex IDs. Inspector shows incoming/outgoing gateways, archive evidence, parent
 context and world-exit identities. Place/Atlas cards list their direct or mutually
 associated scenes; field-only Atlas records select their existing exact field-name
 requests. The SVG diagram supports pan, zoom, node selection, neighbor highlight
-and parent filtering. Its deterministic grid is a topology layout, never a map.
+and parent filtering. An Atlas Field scene set can open a scoped graph of those
+scenes and verified one-hop neighbors; that scope is connectivity, not geographic
+containment. Its deterministic grid is a topology layout, never a map.
 
 Open parent place and Fly to verified world entrance borrow existing POI owners;
 these actions require active WM0. A Field selection contains no geographic point,
 never becomes a Nearby anchor and cannot enter public ShareState or user tours.
 An Atlas `field_only` record stays `field_only`, with marker=false. Parent bindings,
-unresolved Atlas records, WM2/WM3 and V1 reconstruction remain unchanged.
+WM2/WM3 and V1 reconstruction remain unchanged. Authored independent Field
+identity requests can resolve only to field_only after local source validation.
 
 Public source-only mode explains the missing Field dataset and retains authored
 Atlas knowledge. It never probes an installation or downloads a field graph.
@@ -243,3 +251,83 @@ Generated Field context remains ignored/local, with one optional manifest asset;
 missing/invalid context does not invalidate the remaining workspace. Generator
 and POI/source fingerprints govern rebuild/reuse. No runtime API can read arbitrary
 files or expose flevel.lgp.
+
+
+### Targeted script archaeology and precision
+
+The independent section-1 reader cross-checks the pinned [Makou Reactor opcode
+metadata](https://github.com/myst6re/makoureactor/blob/2452025714c033d698d1754a776bdcd5713427bd/src/core/field/Opcode.cpp),
+[MAPJUMP structure](https://github.com/myst6re/makoureactor/blob/2452025714c033d698d1754a776bdcd5713427bd/src/core/field/Opcode.h)
+and [ff7tools script-format implementation](https://github.com/cebix/ff7tools/blob/6bf1fbcec2c88c1856cffd4a371719b406fee654/ff7/field.py).
+Format facts guide original bounded decoding; no external parser is executed.
+
+The header must identify 0x0502; actor names, sound offsets and 32 script-entry
+words per actor precede code bounded by the string-table offset. The first RET
+of actor initialization defines the documented default/main entry. Fixed widths,
+bounded SPECIAL variants and KAWAI length establish instruction ownership.
+Unknown widths stop an interval. A declared entry may restart decoding; a branch
+cannot invent a boundary in an unknown interval. Operand overlap, out-of-bounds
+entry/branch or truncated instructions invalidate that scene's script evidence.
+
+Only MAPJUMP 0x60 is emitted: its ten-byte instruction contains a constant
+little-endian destination maplist ID. Its Field-local spawn coordinates are not
+read into output. Forward/back jumps and conditional branches determine possible
+static reachability; RET/RETTO/GMOVR stop flow. Both conditional outcomes are
+retained, without evaluating story/save state. CMUSC 0xFD has differing six/eight
+byte widths in independent references, so remains unsupported. Prepared-map
+jumps, minigame transitions and other semantics remain unverified.
+
+Script connections are available in Inspector and the graph, but **do not enter
+the gateway-only parent-association calculation**. Cutscene/teleport cycles are
+not proof of geographic containment. Missing scenes and unsupported semantics
+remain unresolved. The original gateway records and validated Entrance owners
+are unchanged.
+
+An authored `field_identity` request lists reviewed exact internal names without
+a Location or coordinates. Its base Atlas binding remains unresolved until the
+reviewed local maplist and available Field scenes match. The resulting view is
+field_only, marker=false, no Entrance/Location anchor. Clearing/replacing the
+Field payload restores unresolved. This contextual result does not persist new
+coordinates or modify the Atlas pack. Public source-only retains authored cards
+and explanatory requests, without asserting a generated source match.
+
+Ancient Forest uses anfrst_1–5 and WM0 entry 55 → anfrst_3. Sunken Gelnika uses
+qa–qd: actual script headers identify q_1–q_4, gateway connectivity joins them,
+and WM2 ENTER_FIELD entry 31 → FIELD.TBL record 60 → qa establishes native
+context. Gold Saucer's ropest ↔ gldst MAPJUMPs and gldst ↔ gldgate gateways
+establish scene connectivity. Northern Cave's WM0 entry 59 targets las0_1
+(Highwind deck), whose MAPJUMPs reach las0_2; that scene reaches las0_3. None
+establishes a new validated WM0 Entrance anchor. Reviewed external names are
+semantic annotations, never coordinate sources or automatic name matching.
+
+Forest/Gelnika reward records refer to their reviewed **scene sets** and authored
+parent Atlas entities. Individual reward-to-room assignments, chest positions,
+Field-local XYZ and global reward positions remain unverified. No item-location
+claim is inferred from a group label.
+
+For Save→Field, the reviewed maplist plus exact qa/qb/qc/qd and q_1/q_2/q_3/q_4
+header pairs resolve the four previously conflicting IDs. A mismatched header,
+unreviewed maplist or absent scene cannot claim this compatibility. Other
+conflicting IDs remain unverified; this is not modern executable equivalence.
+
+### Spatial Evidence contract
+
+Shared Atlas/Field Inspector presentation derives compact evidence steps with
+`sourceType`, `sourceIdentity`, existing `precision`, `relation` (known/inferred/
+unresolved), and optional `reason`. Actual maplist/header, directed gateway or
+MAPJUMP and world EV/FIELD.TBL records are known source evidence. Reviewed Atlas
+identity/group annotations and mutual topological associations are explicitly
+inferred relationships. Missing global anchors and unsupported semantics are
+shown as unresolved. Conditional static edges never assert current access.
+
+World-entry provenance may trace a directed scene path from an existing native
+arrival; this remains topology, without deriving a Field global point. A borrowed
+world Entrance retains its existing POI script/table identity and Location. Source
+fingerprints are carried once in the private payload, not repeated as raw data
+or private paths. No chain adds coordinates to an Atlas or Field selection.
+
+The existing Atlas filters include Resolved anchor, Field-only, Parent-place and
+Unresolved. Resolved means the binding has a validated anchor; identity-only
+records are not grouped with those anchors. The same authored content remains
+searchable offline. No save bytes, scripts/messages dump, complete graph or
+coordinate tables are shipped in the public Web artifact.

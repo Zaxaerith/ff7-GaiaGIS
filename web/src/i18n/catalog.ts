@@ -1,6 +1,18 @@
 // SPDX-License-Identifier: GPL-3.0-only
 // Columns: stable key, English, 简体中文, 繁體中文, 日本語, 한국어.
 export const catalog=[
+ ['field.selectedContext','Selected scene context + verified neighbors','所选场景上下文与已验证邻接','所選場景上下文與已驗證鄰接','選択シーンと検証済み隣接シーン','선택 장면과 검증된 인접 장면'],
+ ['field.unverified_boundary','Instruction boundary unverified','指令边界未验证','指令邊界未驗證','命令境界は未検証','명령 경계 미검증'],
+ ['field.nativeContext','Native-map topology only; no global coordinate or current access is inferred.','仅原生地图拓扑，不推导全球坐标或当前可进入状态。','僅原生地圖拓撲，不推導全球座標或目前可進入狀態。','ネイティブマップの接続関係のみ。全球座標や現在の進入可否は推定しません。','네이티브 지도 연결만 표시하며 전역 좌표나 현재 진입 가능 여부는 추론하지 않습니다.'],
+ ['atlas.spatialStatus','Spatial status','空间状态','空間狀態','空間状態','공간 상태'],
+ ['atlas.resolved','Resolved anchor','已解析锚点','已解析錨點','確認済みアンカー','확인된 앵커'],
+ ['evidence.known','Known','已知','已知','確認済み','확인됨'],
+ ['evidence.inferred','Inferred relation','推论关系','推論關係','推論した関係','추론 관계'],
+ ['evidence.unresolved','Unresolved','未解决','未解決','未解決','미해결'],
+ ['field.invalid_script','Invalid script evidence','脚本证据无效','腳本證據無效','無効なスクリプト証拠','잘못된 스크립트 근거'],
+ ['field.unsupported_opcode','Opcode semantics unverified','指令语义未验证','指令語義未驗證','命令の意味は未検証','명령 의미 미검증'],
+ ['field.missing_destination','Destination unavailable','目标场景不可用','目標場景不可用','遷移先が利用不可','대상 장면 없음'],
+
  ['nav.language','Language','语言','語言','言語','언어'],['nav.analysis','Analysis','分析','分析','解析','분석'],['nav.close','Close','关闭','關閉','閉じる','닫기'],
  ['routing.title','Static Reachability & Route Analysis','静态可达性与路径分析','靜態可達性與路徑分析','静的到達可能性と経路解析','정적 도달 가능성 및 경로 분석'],
  ['routing.scope','Static analysis only. Runtime/story/save state is not simulated.','仅静态分析，不模拟运行时、剧情或存档状态。','僅靜態分析，不模擬執行時、劇情或存檔狀態。','静的解析のみ。実行時・物語・セーブ状態は再現しません。','정적 분석만 수행합니다. 실행·스토리·저장 상태는 시뮬레이션하지 않습니다.'],
