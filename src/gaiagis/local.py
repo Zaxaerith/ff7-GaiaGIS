@@ -210,7 +210,7 @@ def make_server(root, dist, host='127.0.0.1', port=5173):
     for candidate in ([0] if port==0 else range(port,min(port+100,65536))):
         try:return LocalHTTPServer((host,candidate),Handler)
         except OSError as error:
-            if error.errno!=errno.EADDRINUSE and getattr(error,'winerror',None)!=10048:raise
+            if error.errno not in (errno.EADDRINUSE,errno.EACCES) and getattr(error,'winerror',None) not in (10048,10013):raise
     raise RuntimeError('No free local port available')
 
 
@@ -226,18 +226,19 @@ def parser():
     return cli
 
 
-def _main(argv=None, scratch=None):
+def _main(argv=None, scratch=None, progress=None, ready=None):
     args=parser().parse_args(argv);began=time.perf_counter();server=None
     if not 0<=args.port<=65535:raise SystemExit('Port must be between 0 and 65535')
     env=runtime_environment(scratch)
     try:
         print('Detecting FF7 installation / checking source fingerprints',flush=True)
+        if progress:progress('checking',0,15)
         source,before=choose_source(args.source,args.remember_source)
         print(before['compatibility'],flush=True)
         out=workspace_path(args.workspace,source)
         print('Checking workspace',flush=True)
         try:
-            report=build_workspace(source,out,rebuild=args.rebuild,clean_invalid=args.clean_invalid,allow_optional_failure=True)
+            report=build_workspace(source,out,rebuild=args.rebuild,clean_invalid=args.clean_invalid,allow_optional_failure=True,progress=progress)
         except ModuleNotFoundError as error:
             if error.name!='osgeo' or args.build_only:raise
             if str(WORKSPACE_ROOT) not in sys.path:sys.path.insert(0,str(WORKSPACE_ROOT))
@@ -264,12 +265,14 @@ def _main(argv=None, scratch=None):
         evidence['ready_seconds']=time.perf_counter()-began
         (out/'local-launch.json').write_text(json.dumps(evidence,sort_keys=True,indent=2)+'\n',encoding='utf8')
         print(f'GaiaGIS: {url}\nWorkspace: {out}\nReady in {evidence["ready_seconds"]:.2f}s. Ctrl+C to stop.',flush=True)
+        if ready:ready(server,url)
         if not args.no_open:webbrowser.open(url)
         server.serve_forever(poll_interval=0.2)
     except KeyboardInterrupt:
         print('\nGaiaGIS stopped.',flush=True)
     except Exception as error:
         print(f'GaiaGIS local start failed: {error}',file=sys.stderr)
+        if progress:progress('error: '+str(error),0,15)
         if args.debug:traceback.print_exc()
         return 1
     finally:
@@ -277,12 +280,12 @@ def _main(argv=None, scratch=None):
     return 0
 
 
-def main(argv=None):
+def main(argv=None, *, progress=None, ready=None):
     from .output_lifecycle import OutputRun
     class StartFailed(Exception):pass
     try:
         with OutputRun('runtime') as job:
-            code=_main(argv,job.path/'tmp')
+            code=_main(argv,job.path/'tmp',progress,ready)
             if code:raise StartFailed()
         return 0
     except StartFailed:

@@ -2,7 +2,15 @@
 
 Formal version changes; historical acceptance evidence remains in Git history and Releases.
 
-## v2.9.1 — candidate, not yet published
+## v3.0.0 — candidate, not yet published
+
+- Native portable startup progress, remembered installation and recoverable retry/cancellation.
+- Inline player shortcuts, clearer connected/public states and optional technical resource details.
+- Direct Atlas Fly-to, content-first Location Inspector and corrected five-language spatial-status labels.
+- Stable Save Inspector during unrelated settings changes and Player Fly-to; drawing tools focus the map.
+- One repeatable player-flow browser suite alongside the existing Web/private Python regressions.
+
+## v2.9.1
 
 - Original-FF7 Atlas access/gameplay/reward facts with five-language text and per-fact sources.
 - Content-first Inspector sections, collapsed technical evidence and spoiler-safe knowledge search.

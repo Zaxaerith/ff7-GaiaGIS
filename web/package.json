@@ -14,6 +14,7 @@
     "preview:release": "vite preview --host 127.0.0.1 --port 5175 --strictPort --outDir dist-release",
     "preview": "vite preview --host 127.0.0.1",
     "test": "vitest run",
+    "test:browser": "node tests/player-flows.e2e.mjs",
     "assets:measure": "node scripts/measure-assets.mjs",
     "notices": "node scripts/notices.mjs"
   },

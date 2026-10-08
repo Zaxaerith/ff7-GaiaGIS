@@ -4,7 +4,11 @@ GaiaGIS is a local-first GIS viewer of the original Final Fantasy VII world. Pub
 
 ## Windows portable
 
-When an approved version's GitHub Release contains a Windows ZIP, extract the entire ZIP and run `GaiaGIS.exe`. Select your own FF7 installation. The launcher reads game inputs, generates `output/local-workspace` inside the extracted folder, starts a loopback server and opens the Viewer. Python, Node and QGIS are not required by the portable runtime. Never run it from a protected or read-only directory.
+When an approved version's GitHub Release contains a Windows ZIP, extract the entire ZIP and run `GaiaGIS.exe`. The startup window lets you choose your own original FF7 installation, shows resource progress and opens the browser when ready. A successfully validated folder is remembered; the next launch reuses unchanged resources automatically. The launcher reads game inputs, generates `output/local-workspace` inside the extracted folder, starts a loopback server and opens the Viewer. Python, Node and QGIS are not required by the portable runtime. Extract into a folder you can write to (for example a folder you choose on a data drive), rather than running inside the ZIP or a protected directory. The EXE location determines the data root; there is no developer drive path or silently created AppData workspace. The initial build requires at least 256 MB of free disk space.
+
+If validation fails, select the installation root again and use Start / Retry; Remake/Rebirth folders and folders without the required original-game data are not supported. Details identify the missing input. Cancellation waits for the current resource to finish; restarting checks which completed resources can be reused. Closing the launcher stops its local server. Occupied/reserved ports are skipped automatically.
+
+Explore contains a compact Start exploring section: Find a place, My Save, My map, Routes and Game data help. It can be collapsed and reopened without a welcome overlay. Data shows the current connection; the detailed resource inventory is optional. Atlas Fly-to is directly available when a verified anchor (or clearly labelled parent-place anchor) exists; raw source details remain folded.
 
 Local candidate ZIPs are developer validation products, not official Release artifacts. Source ZIP/TAR downloads alone are not Windows executables.
 

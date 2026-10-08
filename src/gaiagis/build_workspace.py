@@ -123,7 +123,7 @@ def ensure_stage1(source, stage1, cache):
     target.write_text(json.dumps(build, sort_keys=True, indent=2), encoding='utf8')
     return cache
 
-def build_workspace(source, destination, stage1=None, *, rebuild=False, allow_optional_failure=False, clean_invalid=False):
+def build_workspace(source, destination, stage1=None, *, rebuild=False, allow_optional_failure=False, clean_invalid=False, progress=None):
     source = Path(source).resolve();out = output_path(Path(destination))
     if out.is_relative_to(source):raise ValueError('Workspace output must not be inside the selected source dataset')
     # Existing filesystem links must not redirect an exporter into another tree.
@@ -148,6 +148,7 @@ def build_workspace(source, destination, stage1=None, *, rebuild=False, allow_op
     except (FileNotFoundError, ValueError):old = None
     results = []
     def step(label, names, action):
+        if progress:progress(label,len(results),15)
         if not rebuild and reusable(old, sources, out, names):
             print(f'Reuse {label}', flush=True);results.append(dict(step=label, reused=True));return
         print(f'Build {label}', flush=True)
@@ -206,6 +207,7 @@ def build_workspace(source, destination, stage1=None, *, rebuild=False, allow_op
     for asset,name in [(char,'char.lgp')]+[(child_ci(sound,n) if sound else None,n) for n in ('audio.dat','audio.fmt')]:
         if asset and sha256(asset)!=sources[name]:raise RuntimeError('Optional source fingerprint changed during build')
     manifest = write_manifest(out, sources)
+    if progress:progress('ready',15,15)
     return dict(assets=len(manifest['assets']), steps=results, manifest_sha256=sha256(old_path), ff7_source_modified='NO')
 
 def main(argv=None):

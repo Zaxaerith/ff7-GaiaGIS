@@ -13,7 +13,7 @@ import type {ExplorerController} from '../explorer/controller';
 import type {GaiaViewer} from '../viewer/GaiaViewer';
 import type {MapId} from '../data/nativeMaps';
 import {projections} from '../projections';
-import {t,onLocaleChange} from '../i18n';
+import {t,onLocaleChange,locale} from '../i18n';
 
 export function mountSave(getViewer:()=>GaiaViewer|undefined,switchMap:(id:MapId)=>Promise<void>,getExplorer:()=>Promise<ExplorerController>){
  const scope=new ResourceScope(),panel=document.createElement('details'),title=document.createElement('summary'),card=document.createElement('section'),context=document.createElement('section'),marker=document.createElement('button');
@@ -40,7 +40,7 @@ export function mountSave(getViewer:()=>GaiaViewer|undefined,switchMap:(id:MapId
  async function atPlayer(kind:'fly'|'explore'|'route'){
   const slot=valid(),point=slot?.binding,viewer=getViewer(),ticket=++actionTicket;if(!point||!viewer)return;
   try{await switchMap('WM0');if(scope.disposed||ticket!==actionTicket||valid()!==slot)return;viewer.cancelMotion();
-   if(kind==='fly'){viewer.flyToLocation(point.geographic[0],point.geographic[1]);return;}
+   if(kind==='fly'){viewer.flyToLocation(point.geographic[0],point.geographic[1]);show();return;}
    const surface=await sharedSurface(viewer.mesh,viewer.meta),hit=saveSurfacePoint(surface,point);if(!hit||scope.disposed||ticket!==actionTicket||valid()!==slot)throw Error('no surface');
    if(kind==='route'){document.dispatchEvent(new CustomEvent('gaiagis:save-route',{detail:{node:hit.triangle,geographic:point.geographic}}));appStore.dispatch({type:'panel',panel:'analysis'});return;}
    const explorer=await getExplorer();if(scope.disposed||ticket!==actionTicket||valid()!==slot)return;
@@ -51,7 +51,8 @@ export function mountSave(getViewer:()=>GaiaViewer|undefined,switchMap:(id:MapId
    appStore.dispatch({type:'panel',panel:'explore'});if(innerWidth>700){const controls=document.getElementById('explorer-panel') as HTMLDetailsElement|null;if(controls)controls.open=true;}
   }catch{if(!scope.disposed){error=t('save27.noSurface');refresh();}}
  }
- function refresh(){title.textContent=t('save27.title');help.textContent=t('save27.help');help.className='control-note';load.textContent=t('save27.import');clear.textContent=t('save27.clear');clear.disabled=saveSession.slots.length===0;input.setAttribute('aria-label',t('save27.import'));status.textContent=error??(saveSession.slots.length?'':t('save27.emptyState'));slots.replaceChildren();
+ let lastRefresh:unknown[]=[];
+ function refresh(){const stamp=[locale(),appStore.state.selection?.kind,appStore.state.map.id,appStore.state.explorer.phase,saveSession.slot,saveSession.slots,fields,error,!!getViewer()];if(stamp.every((v,i)=>v===lastRefresh[i]))return;lastRefresh=stamp;title.textContent=t('save27.title');help.textContent=t('save27.help');help.className='control-note';load.textContent=t('save27.import');clear.textContent=t('save27.clear');clear.disabled=saveSession.slots.length===0;input.setAttribute('aria-label',t('save27.import'));status.textContent=error??(saveSession.slots.length?'':t('save27.emptyState'));slots.replaceChildren();
   for(const s of saveSession.slots){const b=make('button',slots,`${t('save27.slot',{number:s.index})} · ${t('save27.'+s.status)}`) as HTMLButtonElement;b.dataset.slot=String(s.index);b.setAttribute('aria-pressed',String(s===saveSession.slot));b.onclick=()=>{error=null;saveSession.select(s.index-1);show();};}
   card.hidden=appStore.state.selection?.kind!=='save';card.replaceChildren();if(!card.hidden){make('h2',card,t('save27.title'));make('p',card,t('save27.'+(saveSession.slot?.status??'empty')));fill(card);}
   context.hidden=!valid();context.replaceChildren();if(!context.hidden){make('h3',context,t('save27.context'));fill(context,true);button(context,'title','save-show',show);}

@@ -4,6 +4,10 @@ A local-first GIS reconstruction of the original FINAL FANTASY VII world, with a
 
 ## Quick start
 
+For Windows players: download the Windows ZIP from [Releases](https://github.com/Zaxaerith/ff7-GaiaGIS/releases), extract it to a writable folder and run **GaiaGIS.exe**. Choose your original FF7 installation. The startup window shows progress, opens the Viewer and remembers the folder for next time. No Python or Node installation is needed. In the Viewer, **Explore → Start exploring** offers the main player shortcuts.
+
+For a source checkout:
+
 ```powershell
 . tools/build/environment.ps1
 npm --prefix web ci

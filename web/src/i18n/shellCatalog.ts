@@ -34,4 +34,10 @@ export const shellCatalog=[
  ['shell.textureWM2','WM2 textures','WM2 纹理','WM2 紋理','WM2テクスチャ','WM2 텍스처'],
  ['shell.textureWM3','WM3 textures','WM3 纹理','WM3 紋理','WM3テクスチャ','WM3 텍스처'],
  ['shell.assetsHint','Loaded textures are available in View; WM2/WM3 in Map; characters in Explore → Explorer.','已加载纹理可在 View 使用，WM2／WM3 在 Map，角色在 Explore → Explorer。','已載入紋理可在 View 使用，WM2／WM3 在 Map，角色在 Explore → Explorer。','テクスチャはView、WM2/WM3はMap、キャラクターはExplore → Explorerで利用できます。','텍스처는 View, WM2/WM3는 Map, 캐릭터는 Explore → Explorer에서 사용합니다.'],
+ ['shell.quickStart','Start exploring','开始探索','開始探索','探索を始める','탐색 시작'],
+ ['shell.findPlace','Find a place','查找地点','尋找地點','場所を探す','장소 찾기'],
+ ['shell.draw','My map','我的地图','我的地圖','マイマップ','내 지도'],
+ ['shell.connect','Game data help','游戏数据帮助','遊戲資料說明','ゲームデータのヘルプ','게임 데이터 도움말'],
+ ['shell.readyHint','Your game data is connected. Search a place, open its card and fly there. Saves and personal maps stay on this device.','游戏数据已连接。搜索地点、打开资料卡并飞往地点。存档和个人地图仅保留在本设备。','遊戲資料已連線。搜尋地點、開啟資料卡並飛往地點。存檔與個人地圖僅保留在本裝置。','ゲームデータ接続済み。場所を検索し、カードを開いて移動できます。セーブとマイマップはこの端末内に保存されます。','게임 데이터가 연결되었습니다. 장소를 검색하고 카드를 열어 이동하세요. 저장 파일과 개인 지도는 이 기기에만 남습니다.'],
+ ['shell.publicHint','You can browse place guides and manage personal maps here. For the full world, textures and characters, run the Windows app with your own original FF7 installation.','这里可浏览地点资料并管理个人地图。完整世界、纹理和角色需要运行 Windows 应用并选择自己的原版 FF7 安装目录。','這裡可瀏覽地點資料並管理個人地圖。完整世界、紋理與角色需執行 Windows 應用並選擇自己的原版 FF7 安裝目錄。','場所のガイドとマイマップを利用できます。全世界・テクスチャ・キャラクターには、Windows アプリで所有する原作 FF7 を選択してください。','장소 안내와 개인 지도를 관리할 수 있습니다. 전체 월드, 텍스처, 캐릭터는 Windows 앱에서 본인의 원본 FF7 설치 폴더를 선택하면 사용할 수 있습니다.'],
 ] as const;
