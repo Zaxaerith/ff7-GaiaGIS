@@ -6,98 +6,98 @@
       "id": "field-identity",
       "provider": "GaiaGIS source evidence",
       "title": "GaiaGIS validated original-game field identities",
-      "url": "https://github.com/Zaxaerith/ff7-GaiaGIS/blob/main/docs/reference/atlas.md",
-      "reviewed": "2026-10-06",
+      "url": "https://github.com/Zaxaerith/ff7-GaiaGIS/blob/f137814fccb96ae6c76e111a8a9e411a21d41ba2/docs/v1.1/poi-data.md",
+      "reviewed": "2026-10-08",
       "type": "game_identity",
-      "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
+      "notes": "Frozen published v2.2 evidence. Current main no longer contains the historical development document; this commit preserves the actual identity review."
     },
     {
       "id": "field-reference",
       "provider": "FF7 flat wiki",
       "title": "FF7 Field ID reference",
       "url": "https://ff7-mods.github.io/ff7-flat-wiki/FF7/Field/Field_ID.html",
-      "reviewed": "2026-10-06",
+      "reviewed": "2026-10-08",
       "type": "reverse_engineering",
       "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
     },
     {
       "id": "wiki-caves",
-      "provider": "Final Fantasy Wiki",
-      "title": "Materia Cave",
-      "url": "https://finalfantasy.fandom.com/wiki/Materia_Cave",
-      "reviewed": "2026-10-06",
-      "type": "wiki",
-      "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
+      "provider": "Jegged",
+      "title": "FFVII original: Materia caves",
+      "url": "https://jegged.com/Games/Final-Fantasy-VII/Side-Quests/Materia-Caves.html",
+      "reviewed": "2026-10-08",
+      "type": "reference",
+      "notes": "Previous URL returned HTTP 403 during review; replaced with a readable classic-game factual reference. No coordinate authority."
     },
     {
       "id": "caves",
       "provider": "Jegged",
       "title": "The Materia Caves",
       "url": "https://jegged.com/Games/Final-Fantasy-VII/Side-Quests/Materia-Caves.html",
-      "reviewed": "2026-10-06",
+      "reviewed": "2026-10-08",
       "type": "reference",
       "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
     },
     {
       "id": "wiki-forest",
-      "provider": "Final Fantasy Wiki",
-      "title": "Ancient Forest",
-      "url": "https://finalfantasy.fandom.com/wiki/Ancient_Forest",
-      "reviewed": "2026-10-06",
-      "type": "wiki",
-      "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
+      "provider": "Jegged",
+      "title": "FFVII original: Ancient Forest location",
+      "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Ancient-Forest.html",
+      "reviewed": "2026-10-08",
+      "type": "reference",
+      "notes": "Previous URL returned HTTP 403 during review; this readable classic-game guide replaces it. Location overview omits the chocobo access alternative; detailed guide corroborates it. No coordinate use."
     },
     {
       "id": "forest-guide",
-      "provider": "StrategyWiki",
-      "title": "Ancient Forest guide",
-      "url": "https://strategywiki.org/wiki/Final_Fantasy_VII/Ancient_Forest",
-      "reviewed": "2026-10-06",
-      "type": "wiki",
-      "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
+      "provider": "Jegged",
+      "title": "FFVII original: Ancient Forest puzzles",
+      "url": "https://jegged.com/Games/Final-Fantasy-VII/Side-Quests/Ancient-Forest.html",
+      "reviewed": "2026-10-08",
+      "type": "reference",
+      "notes": "Previous URL returned HTTP 403 during review; replaced with a readable classic-game factual reference. No coordinate authority."
     },
     {
       "id": "lucrecia",
       "provider": "Jegged",
       "title": "Lucrecia’s Crystal Cave",
       "url": "https://jegged.com/Games/Final-Fantasy-VII/Side-Quests/Lucrecias-Crystal-Cave.html",
-      "reviewed": "2026-10-06",
+      "reviewed": "2026-10-08",
       "type": "reference",
       "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
     },
     {
       "id": "old-man",
-      "provider": "Final Fantasy Wiki",
-      "title": "Old man’s house",
-      "url": "https://finalfantasy.fandom.com/wiki/Old_man%27s_house",
-      "reviewed": "2026-10-06",
-      "type": "wiki",
-      "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
+      "provider": "Jegged",
+      "title": "Mythril / See the Light",
+      "url": "https://jegged.com/Games/Final-Fantasy-VII/Achievements-and-Trophies/",
+      "reviewed": "2026-10-08",
+      "type": "reference",
+      "notes": "Previous Fandom URL returned HTTP 403 during review. Accessible original-game guide substituted; no coordinate authority."
     },
     {
       "id": "weapon-seller",
-      "provider": "Final Fantasy Wiki",
-      "title": "Weapon seller",
-      "url": "https://finalfantasy.fandom.com/wiki/Weapon_seller",
-      "reviewed": "2026-10-06",
-      "type": "wiki",
-      "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
+      "provider": "Flactem Guides",
+      "title": "Keystone / Mythril exchange",
+      "url": "https://guides.flactem.com/final-fantasy-vii/disc-1/keystone-temple/",
+      "reviewed": "2026-10-08",
+      "type": "reference",
+      "notes": "Previous Fandom URL returned HTTP 403. Box contents cross-checked against its cached Original FF7 entry and the Jegged Great Gospel guide. Repeatability conflicts are not asserted."
     },
     {
       "id": "wiki-glacier",
-      "provider": "Final Fantasy Wiki",
-      "title": "Great Glacier (Final Fantasy VII)",
-      "url": "https://finalfantasy.fandom.com/wiki/Great_Glacier_(Final_Fantasy_VII)",
-      "reviewed": "2026-10-06",
-      "type": "wiki",
-      "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
+      "provider": "Jegged",
+      "title": "Great Glacier walkthrough",
+      "url": "https://jegged.com/Games/Final-Fantasy-VII/Walkthrough/Disc-2/26-Great-Glacier.html",
+      "reviewed": "2026-10-08",
+      "type": "reference",
+      "notes": "Previous Fandom URL returned HTTP 403 during review. Accessible original-game guide substituted; no coordinate authority."
     },
     {
       "id": "midgar",
       "provider": "Jegged",
       "title": "Midgar",
       "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Midgar.html",
-      "reviewed": "2026-10-06",
+      "reviewed": "2026-10-08",
       "type": "reference",
       "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
     },
@@ -106,7 +106,7 @@
       "provider": "Jegged",
       "title": "Kalm",
       "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Kalm.html",
-      "reviewed": "2026-10-06",
+      "reviewed": "2026-10-08",
       "type": "reference",
       "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
     },
@@ -115,7 +115,7 @@
       "provider": "Jegged",
       "title": "Chocobo Farm",
       "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Chocobo-Farm.html",
-      "reviewed": "2026-10-06",
+      "reviewed": "2026-10-08",
       "type": "reference",
       "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
     },
@@ -124,7 +124,7 @@
       "provider": "Jegged",
       "title": "Mythril Mine",
       "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Mythril-Mine.html",
-      "reviewed": "2026-10-06",
+      "reviewed": "2026-10-08",
       "type": "reference",
       "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
     },
@@ -133,7 +133,7 @@
       "provider": "Jegged",
       "title": "Fort Condor",
       "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Fort-Condor.html",
-      "reviewed": "2026-10-06",
+      "reviewed": "2026-10-08",
       "type": "reference",
       "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
     },
@@ -142,7 +142,7 @@
       "provider": "Jegged",
       "title": "Junon",
       "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Junon.html",
-      "reviewed": "2026-10-06",
+      "reviewed": "2026-10-08",
       "type": "reference",
       "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
     },
@@ -151,7 +151,7 @@
       "provider": "Jegged",
       "title": "Temple of the Ancients",
       "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Temple-of-the-Ancients.html",
-      "reviewed": "2026-10-06",
+      "reviewed": "2026-10-08",
       "type": "reference",
       "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
     },
@@ -160,7 +160,7 @@
       "provider": "Jegged",
       "title": "Mideel",
       "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Mideel.html",
-      "reviewed": "2026-10-06",
+      "reviewed": "2026-10-08",
       "type": "reference",
       "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
     },
@@ -169,7 +169,7 @@
       "provider": "Jegged",
       "title": "Costa del Sol",
       "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Costa-del-Sol.html",
-      "reviewed": "2026-10-06",
+      "reviewed": "2026-10-08",
       "type": "reference",
       "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
     },
@@ -178,7 +178,7 @@
       "provider": "Jegged",
       "title": "Mt. Corel",
       "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Mount-Corel.html",
-      "reviewed": "2026-10-06",
+      "reviewed": "2026-10-08",
       "type": "reference",
       "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
     },
@@ -187,7 +187,7 @@
       "provider": "Jegged",
       "title": "North Corel",
       "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/North-Corel.html",
-      "reviewed": "2026-10-06",
+      "reviewed": "2026-10-08",
       "type": "reference",
       "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
     },
@@ -196,16 +196,16 @@
       "provider": "Jegged",
       "title": "Corel Desert",
       "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Corel-Prison.html",
-      "reviewed": "2026-10-06",
+      "reviewed": "2026-10-08",
       "type": "reference",
-      "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
+      "notes": "Guide covers Corel Prison and its surrounding-area encounter context. Existing Corel Desert POI identity is retained; neither prison nor individual enemy positions are inferred from this reference."
     },
     {
       "id": "gongaga",
       "provider": "Jegged",
       "title": "Gongaga",
       "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Gongaga.html",
-      "reviewed": "2026-10-06",
+      "reviewed": "2026-10-08",
       "type": "reference",
       "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
     },
@@ -214,7 +214,7 @@
       "provider": "Jegged",
       "title": "Cosmo Canyon",
       "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Cosmo-Canyon.html",
-      "reviewed": "2026-10-06",
+      "reviewed": "2026-10-08",
       "type": "reference",
       "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
     },
@@ -223,7 +223,7 @@
       "provider": "Jegged",
       "title": "Nibelheim",
       "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Nibelheim.html",
-      "reviewed": "2026-10-06",
+      "reviewed": "2026-10-08",
       "type": "reference",
       "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
     },
@@ -232,7 +232,7 @@
       "provider": "Jegged",
       "title": "Rocket Town",
       "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Rocket-Town.html",
-      "reviewed": "2026-10-06",
+      "reviewed": "2026-10-08",
       "type": "reference",
       "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
     },
@@ -241,7 +241,7 @@
       "provider": "Jegged",
       "title": "Wutai",
       "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Wutai.html",
-      "reviewed": "2026-10-06",
+      "reviewed": "2026-10-08",
       "type": "reference",
       "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
     },
@@ -250,7 +250,7 @@
       "provider": "Jegged",
       "title": "Bone Village",
       "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Bone-Village.html",
-      "reviewed": "2026-10-06",
+      "reviewed": "2026-10-08",
       "type": "reference",
       "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
     },
@@ -259,7 +259,7 @@
       "provider": "Jegged",
       "title": "Icicle Inn",
       "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Icicle-Inn.html",
-      "reviewed": "2026-10-06",
+      "reviewed": "2026-10-08",
       "type": "reference",
       "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
     },
@@ -268,7 +268,7 @@
       "provider": "Jegged",
       "title": "Chocobo Sage's House",
       "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Chocobo-Sages-House.html",
-      "reviewed": "2026-10-06",
+      "reviewed": "2026-10-08",
       "type": "reference",
       "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
     },
@@ -277,7 +277,7 @@
       "provider": "Jegged",
       "title": "Mt. Nibel",
       "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Mount-Nibel.html",
-      "reviewed": "2026-10-06",
+      "reviewed": "2026-10-08",
       "type": "reference",
       "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
     },
@@ -286,16 +286,16 @@
       "provider": "Jegged",
       "title": "Great Glacier",
       "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Great-Glacier.html",
-      "reviewed": "2026-10-06",
+      "reviewed": "2026-10-08",
       "type": "reference",
-      "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
+      "notes": "Location overview says return is impossible; the detailed walkthrough and Support/Summon pages describe return or later recovery. Atlas does not assert a blanket missability rule."
     },
     {
       "id": "corral-valley",
       "provider": "Jegged",
       "title": "Corral Valley",
       "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Corel-Valley.html",
-      "reviewed": "2026-10-06",
+      "reviewed": "2026-10-08",
       "type": "reference",
       "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
     },
@@ -304,7 +304,7 @@
       "provider": "Jegged",
       "title": "Forgotten Capital",
       "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Forgotten-Capital.html",
-      "reviewed": "2026-10-06",
+      "reviewed": "2026-10-08",
       "type": "reference",
       "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
     },
@@ -313,7 +313,7 @@
       "provider": "Jegged",
       "title": "Sunken Gelnika",
       "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Sunken-Gelnika.html",
-      "reviewed": "2026-10-06",
+      "reviewed": "2026-10-08",
       "type": "reference",
       "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
     },
@@ -322,7 +322,7 @@
       "provider": "Jegged",
       "title": "Gold Saucer",
       "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Gold-Saucer.html",
-      "reviewed": "2026-10-06",
+      "reviewed": "2026-10-08",
       "type": "reference",
       "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
     },
@@ -331,7 +331,7 @@
       "provider": "Jegged",
       "title": "Northern Cave",
       "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Northern-Cave.html",
-      "reviewed": "2026-10-06",
+      "reviewed": "2026-10-08",
       "type": "reference",
       "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
     },
@@ -340,7 +340,7 @@
       "provider": "Jegged",
       "title": "Round Island",
       "url": "https://jegged.com/Games/Final-Fantasy-VII/Locations/Round-Island.html",
-      "reviewed": "2026-10-06",
+      "reviewed": "2026-10-08",
       "type": "reference",
       "notes": "Original FF7 only. Short facts independently summarized; no images or article text redistributed."
     },
@@ -349,9 +349,135 @@
       "provider": "GaiaGIS / ff7tk / FF7 field-format research",
       "title": "Reviewed Field identities and original archive/script linkage",
       "url": "https://github.com/sithlord48/ff7tk/blob/cb876ba93f384b3a90a06ece216ccd1a160fbbcf/src/data/FF7Location.h",
-      "reviewed": "2026-10-07",
+      "reviewed": "2026-10-08",
       "type": "reverse_engineering",
       "notes": "Names are reviewed annotations, never coordinate authority. Private source validation checks exact maplist/archive identity. qa–qd headers identify q_1–q_4; WM2 entry 31 enters qa. Reward groups identify a scene set, not a chest or local object point."
+    },
+    {
+      "id": "midgar-return",
+      "provider": "Jegged",
+      "title": "FFVII original: Key to Sector 5",
+      "url": "https://jegged.com/Games/Final-Fantasy-VII/Side-Quests/Key-to-Sector-5.html",
+      "reviewed": "2026-10-08",
+      "type": "reference",
+      "notes": "Classic original FF7 guide; reviewed factual excerpt only. Authored knowledge, never coordinate authority."
+    },
+    {
+      "id": "gold-games",
+      "provider": "Jegged",
+      "title": "FFVII original: Gold Saucer games",
+      "url": "https://jegged.com/Games/Final-Fantasy-VII/Side-Quests/Gold-Saucer-Games.html",
+      "reviewed": "2026-10-08",
+      "type": "reference",
+      "notes": "Classic original FF7 guide; reviewed factual excerpt only. Authored knowledge, never coordinate authority."
+    },
+    {
+      "id": "gelnika-guide",
+      "provider": "Jegged",
+      "title": "FFVII original: Sunken Gelnika exploration",
+      "url": "https://jegged.com/Games/Final-Fantasy-VII/Side-Quests/Sunken-Gelnika.html",
+      "reviewed": "2026-10-08",
+      "type": "reference",
+      "notes": "Classic original FF7 guide; reviewed factual excerpt only. Authored knowledge, never coordinate authority."
+    },
+    {
+      "id": "sage-guide",
+      "provider": "Jegged",
+      "title": "FFVII original: Chocobo Sage",
+      "url": "https://jegged.com/Games/Final-Fantasy-VII/Side-Quests/Chocobo-Sage.html",
+      "reviewed": "2026-10-08",
+      "type": "reference",
+      "notes": "Classic original FF7 guide; reviewed factual excerpt only. Authored knowledge, never coordinate authority."
+    },
+    {
+      "id": "kalm-walk",
+      "provider": "Jegged",
+      "title": "FFVII original: Kalm walkthrough",
+      "url": "https://jegged.com/Games/Final-Fantasy-VII/Walkthrough/Disc-1/07-Kalm.html",
+      "reviewed": "2026-10-08",
+      "type": "reference",
+      "notes": "Classic original FF7 guide; reviewed factual excerpt only. Authored knowledge, never coordinate authority."
+    },
+    {
+      "id": "junon-walk",
+      "provider": "Jegged",
+      "title": "FFVII original: first Junon visit",
+      "url": "https://jegged.com/Games/Final-Fantasy-VII/Walkthrough/Disc-1/10-Junon.html",
+      "reviewed": "2026-10-08",
+      "type": "reference",
+      "notes": "Classic original FF7 guide; reviewed factual excerpt only. Authored knowledge, never coordinate authority."
+    },
+    {
+      "id": "materia-support",
+      "provider": "Jegged",
+      "title": "Support Materia",
+      "url": "https://jegged.com/Games/Final-Fantasy-VII/Materia/Support.html",
+      "reviewed": "2026-10-08",
+      "type": "reference",
+      "notes": "Original FF7 gameplay reference; independently authored facts only. Not coordinate authority."
+    },
+    {
+      "id": "materia-command",
+      "provider": "Jegged",
+      "title": "Command Materia",
+      "url": "https://jegged.com/Games/Final-Fantasy-VII/Materia/Command.html",
+      "reviewed": "2026-10-08",
+      "type": "reference",
+      "notes": "Original-game command reference. Mime fact describes ordinary preceding actions only; unsupported Limit Break restrictions are not adopted."
+    },
+    {
+      "id": "materia-independent",
+      "provider": "Jegged",
+      "title": "Independent Materia",
+      "url": "https://jegged.com/Games/Final-Fantasy-VII/Materia/Independent.html",
+      "reviewed": "2026-10-08",
+      "type": "reference",
+      "notes": "Original FF7 gameplay reference; independently authored facts only. Not coordinate authority."
+    },
+    {
+      "id": "materia-summon",
+      "provider": "Jegged",
+      "title": "Summon Materia",
+      "url": "https://jegged.com/Games/Final-Fantasy-VII/Materia/Summon.html",
+      "reviewed": "2026-10-08",
+      "type": "reference",
+      "notes": "Original FF7 gameplay reference; independently authored facts only. Not coordinate authority."
+    },
+    {
+      "id": "mine-walk",
+      "provider": "Jegged",
+      "title": "Mythril Mine walkthrough",
+      "url": "https://jegged.com/Games/Final-Fantasy-VII/Walkthrough/Disc-1/09-Mythril-Mine.html",
+      "reviewed": "2026-10-08",
+      "type": "reference",
+      "notes": "Original FF7 gameplay reference; independently authored facts only. Not coordinate authority."
+    },
+    {
+      "id": "fort-defense",
+      "provider": "Jegged",
+      "title": "Fort Condor defense",
+      "url": "https://jegged.com/Games/Final-Fantasy-VII/Side-Quests/Fort-Condor.html",
+      "reviewed": "2026-10-08",
+      "type": "reference",
+      "notes": "Original FF7 gameplay reference; independently authored facts only. Not coordinate authority."
+    },
+    {
+      "id": "pagoda-guide",
+      "provider": "Jegged",
+      "title": "Wutai Pagoda",
+      "url": "https://jegged.com/Games/Final-Fantasy-VII/Side-Quests/Wutai-Pagoda.html",
+      "reviewed": "2026-10-08",
+      "type": "reference",
+      "notes": "Original FF7 gameplay reference; independently authored facts only. Not coordinate authority."
+    },
+    {
+      "id": "limit-items",
+      "provider": "Jegged",
+      "title": "Level 4 Limit Breaks",
+      "url": "https://jegged.com/Games/Final-Fantasy-VII/Side-Quests/Level-4-Limit-Breaks.html",
+      "reviewed": "2026-10-08",
+      "type": "reference",
+      "notes": "Original FF7 gameplay reference; independently authored facts only. Not coordinate authority."
     }
   ],
   "entities": [
@@ -361,17 +487,18 @@
       "canonicalName": "Midgar",
       "localizedNames": {
         "en": "Midgar",
-        "zh-CN": "Midgar",
-        "zh-TW": "Midgar",
-        "ja": "Midgar",
-        "ko": "Midgar"
+        "zh-CN": "米德加",
+        "zh-TW": "米德加",
+        "ja": "ミッドガル",
+        "ko": "미드가르"
       },
       "aliases": [
         "Sector 5 gate",
         "mds5_5",
         "米德加",
         "ミッドガル",
-        "미드가르"
+        "미드가르",
+        "Midgar"
       ],
       "summary": {
         "en": "A large city divided into eight sectors.",
@@ -399,9 +526,53 @@
       "secrets": [],
       "sources": [
         "field-identity",
-        "midgar"
+        "midgar",
+        "midgar-return"
       ],
-      "facts": [],
+      "facts": [
+        {
+          "kind": "gameplay",
+          "text": {
+            "en": "Eight sectors separate the city; the opening visits selected slums and Shinra facilities.",
+            "zh-CN": "城市分为八区；开篇探索部分贫民窟与神罗设施。",
+            "zh-TW": "城市分為八區；開篇探索部分貧民窟與神羅設施。",
+            "ja": "都市は八つの区画に分かれ、序盤は一部のスラムや神羅施設を巡る。",
+            "ko": "도시는 여덟 구역으로 나뉘며 초반에는 일부 슬럼과 신라 시설을 탐험한다."
+          },
+          "spoilerLevel": "none",
+          "sources": [
+            "midgar"
+          ]
+        },
+        {
+          "kind": "access",
+          "text": {
+            "en": "Later, the Key to Sector 5 allows another visit to the slums.",
+            "zh-CN": "后期可用五号区钥匙重访贫民窟。",
+            "zh-TW": "後期可用五號區鑰匙重訪貧民窟。",
+            "ja": "後半は伍番街のカギでスラムを再訪できる。",
+            "ko": "후반에는 5번 구역 열쇠로 슬럼을 다시 방문할 수 있다."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "midgar-return"
+          ]
+        },
+        {
+          "kind": "reward",
+          "text": {
+            "en": "On the return visit, the Wall Market shop terminal yields Tifa's Premium Heart.",
+            "zh-CN": "重访时，围墙商店街的商店终端可取得蒂法的 Premium Heart。",
+            "zh-TW": "重訪時，圍牆商店街的商店終端可取得蒂法的 Premium Heart。",
+            "ja": "再訪時、ウォールマーケットの店の端末からティファ用の Premium Heart を入手できる。",
+            "ko": "재방문 시 월 마켓 상점 단말에서 티파의 Premium Heart를 얻을 수 있다."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "midgar-return"
+          ]
+        }
+      ],
       "notes": []
     },
     {
@@ -410,16 +581,17 @@
       "canonicalName": "Kalm",
       "localizedNames": {
         "en": "Kalm",
-        "zh-CN": "Kalm",
-        "zh-TW": "Kalm",
-        "ja": "Kalm",
-        "ko": "Kalm"
+        "zh-CN": "卡姆",
+        "zh-TW": "卡姆",
+        "ja": "カーム",
+        "ko": "캄"
       },
       "aliases": [
         "elm",
         "卡姆",
         "カーム",
-        "캄"
+        "캄",
+        "Kalm"
       ],
       "summary": {
         "en": "A town near Midgar, with an inn and shops.",
@@ -449,9 +621,53 @@
       "secrets": [],
       "sources": [
         "field-identity",
-        "kalm"
+        "kalm",
+        "kalm-walk"
       ],
-      "facts": [],
+      "facts": [
+        {
+          "kind": "gameplay",
+          "text": {
+            "en": "The inn hosts Cloud's account of the Nibelheim mission.",
+            "zh-CN": "旅馆是克劳德讲述尼布尔海姆任务经历的场所。",
+            "zh-TW": "旅館是克勞德講述尼布爾海姆任務經歷的場所。",
+            "ja": "宿屋でクラウドがニブルヘイム任務の体験を語る。",
+            "ko": "여관에서 클라우드가 니블헤임 임무 경험을 이야기한다."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "kalm-walk"
+          ]
+        },
+        {
+          "kind": "gameplay",
+          "text": {
+            "en": "Item, weapon and Materia shops make this an early resupply stop.",
+            "zh-CN": "道具、武器与魔晶石商店使这里成为早期补给点。",
+            "zh-TW": "道具、武器與魔晶石商店使這裡成為早期補給點。",
+            "ja": "道具・武器・マテリアの店があり、序盤の補給に利用できる。",
+            "ko": "아이템·무기·마테리아 상점이 있어 초반 보급에 유용하다."
+          },
+          "spoilerLevel": "none",
+          "sources": [
+            "kalm"
+          ]
+        },
+        {
+          "kind": "reward",
+          "text": {
+            "en": "Town treasures include Megalixir and Peacemaker; the traveler also offers optional exchanges.",
+            "zh-CN": "镇内可取得 Megalixir 与 Peacemaker；旅行者另有可选交换任务。",
+            "zh-TW": "鎮內可取得 Megalixir 與 Peacemaker；旅行者另有可選交換任務。",
+            "ja": "町には Megalixir や Peacemaker があり、旅人との任意交換もある。",
+            "ko": "마을에서 Megalixir와 Peacemaker를 찾을 수 있으며 여행자의 선택 교환도 있다."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "kalm"
+          ]
+        }
+      ],
       "notes": []
     },
     {
@@ -460,14 +676,15 @@
       "canonicalName": "Chocobo Farm",
       "localizedNames": {
         "en": "Chocobo Farm",
-        "zh-CN": "Chocobo Farm",
-        "zh-TW": "Chocobo Farm",
-        "ja": "Chocobo Farm",
-        "ko": "Chocobo Farm"
+        "zh-CN": "陆行鸟农场",
+        "zh-TW": "陸行鳥牧場",
+        "ja": "チョコボファーム",
+        "ko": "초코보 농장"
       },
       "aliases": [
         "Chocobo Ranch",
-        "farm"
+        "farm",
+        "Chocobo Farm"
       ],
       "summary": {
         "en": "A farm supporting chocobo capture and breeding.",
@@ -489,7 +706,8 @@
         "chocobo-farm"
       ],
       "relatedEntities": [
-        "chocobo-sages-house"
+        "chocobo-sages-house",
+        "mythril-mine"
       ],
       "collectibles": [],
       "secrets": [],
@@ -497,7 +715,36 @@
         "field-identity",
         "chocobo-farm"
       ],
-      "facts": [],
+      "facts": [
+        {
+          "kind": "access",
+          "text": {
+            "en": "Choco Billy sells Chocobo Lure and greens for catching chocobos.",
+            "zh-CN": "陆行鸟小屋出售捕捉陆行鸟用的 Chocobo Lure 和蔬菜。",
+            "zh-TW": "陸行鳥小屋出售捕捉陸行鳥用的 Chocobo Lure 和蔬菜。",
+            "ja": "チョコボ捕獲用の Chocobo Lure と野菜を購入できる。",
+            "ko": "초코보 포획에 쓰는 Chocobo Lure와 채소를 살 수 있다."
+          },
+          "spoilerLevel": "none",
+          "sources": [
+            "chocobo-farm"
+          ]
+        },
+        {
+          "kind": "gameplay",
+          "text": {
+            "en": "Later visits support keeping and breeding chocobos.",
+            "zh-CN": "后期可在这里饲养和繁殖陆行鸟。",
+            "zh-TW": "後期可在這裡飼養和繁殖陸行鳥。",
+            "ja": "後半にはチョコボの飼育と繁殖に利用できる。",
+            "ko": "후반에는 초코보를 기르고 번식시킬 수 있다."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "chocobo-farm"
+          ]
+        }
+      ],
       "notes": []
     },
     {
@@ -506,15 +753,16 @@
       "canonicalName": "Mythril Mine",
       "localizedNames": {
         "en": "Mythril Mine",
-        "zh-CN": "Mythril Mine",
-        "zh-TW": "Mythril Mine",
-        "ja": "Mythril Mine",
-        "ko": "Mythril Mine"
+        "zh-CN": "秘银矿洞",
+        "zh-TW": "秘銀礦洞",
+        "ja": "ミスリルマイン",
+        "ko": "미스릴 광산"
       },
       "aliases": [
         "Mythril Mines",
         "psdun_1",
-        "psdun_2"
+        "psdun_2",
+        "Mythril Mine"
       ],
       "summary": {
         "en": "A mine passage connecting the marsh approach to the Junon area.",
@@ -535,16 +783,49 @@
       "relatedLocations": [
         "mythril-mine"
       ],
-      "relatedEntities": [],
+      "relatedEntities": [
+        "chocobo-farm",
+        "junon"
+      ],
       "collectibles": [
         "mine-materia"
       ],
       "secrets": [],
       "sources": [
         "field-identity",
-        "mythril-mine"
+        "mythril-mine",
+        "mine-walk"
       ],
-      "facts": [],
+      "facts": [
+        {
+          "kind": "access",
+          "text": {
+            "en": "The mine links the marsh route with the Junon side.",
+            "zh-CN": "矿道连接沼泽路线与朱诺一侧。",
+            "zh-TW": "礦道連接沼澤路線與朱諾一側。",
+            "ja": "湿地の道とジュノン側を結ぶ鉱山。",
+            "ko": "습지 길과 주논 쪽을 이어 주는 광산이다."
+          },
+          "spoilerLevel": "none",
+          "sources": [
+            "mythril-mine"
+          ]
+        },
+        {
+          "kind": "gameplay",
+          "text": {
+            "en": "Ark Dragon can teach the Flamethrower Enemy Skill.",
+            "zh-CN": "可从 Ark Dragon 学习 Flamethrower 敌方技能。",
+            "zh-TW": "可從 Ark Dragon 學習 Flamethrower 敵方技能。",
+            "ja": "Ark Dragon から敵の技 Flamethrower を習得できる。",
+            "ko": "Ark Dragon에게서 적의 기술 Flamethrower를 배울 수 있다."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "mine-walk"
+          ]
+        }
+      ],
       "notes": []
     },
     {
@@ -553,13 +834,14 @@
       "canonicalName": "Fort Condor",
       "localizedNames": {
         "en": "Fort Condor",
-        "zh-CN": "Fort Condor",
-        "zh-TW": "Fort Condor",
-        "ja": "Fort Condor",
-        "ko": "Fort Condor"
+        "zh-CN": "秃鹰堡垒",
+        "zh-TW": "禿鷹堡壘",
+        "ja": "コンドルフォート",
+        "ko": "콘돌 포트"
       },
       "aliases": [
-        "condor1"
+        "condor1",
+        "Fort Condor"
       ],
       "summary": {
         "en": "A reactor site with a defensive battle minigame.",
@@ -585,9 +867,39 @@
       "secrets": [],
       "sources": [
         "field-identity",
-        "fort-condor"
+        "fort-condor",
+        "fort-defense"
       ],
-      "facts": [],
+      "facts": [
+        {
+          "kind": "gameplay",
+          "text": {
+            "en": "Spend Gil on defensive units; rewards vary between battles.",
+            "zh-CN": "用 Gil 部署防御单位；不同战役的奖励不同。",
+            "zh-TW": "用 Gil 部署防禦單位；不同戰役的獎勵不同。",
+            "ja": "ギルで防衛ユニットを配置する。報酬は戦いごとに異なる。",
+            "ko": "길로 방어 부대를 배치하며 전투마다 보상이 달라진다."
+          },
+          "spoilerLevel": "none",
+          "sources": [
+            "fort-defense"
+          ]
+        },
+        {
+          "kind": "gameplay",
+          "text": {
+            "en": "Enemies reaching the hut trigger a CMD. Grand Horn fight.",
+            "zh-CN": "敌人到达山顶小屋时会触发 CMD. Grand Horn 战斗。",
+            "zh-TW": "敵人到達山頂小屋時會觸發 CMD. Grand Horn 戰鬥。",
+            "ja": "敵が小屋に到達すると CMD. Grand Horn 戦になる。",
+            "ko": "적이 오두막에 도달하면 CMD. Grand Horn과 싸우게 된다."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "fort-defense"
+          ]
+        }
+      ],
       "notes": []
     },
     {
@@ -596,10 +908,10 @@
       "canonicalName": "Junon",
       "localizedNames": {
         "en": "Junon",
-        "zh-CN": "Junon",
-        "zh-TW": "Junon",
-        "ja": "Junon",
-        "ko": "Junon"
+        "zh-CN": "朱诺",
+        "zh-TW": "朱諾",
+        "ja": "ジュノン",
+        "ko": "주논"
       },
       "aliases": [
         "Lower Junon",
@@ -607,7 +919,8 @@
         "朱农",
         "朱農",
         "ジュノン",
-        "주논"
+        "주논",
+        "Junon"
       ],
       "summary": {
         "en": "A coastal military city with a port linking the continents.",
@@ -629,7 +942,8 @@
         "junon"
       ],
       "relatedEntities": [
-        "costa-del-sol"
+        "costa-del-sol",
+        "mythril-mine"
       ],
       "collectibles": [
         "junon-enemy-skill"
@@ -637,9 +951,53 @@
       "secrets": [],
       "sources": [
         "field-identity",
-        "junon"
+        "junon",
+        "junon-walk"
       ],
-      "facts": [],
+      "facts": [
+        {
+          "kind": "access",
+          "text": {
+            "en": "Its cargo ship links Junon and Costa del Sol.",
+            "zh-CN": "货船连接朱诺与太阳海岸。",
+            "zh-TW": "貨船連接朱諾與太陽海岸。",
+            "ja": "貨物船でジュノンとコスタ・デル・ソルを行き来する。",
+            "ko": "화물선이 주논과 코스타 델 솔을 연결한다."
+          },
+          "spoilerLevel": "none",
+          "sources": [
+            "junon"
+          ]
+        },
+        {
+          "kind": "gameplay",
+          "text": {
+            "en": "The first visit includes the Bottomswell battle and Priscilla's rescue.",
+            "zh-CN": "首次到访包含 Bottomswell 战斗与救助普莉希拉的事件。",
+            "zh-TW": "首次到訪包含 Bottomswell 戰鬥與救助普莉希拉的事件。",
+            "ja": "初訪問では Bottomswell 戦とプリシラの救助がある。",
+            "ko": "첫 방문에는 Bottomswell 전투와 프리실라 구조가 포함된다."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "junon-walk"
+          ]
+        },
+        {
+          "kind": "reward",
+          "text": {
+            "en": "Shiva and an Enemy Skill Materia are among Junon's rewards.",
+            "zh-CN": "朱诺的奖励包括希瓦与敌技魔晶石。",
+            "zh-TW": "朱諾的獎勵包括希瓦與敵技魔晶石。",
+            "ja": "ジュノンではシヴァやてきのわざマテリアを入手できる。",
+            "ko": "주논에서는 시바와 적의 기술 마테리아 등을 얻을 수 있다."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "junon"
+          ]
+        }
+      ],
       "notes": []
     },
     {
@@ -648,13 +1006,14 @@
       "canonicalName": "Temple of the Ancients",
       "localizedNames": {
         "en": "Temple of the Ancients",
-        "zh-CN": "Temple of the Ancients",
-        "zh-TW": "Temple of the Ancients",
-        "ja": "Temple of the Ancients",
-        "ko": "Temple of the Ancients"
+        "zh-CN": "古代种神殿",
+        "zh-TW": "古代種神殿",
+        "ja": "古代種の神殿",
+        "ko": "고대종의 신전"
       },
       "aliases": [
-        "jtempl"
+        "jtempl",
+        "Temple of the Ancients"
       ],
       "summary": {
         "en": "An island temple containing a dungeon.",
@@ -684,7 +1043,36 @@
         "field-identity",
         "temple-of-the-ancients"
       ],
-      "facts": [],
+      "facts": [
+        {
+          "kind": "reward",
+          "text": {
+            "en": "Check for Bahamut, Morph and Ribbon during the dungeon visit.",
+            "zh-CN": "探索迷宫时可留意巴哈姆特、变化魔晶石与缎带。",
+            "zh-TW": "探索迷宮時可留意巴哈姆特、變化魔晶石與緞帶。",
+            "ja": "ダンジョン訪問中にバハムート、へんかマテリア、リボンを探せる。",
+            "ko": "던전 방문 중 바하무트·변화 마테리아·리본을 찾아볼 수 있다."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "temple-of-the-ancients"
+          ]
+        },
+        {
+          "kind": "gameplay",
+          "text": {
+            "en": "The temple becomes Black Materia, so its interior cannot be revisited afterward.",
+            "zh-CN": "神殿化为黑魔晶石，之后无法重访内部。",
+            "zh-TW": "神殿化為黑魔晶石，之後無法重訪內部。",
+            "ja": "神殿は黒マテリアへ変わり、その後内部へ戻ることはできない。",
+            "ko": "신전이 흑마테리아로 변하므로 이후 내부를 다시 방문할 수 없다."
+          },
+          "spoilerLevel": "major",
+          "sources": [
+            "temple-of-the-ancients"
+          ]
+        }
+      ],
       "notes": []
     },
     {
@@ -693,13 +1081,14 @@
       "canonicalName": "Old Man's House",
       "localizedNames": {
         "en": "Old Man's House",
-        "zh-CN": "Old Man's House",
-        "zh-TW": "Old Man's House",
-        "ja": "Old Man's House",
-        "ko": "Old Man's House"
+        "zh-CN": "老人洞窟",
+        "zh-TW": "老人洞窟",
+        "ja": "眠る老人の洞窟",
+        "ko": "잠든 노인의 동굴"
       },
       "aliases": [
-        "zz1"
+        "zz1",
+        "Old Man's House"
       ],
       "summary": {
         "en": "A riverbank cave where an old man offers conditional rewards.",
@@ -732,7 +1121,22 @@
         "field-identity",
         "old-man"
       ],
-      "facts": [],
+      "facts": [
+        {
+          "kind": "gameplay",
+          "text": {
+            "en": "The sleeping man's rewards depend on the battle counter.",
+            "zh-CN": "睡眠老人的奖励与战斗次数有关。",
+            "zh-TW": "睡眠老人的獎勵與戰鬥次數有關。",
+            "ja": "眠る老人の報酬は戦闘回数に関係する。",
+            "ko": "잠자는 노인의 보상은 전투 횟수와 관련이 있다."
+          },
+          "spoilerLevel": "none",
+          "sources": [
+            "old-man"
+          ]
+        }
+      ],
       "notes": []
     },
     {
@@ -741,13 +1145,14 @@
       "canonicalName": "Weapon Seller's House",
       "localizedNames": {
         "en": "Weapon Seller's House",
-        "zh-CN": "Weapon Seller's House",
-        "zh-TW": "Weapon Seller's House",
-        "ja": "Weapon Seller's House",
-        "ko": "Weapon Seller's House"
+        "zh-CN": "武器商人的小屋",
+        "zh-TW": "武器商人的小屋",
+        "ja": "武器職人の小屋",
+        "ko": "무기 상인의 집"
       },
       "aliases": [
-        "zz2"
+        "zz2",
+        "Weapon Seller's House"
       ],
       "summary": {
         "en": "A house where Mythril can be exchanged for rewards.",
@@ -780,7 +1185,22 @@
         "field-identity",
         "weapon-seller"
       ],
-      "facts": [],
+      "facts": [
+        {
+          "kind": "gameplay",
+          "text": {
+            "en": "Trade Mythril here; the small upstairs box contains Great Gospel.",
+            "zh-CN": "可在这里交换 Mythril；楼上的小盒子装有 Great Gospel。",
+            "zh-TW": "可在這裡交換 Mythril；樓上的小盒子裝有 Great Gospel。",
+            "ja": "Mythril を渡すと、上階の小箱から Great Gospel を入手できる。",
+            "ko": "Mythril을 건네면 위층의 작은 상자에서 Great Gospel을 얻을 수 있다."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "weapon-seller"
+          ]
+        }
+      ],
       "notes": []
     },
     {
@@ -789,14 +1209,15 @@
       "canonicalName": "Mideel",
       "localizedNames": {
         "en": "Mideel",
-        "zh-CN": "Mideel",
-        "zh-TW": "Mideel",
-        "ja": "Mideel",
-        "ko": "Mideel"
+        "zh-CN": "米迪尔",
+        "zh-TW": "米迪爾",
+        "ja": "ミディール",
+        "ko": "미딜"
       },
       "aliases": [
         "itown1a",
-        "itown1b"
+        "itown1b",
+        "Mideel"
       ],
       "summary": {
         "en": "A town on the southeastern island, reached by airship.",
@@ -824,7 +1245,36 @@
         "field-identity",
         "mideel"
       ],
-      "facts": [],
+      "facts": [
+        {
+          "kind": "access",
+          "text": {
+            "en": "The town becomes accessible with the Highwind.",
+            "zh-CN": "取得 Highwind 飞空艇后可到达这个城镇。",
+            "zh-TW": "取得 Highwind 飛空艇後可到達這個城鎮。",
+            "ja": "Highwind 入手後に訪問できる町。",
+            "ko": "Highwind를 얻은 뒤 방문할 수 있는 마을이다."
+          },
+          "spoilerLevel": "none",
+          "sources": [
+            "mideel"
+          ]
+        },
+        {
+          "kind": "gameplay",
+          "text": {
+            "en": "Shops offer Crystal weapons and HP Plus / MP Plus Materia.",
+            "zh-CN": "商店出售 Crystal 系列武器及 HP Plus、MP Plus 魔晶石。",
+            "zh-TW": "商店出售 Crystal 系列武器及 HP Plus、MP Plus 魔晶石。",
+            "ja": "店では Crystal 系武器や HP Plus、MP Plus マテリアを購入できる。",
+            "ko": "상점에서 Crystal 계열 무기와 HP Plus, MP Plus 마테리아를 살 수 있다."
+          },
+          "spoilerLevel": "none",
+          "sources": [
+            "mideel"
+          ]
+        }
+      ],
       "notes": []
     },
     {
@@ -833,13 +1283,14 @@
       "canonicalName": "Quadra Magic Cave",
       "localizedNames": {
         "en": "Quadra Magic Cave",
-        "zh-CN": "Quadra Magic Cave",
-        "zh-TW": "Quadra Magic Cave",
-        "ja": "Quadra Magic Cave",
-        "ko": "Quadra Magic Cave"
+        "zh-CN": "Quadra Magic 魔晶石洞窟",
+        "zh-TW": "Quadra Magic 魔晶石洞窟",
+        "ja": "Quadra Magic の洞窟",
+        "ko": "Quadra Magic 마테리아 동굴"
       },
       "aliases": [
-        "zz7"
+        "zz7",
+        "Quadra Magic Cave"
       ],
       "summary": {
         "en": "A Materia cave containing Quadra Magic.",
@@ -874,16 +1325,15 @@
         {
           "kind": "access",
           "text": {
-            "en": "Blue, black or gold chocobo.",
-            "zh-CN": "蓝、黑或金色陆行鸟。",
-            "zh-TW": "藍、黑或金色陸行鳥。",
-            "ja": "青・黒・金チョコボ。",
-            "ko": "파랑·검정·골드 초코보."
+            "en": "Blue, black or gold chocobos can reach this cave.",
+            "zh-CN": "蓝、黑或金色陆行鸟可到达此洞窟。",
+            "zh-TW": "藍、黑或金色陸行鳥可到達此洞窟。",
+            "ja": "青・黒・金のチョコボでこの洞窟へ行ける。",
+            "ko": "파랑·검정·골드 초코보로 이 동굴에 갈 수 있다."
           },
           "spoilerLevel": "minor",
           "sources": [
-            "caves",
-            "wiki-caves"
+            "caves"
           ]
         }
       ],
@@ -895,13 +1345,14 @@
       "canonicalName": "Costa del Sol",
       "localizedNames": {
         "en": "Costa del Sol",
-        "zh-CN": "Costa del Sol",
-        "zh-TW": "Costa del Sol",
-        "ja": "Costa del Sol",
-        "ko": "Costa del Sol"
+        "zh-CN": "太阳海岸",
+        "zh-TW": "太陽海岸",
+        "ja": "コスタ・デル・ソル",
+        "ko": "코스타 델 솔"
       },
       "aliases": [
-        "del2"
+        "del2",
+        "Costa del Sol"
       ],
       "summary": {
         "en": "A seaside resort and port connected to Junon by ship.",
@@ -931,7 +1382,36 @@
         "field-identity",
         "costa-del-sol"
       ],
-      "facts": [],
+      "facts": [
+        {
+          "kind": "access",
+          "text": {
+            "en": "Arrive by ship from Junon; the dock sailor also offers a return crossing.",
+            "zh-CN": "可乘朱诺货船到达；码头水手也提供返航。",
+            "zh-TW": "可乘朱諾貨船到達；碼頭水手也提供返航。",
+            "ja": "ジュノンから船で到着し、港の船員に頼めば戻る航路も利用できる。",
+            "ko": "주논에서 배로 도착하며 부두 선원에게 돌아가는 항해도 요청할 수 있다."
+          },
+          "spoilerLevel": "none",
+          "sources": [
+            "costa-del-sol"
+          ]
+        },
+        {
+          "kind": "gameplay",
+          "text": {
+            "en": "The optional villa purchase costs 300,000 Gil.",
+            "zh-CN": "可选购买的别墅售价为 300,000 Gil。",
+            "zh-TW": "可選購買的別墅售價為 300,000 Gil。",
+            "ja": "任意で購入できる別荘の価格は300,000ギル。",
+            "ko": "선택적으로 구매하는 별장 가격은 300,000길이다."
+          },
+          "spoilerLevel": "none",
+          "sources": [
+            "costa-del-sol"
+          ]
+        }
+      ],
       "notes": []
     },
     {
@@ -940,14 +1420,15 @@
       "canonicalName": "Mt. Corel",
       "localizedNames": {
         "en": "Mt. Corel",
-        "zh-CN": "Mt. Corel",
-        "zh-TW": "Mt. Corel",
-        "ja": "Mt. Corel",
-        "ko": "Mt. Corel"
+        "zh-CN": "科雷尔山",
+        "zh-TW": "科雷爾山",
+        "ja": "コレル山",
+        "ko": "코렐 산"
       },
       "aliases": [
         "Mount Corel",
-        "mtcrl_0"
+        "mtcrl_0",
+        "Mt. Corel"
       ],
       "summary": {
         "en": "A mountain passage near North Corel with a Mako reactor.",
@@ -977,7 +1458,36 @@
         "field-identity",
         "mt-corel"
       ],
-      "facts": [],
+      "facts": [
+        {
+          "kind": "access",
+          "text": {
+            "en": "The mountain railway route leads toward North Corel.",
+            "zh-CN": "山间铁路路线通往北科雷尔。",
+            "zh-TW": "山間鐵路路線通往北科雷爾。",
+            "ja": "山の線路沿いの道は北コレルへ続く。",
+            "ko": "산속 철로를 따라가면 북 코렐로 이어진다."
+          },
+          "spoilerLevel": "none",
+          "sources": [
+            "mt-corel"
+          ]
+        },
+        {
+          "kind": "reward",
+          "text": {
+            "en": "Exploration rewards include Transform, W Machine Gun and Star Pendant.",
+            "zh-CN": "探索奖励包括 Transform、W Machine Gun 和 Star Pendant。",
+            "zh-TW": "探索獎勵包括 Transform、W Machine Gun 和 Star Pendant。",
+            "ja": "探索で Transform、W Machine Gun、Star Pendant を入手できる。",
+            "ko": "탐색 보상에는 Transform, W Machine Gun, Star Pendant가 있다."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "mt-corel"
+          ]
+        }
+      ],
       "notes": []
     },
     {
@@ -986,15 +1496,16 @@
       "canonicalName": "North Corel",
       "localizedNames": {
         "en": "North Corel",
-        "zh-CN": "North Corel",
-        "zh-TW": "North Corel",
-        "ja": "North Corel",
-        "ko": "North Corel"
+        "zh-CN": "北科雷尔",
+        "zh-TW": "北科雷爾",
+        "ja": "北コレル",
+        "ko": "노스 코렐"
       },
       "aliases": [
         "Corel",
         "ncorel",
-        "ncorel2"
+        "ncorel2",
+        "North Corel"
       ],
       "summary": {
         "en": "A settlement on the route to Gold Saucer.",
@@ -1016,15 +1527,46 @@
         "north-corel"
       ],
       "relatedEntities": [
-        "mt-corel"
+        "mt-corel",
+        "gold-saucer"
       ],
       "collectibles": [],
       "secrets": [],
       "sources": [
         "field-identity",
-        "north-corel"
+        "north-corel",
+        "limit-items"
       ],
-      "facts": [],
+      "facts": [
+        {
+          "kind": "access",
+          "text": {
+            "en": "The ropeway connects the town to Gold Saucer.",
+            "zh-CN": "城镇的索道连接金碟游乐场。",
+            "zh-TW": "城鎮的索道連接金碟遊樂場。",
+            "ja": "町からゴールドソーサーへロープウェイが通じる。",
+            "ko": "마을에서 골드 소서로 가는 로프웨이가 있다."
+          },
+          "spoilerLevel": "none",
+          "sources": [
+            "north-corel"
+          ]
+        },
+        {
+          "kind": "reward",
+          "text": {
+            "en": "After the Huge Materia train episode, a resident gives Barret's Catastrophe manual.",
+            "zh-CN": "巨大魔晶石列车事件后，可向居民领取巴雷特的 Catastrophe 秘籍。",
+            "zh-TW": "巨大魔晶石列車事件後，可向居民領取巴雷特的 Catastrophe 秘籍。",
+            "ja": "ヒュージマテリア列車イベント後、住民からバレット用 Catastrophe を受け取れる。",
+            "ko": "휴즈 마테리아 열차 사건 이후 주민에게 바레트의 Catastrophe 비전을 받을 수 있다."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "limit-items"
+          ]
+        }
+      ],
       "notes": []
     },
     {
@@ -1033,13 +1575,14 @@
       "canonicalName": "Corel Desert",
       "localizedNames": {
         "en": "Corel Desert",
-        "zh-CN": "Corel Desert",
-        "zh-TW": "Corel Desert",
-        "ja": "Corel Desert",
-        "ko": "Corel Desert"
+        "zh-CN": "科雷尔沙漠",
+        "zh-TW": "科雷爾沙漠",
+        "ja": "コレル砂漠",
+        "ko": "코렐 사막"
       },
       "aliases": [
-        "desert2"
+        "desert2",
+        "Corel Desert"
       ],
       "summary": {
         "en": "The desert approach associated with Corel Prison.",
@@ -1067,7 +1610,22 @@
         "field-identity",
         "corel-desert"
       ],
-      "facts": [],
+      "facts": [
+        {
+          "kind": "gameplay",
+          "text": {
+            "en": "The Corel Prison area guide lists Cactuar and Land Worm encounters.",
+            "zh-CN": "科雷尔监狱区域攻略列出的敌人包括 Cactuar 和 Land Worm。",
+            "zh-TW": "科雷爾監獄區域攻略列出的敵人包括 Cactuar 和 Land Worm。",
+            "ja": "コレルプリズン周辺の攻略には Cactuar と Land Worm の遭遇が記載されている。",
+            "ko": "코렐 프리즌 주변 공략의 적 목록에는 Cactuar와 Land Worm이 있다."
+          },
+          "spoilerLevel": "none",
+          "sources": [
+            "corel-desert"
+          ]
+        }
+      ],
       "notes": []
     },
     {
@@ -1076,13 +1634,14 @@
       "canonicalName": "Gongaga",
       "localizedNames": {
         "en": "Gongaga",
-        "zh-CN": "Gongaga",
-        "zh-TW": "Gongaga",
-        "ja": "Gongaga",
-        "ko": "Gongaga"
+        "zh-CN": "贡加加",
+        "zh-TW": "貢加加",
+        "ja": "ゴンガガ",
+        "ko": "공가가"
       },
       "aliases": [
-        "gonjun2"
+        "gonjun2",
+        "Gongaga"
       ],
       "summary": {
         "en": "An optional settlement beside a ruined reactor.",
@@ -1112,7 +1671,36 @@
         "field-identity",
         "gongaga"
       ],
-      "facts": [],
+      "facts": [
+        {
+          "kind": "gameplay",
+          "text": {
+            "en": "The village and ruined reactor form an optional stop.",
+            "zh-CN": "村庄与废弃反应炉构成可选探索地点。",
+            "zh-TW": "村莊與廢棄反應爐構成可選探索地點。",
+            "ja": "村と廃炉を訪れる任意の寄り道。",
+            "ko": "마을과 폐쇄된 마황로를 둘러보는 선택 방문지다."
+          },
+          "spoilerLevel": "none",
+          "sources": [
+            "gongaga"
+          ]
+        },
+        {
+          "kind": "reward",
+          "text": {
+            "en": "Titan and Deathblow are notable local Materia rewards.",
+            "zh-CN": "当地的重要魔晶石奖励包括 Titan 与 Deathblow。",
+            "zh-TW": "當地的重要魔晶石獎勵包括 Titan 與 Deathblow。",
+            "ja": "主なマテリア報酬は Titan と Deathblow。",
+            "ko": "주요 마테리아 보상은 Titan과 Deathblow다."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "gongaga"
+          ]
+        }
+      ],
       "notes": []
     },
     {
@@ -1121,13 +1709,14 @@
       "canonicalName": "Cosmo Canyon",
       "localizedNames": {
         "en": "Cosmo Canyon",
-        "zh-CN": "Cosmo Canyon",
-        "zh-TW": "Cosmo Canyon",
-        "ja": "Cosmo Canyon",
-        "ko": "Cosmo Canyon"
+        "zh-CN": "星陨峡谷",
+        "zh-TW": "星殞峽谷",
+        "ja": "コスモキャニオン",
+        "ko": "코스모 캐니언"
       },
       "aliases": [
-        "cos_btm"
+        "cos_btm",
+        "Cosmo Canyon"
       ],
       "summary": {
         "en": "A canyon settlement with shops.",
@@ -1155,7 +1744,36 @@
         "field-identity",
         "cosmo-canyon"
       ],
-      "facts": [],
+      "facts": [
+        {
+          "kind": "gameplay",
+          "text": {
+            "en": "Red XIII's hometown is visited again to consult Bugenhagen.",
+            "zh-CN": "这里是赤红十三的故乡；队伍还会回来请教布根哈根。",
+            "zh-TW": "這裡是赤紅十三的故鄉；隊伍還會回來請教布根哈根。",
+            "ja": "レッドXIIIの故郷で、後にブーゲンハーゲンへ相談するため再訪する。",
+            "ko": "레드 XIII의 고향이며 이후 부겐하겐에게 조언을 구하러 다시 방문한다."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "cosmo-canyon"
+          ]
+        },
+        {
+          "kind": "reward",
+          "text": {
+            "en": "Later visits can yield Full Cure and Red XIII's Limited Moon.",
+            "zh-CN": "后期重访可取得 Full Cure 与赤红十三的 Limited Moon。",
+            "zh-TW": "後期重訪可取得 Full Cure 與赤紅十三的 Limited Moon。",
+            "ja": "後半の再訪で Full Cure やレッドXIII用の Limited Moon を入手できる。",
+            "ko": "후반 재방문으로 Full Cure와 레드 XIII의 Limited Moon을 얻을 수 있다."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "cosmo-canyon"
+          ]
+        }
+      ],
       "notes": []
     },
     {
@@ -1164,13 +1782,14 @@
       "canonicalName": "Nibelheim",
       "localizedNames": {
         "en": "Nibelheim",
-        "zh-CN": "Nibelheim",
-        "zh-TW": "Nibelheim",
-        "ja": "Nibelheim",
-        "ko": "Nibelheim"
+        "zh-CN": "尼布尔海姆",
+        "zh-TW": "尼布爾海姆",
+        "ja": "ニブルヘイム",
+        "ko": "니블헤임"
       },
       "aliases": [
-        "nivl_3"
+        "nivl_3",
+        "Nibelheim"
       ],
       "summary": {
         "en": "A town adjoining Mt. Nibel and the Shinra Mansion.",
@@ -1200,7 +1819,36 @@
         "field-identity",
         "nibelheim"
       ],
-      "facts": [],
+      "facts": [
+        {
+          "kind": "gameplay",
+          "text": {
+            "en": "Cloud and Tifa's hometown adjoins Mt. Nibel and the Shinra Mansion.",
+            "zh-CN": "克劳德与蒂法的故乡，邻接尼布尔山和神罗公馆。",
+            "zh-TW": "克勞德與蒂法的故鄉，鄰接尼布爾山和神羅公館。",
+            "ja": "クラウドとティファの故郷。ニブル山や神羅屋敷に隣接する。",
+            "ko": "클라우드와 티파의 고향이며 니블 산과 신라 저택에 인접한다."
+          },
+          "spoilerLevel": "none",
+          "sources": [
+            "nibelheim"
+          ]
+        },
+        {
+          "kind": "secret",
+          "text": {
+            "en": "The mansion contains the optional Vincent recruitment quest.",
+            "zh-CN": "公馆内可进行招募文森特的可选支线。",
+            "zh-TW": "公館內可進行招募文森特的可選支線。",
+            "ja": "屋敷ではヴィンセントを仲間にする任意イベントがある。",
+            "ko": "저택에서는 빈센트를 동료로 얻는 선택 이벤트가 있다."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "nibelheim"
+          ]
+        }
+      ],
       "notes": []
     },
     {
@@ -1209,14 +1857,15 @@
       "canonicalName": "Rocket Town",
       "localizedNames": {
         "en": "Rocket Town",
-        "zh-CN": "Rocket Town",
-        "zh-TW": "Rocket Town",
-        "ja": "Rocket Town",
-        "ko": "Rocket Town"
+        "zh-CN": "火箭村",
+        "zh-TW": "火箭村",
+        "ja": "ロケット村",
+        "ko": "로켓 마을"
       },
       "aliases": [
         "rckt",
-        "rckt2"
+        "rckt2",
+        "Rocket Town"
       ],
       "summary": {
         "en": "A northern town on the western continent, home to Cid.",
@@ -1246,7 +1895,36 @@
         "field-identity",
         "rocket-town"
       ],
-      "facts": [],
+      "facts": [
+        {
+          "kind": "category",
+          "text": {
+            "en": "Cid's town contains the Shinra No. 26 rocket.",
+            "zh-CN": "希德居住的城镇保留着神罗 26 号火箭。",
+            "zh-TW": "希德居住的城鎮保留著神羅 26 號火箭。",
+            "ja": "シドの住む町に神羅26号ロケットがある。",
+            "ko": "시드가 사는 마을에 신라 26호 로켓이 있다."
+          },
+          "spoilerLevel": "none",
+          "sources": [
+            "rocket-town"
+          ]
+        },
+        {
+          "kind": "reward",
+          "text": {
+            "en": "Return visits offer the Venus Gospel weapon.",
+            "zh-CN": "后期重访时可取得 Venus Gospel 武器。",
+            "zh-TW": "後期重訪時可取得 Venus Gospel 武器。",
+            "ja": "後半の再訪で武器 Venus Gospel を入手できる。",
+            "ko": "후반에 다시 방문하면 Venus Gospel 무기를 얻을 수 있다."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "rocket-town"
+          ]
+        }
+      ],
       "notes": []
     },
     {
@@ -1255,13 +1933,14 @@
       "canonicalName": "Lucrecia's Cave",
       "localizedNames": {
         "en": "Lucrecia's Cave",
-        "zh-CN": "Lucrecia's Cave",
-        "zh-TW": "Lucrecia's Cave",
-        "ja": "Lucrecia's Cave",
-        "ko": "Lucrecia's Cave"
+        "zh-CN": "露克蕾西亚洞窟",
+        "zh-TW": "露克蕾西亞洞窟",
+        "ja": "ルクレツィアの洞窟",
+        "ko": "루크레치아의 동굴"
       },
       "aliases": [
-        "zz4"
+        "zz4",
+        "Lucrecia's Cave"
       ],
       "summary": {
         "en": "An optional cave associated with Vincent.",
@@ -1292,7 +1971,22 @@
         "field-identity",
         "lucrecia"
       ],
-      "facts": [],
+      "facts": [
+        {
+          "kind": "access",
+          "text": {
+            "en": "A submarine route reaches the cave; bring Vincent for its optional event.",
+            "zh-CN": "可通过潜艇路线到达洞穴；带上文森特可触发支线事件。",
+            "zh-TW": "可透過潛艇路線到達洞穴；帶上文森特可觸發支線事件。",
+            "ja": "潜水艇の経路で到達できる。任意イベントにはヴィンセントを同行させる。",
+            "ko": "잠수함 경로로 갈 수 있으며 선택 이벤트에는 빈센트를 데려간다."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "lucrecia"
+          ]
+        }
+      ],
       "notes": []
     },
     {
@@ -1301,14 +1995,15 @@
       "canonicalName": "HP↔MP Cave",
       "localizedNames": {
         "en": "HP↔MP Cave",
-        "zh-CN": "HP↔MP Cave",
-        "zh-TW": "HP↔MP Cave",
-        "ja": "HP↔MP Cave",
-        "ko": "HP↔MP Cave"
+        "zh-CN": "HP↔MP 魔晶石洞窟",
+        "zh-TW": "HP↔MP 魔晶石洞窟",
+        "ja": "HP↔MP の洞窟",
+        "ko": "HP↔MP 마테리아 동굴"
       },
       "aliases": [
         "HP MP Cave",
-        "zz6"
+        "zz6",
+        "HP↔MP Cave"
       ],
       "summary": {
         "en": "A Materia cave containing HP↔MP.",
@@ -1337,7 +2032,8 @@
       "secrets": [],
       "sources": [
         "field-identity",
-        "caves"
+        "caves",
+        "wiki-caves"
       ],
       "facts": [
         {
@@ -1364,17 +2060,18 @@
       "canonicalName": "Wutai",
       "localizedNames": {
         "en": "Wutai",
-        "zh-CN": "Wutai",
-        "zh-TW": "Wutai",
-        "ja": "Wutai",
-        "ko": "Wutai"
+        "zh-CN": "五台",
+        "zh-TW": "五台",
+        "ja": "ウータイ",
+        "ko": "우타이"
       },
       "aliases": [
         "uutai1",
         "yougan3",
         "五台",
         "ウータイ",
-        "우타이"
+        "우타이",
+        "Wutai"
       ],
       "summary": {
         "en": "An optional town with a pagoda challenge.",
@@ -1406,7 +2103,36 @@
         "field-identity",
         "wutai"
       ],
-      "facts": [],
+      "facts": [
+        {
+          "kind": "gameplay",
+          "text": {
+            "en": "An optional hometown of Yuffie, with the Pagoda and Da-Chao paths.",
+            "zh-CN": "尤菲的故乡，可选探索五强塔与大刃像路径。",
+            "zh-TW": "尤菲的故鄉，可選探索五強塔與大刃像路徑。",
+            "ja": "ユフィの故郷。任意で五強の塔やダチャオ像への道を探索できる。",
+            "ko": "유피의 고향으로 오강의 탑과 다차오상 길을 선택 탐험할 수 있다."
+          },
+          "spoilerLevel": "none",
+          "sources": [
+            "wutai"
+          ]
+        },
+        {
+          "kind": "reward",
+          "text": {
+            "en": "The Pagoda challenge rewards Leviathan and All Creation.",
+            "zh-CN": "五强塔挑战可取得利维坦与 All Creation。",
+            "zh-TW": "五強塔挑戰可取得利維坦與 All Creation。",
+            "ja": "五強の塔の報酬はリヴァイアサンと All Creation。",
+            "ko": "오강의 탑 보상은 리바이어선과 All Creation이다."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "wutai"
+          ]
+        }
+      ],
       "notes": []
     },
     {
@@ -1415,13 +2141,14 @@
       "canonicalName": "Wutai Outskirts",
       "localizedNames": {
         "en": "Wutai Outskirts",
-        "zh-CN": "Wutai Outskirts",
-        "zh-TW": "Wutai Outskirts",
-        "ja": "Wutai Outskirts",
-        "ko": "Wutai Outskirts"
+        "zh-CN": "五台郊外",
+        "zh-TW": "五台郊外",
+        "ja": "ウータイの外縁",
+        "ko": "우타이 외곽"
       },
       "aliases": [
-        "yougan"
+        "yougan",
+        "Wutai Outskirts"
       ],
       "summary": {
         "en": "A separate source-linked approach to Wutai.",
@@ -1460,13 +2187,14 @@
       "canonicalName": "Mime Cave",
       "localizedNames": {
         "en": "Mime Cave",
-        "zh-CN": "Mime Cave",
-        "zh-TW": "Mime Cave",
-        "ja": "Mime Cave",
-        "ko": "Mime Cave"
+        "zh-CN": "Mime 魔晶石洞窟",
+        "zh-TW": "Mime 魔晶石洞窟",
+        "ja": "Mime の洞窟",
+        "ko": "Mime 마테리아 동굴"
       },
       "aliases": [
-        "zz5"
+        "zz5",
+        "Mime Cave"
       ],
       "summary": {
         "en": "A Materia cave containing Mime.",
@@ -1495,7 +2223,8 @@
       "secrets": [],
       "sources": [
         "field-identity",
-        "caves"
+        "caves",
+        "wiki-caves"
       ],
       "facts": [
         {
@@ -1522,13 +2251,14 @@
       "canonicalName": "Bone Village",
       "localizedNames": {
         "en": "Bone Village",
-        "zh-CN": "Bone Village",
-        "zh-TW": "Bone Village",
-        "ja": "Bone Village",
-        "ko": "Bone Village"
+        "zh-CN": "骨头村",
+        "zh-TW": "骨頭村",
+        "ja": "ボーンビレッジ",
+        "ko": "본 빌리지"
       },
       "aliases": [
-        "bonevil"
+        "bonevil",
+        "Bone Village"
       ],
       "summary": {
         "en": "An archaeological excavation settlement at the Sleeping Forest approach.",
@@ -1561,7 +2291,22 @@
         "field-identity",
         "bone-village"
       ],
-      "facts": [],
+      "facts": [
+        {
+          "kind": "gameplay",
+          "text": {
+            "en": "Excavation is the village's distinctive activity.",
+            "zh-CN": "村庄的特色活动是挖掘。",
+            "zh-TW": "村莊的特色活動是挖掘。",
+            "ja": "発掘が村の特徴的な活動。",
+            "ko": "발굴이 마을의 특징적인 활동이다."
+          },
+          "spoilerLevel": "none",
+          "sources": [
+            "bone-village"
+          ]
+        }
+      ],
       "notes": []
     },
     {
@@ -1570,13 +2315,14 @@
       "canonicalName": "Corral Valley Cave",
       "localizedNames": {
         "en": "Corral Valley Cave",
-        "zh-CN": "Corral Valley Cave",
-        "zh-TW": "Corral Valley Cave",
-        "ja": "Corral Valley Cave",
-        "ko": "Corral Valley Cave"
+        "zh-CN": "珊瑚谷洞窟",
+        "zh-TW": "珊瑚谷洞窟",
+        "ja": "サンゴの谷の洞窟",
+        "ko": "산호 계곡 동굴"
       },
       "aliases": [
-        "sandun_2"
+        "sandun_2",
+        "Corral Valley Cave"
       ],
       "summary": {
         "en": "A source-identified cave approach in the northern valley.",
@@ -1613,13 +2359,14 @@
       "canonicalName": "Icicle Inn",
       "localizedNames": {
         "en": "Icicle Inn",
-        "zh-CN": "Icicle Inn",
-        "zh-TW": "Icicle Inn",
-        "ja": "Icicle Inn",
-        "ko": "Icicle Inn"
+        "zh-CN": "冰柱村",
+        "zh-TW": "冰柱村",
+        "ja": "アイシクルロッジ",
+        "ko": "아이시클 롯지"
       },
       "aliases": [
-        "snow"
+        "snow",
+        "Icicle Inn"
       ],
       "summary": {
         "en": "A northern town on the approach to Great Glacier.",
@@ -1640,14 +2387,45 @@
       "relatedLocations": [
         "icicle-inn"
       ],
-      "relatedEntities": [],
+      "relatedEntities": [
+        "great-glacier"
+      ],
       "collectibles": [],
       "secrets": [],
       "sources": [
         "field-identity",
         "icicle-inn"
       ],
-      "facts": [],
+      "facts": [
+        {
+          "kind": "access",
+          "text": {
+            "en": "The snowboard descent leads toward Great Glacier.",
+            "zh-CN": "滑雪板下山路线通往大冰河。",
+            "zh-TW": "滑雪板下山路線通往大冰河。",
+            "ja": "スノーボードで下ると大氷河へ向かう。",
+            "ko": "스노보드를 타고 내려가면 대빙하로 향한다."
+          },
+          "spoilerLevel": "none",
+          "sources": [
+            "icicle-inn"
+          ]
+        },
+        {
+          "kind": "reward",
+          "text": {
+            "en": "Village supplies include Hero Drink, Vaccine and restorative items.",
+            "zh-CN": "村内可取得 Hero Drink、Vaccine 等补给物品。",
+            "zh-TW": "村內可取得 Hero Drink、Vaccine 等補給物品。",
+            "ja": "村では Hero Drink、Vaccine などの補給品を入手できる。",
+            "ko": "마을에서 Hero Drink, Vaccine 등의 보급품을 얻을 수 있다."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "icicle-inn"
+          ]
+        }
+      ],
       "notes": []
     },
     {
@@ -1656,13 +2434,14 @@
       "canonicalName": "Chocobo Sage's House",
       "localizedNames": {
         "en": "Chocobo Sage's House",
-        "zh-CN": "Chocobo Sage's House",
-        "zh-TW": "Chocobo Sage's House",
-        "ja": "Chocobo Sage's House",
-        "ko": "Chocobo Sage's House"
+        "zh-CN": "陆行鸟仙人的家",
+        "zh-TW": "陸行鳥仙人的家",
+        "ja": "チョコボ仙人の家",
+        "ko": "초코보 선인의 집"
       },
       "aliases": [
-        "zz3"
+        "zz3",
+        "Chocobo Sage's House"
       ],
       "summary": {
         "en": "A remote house offering chocobo breeding advice and supplies.",
@@ -1693,9 +2472,39 @@
       "secrets": [],
       "sources": [
         "field-identity",
-        "chocobo-sages-house"
+        "chocobo-sages-house",
+        "sage-guide"
       ],
-      "facts": [],
+      "facts": [
+        {
+          "kind": "access",
+          "text": {
+            "en": "Use the Highwind to visit this remote northern house.",
+            "zh-CN": "可乘高风号抵达这座北方偏远小屋。",
+            "zh-TW": "可乘高風號抵達這座北方偏遠小屋。",
+            "ja": "北方の人里離れた家へはハイウインドで向かう。",
+            "ko": "북쪽 외딴집에는 하이윈드로 방문한다."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "sage-guide"
+          ]
+        },
+        {
+          "kind": "gameplay",
+          "text": {
+            "en": "The Sage gives breeding advice and sells Sylkis Greens.",
+            "zh-CN": "仙人提供繁育建议，并出售 Sylkis Greens。",
+            "zh-TW": "仙人提供繁育建議，並出售 Sylkis Greens。",
+            "ja": "仙人は交配の助言をし、シルキスの野菜を販売する。",
+            "ko": "선인은 교배 조언을 하며 실키스 야채를 판매한다."
+          },
+          "spoilerLevel": "none",
+          "sources": [
+            "sage-guide"
+          ]
+        }
+      ],
       "notes": []
     },
     {
@@ -1704,10 +2513,10 @@
       "canonicalName": "Round Island Cave",
       "localizedNames": {
         "en": "Round Island Cave",
-        "zh-CN": "Round Island Cave",
-        "zh-TW": "Round Island Cave",
-        "ja": "Round Island Cave",
-        "ko": "Round Island Cave"
+        "zh-CN": "圆桌骑士洞窟",
+        "zh-TW": "圓桌騎士洞窟",
+        "ja": "ナイツオブラウンドの洞窟",
+        "ko": "나이츠 오브 라운드 동굴"
       },
       "aliases": [
         "Knights of the Round Cave",
@@ -1715,7 +2524,8 @@
         "Knights of Round",
         "ナイツオブラウンド",
         "圆桌骑士",
-        "圓桌騎士"
+        "圓桌騎士",
+        "Round Island Cave"
       ],
       "summary": {
         "en": "A secret island cave containing Knights of the Round.",
@@ -1746,7 +2556,8 @@
       "secrets": [],
       "sources": [
         "field-identity",
-        "caves"
+        "caves",
+        "wiki-caves"
       ],
       "facts": [
         {
@@ -1773,13 +2584,14 @@
       "canonicalName": "Impaled Zolom",
       "localizedNames": {
         "en": "Impaled Zolom",
-        "zh-CN": "Impaled Zolom",
-        "zh-TW": "Impaled Zolom",
-        "ja": "Impaled Zolom",
-        "ko": "Impaled Zolom"
+        "zh-CN": "被刺穿的沼泽巨蛇",
+        "zh-TW": "被刺穿的沼澤巨蛇",
+        "ja": "串刺しのミドガルズオルム",
+        "ko": "꿰뚫린 미드가르 졸럼"
       },
       "aliases": [
-        "sichi"
+        "sichi",
+        "Impaled Zolom"
       ],
       "summary": {
         "en": "A roadside scene between the marsh and Mythril Mine.",
@@ -1805,9 +2617,25 @@
       "secrets": [],
       "sources": [
         "field-identity",
-        "field-reference"
+        "field-reference",
+        "mine-walk"
       ],
-      "facts": [],
+      "facts": [
+        {
+          "kind": "category",
+          "text": {
+            "en": "The impaled Midgar Zolom scene precedes entry to Mythril Mine.",
+            "zh-CN": "被刺穿的 Midgar Zolom 场景出现在进入秘银矿前。",
+            "zh-TW": "被刺穿的 Midgar Zolom 場景出現在進入秘銀礦前。",
+            "ja": "串刺しの Midgar Zolom の場面はミスリルマイン入口前にある。",
+            "ko": "꿰뚫린 Midgar Zolom 장면은 미스릴 광산에 들어가기 전에 나온다."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "mine-walk"
+          ]
+        }
+      ],
       "notes": []
     },
     {
@@ -1816,15 +2644,16 @@
       "canonicalName": "Mt. Nibel",
       "localizedNames": {
         "en": "Mt. Nibel",
-        "zh-CN": "Mt. Nibel",
-        "zh-TW": "Mt. Nibel",
-        "ja": "Mt. Nibel",
-        "ko": "Mt. Nibel"
+        "zh-CN": "尼布尔山",
+        "zh-TW": "尼布爾山",
+        "ja": "ニブル山",
+        "ko": "니블 산"
       },
       "aliases": [
         "Mount Nibel",
         "mtnvl2",
-        "mtnvl4"
+        "mtnvl4",
+        "Mt. Nibel"
       ],
       "summary": {
         "en": "A mountain passage between Nibelheim and the Rocket Town area.",
@@ -1855,7 +2684,36 @@
         "field-identity",
         "mt-nibel"
       ],
-      "facts": [],
+      "facts": [
+        {
+          "kind": "access",
+          "text": {
+            "en": "A mountain route links Nibelheim with the Rocket Town journey.",
+            "zh-CN": "山间路线连接尼布尔海姆与前往火箭村的旅程。",
+            "zh-TW": "山間路線連接尼布爾海姆與前往火箭村的旅程。",
+            "ja": "ニブルヘイムからロケット村への旅で通る山道。",
+            "ko": "니블헤임에서 로켓 마을로 향하는 여정에 있는 산길이다."
+          },
+          "spoilerLevel": "none",
+          "sources": [
+            "mt-nibel"
+          ]
+        },
+        {
+          "kind": "reward",
+          "text": {
+            "en": "Notable pickups include Elemental, Rune Blade and Powersoul.",
+            "zh-CN": "重要收集物包括 Elemental、Rune Blade 和 Powersoul。",
+            "zh-TW": "重要收集物包括 Elemental、Rune Blade 和 Powersoul。",
+            "ja": "主な拾得物は Elemental、Rune Blade、Powersoul。",
+            "ko": "주요 습득물에는 Elemental, Rune Blade, Powersoul이 있다."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "mt-nibel"
+          ]
+        }
+      ],
       "notes": []
     },
     {
@@ -1864,13 +2722,14 @@
       "canonicalName": "Great Glacier",
       "localizedNames": {
         "en": "Great Glacier",
-        "zh-CN": "Great Glacier",
-        "zh-TW": "Great Glacier",
-        "ja": "Great Glacier",
-        "ko": "Great Glacier"
+        "zh-CN": "大冰河",
+        "zh-TW": "大冰河",
+        "ja": "大氷河",
+        "ko": "대빙하"
       },
       "aliases": [
-        "hyou1"
+        "hyou1",
+        "Great Glacier"
       ],
       "summary": {
         "en": "A northern ice region with several field discoveries.",
@@ -1891,7 +2750,9 @@
       "relatedLocations": [
         "great-glacier"
       ],
-      "relatedEntities": [],
+      "relatedEntities": [
+        "icicle-inn"
+      ],
       "collectibles": [
         "glacier-materia"
       ],
@@ -1899,9 +2760,42 @@
       "sources": [
         "field-identity",
         "great-glacier",
-        "wiki-glacier"
+        "wiki-glacier",
+        "materia-support",
+        "materia-summon"
       ],
-      "facts": [],
+      "facts": [
+        {
+          "kind": "gameplay",
+          "text": {
+            "en": "Wind turns the camera in the snowfield; marker poles help orientation.",
+            "zh-CN": "雪原的风会转动镜头，可用标杆辨认行进方向。",
+            "zh-TW": "雪原的風會轉動鏡頭，可用標杆辨認行進方向。",
+            "ja": "雪原では風でカメラが回るため、目印の棒が方向確認に役立つ。",
+            "ko": "설원에서는 바람이 카메라를 돌리므로 표지 기둥으로 방향을 확인한다."
+          },
+          "spoilerLevel": "none",
+          "sources": [
+            "wiki-glacier"
+          ]
+        },
+        {
+          "kind": "category",
+          "text": {
+            "en": "The guides disagree about later return access; no blanket missability rule is asserted here.",
+            "zh-CN": "攻略对后期能否重访说法不一致；这里不宣称收集物一概会错过。",
+            "zh-TW": "攻略對後期能否重訪說法不一致；這裡不宣稱收集物一概會錯過。",
+            "ja": "後の再訪について攻略に食い違いがあるため、一律に取り逃し不可とは断定しない。",
+            "ko": "후반 재방문에 대한 공략이 서로 달라 모든 수집물을 놓친다고 단정하지 않는다."
+          },
+          "spoilerLevel": "none",
+          "sources": [
+            "great-glacier",
+            "materia-support",
+            "materia-summon"
+          ]
+        }
+      ],
       "notes": []
     },
     {
@@ -1910,13 +2804,14 @@
       "canonicalName": "Corral Valley",
       "localizedNames": {
         "en": "Corral Valley",
-        "zh-CN": "Corral Valley",
-        "zh-TW": "Corral Valley",
-        "ja": "Corral Valley",
-        "ko": "Corral Valley"
+        "zh-CN": "珊瑚谷",
+        "zh-TW": "珊瑚谷",
+        "ja": "サンゴの谷",
+        "ko": "산호 계곡"
       },
       "aliases": [
-        "sango2"
+        "sango2",
+        "Corral Valley"
       ],
       "summary": {
         "en": "A northern valley passage near the Forgotten Capital.",
@@ -1944,7 +2839,36 @@
         "field-identity",
         "corral-valley"
       ],
-      "facts": [],
+      "facts": [
+        {
+          "kind": "access",
+          "text": {
+            "en": "The reviewed route passes through Bone Village and Sleeping Forest toward Icicle Inn.",
+            "zh-CN": "所引路线经白骨村与沉睡森林，前往冰柱旅馆。",
+            "zh-TW": "所引路線經白骨村與沉睡森林，前往冰柱旅館。",
+            "ja": "参照攻略の道はボーンビレッジと眠りの森を経てアイシクルロッジへ向かう。",
+            "ko": "참고 경로는 본 빌리지와 잠자는 숲을 거쳐 아이시클 로지로 향한다."
+          },
+          "spoilerLevel": "none",
+          "sources": [
+            "corral-valley"
+          ]
+        },
+        {
+          "kind": "gameplay",
+          "text": {
+            "en": "Boundfat encounters can yield Dazers.",
+            "zh-CN": "与 Boundfat 的遭遇可取得 Dazers。",
+            "zh-TW": "與 Boundfat 的遭遇可取得 Dazers。",
+            "ja": "Boundfat との戦闘で Dazers を得られる。",
+            "ko": "Boundfat과의 전투에서 Dazers를 얻을 수 있다."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "corral-valley"
+          ]
+        }
+      ],
       "notes": []
     },
     {
@@ -1953,15 +2877,16 @@
       "canonicalName": "Forgotten Capital",
       "localizedNames": {
         "en": "Forgotten Capital",
-        "zh-CN": "Forgotten Capital",
-        "zh-TW": "Forgotten Capital",
-        "ja": "Forgotten Capital",
-        "ko": "Forgotten Capital"
+        "zh-CN": "遗忘之都",
+        "zh-TW": "遺忘之都",
+        "ja": "忘らるる都",
+        "ko": "잊혀진 도시"
       },
       "aliases": [
         "Forgotten City",
         "City of the Ancients",
-        "lost1"
+        "lost1",
+        "Forgotten Capital"
       ],
       "summary": {
         "en": "A northern site also named the Forgotten City.",
@@ -1991,7 +2916,36 @@
         "field-identity",
         "forgotten-capital"
       ],
-      "facts": [],
+      "facts": [
+        {
+          "kind": "access",
+          "text": {
+            "en": "The approach passes Bone Village, Sleeping Forest and Corral Valley.",
+            "zh-CN": "前往时途经骨头村、沉睡森林与珊瑚谷。",
+            "zh-TW": "前往時途經骨頭村、沉睡森林與珊瑚谷。",
+            "ja": "ボーンビレッジ、眠りの森、サンゴの谷を経由して向かう。",
+            "ko": "본 빌리지·잠의 숲·산호 계곡을 거쳐 접근한다."
+          },
+          "spoilerLevel": "none",
+          "sources": [
+            "forgotten-capital"
+          ]
+        },
+        {
+          "kind": "reward",
+          "text": {
+            "en": "Discoveries include Comet and an Enemy Skill Materia.",
+            "zh-CN": "可发现彗星与敌技魔晶石。",
+            "zh-TW": "可發現彗星與敵技魔晶石。",
+            "ja": "いんせきとてきのわざマテリアなどが見つかる。",
+            "ko": "혜성과 적의 기술 마테리아 등을 찾을 수 있다."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "forgotten-capital"
+          ]
+        }
+      ],
       "notes": []
     },
     {
@@ -2000,21 +2954,21 @@
       "canonicalName": "Quadra Magic",
       "localizedNames": {
         "en": "Quadra Magic",
-        "zh-CN": "Quadra Magic",
-        "zh-TW": "Quadra Magic",
-        "ja": "Quadra Magic",
-        "ko": "Quadra Magic"
+        "zh-CN": "Quadra Magic（魔晶石）",
+        "zh-TW": "Quadra Magic（魔晶石）",
+        "ja": "Quadra Magic マテリア",
+        "ko": "Quadra Magic 마테리아"
       },
       "aliases": [
         "zz7",
         "Quadra Magic"
       ],
       "summary": {
-        "en": "Materia found inside this cave.",
-        "zh-CN": "在该洞窟内部取得的魔晶石。",
-        "zh-TW": "在該洞窟內部取得的魔晶石。",
-        "ja": "この洞窟の内部で入手するマテリア。",
-        "ko": "이 동굴 내부에서 얻는 마테리아."
+        "en": "Quadra Magic repeats a compatible linked spell four times, with reduced damage.",
+        "zh-CN": "Quadra Magic 使兼容的连接法术重复四次，但伤害降低。",
+        "zh-TW": "Quadra Magic 使相容的連接法術重複四次，但傷害降低。",
+        "ja": "Quadra Magic は対応する連結魔法を、威力を落として4回発動する。",
+        "ko": "Quadra Magic은 호환되는 연결 마법을 피해량을 줄여 네 번 시전한다。"
       },
       "region": "islands",
       "tags": [
@@ -2039,9 +2993,25 @@
       "secrets": [],
       "sources": [
         "caves",
-        "wiki-caves"
+        "wiki-caves",
+        "materia-support"
       ],
-      "facts": [],
+      "facts": [
+        {
+          "kind": "gameplay",
+          "text": {
+            "en": "Quadra Magic repeats a compatible linked spell four times, with reduced damage.",
+            "zh-CN": "Quadra Magic 使兼容的连接法术重复四次，但伤害降低。",
+            "zh-TW": "Quadra Magic 使相容的連接法術重複四次，但傷害降低。",
+            "ja": "Quadra Magic は対応する連結魔法を、威力を落として4回発動する。",
+            "ko": "Quadra Magic은 호환되는 연결 마법을 피해량을 줄여 네 번 시전한다."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "materia-support"
+          ]
+        }
+      ],
       "notes": []
     },
     {
@@ -2050,22 +3020,23 @@
       "canonicalName": "HP↔MP",
       "localizedNames": {
         "en": "HP↔MP",
-        "zh-CN": "HP↔MP",
-        "zh-TW": "HP↔MP",
-        "ja": "HP↔MP",
-        "ko": "HP↔MP"
+        "zh-CN": "HP↔MP（魔晶石）",
+        "zh-TW": "HP↔MP（魔晶石）",
+        "ja": "HP↔MP マテリア",
+        "ko": "HP↔MP 마테리아"
       },
       "aliases": [
         "HP MP Cave",
         "zz6",
-        "HP<->MP"
+        "HP<->MP",
+        "HP↔MP"
       ],
       "summary": {
-        "en": "Materia found inside this cave.",
-        "zh-CN": "在该洞窟内部取得的魔晶石。",
-        "zh-TW": "在該洞窟內部取得的魔晶石。",
-        "ja": "この洞窟の内部で入手するマテリア。",
-        "ko": "이 동굴 내부에서 얻는 마테리아."
+        "en": "HP↔MP swaps the equipped character's HP and MP.",
+        "zh-CN": "HP↔MP 交换装备角色的 HP 与 MP。",
+        "zh-TW": "HP↔MP 交換裝備角色的 HP 與 MP。",
+        "ja": "HP↔MP は装備者の HP と MP を入れ替える。",
+        "ko": "HP↔MP는 장착 캐릭터의 HP와 MP를 바꾼다。"
       },
       "region": "western",
       "tags": [
@@ -2090,9 +3061,25 @@
       "secrets": [],
       "sources": [
         "caves",
-        "wiki-caves"
+        "wiki-caves",
+        "materia-independent"
       ],
-      "facts": [],
+      "facts": [
+        {
+          "kind": "gameplay",
+          "text": {
+            "en": "HP↔MP swaps the equipped character's HP and MP.",
+            "zh-CN": "HP↔MP 交换装备角色的 HP 与 MP。",
+            "zh-TW": "HP↔MP 交換裝備角色的 HP 與 MP。",
+            "ja": "HP↔MP は装備者の HP と MP を入れ替える。",
+            "ko": "HP↔MP는 장착 캐릭터의 HP와 MP를 바꾼다."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "materia-independent"
+          ]
+        }
+      ],
       "notes": []
     },
     {
@@ -2101,21 +3088,21 @@
       "canonicalName": "Mime",
       "localizedNames": {
         "en": "Mime",
-        "zh-CN": "Mime",
-        "zh-TW": "Mime",
-        "ja": "Mime",
-        "ko": "Mime"
+        "zh-CN": "Mime（魔晶石）",
+        "zh-TW": "Mime（魔晶石）",
+        "ja": "Mime マテリア",
+        "ko": "Mime 마테리아"
       },
       "aliases": [
         "zz5",
         "Mime"
       ],
       "summary": {
-        "en": "Materia found inside this cave.",
-        "zh-CN": "在该洞窟内部取得的魔晶石。",
-        "zh-TW": "在該洞窟內部取得的魔晶石。",
-        "ja": "この洞窟の内部で入手するマテリア。",
-        "ko": "이 동굴 내부에서 얻는 마테리아."
+        "en": "Mime repeats the preceding ally action.",
+        "zh-CN": "Mime 模仿之前队友的行动。",
+        "zh-TW": "Mime 模仿之前隊友的行動。",
+        "ja": "Mime は直前の味方の行動をまねる。",
+        "ko": "Mime은 직전 아군의 행동을 흉내 낸다。"
       },
       "region": "wutai",
       "tags": [
@@ -2140,9 +3127,25 @@
       "secrets": [],
       "sources": [
         "caves",
-        "wiki-caves"
+        "wiki-caves",
+        "materia-command"
       ],
-      "facts": [],
+      "facts": [
+        {
+          "kind": "gameplay",
+          "text": {
+            "en": "Mime repeats the preceding ally action.",
+            "zh-CN": "Mime 模仿之前队友的行动。",
+            "zh-TW": "Mime 模仿之前隊友的行動。",
+            "ja": "Mime は直前の味方の行動をまねる。",
+            "ko": "Mime은 직전 아군의 행동을 흉내 낸다."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "materia-command"
+          ]
+        }
+      ],
       "notes": []
     },
     {
@@ -2151,10 +3154,10 @@
       "canonicalName": "Knights of the Round",
       "localizedNames": {
         "en": "Knights of the Round",
-        "zh-CN": "Knights of the Round",
-        "zh-TW": "Knights of the Round",
-        "ja": "Knights of the Round",
-        "ko": "Knights of the Round"
+        "zh-CN": "圆桌骑士（魔晶石）",
+        "zh-TW": "圓桌騎士（魔晶石）",
+        "ja": "ナイツオブラウンドのマテリア",
+        "ko": "나이츠 오브 라운드 마테리아"
       },
       "aliases": [
         "Knights of the Round Cave",
@@ -2166,11 +3169,11 @@
         "Knights of the Round"
       ],
       "summary": {
-        "en": "Materia found inside this cave.",
-        "zh-CN": "在该洞窟内部取得的魔晶石。",
-        "zh-TW": "在該洞窟內部取得的魔晶石。",
-        "ja": "この洞窟の内部で入手するマテリア。",
-        "ko": "이 동굴 내부에서 얻는 마테리아."
+        "en": "Knights of the Round unleashes thirteen successive strikes.",
+        "zh-CN": "Knights of the Round 召唤会连续攻击十三次。",
+        "zh-TW": "Knights of the Round 召喚會連續攻擊十三次。",
+        "ja": "Knights of the Round は13回連続で攻撃する召喚。",
+        "ko": "Knights of the Round 소환은 연속으로 열세 번 공격한다。"
       },
       "region": "islands",
       "tags": [
@@ -2195,9 +3198,25 @@
       "secrets": [],
       "sources": [
         "caves",
-        "wiki-caves"
+        "wiki-caves",
+        "materia-summon"
       ],
-      "facts": [],
+      "facts": [
+        {
+          "kind": "gameplay",
+          "text": {
+            "en": "Knights of the Round unleashes thirteen successive strikes.",
+            "zh-CN": "Knights of the Round 召唤会连续攻击十三次。",
+            "zh-TW": "Knights of the Round 召喚會連續攻擊十三次。",
+            "ja": "Knights of the Round は13回連続で攻撃する召喚。",
+            "ko": "Knights of the Round 소환은 연속으로 열세 번 공격한다."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "materia-summon"
+          ]
+        }
+      ],
       "notes": []
     },
     {
@@ -2206,18 +3225,20 @@
       "canonicalName": "Megalixir",
       "localizedNames": {
         "en": "Megalixir",
-        "zh-CN": "Megalixir",
-        "zh-TW": "Megalixir",
-        "ja": "Megalixir",
-        "ko": "Megalixir"
+        "zh-CN": "Megalixir（道具）",
+        "zh-TW": "Megalixir（道具）",
+        "ja": "Megalixir のアイテム",
+        "ko": "Megalixir 아이템"
       },
-      "aliases": [],
+      "aliases": [
+        "Megalixir"
+      ],
       "summary": {
-        "en": "A reward recorded inside the parent place; no exact world position.",
-        "zh-CN": "记录于父地点内部的奖励；没有世界地图精确坐标。",
-        "zh-TW": "記錄於父地點內部的獎勵；沒有世界地圖精確座標。",
-        "ja": "親の場所の内部にある報酬。ワールド上の正確な位置は未確定。",
-        "ko": "상위 장소 내부의 보상이며 월드의 정확한 위치는 미확인."
+        "en": "Repeatedly inspect the inn's upstairs cabinet for a Megalixir.",
+        "zh-CN": "反复检查旅馆楼上的柜子可取得 Megalixir。",
+        "zh-TW": "反覆檢查旅館樓上的櫃子可取得 Megalixir。",
+        "ja": "宿の上階の棚を繰り返し調べると Megalixir を入手できる。",
+        "ko": "여관 위층의 장을 반복해서 조사하면 Megalixir를 얻을 수 있다。"
       },
       "region": "eastern",
       "tags": [
@@ -2237,9 +3258,25 @@
       "collectibles": [],
       "secrets": [],
       "sources": [
-        "kalm"
+        "kalm",
+        "kalm-walk"
       ],
-      "facts": [],
+      "facts": [
+        {
+          "kind": "secret",
+          "text": {
+            "en": "Repeatedly inspect the inn's upstairs cabinet for a Megalixir.",
+            "zh-CN": "反复检查旅馆楼上的柜子可取得 Megalixir。",
+            "zh-TW": "反覆檢查旅館樓上的櫃子可取得 Megalixir。",
+            "ja": "宿の上階の棚を繰り返し調べると Megalixir を入手できる。",
+            "ko": "여관 위층의 장을 반복해서 조사하면 Megalixir를 얻을 수 있다."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "kalm-walk"
+          ]
+        }
+      ],
       "notes": []
     },
     {
@@ -2248,18 +3285,20 @@
       "canonicalName": "Long Range",
       "localizedNames": {
         "en": "Long Range",
-        "zh-CN": "Long Range",
-        "zh-TW": "Long Range",
-        "ja": "Long Range",
-        "ko": "Long Range"
+        "zh-CN": "Long Range（魔晶石）",
+        "zh-TW": "Long Range（魔晶石）",
+        "ja": "Long Range マテリア",
+        "ko": "Long Range 마테리아"
       },
-      "aliases": [],
+      "aliases": [
+        "Long Range"
+      ],
       "summary": {
-        "en": "A reward recorded inside the parent place; no exact world position.",
-        "zh-CN": "记录于父地点内部的奖励；没有世界地图精确坐标。",
-        "zh-TW": "記錄於父地點內部的獎勵；沒有世界地圖精確座標。",
-        "ja": "親の場所の内部にある報酬。ワールド上の正確な位置は未確定。",
-        "ko": "상위 장소 내부의 보상이며 월드의 정확한 위치는 미확인."
+        "en": "Climb the vines inside the mine to reach Long Range.",
+        "zh-CN": "在矿内攀爬藤蔓可取得 Long Range。",
+        "zh-TW": "在礦內攀爬藤蔓可取得 Long Range。",
+        "ja": "鉱山内のつたを登ると Long Range がある。",
+        "ko": "광산 안의 덩굴을 오르면 Long Range를 얻을 수 있다。"
       },
       "region": "eastern",
       "tags": [
@@ -2279,9 +3318,25 @@
       "collectibles": [],
       "secrets": [],
       "sources": [
-        "mythril-mine"
+        "mythril-mine",
+        "mine-walk"
       ],
-      "facts": [],
+      "facts": [
+        {
+          "kind": "reward",
+          "text": {
+            "en": "Climb the vines inside the mine to reach Long Range.",
+            "zh-CN": "在矿内攀爬藤蔓可取得 Long Range。",
+            "zh-TW": "在礦內攀爬藤蔓可取得 Long Range。",
+            "ja": "鉱山内のつたを登ると Long Range がある。",
+            "ko": "광산 안의 덩굴을 오르면 Long Range를 얻을 수 있다."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "mine-walk"
+          ]
+        }
+      ],
       "notes": []
     },
     {
@@ -2290,18 +3345,20 @@
       "canonicalName": "Enemy Skill",
       "localizedNames": {
         "en": "Enemy Skill",
-        "zh-CN": "Enemy Skill",
-        "zh-TW": "Enemy Skill",
-        "ja": "Enemy Skill",
-        "ko": "Enemy Skill"
+        "zh-CN": "敌技魔晶石（朱诺）",
+        "zh-TW": "敵技魔晶石（朱諾）",
+        "ja": "てきのわざ（ジュノン）",
+        "ko": "적의 기술 마테리아（주논）"
       },
-      "aliases": [],
+      "aliases": [
+        "Enemy Skill"
+      ],
       "summary": {
-        "en": "A reward recorded inside the parent place; no exact world position.",
-        "zh-CN": "记录于父地点内部的奖励；没有世界地图精确坐标。",
-        "zh-TW": "記錄於父地點內部的獎勵；沒有世界地圖精確座標。",
-        "ja": "親の場所の内部にある報酬。ワールド上の正確な位置は未確定。",
-        "ko": "상위 장소 내부의 보상이며 월드의 정확한 위치는 미확인."
+        "en": "Enemy Skill Materia is found in Upper Junon's training hall.",
+        "zh-CN": "朱诺上层的训练馆内可取得 Enemy Skill 魔晶石。",
+        "zh-TW": "朱諾上層的訓練館內可取得 Enemy Skill 魔晶石。",
+        "ja": "ジュノン上層の訓練施設で Enemy Skill マテリアを入手できる。",
+        "ko": "주논 상층 훈련장에서 Enemy Skill 마테리아를 얻을 수 있다。"
       },
       "region": "eastern",
       "tags": [
@@ -2321,9 +3378,25 @@
       "collectibles": [],
       "secrets": [],
       "sources": [
-        "junon"
+        "junon",
+        "junon-walk"
       ],
-      "facts": [],
+      "facts": [
+        {
+          "kind": "reward",
+          "text": {
+            "en": "Enemy Skill Materia is found in Upper Junon's training hall.",
+            "zh-CN": "朱诺上层的训练馆内可取得 Enemy Skill 魔晶石。",
+            "zh-TW": "朱諾上層的訓練館內可取得 Enemy Skill 魔晶石。",
+            "ja": "ジュノン上層の訓練施設で Enemy Skill マテリアを入手できる。",
+            "ko": "주논 상층 훈련장에서 Enemy Skill 마테리아를 얻을 수 있다."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "junon-walk"
+          ]
+        }
+      ],
       "notes": []
     },
     {
@@ -2332,18 +3405,20 @@
       "canonicalName": "Lunar Harp",
       "localizedNames": {
         "en": "Lunar Harp",
-        "zh-CN": "Lunar Harp",
-        "zh-TW": "Lunar Harp",
-        "ja": "Lunar Harp",
-        "ko": "Lunar Harp"
+        "zh-CN": "月之竖琴",
+        "zh-TW": "月之豎琴",
+        "ja": "ルナハープ",
+        "ko": "루나 하프"
       },
-      "aliases": [],
+      "aliases": [
+        "Lunar Harp"
+      ],
       "summary": {
-        "en": "A reward recorded inside the parent place; no exact world position.",
-        "zh-CN": "记录于父地点内部的奖励；没有世界地图精确坐标。",
-        "zh-TW": "記錄於父地點內部的獎勵；沒有世界地圖精確座標。",
-        "ja": "親の場所の内部にある報酬。ワールド上の正確な位置は未確定。",
-        "ko": "상위 장소 내부의 보상이며 월드의 정확한 위치는 미확인."
+        "en": "The excavated Lunar Harp opens the Sleeping Forest route.",
+        "zh-CN": "挖出的 Lunar Harp 可开启沉睡森林路线。",
+        "zh-TW": "挖出的 Lunar Harp 可開啟沉睡森林路線。",
+        "ja": "発掘した Lunar Harp で眠りの森の道を進めるようになる。",
+        "ko": "발굴한 Lunar Harp로 잠자는 숲의 길을 열 수 있다。"
       },
       "region": "northern",
       "tags": [
@@ -2365,7 +3440,22 @@
       "sources": [
         "bone-village"
       ],
-      "facts": [],
+      "facts": [
+        {
+          "kind": "access",
+          "text": {
+            "en": "The excavated Lunar Harp opens the Sleeping Forest route.",
+            "zh-CN": "挖出的 Lunar Harp 可开启沉睡森林路线。",
+            "zh-TW": "挖出的 Lunar Harp 可開啟沉睡森林路線。",
+            "ja": "発掘した Lunar Harp で眠りの森の道を進めるようになる。",
+            "ko": "발굴한 Lunar Harp로 잠자는 숲의 길을 열 수 있다."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "bone-village"
+          ]
+        }
+      ],
       "notes": []
     },
     {
@@ -2374,18 +3464,20 @@
       "canonicalName": "Key to Sector 5",
       "localizedNames": {
         "en": "Key to Sector 5",
-        "zh-CN": "Key to Sector 5",
-        "zh-TW": "Key to Sector 5",
-        "ja": "Key to Sector 5",
-        "ko": "Key to Sector 5"
+        "zh-CN": "五号区钥匙",
+        "zh-TW": "五號區鑰匙",
+        "ja": "伍番街のカギ",
+        "ko": "5번 구역 열쇠"
       },
-      "aliases": [],
+      "aliases": [
+        "Key to Sector 5"
+      ],
       "summary": {
-        "en": "A reward recorded inside the parent place; no exact world position.",
-        "zh-CN": "记录于父地点内部的奖励；没有世界地图精确坐标。",
-        "zh-TW": "記錄於父地點內部的獎勵；沒有世界地圖精確座標。",
-        "ja": "親の場所の内部にある報酬。ワールド上の正確な位置は未確定。",
-        "ko": "상위 장소 내부의 보상이며 월드의 정확한 위치는 미확인."
+        "en": "Dig for the Key to Sector 5 as good treasure during the late-game revisit.",
+        "zh-CN": "后期重访时以优质宝藏为目标挖掘，可取得 Key to Sector 5。",
+        "zh-TW": "後期重訪時以優質寶藏為目標挖掘，可取得 Key to Sector 5。",
+        "ja": "後半の再訪時に良い宝を発掘すると Key to Sector 5 を入手できる。",
+        "ko": "후반 재방문 때 좋은 보물을 발굴하면 Key to Sector 5를 얻을 수 있다。"
       },
       "region": "northern",
       "tags": [
@@ -2405,9 +3497,25 @@
       "collectibles": [],
       "secrets": [],
       "sources": [
-        "bone-village"
+        "bone-village",
+        "midgar-return"
       ],
-      "facts": [],
+      "facts": [
+        {
+          "kind": "access",
+          "text": {
+            "en": "Dig for the Key to Sector 5 as good treasure during the late-game revisit.",
+            "zh-CN": "后期重访时以优质宝藏为目标挖掘，可取得 Key to Sector 5。",
+            "zh-TW": "後期重訪時以優質寶藏為目標挖掘，可取得 Key to Sector 5。",
+            "ja": "後半の再訪時に良い宝を発掘すると Key to Sector 5 を入手できる。",
+            "ko": "후반 재방문 때 좋은 보물을 발굴하면 Key to Sector 5를 얻을 수 있다."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "midgar-return"
+          ]
+        }
+      ],
       "notes": []
     },
     {
@@ -2416,18 +3524,20 @@
       "canonicalName": "Titan",
       "localizedNames": {
         "en": "Titan",
-        "zh-CN": "Titan",
-        "zh-TW": "Titan",
-        "ja": "Titan",
-        "ko": "Titan"
+        "zh-CN": "泰坦魔晶石",
+        "zh-TW": "泰坦魔晶石",
+        "ja": "タイタンのマテリア",
+        "ko": "타이탄 마테리아"
       },
-      "aliases": [],
+      "aliases": [
+        "Titan"
+      ],
       "summary": {
-        "en": "A reward recorded inside the parent place; no exact world position.",
-        "zh-CN": "记录于父地点内部的奖励；没有世界地图精确坐标。",
-        "zh-TW": "記錄於父地點內部的獎勵；沒有世界地圖精確座標。",
-        "ja": "親の場所の内部にある報酬。ワールド上の正確な位置は未確定。",
-        "ko": "상위 장소 내부의 보상이며 월드의 정확한 위치는 미확인."
+        "en": "Titan Materia is among the reactor area's discoveries.",
+        "zh-CN": "Titan 魔晶石属于反应炉区域的收集物。",
+        "zh-TW": "Titan 魔晶石屬於反應爐區域的收集物。",
+        "ja": "Titan マテリアは廃炉周辺の拾得物。",
+        "ko": "Titan 마테리아는 폐마황로 주변의 수집물이다。"
       },
       "region": "western",
       "tags": [
@@ -2449,7 +3559,22 @@
       "sources": [
         "gongaga"
       ],
-      "facts": [],
+      "facts": [
+        {
+          "kind": "reward",
+          "text": {
+            "en": "Titan Materia is among the reactor area's discoveries.",
+            "zh-CN": "Titan 魔晶石属于反应炉区域的收集物。",
+            "zh-TW": "Titan 魔晶石屬於反應爐區域的收集物。",
+            "ja": "Titan マテリアは廃炉周辺の拾得物。",
+            "ko": "Titan 마테리아는 폐마황로 주변의 수집물이다."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "gongaga"
+          ]
+        }
+      ],
       "notes": []
     },
     {
@@ -2458,18 +3583,20 @@
       "canonicalName": "Leviathan / All Creation",
       "localizedNames": {
         "en": "Leviathan / All Creation",
-        "zh-CN": "Leviathan / All Creation",
-        "zh-TW": "Leviathan / All Creation",
-        "ja": "Leviathan / All Creation",
-        "ko": "Leviathan / All Creation"
+        "zh-CN": "利维坦 / All Creation",
+        "zh-TW": "利維坦 / All Creation",
+        "ja": "リヴァイアサン / All Creation",
+        "ko": "리바이어선 / All Creation"
       },
-      "aliases": [],
+      "aliases": [
+        "Leviathan / All Creation"
+      ],
       "summary": {
-        "en": "A reward recorded inside the parent place; no exact world position.",
-        "zh-CN": "记录于父地点内部的奖励；没有世界地图精确坐标。",
-        "zh-TW": "記錄於父地點內部的獎勵；沒有世界地圖精確座標。",
-        "ja": "親の場所の内部にある報酬。ワールド上の正確な位置は未確定。",
-        "ko": "상위 장소 내부의 보상이며 월드의 정확한 위치는 미확인."
+        "en": "Yuffie fights alone across five Pagoda floors; Godo is the last opponent.",
+        "zh-CN": "尤菲独自挑战五层宝塔；最后的对手是 Godo。",
+        "zh-TW": "尤菲獨自挑戰五層寶塔；最後的對手是 Godo。",
+        "ja": "ユフィが五層の塔で単独戦を行い、最後に Godo と戦う。",
+        "ko": "유피가 탑의 다섯 층에서 혼자 싸우며 마지막 상대는 Godo다。"
       },
       "region": "wutai",
       "tags": [
@@ -2489,9 +3616,39 @@
       "collectibles": [],
       "secrets": [],
       "sources": [
-        "wutai"
+        "wutai",
+        "pagoda-guide"
       ],
-      "facts": [],
+      "facts": [
+        {
+          "kind": "gameplay",
+          "text": {
+            "en": "Yuffie fights alone across five Pagoda floors; Godo is the last opponent.",
+            "zh-CN": "尤菲独自挑战五层宝塔；最后的对手是 Godo。",
+            "zh-TW": "尤菲獨自挑戰五層寶塔；最後的對手是 Godo。",
+            "ja": "ユフィが五層の塔で単独戦を行い、最後に Godo と戦う。",
+            "ko": "유피가 탑의 다섯 층에서 혼자 싸우며 마지막 상대는 Godo다."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "pagoda-guide"
+          ]
+        },
+        {
+          "kind": "reward",
+          "text": {
+            "en": "Completion awards Leviathan Materia and the All Creation manual.",
+            "zh-CN": "完成挑战可取得 Leviathan 魔晶石与 All Creation 秘籍。",
+            "zh-TW": "完成挑戰可取得 Leviathan 魔晶石與 All Creation 秘籍。",
+            "ja": "踏破報酬は Leviathan マテリアと All Creation の書。",
+            "ko": "완주 보상은 Leviathan 마테리아와 All Creation 비전이다."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "pagoda-guide"
+          ]
+        }
+      ],
       "notes": []
     },
     {
@@ -2500,18 +3657,20 @@
       "canonicalName": "Alexander / Added Cut / All",
       "localizedNames": {
         "en": "Alexander / Added Cut / All",
-        "zh-CN": "Alexander / Added Cut / All",
-        "zh-TW": "Alexander / Added Cut / All",
-        "ja": "Alexander / Added Cut / All",
-        "ko": "Alexander / Added Cut / All"
+        "zh-CN": "Alexander / Added Cut / All（收集组）",
+        "zh-TW": "Alexander / Added Cut / All（收集組）",
+        "ja": "Alexander / Added Cut / All の収集組",
+        "ko": "Alexander / Added Cut / All 수집 묶음"
       },
-      "aliases": [],
+      "aliases": [
+        "Alexander / Added Cut / All"
+      ],
       "summary": {
-        "en": "A reward recorded inside the parent place; no exact world position.",
-        "zh-CN": "记录于父地点内部的奖励；没有世界地图精确坐标。",
-        "zh-TW": "記錄於父地點內部的獎勵；沒有世界地圖精確座標。",
-        "ja": "親の場所の内部にある報酬。ワールド上の正確な位置は未確定。",
-        "ko": "상위 장소 내부의 보상이며 월드의 정확한 위치는 미확인."
+        "en": "Touch the hot spring, then defeat Snow in her cave for Alexander.",
+        "zh-CN": "先触碰温泉，再到洞穴击败 Snow，可取得 Alexander。",
+        "zh-TW": "先觸碰溫泉，再到洞穴擊敗 Snow，可取得 Alexander。",
+        "ja": "温泉に触れた後、洞窟の Snow を倒すと Alexander を入手できる。",
+        "ko": "온천에 손을 댄 뒤 동굴의 Snow를 물리치면 Alexander를 얻을 수 있다。"
       },
       "region": "northern",
       "tags": [
@@ -2533,7 +3692,22 @@
       "sources": [
         "wiki-glacier"
       ],
-      "facts": [],
+      "facts": [
+        {
+          "kind": "reward",
+          "text": {
+            "en": "Touch the hot spring, then defeat Snow in her cave for Alexander.",
+            "zh-CN": "先触碰温泉，再到洞穴击败 Snow，可取得 Alexander。",
+            "zh-TW": "先觸碰溫泉，再到洞穴擊敗 Snow，可取得 Alexander。",
+            "ja": "温泉に触れた後、洞窟の Snow を倒すと Alexander を入手できる。",
+            "ko": "온천에 손을 댄 뒤 동굴의 Snow를 물리치면 Alexander를 얻을 수 있다."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "wiki-glacier"
+          ]
+        }
+      ],
       "notes": []
     },
     {
@@ -2542,18 +3716,20 @@
       "canonicalName": "Great Gospel / Gold Armlet",
       "localizedNames": {
         "en": "Great Gospel / Gold Armlet",
-        "zh-CN": "Great Gospel / Gold Armlet",
-        "zh-TW": "Great Gospel / Gold Armlet",
-        "ja": "Great Gospel / Gold Armlet",
-        "ko": "Great Gospel / Gold Armlet"
+        "zh-CN": "Great Gospel / Gold Armlet（交换奖励）",
+        "zh-TW": "Great Gospel / Gold Armlet（交換獎勵）",
+        "ja": "Great Gospel / Gold Armlet の交換報酬",
+        "ko": "Great Gospel / Gold Armlet 교환 보상"
       },
-      "aliases": [],
+      "aliases": [
+        "Great Gospel / Gold Armlet"
+      ],
       "summary": {
-        "en": "A reward recorded inside the parent place; no exact world position.",
-        "zh-CN": "记录于父地点内部的奖励；没有世界地图精确坐标。",
-        "zh-TW": "記錄於父地點內部的獎勵；沒有世界地圖精確座標。",
-        "ja": "親の場所の内部にある報酬。ワールド上の正確な位置は未確定。",
-        "ko": "상위 장소 내부의 보상이며 월드의 정확한 위치는 미확인."
+        "en": "Great Gospel is Aeris's level-four Limit manual, obtained by trading Mythril.",
+        "zh-CN": "Great Gospel 是爱丽丝的第四级极限技秘籍，可通过交换 Mythril 取得。",
+        "zh-TW": "Great Gospel 是愛麗絲的第四級極限技秘笈，可透過交換 Mythril 取得。",
+        "ja": "Great Gospel は Mythril 交換で得るエアリスのレベル4リミットの書。",
+        "ko": "Great Gospel은 Mythril 교환으로 얻는 에어리스의 4단계 리미트 비전이다。"
       },
       "region": "western",
       "tags": [
@@ -2575,7 +3751,36 @@
       "sources": [
         "weapon-seller"
       ],
-      "facts": [],
+      "facts": [
+        {
+          "kind": "reward",
+          "text": {
+            "en": "Great Gospel is Aeris's level-four Limit manual, obtained by trading Mythril.",
+            "zh-CN": "Great Gospel 是爱丽丝的第四级极限技秘籍，可通过交换 Mythril 取得。",
+            "zh-TW": "Great Gospel 是愛麗絲的第四級極限技秘笈，可透過交換 Mythril 取得。",
+            "ja": "Great Gospel は Mythril 交換で得るエアリスのレベル4リミットの書。",
+            "ko": "Great Gospel은 Mythril 교환으로 얻는 에어리스의 4단계 리미트 비전이다."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "weapon-seller"
+          ]
+        },
+        {
+          "kind": "reward",
+          "spoilerLevel": "minor",
+          "sources": [
+            "weapon-seller"
+          ],
+          "text": {
+            "en": "The downstairs box offers Gold Armlet; the upstairs small box offers Great Gospel.",
+            "zh-CN": "楼下的大盒子提供 Gold Armlet；楼上的小盒子提供 Great Gospel。",
+            "zh-TW": "樓下的大盒子提供 Gold Armlet；樓上的小盒子提供 Great Gospel。",
+            "ja": "下階の箱は Gold Armlet、上階の小箱は Great Gospel。",
+            "ko": "아래층 상자는 Gold Armlet, 위층 작은 상자는 Great Gospel을 제공한다."
+          }
+        }
+      ],
       "notes": []
     },
     {
@@ -2584,18 +3789,20 @@
       "canonicalName": "Mythril / Bolt Ring",
       "localizedNames": {
         "en": "Mythril / Bolt Ring",
-        "zh-CN": "Mythril / Bolt Ring",
-        "zh-TW": "Mythril / Bolt Ring",
-        "ja": "Mythril / Bolt Ring",
-        "ko": "Mythril / Bolt Ring"
+        "zh-CN": "Mythril / Bolt Ring（条件奖励）",
+        "zh-TW": "Mythril / Bolt Ring（條件獎勵）",
+        "ja": "Mythril / Bolt Ring の条件付き報酬",
+        "ko": "Mythril / Bolt Ring 조건부 보상"
       },
-      "aliases": [],
+      "aliases": [
+        "Mythril / Bolt Ring"
+      ],
       "summary": {
-        "en": "A reward recorded inside the parent place; no exact world position.",
-        "zh-CN": "记录于父地点内部的奖励；没有世界地图精确坐标。",
-        "zh-TW": "記錄於父地點內部的獎勵；沒有世界地圖精確座標。",
-        "ja": "親の場所の内部にある報酬。ワールド上の正確な位置は未確定。",
-        "ko": "상위 장소 내부의 보상이며 월드의 정확한 위치는 미확인."
+        "en": "Mythril can be exchanged at the weapon seller's house.",
+        "zh-CN": "Mythril 可在武器商人小屋交换奖励。",
+        "zh-TW": "Mythril 可在武器商人小屋交換獎勵。",
+        "ja": "Mythril は武器職人の小屋で報酬と交換できる。",
+        "ko": "Mythril은 무기 상인의 집에서 보상과 교환할 수 있다。"
       },
       "region": "eastern",
       "tags": [
@@ -2617,7 +3824,22 @@
       "sources": [
         "old-man"
       ],
-      "facts": [],
+      "facts": [
+        {
+          "kind": "gameplay",
+          "text": {
+            "en": "Mythril can be exchanged at the weapon seller's house.",
+            "zh-CN": "Mythril 可在武器商人小屋交换奖励。",
+            "zh-TW": "Mythril 可在武器商人小屋交換獎勵。",
+            "ja": "Mythril は武器職人の小屋で報酬と交換できる。",
+            "ko": "Mythril은 무기 상인의 집에서 보상과 교환할 수 있다."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "old-man"
+          ]
+        }
+      ],
       "notes": []
     },
     {
@@ -2626,18 +3848,20 @@
       "canonicalName": "Death Penalty / Chaos",
       "localizedNames": {
         "en": "Death Penalty / Chaos",
-        "zh-CN": "Death Penalty / Chaos",
-        "zh-TW": "Death Penalty / Chaos",
-        "ja": "Death Penalty / Chaos",
-        "ko": "Death Penalty / Chaos"
+        "zh-CN": "Death Penalty / Chaos（文森特奖励）",
+        "zh-TW": "Death Penalty / Chaos（文森特獎勵）",
+        "ja": "Death Penalty / Chaos のヴィンセント用報酬",
+        "ko": "Death Penalty / Chaos 빈센트 보상"
       },
-      "aliases": [],
+      "aliases": [
+        "Death Penalty / Chaos"
+      ],
       "summary": {
-        "en": "A reward recorded inside the parent place; no exact world position.",
-        "zh-CN": "记录于父地点内部的奖励；没有世界地图精确坐标。",
-        "zh-TW": "記錄於父地點內部的獎勵；沒有世界地圖精確座標。",
-        "ja": "親の場所の内部にある報酬。ワールド上の正確な位置は未確定。",
-        "ko": "상위 장소 내부의 보상이며 월드의 정확한 위치는 미확인."
+        "en": "Return with Vincent after further battles for Death Penalty and Chaos.",
+        "zh-CN": "带上文森特、经历更多战斗后重访，可取得 Death Penalty 与 Chaos。",
+        "zh-TW": "帶上文森特、經歷更多戰鬥後重訪，可取得 Death Penalty 與 Chaos。",
+        "ja": "さらに戦闘を重ねてヴィンセントと再訪すると Death Penalty と Chaos を入手できる。",
+        "ko": "추가 전투 뒤 빈센트와 다시 방문하면 Death Penalty와 Chaos를 얻을 수 있다。"
       },
       "region": "western",
       "tags": [
@@ -2659,7 +3883,22 @@
       "sources": [
         "lucrecia"
       ],
-      "facts": [],
+      "facts": [
+        {
+          "kind": "reward",
+          "text": {
+            "en": "Return with Vincent after further battles for Death Penalty and Chaos.",
+            "zh-CN": "带上文森特、经历更多战斗后重访，可取得 Death Penalty 与 Chaos。",
+            "zh-TW": "帶上文森特、經歷更多戰鬥後重訪，可取得 Death Penalty 與 Chaos。",
+            "ja": "さらに戦闘を重ねてヴィンセントと再訪すると Death Penalty と Chaos を入手できる。",
+            "ko": "추가 전투 뒤 빈센트와 다시 방문하면 Death Penalty와 Chaos를 얻을 수 있다."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "lucrecia"
+          ]
+        }
+      ],
       "notes": []
     },
     {
@@ -2668,23 +3907,24 @@
       "canonicalName": "Enemy Skill",
       "localizedNames": {
         "en": "Enemy Skill",
-        "zh-CN": "Enemy Skill",
-        "zh-TW": "Enemy Skill",
-        "ja": "Enemy Skill",
-        "ko": "Enemy Skill"
+        "zh-CN": "敌技魔晶石（仙人家）",
+        "zh-TW": "敵技魔晶石（仙人家）",
+        "ja": "てきのわざ（仙人の家）",
+        "ko": "적의 기술 마테리아（선인의 집）"
       },
       "aliases": [
         "敌人技能",
         "敵人技能",
         "てきのわざ",
-        "적의 기술"
+        "적의 기술",
+        "Enemy Skill"
       ],
       "summary": {
-        "en": "The green chocobo inside the house gives Enemy Skill Materia.",
-        "zh-CN": "屋内绿陆行鸟赠送敌人技能魔晶石。",
-        "zh-TW": "屋內綠陸行鳥贈送敵人技能魔晶石。",
-        "ja": "小屋の緑チョコボからてきのわざを入手する。",
-        "ko": "집 안의 초록 초코보가 적의 기술 마테리아를 준다."
+        "en": "Speak to the green chocobo in the house for Enemy Skill Materia.",
+        "zh-CN": "与屋内绿色陆行鸟交谈，可取得 Enemy Skill 魔晶石。",
+        "zh-TW": "與屋內綠色陸行鳥交談，可取得 Enemy Skill 魔晶石。",
+        "ja": "家の緑チョコボに話しかけると Enemy Skill マテリアを入手できる。",
+        "ko": "집 안의 녹색 초코보에게 말을 걸면 Enemy Skill 마테리아를 얻을 수 있다。"
       },
       "region": "northern",
       "tags": [
@@ -2707,9 +3947,25 @@
       "collectibles": [],
       "secrets": [],
       "sources": [
-        "chocobo-sages-house"
+        "chocobo-sages-house",
+        "sage-guide"
       ],
-      "facts": [],
+      "facts": [
+        {
+          "kind": "reward",
+          "text": {
+            "en": "Speak to the green chocobo in the house for Enemy Skill Materia.",
+            "zh-CN": "与屋内绿色陆行鸟交谈，可取得 Enemy Skill 魔晶石。",
+            "zh-TW": "與屋內綠色陸行鳥交談，可取得 Enemy Skill 魔晶石。",
+            "ja": "家の緑チョコボに話しかけると Enemy Skill マテリアを入手できる。",
+            "ko": "집 안의 녹색 초코보에게 말을 걸면 Enemy Skill 마테리아를 얻을 수 있다."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "sage-guide"
+          ]
+        }
+      ],
       "notes": []
     },
     {
@@ -2718,18 +3974,20 @@
       "canonicalName": "Black Materia",
       "localizedNames": {
         "en": "Black Materia",
-        "zh-CN": "Black Materia",
-        "zh-TW": "Black Materia",
-        "ja": "Black Materia",
-        "ko": "Black Materia"
+        "zh-CN": "黑魔晶石",
+        "zh-TW": "黑魔晶石",
+        "ja": "黒マテリア",
+        "ko": "흑마테리아"
       },
-      "aliases": [],
+      "aliases": [
+        "Black Materia"
+      ],
       "summary": {
-        "en": "The temple itself shrinks into the Black Materia during the story.",
-        "zh-CN": "剧情中神殿本身缩小为黑魔晶石。",
-        "zh-TW": "劇情中神殿本身縮小為黑魔晶石。",
-        "ja": "物語で神殿そのものが黒マテリアへと縮む。",
-        "ko": "이야기에서 신전 자체가 흑마테리아로 축소된다."
+        "en": "The temple itself shrinks into the Black Materia.",
+        "zh-CN": "神殿本体缩小后成为黑魔晶石。",
+        "zh-TW": "神殿本體縮小後成為黑魔晶石。",
+        "ja": "神殿そのものが縮小して黒マテリアになる。",
+        "ko": "신전 자체가 작아져 흑마테리아가 된다。"
       },
       "region": "islands",
       "tags": [
@@ -2754,7 +4012,22 @@
       "sources": [
         "temple-of-the-ancients"
       ],
-      "facts": [],
+      "facts": [
+        {
+          "kind": "gameplay",
+          "text": {
+            "en": "The temple itself shrinks into the Black Materia.",
+            "zh-CN": "神殿本体缩小后成为黑魔晶石。",
+            "zh-TW": "神殿本體縮小後成為黑魔晶石。",
+            "ja": "神殿そのものが縮小して黒マテリアになる。",
+            "ko": "신전 자체가 작아져 흑마테리아가 된다."
+          },
+          "spoilerLevel": "major",
+          "sources": [
+            "temple-of-the-ancients"
+          ]
+        }
+      ],
       "notes": []
     },
     {
@@ -2763,12 +4036,14 @@
       "canonicalName": "Ancient Forest",
       "localizedNames": {
         "en": "Ancient Forest",
-        "zh-CN": "Ancient Forest",
-        "zh-TW": "Ancient Forest",
-        "ja": "Ancient Forest",
-        "ko": "Ancient Forest"
+        "zh-CN": "古代森林",
+        "zh-TW": "古代森林",
+        "ja": "古えの森",
+        "ko": "고대의 숲"
       },
-      "aliases": [],
+      "aliases": [
+        "Ancient Forest"
+      ],
       "summary": {
         "en": "An optional forest dungeon with plant puzzles.",
         "zh-CN": "包含植物谜题的可选森林迷宫。",
@@ -2800,21 +4075,36 @@
       "secrets": [],
       "sources": [
         "wiki-forest",
-        "field-identity-review"
+        "field-identity-review",
+        "forest-guide"
       ],
       "facts": [
         {
           "kind": "access",
           "text": {
-            "en": "Green, black or gold chocobo, or defeat Ultimate Weapon.",
-            "zh-CN": "绿、黑或金色陆行鸟，或击败终极武器。",
-            "zh-TW": "綠、黑或金色陸行鳥，或擊敗終極武器。",
-            "ja": "緑・黒・金チョコボ、またはアルテマウェポン撃破。",
-            "ko": "초록·검정·골드 초코보, 또는 얼티마 웨폰 격파."
+            "en": "A mountain-capable chocobo or victory over Ultimate Weapon provides access.",
+            "zh-CN": "可用能越山的陆行鸟进入，或在击败终极武器后进入。",
+            "zh-TW": "可用能越山的陸行鳥進入，或在擊敗終極武器後進入。",
+            "ja": "山を越えるチョコボ、またはアルテマウェポン撃破によって入れる。",
+            "ko": "산을 넘는 초코보 또는 얼티마 웨폰 격파로 접근할 수 있다."
           },
           "spoilerLevel": "minor",
           "sources": [
-            "wiki-forest"
+            "forest-guide"
+          ]
+        },
+        {
+          "kind": "gameplay",
+          "text": {
+            "en": "Insects and frogs operate pitcher plants; reset the puzzles if stranded.",
+            "zh-CN": "用昆虫和青蛙操作瓶状植物；受困时可重置谜题。",
+            "zh-TW": "用昆蟲和青蛙操作瓶狀植物；受困時可重設謎題。",
+            "ja": "虫やカエルでつぼ型の植物を動かし、行き詰まったらパズルをリセットできる。",
+            "ko": "곤충과 개구리로 통 모양 식물을 작동시키며 막히면 퍼즐을 초기화할 수 있다."
+          },
+          "spoilerLevel": "none",
+          "sources": [
+            "forest-guide"
           ]
         }
       ],
@@ -2828,18 +4118,20 @@
       "canonicalName": "Sunken Gelnika",
       "localizedNames": {
         "en": "Sunken Gelnika",
-        "zh-CN": "Sunken Gelnika",
-        "zh-TW": "Sunken Gelnika",
-        "ja": "Sunken Gelnika",
-        "ko": "Sunken Gelnika"
+        "zh-CN": "沉没的格尔尼卡",
+        "zh-TW": "沉沒的格爾尼卡",
+        "ja": "海底のゲルニカ",
+        "ko": "침몰한 겔니카"
       },
-      "aliases": [],
+      "aliases": [
+        "Sunken Gelnika"
+      ],
       "summary": {
-        "en": "An optional underwater wreck reached by submarine.",
-        "zh-CN": "可乘潜艇抵达的海底沉船地点。",
-        "zh-TW": "可乘潛艇抵達的海底沉船地點。",
-        "ja": "潜水艦で訪れる任意探索の海底の残骸。",
-        "ko": "잠수함으로 방문하는 선택 탐험 해저 잔해."
+        "en": "A sunken Shinra transport aircraft explored by submarine.",
+        "zh-CN": "可乘潜艇探索的神罗运输机海底残骸。",
+        "zh-TW": "可乘潛艇探索的神羅運輸機海底殘骸。",
+        "ja": "潜水艇で探索できる神羅輸送機の海底残骸。",
+        "ko": "잠수함으로 탐색할 수 있는 신라 수송기의 해저 잔해."
       },
       "region": "underwater",
       "tags": [
@@ -2864,9 +4156,39 @@
       "secrets": [],
       "sources": [
         "sunken-gelnika",
-        "field-identity-review"
+        "field-identity-review",
+        "gelnika-guide"
       ],
-      "facts": [],
+      "facts": [
+        {
+          "kind": "access",
+          "text": {
+            "en": "The wreck is optional and requires the submarine obtained through the Underwater Reactor sequence.",
+            "zh-CN": "沉机为可选地点，需先完成海底魔晄炉流程取得潜艇。",
+            "zh-TW": "沉機為可選地點，需先完成海底魔晄爐流程取得潛艇。",
+            "ja": "任意探索の残骸で、海底魔晄炉の一連のイベントで得る潜水艦が必要。",
+            "ko": "선택 탐험 장소이며 해저 마황로 진행으로 얻는 잠수함이 필요하다."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "sunken-gelnika"
+          ]
+        },
+        {
+          "kind": "gameplay",
+          "text": {
+            "en": "Reno and Rude appear here only before the late Disc 2 Midgar operation.",
+            "zh-CN": "雷诺与鲁德的战斗仅会在第二张光盘后期米德加行动之前发生。",
+            "zh-TW": "雷諾與魯德的戰鬥僅會在第二張光碟後期米德加行動之前發生。",
+            "ja": "レノとルードの戦闘はディスク2後半のミッドガル作戦より前に限られる。",
+            "ko": "레노·루드 전투는 디스크 2 후반 미드가르 작전 이전에만 발생한다."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "gelnika-guide"
+          ]
+        }
+      ],
       "notes": [
         "Local Field Context required; no global anchor or individual reward position is implied."
       ]
@@ -2877,12 +4199,14 @@
       "canonicalName": "Gold Saucer",
       "localizedNames": {
         "en": "Gold Saucer",
-        "zh-CN": "Gold Saucer",
-        "zh-TW": "Gold Saucer",
-        "ja": "Gold Saucer",
-        "ko": "Gold Saucer"
+        "zh-CN": "金碟游乐园",
+        "zh-TW": "金碟遊樂園",
+        "ja": "ゴールドソーサー",
+        "ko": "골드 소서"
       },
-      "aliases": [],
+      "aliases": [
+        "Gold Saucer"
+      ],
       "summary": {
         "en": "An amusement complex with minigames.",
         "zh-CN": "设有小游戏的游乐设施。",
@@ -2903,14 +4227,60 @@
         ]
       },
       "relatedLocations": [],
-      "relatedEntities": [],
+      "relatedEntities": [
+        "north-corel"
+      ],
       "collectibles": [],
       "secrets": [],
       "sources": [
         "gold-saucer",
-        "field-identity-review"
+        "field-identity-review",
+        "gold-games"
       ],
-      "facts": [],
+      "facts": [
+        {
+          "kind": "access",
+          "text": {
+            "en": "Use the ropeway from North Corel to enter the amusement complex.",
+            "zh-CN": "需从北科雷尔乘索道进入游乐园。",
+            "zh-TW": "需從北科雷爾乘索道進入遊樂園。",
+            "ja": "北コレルのロープウェイから遊園地へ入る。",
+            "ko": "노스 코렐의 로프웨이로 놀이 시설에 들어간다."
+          },
+          "spoilerLevel": "none",
+          "sources": [
+            "gold-saucer"
+          ]
+        },
+        {
+          "kind": "gameplay",
+          "text": {
+            "en": "Wonder Square awards GP; Battle Square and Chocobo Square offer separate challenges.",
+            "zh-CN": "奇迹广场可赢取 GP；战斗广场与陆行鸟广场另有挑战。",
+            "zh-TW": "奇蹟廣場可贏取 GP；戰鬥廣場與陸行鳥廣場另有挑戰。",
+            "ja": "ワンダースクェアでGPを獲得でき、バトルスクェアやチョコボスクェアには別の挑戦がある。",
+            "ko": "원더 스퀘어에서는 GP를 얻으며 배틀 스퀘어와 초코보 스퀘어에도 별도 도전이 있다."
+          },
+          "spoilerLevel": "none",
+          "sources": [
+            "gold-games"
+          ]
+        },
+        {
+          "kind": "reward",
+          "text": {
+            "en": "Speed Square's high-score weapon changes: Umbrella on Disc 1, Flayer later.",
+            "zh-CN": "极速广场的高分武器随时期变化：第一张光盘为 Umbrella，之后为 Flayer。",
+            "zh-TW": "極速廣場的高分武器隨時期變化：第一張光碟為 Umbrella，之後為 Flayer。",
+            "ja": "スピードスクェアの高得点武器はディスク1が Umbrella、後半が Flayer。",
+            "ko": "스피드 스퀘어 고득점 무기는 디스크 1의 Umbrella에서 후반의 Flayer로 바뀐다."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "gold-games"
+          ]
+        }
+      ],
       "notes": [
         "Local Field Context required; no global anchor or individual reward position is implied."
       ]
@@ -2921,12 +4291,14 @@
       "canonicalName": "Northern Cave",
       "localizedNames": {
         "en": "Northern Cave",
-        "zh-CN": "Northern Cave",
-        "zh-TW": "Northern Cave",
-        "ja": "Northern Cave",
-        "ko": "Northern Cave"
+        "zh-CN": "北方大空洞",
+        "zh-TW": "北方大空洞",
+        "ja": "北の大空洞",
+        "ko": "북쪽 대공동"
       },
-      "aliases": [],
+      "aliases": [
+        "Northern Cave"
+      ],
       "summary": {
         "en": "A cavern dungeon at the northern crater.",
         "zh-CN": "北方陨石坑中的洞穴迷宫。",
@@ -2954,7 +4326,36 @@
         "northern-cave",
         "field-identity-review"
       ],
-      "facts": [],
+      "facts": [
+        {
+          "kind": "access",
+          "text": {
+            "en": "You can climb out before committing to the final descent at the party's meeting point.",
+            "zh-CN": "在队伍会合处决定最终深入之前，仍可攀回出口。",
+            "zh-TW": "在隊伍會合處決定最終深入之前，仍可攀回出口。",
+            "ja": "仲間の合流地点で最後の降下を決めるまでは、入口へ登って戻れる。",
+            "ko": "일행 합류 지점에서 마지막 하강을 결정하기 전까지는 입구로 올라갈 수 있다."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "northern-cave"
+          ]
+        },
+        {
+          "kind": "gameplay",
+          "text": {
+            "en": "Enemies include Magic Pot and Mover; the cave also holds high-level Materia.",
+            "zh-CN": "敌人包括 Magic Pot 与 Mover，洞内也有高级魔晶石。",
+            "zh-TW": "敵人包括 Magic Pot 與 Mover，洞內也有高級魔晶石。",
+            "ja": "Magic Pot や Mover が出現し、上位マテリアも見つかる。",
+            "ko": "Magic Pot과 Mover가 등장하며 상급 마테리아도 찾을 수 있다."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "northern-cave"
+          ]
+        }
+      ],
       "notes": [
         "Local Field Context required; no global anchor or individual reward position is implied."
       ]
@@ -2965,21 +4366,22 @@
       "canonicalName": "Slash-All / Typoon / Apocalypse",
       "localizedNames": {
         "en": "Slash-All / Typoon / Apocalypse",
-        "zh-CN": "Slash-All / Typoon / Apocalypse",
-        "zh-TW": "Slash-All / Typoon / Apocalypse",
-        "ja": "Slash-All / Typoon / Apocalypse",
-        "ko": "Slash-All / Typoon / Apocalypse"
+        "zh-CN": "Slash-All / Typoon / Apocalypse（森林奖励）",
+        "zh-TW": "Slash-All / Typoon / Apocalypse（森林獎勵）",
+        "ja": "Slash-All / Typoon / Apocalypse の森の報酬",
+        "ko": "Slash-All / Typoon / Apocalypse 숲 보상"
       },
       "aliases": [
         "Typhon",
-        "Typhoon"
+        "Typhoon",
+        "Slash-All / Typoon / Apocalypse"
       ],
       "summary": {
-        "en": "A reward recorded inside the parent place; no exact world position.",
-        "zh-CN": "记录于父地点内部的奖励；没有世界地图精确坐标。",
-        "zh-TW": "記錄於父地點內部的獎勵；沒有世界地圖精確座標。",
-        "ja": "親の場所の内部にある報酬。ワールド上の正確な位置は未確定。",
-        "ko": "상위 장소 내부의 보상이며 월드의 정확한 위치는 미확인."
+        "en": "The forest contains Slash-All, Typoon and Cloud's Apocalypse weapon.",
+        "zh-CN": "森林内可取得 Slash-All、Typoon 与克劳德的 Apocalypse 武器。",
+        "zh-TW": "森林內可取得 Slash-All、Typoon 與克勞德的 Apocalypse 武器。",
+        "ja": "森で Slash-All、Typoon、クラウド用 Apocalypse を入手できる。",
+        "ko": "숲에서 Slash-All, Typoon, 클라우드의 Apocalypse 무기를 얻을 수 있다。"
       },
       "region": "western",
       "tags": [
@@ -3004,9 +4406,25 @@
       "secrets": [],
       "sources": [
         "forest-guide",
-        "field-identity-review"
+        "field-identity-review",
+        "wiki-forest"
       ],
-      "facts": [],
+      "facts": [
+        {
+          "kind": "reward",
+          "text": {
+            "en": "The forest contains Slash-All, Typoon and Cloud's Apocalypse weapon.",
+            "zh-CN": "森林内可取得 Slash-All、Typoon 与克劳德的 Apocalypse 武器。",
+            "zh-TW": "森林內可取得 Slash-All、Typoon 與克勞德的 Apocalypse 武器。",
+            "ja": "森で Slash-All、Typoon、クラウド用 Apocalypse を入手できる。",
+            "ko": "숲에서 Slash-All, Typoon, 클라우드의 Apocalypse 무기를 얻을 수 있다."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "wiki-forest"
+          ]
+        }
+      ],
       "notes": [
         "Local Field Context required; no global anchor or individual reward position is implied."
       ]
@@ -3017,18 +4435,20 @@
       "canonicalName": "Double Cut / Hades / Highwind",
       "localizedNames": {
         "en": "Double Cut / Hades / Highwind",
-        "zh-CN": "Double Cut / Hades / Highwind",
-        "zh-TW": "Double Cut / Hades / Highwind",
-        "ja": "Double Cut / Hades / Highwind",
-        "ko": "Double Cut / Hades / Highwind"
+        "zh-CN": "Double Cut / Hades / Highwind（沉机奖励）",
+        "zh-TW": "Double Cut / Hades / Highwind（沉機獎勵）",
+        "ja": "Double Cut / Hades / Highwind の海底の報酬",
+        "ko": "Double Cut / Hades / Highwind 해저 보상"
       },
-      "aliases": [],
+      "aliases": [
+        "Double Cut / Hades / Highwind"
+      ],
       "summary": {
-        "en": "A reward recorded inside the parent place; no exact world position.",
-        "zh-CN": "记录于父地点内部的奖励；没有世界地图精确坐标。",
-        "zh-TW": "記錄於父地點內部的獎勵；沒有世界地圖精確座標。",
-        "ja": "親の場所の内部にある報酬。ワールド上の正確な位置は未確定。",
-        "ko": "상위 장소 내부의 보상이며 월드의 정확한 위치는 미확인."
+        "en": "The wreck holds Conformer, Double Cut, Hades and Cid's Highwind manual.",
+        "zh-CN": "残骸内可取得 Conformer、Double Cut、Hades 与希德的 Highwind 秘籍。",
+        "zh-TW": "殘骸內可取得 Conformer、Double Cut、Hades 與希德的 Highwind 秘笈。",
+        "ja": "残骸内に Conformer、Double Cut、Hades、シド用 Highwind の書がある。",
+        "ko": "잔해 안에 Conformer, Double Cut, Hades, 시드의 Highwind 비전이 있다。"
       },
       "region": "underwater",
       "tags": [
@@ -3054,7 +4474,22 @@
         "sunken-gelnika",
         "field-identity-review"
       ],
-      "facts": [],
+      "facts": [
+        {
+          "kind": "reward",
+          "text": {
+            "en": "The wreck holds Conformer, Double Cut, Hades and Cid's Highwind manual.",
+            "zh-CN": "残骸内可取得 Conformer、Double Cut、Hades 与希德的 Highwind 秘籍。",
+            "zh-TW": "殘骸內可取得 Conformer、Double Cut、Hades 與希德的 Highwind 秘笈。",
+            "ja": "残骸内に Conformer、Double Cut、Hades、シド用 Highwind の書がある。",
+            "ko": "잔해 안에 Conformer, Double Cut, Hades, 시드의 Highwind 비전이 있다."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "sunken-gelnika"
+          ]
+        }
+      ],
       "notes": [
         "Local Field Context required; no global anchor or individual reward position is implied."
       ]
@@ -3065,12 +4500,14 @@
       "canonicalName": "Round Island",
       "localizedNames": {
         "en": "Round Island",
-        "zh-CN": "Round Island",
-        "zh-TW": "Round Island",
-        "ja": "Round Island",
-        "ko": "Round Island"
+        "zh-CN": "圆形岛",
+        "zh-TW": "圓形島",
+        "ja": "ラウンドアイランド",
+        "ko": "라운드 아일랜드"
       },
-      "aliases": [],
+      "aliases": [
+        "Round Island"
+      ],
       "summary": {
         "en": "A hidden island containing the Knights of the Round cave.",
         "zh-CN": "藏有圆桌骑士洞窟的隐秘岛屿。",
@@ -3097,7 +4534,22 @@
       "sources": [
         "round-island"
       ],
-      "facts": [],
+      "facts": [
+        {
+          "kind": "access",
+          "text": {
+            "en": "A gold chocobo reaches this island; the Highwind cannot land here.",
+            "zh-CN": "金色陆行鸟可到达该岛；Highwind 无法在此降落。",
+            "zh-TW": "金色陸行鳥可到達該島；Highwind 無法在此降落。",
+            "ja": "ゴールドチョコボで到達できる島。Highwind は着陸できない。",
+            "ko": "골드 초코보로 갈 수 있는 섬이며 Highwind는 착륙할 수 없다."
+          },
+          "spoilerLevel": "minor",
+          "sources": [
+            "round-island"
+          ]
+        }
+      ],
       "notes": []
     }
   ],

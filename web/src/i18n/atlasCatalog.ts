@@ -2,9 +2,10 @@
 export const atlasCatalog=[
  ['atlas.title','Gaia Atlas','盖亚图鉴','蓋亞圖鑑','ガイア図鑑','가이아 도감'],
  ['atlas.search','Search places, secrets or rewards','搜索地点、秘密或奖励','搜尋地點、秘密或獎勵','場所・秘密・報酬を検索','장소·비밀·보상 검색'],
+ ['atlas.technical','Technical / Spatial Evidence','技术与来源 / 空间证据','技術與來源 / 空間證據','技術情報・位置の根拠','기술 정보 / 공간 근거'],
  ['atlas.overview','Overview','概览','概覽','概要','개요'],
  ['atlas.typeRegion','Type / Region','类型 / 区域','類型 / 區域','種類 / 地域','유형 / 지역'],
- ['atlas.access','Access','访问条件','造訪條件','アクセス条件','접근 조건'],
+ ['atlas.access','Exploration / Access','探索与访问','探索與造訪','探索・アクセス','탐색 / 접근'],
  ['atlas.gameplay','Gameplay','游戏内容','遊戲內容','ゲーム内容','게임 정보'],
  ['atlas.discoveries','Secrets / Collectibles','秘密 / 收集物','秘密 / 收集物','秘密 / 収集物','비밀 / 수집물'],
  ['atlas.precision','Spatial precision','空间精度','空間精度','位置の精度','공간 정밀도'],

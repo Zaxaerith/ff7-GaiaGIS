@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 import {describe,it,expect} from 'vitest';
 import curated from '../../src/gaiagis/atlas_data/content.json';
-import {parseAtlasContent,parseAtlasPack,searchAtlas,resolveBinding,atlasAnchor,spoilerVisible,validateAtlasPoi} from '../src/data/atlas';
+import {parseAtlasContent,parseAtlasPack,searchAtlas,resolveBinding,atlasAnchor,spoilerVisible,validateAtlasPoi,atlasFactTerms} from '../src/data/atlas';
 import type {AtlasPack,AtlasEntity} from '../src/data/atlas';
 import type {PoiDataset} from '../src/data/poi';
 
@@ -100,3 +100,29 @@ it('rejects contradictory unknown and verified script evidence at the same sourc
 it('indexes only reviewed non-truncated script-header aliases',()=>{const p=scriptFixture(),n={id:88,name:'qa',scriptName:'q_1',saveId:88,status:'available'} as const;expect(fieldAliases(n,p)).toContain('q_1');expect(fieldAliases({...n,id:620,name:'anfrst_1',scriptName:'anfrst_'},p)).not.toContain('anfrst_');p.sources.maplist='c'.repeat(64);expect(fieldAliases(n,p)).not.toContain('q_1');});
 
 it('rejects paths and malformed names in authored Field identity requests',()=>{for(const name of ['../qa','D:/private','a'.repeat(33)]){const c=clone(),e=c.entities.find(e=>e.id==='ancient-forest')!;e.spatialBinding={kind:'field_identity',fieldNames:[name]};expect(()=>parseAtlasContent(c)).toThrow();}});
+
+
+describe('Authored Atlas knowledge and spoiler-safe search',()=>{
+ it('indexes translated gameplay facts in every locale',()=>{
+  const e=content.entities.find(e=>e.id==='fort-condor')!;
+  for(const lang of ['en','zh-CN','zh-TW','ja','ko'] as const){
+   expect(searchAtlas(content,e.facts[0].text[lang],lang).map(e=>e.id)).toContain(e.id);
+   expect(e.facts[0].text[lang].length).toBeGreaterThan(0);
+  }
+ });
+ it('never indexes hidden facts, including all translated variants',()=>{
+  const e=structuredClone(entity);e.facts=[{kind:'secret',spoilerLevel:'major',sources:e.sources,text:{en:'Secret revelation sentinel','zh-CN':'秘密剧情哨兵','zh-TW':'秘密劇情哨兵',ja:'秘密の展開の印',ko:'비밀 전개 표식'}}];
+  const c={...content,entities:[e]};
+  expect(atlasFactTerms(e)).toEqual([]);
+  for(const lang of ['en','zh-CN','zh-TW','ja','ko'] as const){
+   expect(searchAtlas(c,e.facts[0].text[lang],lang)).toEqual([]);
+   expect(searchAtlas(c,e.facts[0].text[lang],lang,'hide-all')).toEqual([]);
+   expect(searchAtlas(c,e.facts[0].text[lang],lang,'show-all')).toEqual([e]);
+  }
+ });
+ it('removes minor reward mechanics from Hide all search terms',()=>{
+  const e=content.entities.find(e=>e.id==='quadra-magic-cave-reward')!;
+  expect(atlasFactTerms(e,'hide-all')).toEqual([]);
+  expect(atlasFactTerms(e,'hide-major')).toContain(e.facts[0].text.en);
+ });
+});

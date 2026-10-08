@@ -30,3 +30,6 @@
 @media(max-width:700px){#field-graph{height:180px}.field-card button{min-height:36px}}
 
 .spatial-evidence li { overflow-wrap: anywhere; margin-block: .45rem; }
+
+.atlas-fact-sources {display:block;font-size:.8em;margin-top:var(--space-1);}
+.atlas-fact-sources a {display:inline-block;margin:2px 8px 2px 0;}

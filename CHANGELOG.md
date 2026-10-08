@@ -2,6 +2,12 @@
 
 Formal version changes; historical acceptance evidence remains in Git history and Releases.
 
+## v2.9.1 — candidate, not yet published
+
+- Original-FF7 Atlas access/gameplay/reward facts with five-language text and per-fact sources.
+- Content-first Inspector sections, collapsed technical evidence and spoiler-safe knowledge search.
+- Reviewed source links, translated place labels and current authored content in older local workspaces; spatial precision unchanged.
+
 ## v2.9.0 — candidate, not yet published
 
 - Bounded, source-indexed MAPJUMP archaeology alongside existing Field gateway topology.

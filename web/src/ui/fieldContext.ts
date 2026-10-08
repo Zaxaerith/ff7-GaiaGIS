@@ -11,7 +11,7 @@ import {t,onLocaleChange} from '../i18n';
 
 /** Shared Inspector/Atlas presentation; no new panel or theme. */
 export function renderSpatialEvidence(host:HTMLElement,steps:EvidenceStep[],sources?:Record<string,string>){
- const group=document.createElement('details');group.className='spatial-evidence';group.open=true;const title=document.createElement('summary');title.textContent=t('field.evidence');group.append(title);host.append(group);
+ const group=document.createElement('details');group.className='spatial-evidence';group.open=false;const title=document.createElement('summary');title.textContent=t('field.evidence');group.append(title);host.append(group);
  const list=document.createElement('ol');group.append(list);for(const step of steps){const row=document.createElement('li');row.dataset.relation=step.relation;row.textContent=`${t('evidence.'+step.relation)} · ${step.sourceType}: ${step.sourceIdentity} · ${t('atlas.'+step.precision)}`;list.append(row);if(step.reason){const p=document.createElement('p');p.textContent=t('field.'+step.reason);row.append(p);}}
  if(sources){const detail=document.createElement('details'),label=document.createElement('summary');label.textContent=t('atlas.sources')+' · SHA-256';detail.append(label);group.append(detail);const hashes=document.createElement('ul');detail.append(hashes);for(const [name,hash] of Object.entries(sources)){const row=document.createElement('li');row.textContent=name+' · '+hash;hashes.append(row);}}
 }
