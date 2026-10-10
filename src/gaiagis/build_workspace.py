@@ -14,6 +14,7 @@ from .web_export import build_web_assets, sha256
 from .atlas import GENERATOR_VERSION as ATLAS_VERSION, curated_hash, build_atlas
 
 from .field_context import GENERATOR_VERSION as FIELD_VERSION, build_field_context
+from .presentation import GENERATOR_VERSION as PRESENTATION_VERSION
 from ._version import __version__
 TOOL_VERSION = __version__
 GENERATOR_VERSION = 'workspace-1'
@@ -63,7 +64,7 @@ def write_manifest(directory, sources):
         if path.is_file():
             assets.append(dict(filename=filename, type=kind, mapId=map_id,
                                sha256=sha256(path), bytes=path.stat().st_size,
-                               dependencies=dependencies, generator_version='explorer-party-1' if kind=='explorer' else ATLAS_VERSION if kind=='atlas' else FIELD_VERSION if kind in ('field-context','field-walkmesh') else GENERATOR_VERSION))
+                               dependencies=dependencies, generator_version='explorer-party-1' if kind=='explorer' else PRESENTATION_VERSION if kind=='presentation' else ATLAS_VERSION if kind=='atlas' else FIELD_VERSION if kind in ('field-context','field-walkmesh') else GENERATOR_VERSION))
     names = {a['filename'] for a in assets}
     if any(set(a['dependencies']) - names for a in assets):
         raise ValueError('Workspace dependency missing; manifest was not written')
@@ -87,6 +88,7 @@ def reusable(manifest, sources, directory, names, _visited=None):
         if not record or not path.is_file() or record.get('bytes') != path.stat().st_size or record.get('sha256') != sha256(path):
             return False
         if name=='gaia-explorer.bin' and record.get('generator_version')!='explorer-party-1':return False
+        if name=='gaia-presentation.json' and record.get('generator_version')!=PRESENTATION_VERSION:return False
         if name=='gaia-atlas.json' and record.get('generator_version')!=ATLAS_VERSION:return False
         if name in ('gaia-field-context.json','gaia-field-walkmesh.bin') and record.get('generator_version')!=FIELD_VERSION:return False
         dependencies = ASSETS[name][2]

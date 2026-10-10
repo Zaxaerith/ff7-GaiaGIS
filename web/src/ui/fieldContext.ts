@@ -41,7 +41,7 @@ export function mountFieldContext(viewer?:GaiaViewer,getPoi?:()=>PoiDataset|null
  function inspect(){walkScope?.dispose();walkScope=null;walkTicket++;card.hidden=appStore.state.selection?.kind!=='field';card.replaceChildren();if(card.hidden||selected===null||!index)return;
   const n=index.nodes.get(selected)!;card.dataset.fieldId=String(n.id);make('h2',card,`${t('field.scene')} · ${n.name} / ${n.id}`);make('p',card,t('field.nonGlobal'));make('p',card,t('field.'+n.status));if(n.saveId===null)make('p',card,t('field.unverified'));
   const available=meshes?.scenes.get(n.id)?.status==='available';
-  const view=button(card,t(walkView?'field.backGraph':'field.viewWalkmesh'),()=>{walkView=!walkView;inspect();if(!walkView){showGraph();}});view.id='field-view-walkmesh';view.disabled=!available&&!walkView;
+  const view=button(card,t(walkView?'field.backGraph':'field.viewWalkmesh'),()=>{walkView=!walkView;inspect();if(!walkView){showGraph();}});view.id='field-view-walkmesh';view.dataset.uiSound=walkView?'cancel':'confirm';view.disabled=!available&&!walkView;
   if(walkView&&available){walkScope=new ResourceScope();const host=make('section',card);host.id='field-walkmesh';host.className='field-walkmesh';void walkmesh(host,n.id,walkTicket,walkScope);}else if(!available)make('p',card,t('field.walkUnavailable'));
   const c=index.context(n.id);make('p',card,t('field.'+c.status));make('p',card,t('field.parentNote'));
   for(const id of c.parents){const place=poi?.locations.find(l=>l.id===id);const parent=button(card,t('field.openParent')+' · '+(place?.display_name??id),()=>document.dispatchEvent(new CustomEvent('gaiagis-inspect-location',{detail:id})));parent.disabled=appStore.state.map.id!=='WM0';}

@@ -12,7 +12,11 @@ from .lzss import FormatError
 from .safety import output_path
 
 ADAPTATION=(230,230,230,230,307,409,512,614,768,614,512,409,307,230,230,230)
-CUE_IDS={'cursor':1,'confirm':2,'cancel':4}
+GENERATOR_VERSION='presentation-menu-2'
+# Zero-based audio.fmt records, NOT the game's one-based SFX IDs.
+# Ordinary menu acceptance shares the cursor chime. Record 1 is a distinct
+# load-save jingle, not a generic button confirmation. See docs/research/explorer-assets.md.
+CUE_IDS={'cursor':0,'confirm':0,'cancel':3,'invalid':2}
 
 def parse_audio_fmt(data,dat_size):
     pos=0;rows=[]
@@ -69,7 +73,7 @@ def build_presentation(source:Path,destination:Path):
             stream.seek(r['offset']);compressed=stream.read(r['size'])
             if len(compressed)!=r['size']:raise FormatError('Truncated UI sample')
             pcm=decode_ms_adpcm(compressed,r);wav=pcm_wav(pcm,r['sample_rate'])
-            audio.append(dict(id=cue,wav=base64.b64encode(wav).decode(),source_record=index,loop=False,source_file='audio.dat',fmt_byte_offset=r['fmt_offset'],data_byte_offset=r['offset'],compressed_bytes=r['size'],sample_rate=r['sample_rate'],channels=1,encoding='PCM16LE',original_codec='Microsoft ADPCM',decoded_samples=len(pcm)//2,evidence='classic_pc_menu_reference_and_actual_audio_record'))
-    result=dict(schema='gaiagis-presentation',version=1,sources={'audio.fmt':hashlib.sha256(f).hexdigest(),'audio.dat':hashlib.sha256(dat.read_bytes()).hexdigest()},audio=audio,unresolved_cues=['open'],runtime_equivalence='NOT VERIFIED')
+            audio.append(dict(id=cue,wav=base64.b64encode(wav).decode(),source_record=index,loop=False,source_file='audio.dat',fmt_byte_offset=r['fmt_offset'],data_byte_offset=r['offset'],compressed_bytes=r['size'],sample_rate=r['sample_rate'],channels=1,encoding='PCM16LE',original_codec='Microsoft ADPCM',decoded_samples=len(pcm)//2,evidence='zero_based_menu_record_reference_and_actual_audio_record'))
+    result=dict(schema='gaiagis-presentation',version=1,generator_revision=GENERATOR_VERSION,sources={'audio.fmt':hashlib.sha256(f).hexdigest(),'audio.dat':hashlib.sha256(dat.read_bytes()).hexdigest()},audio=audio,unresolved_cues=['open'],runtime_equivalence='NOT VERIFIED')
     target=output_path(destination);target.parent.mkdir(parents=True,exist_ok=True);target.write_text(json.dumps(result,sort_keys=True,separators=(',',':'))+'\n',encoding='utf8')
     return dict(bytes=target.stat().st_size,sha256=hashlib.sha256(target.read_bytes()).hexdigest(),records=len(rows),cues=[a['id'] for a in audio],source_modified='NO')

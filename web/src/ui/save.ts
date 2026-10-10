@@ -4,6 +4,7 @@ import type {FieldIndex} from '../data/fieldContext';
 import '../styles/save.css';
 import {Vector3} from 'three';
 import {appStore} from '../app/state';
+import {notifyUISound} from '../app/presentation';
 import {saveSession} from '../app/saveSession';
 import {ResourceScope} from '../app/resources';
 import {SaveError} from '../data/save';
@@ -25,7 +26,7 @@ export function mountSave(getViewer:()=>GaiaViewer|undefined,switchMap:(id:MapId
  const input=document.createElement('input');input.id='save-file';input.type='file';input.accept='.ff7';input.hidden=true;panel.append(input);
  const help=make('p',panel),actions=make('div',panel),status=make('p',panel),slots=make('div',panel);actions.className='user-actions';status.id='save-status';status.setAttribute('role','status');slots.id='save-slots';let error:string|null=null,importTicket=0,actionTicket=0;let fields:FieldIndex|null=null;
  const load=button(actions,'import','save-import',()=>input.click()),clear=button(actions,'clear','save-clear',()=>saveSession.clear());
- input.onchange=async()=>{const file=input.files?.[0],ticket=++importTicket;if(!file)return;try{await saveSession.import(file);if(ticket!==importTicket||scope.disposed)return;error=null;panel.open=true;show();}catch(e){if(ticket===importTicket&&!scope.disposed){error=t(e instanceof SaveError?'save27.'+e.code:'save27.error');refresh();}}finally{input.value='';}};
+ input.onchange=async()=>{const file=input.files?.[0],ticket=++importTicket;if(!file)return;try{await saveSession.import(file);if(ticket!==importTicket||scope.disposed)return;error=null;panel.open=true;show();}catch(e){if(ticket===importTicket&&!scope.disposed){error=t(e instanceof SaveError?'save27.'+e.code:'save27.error');notifyUISound('invalid');refresh();}}finally{input.value='';}};
  const valid=()=>saveSession.slot?.status==='valid'?saveSession.slot:null;
  const binding=()=>valid()?.binding;
  function show(){if(!saveSession.slot)return;appStore.dispatch({type:'select',selection:{kind:'save',id:'session-slot-'+saveSession.slot.index,mapId:appStore.state.map.id}});refresh();}
