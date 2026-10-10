@@ -4,7 +4,7 @@ import type {ProjectionId} from '../projections/Projection';
 import {defaultOpacities} from './layers';
 import type {LayerId} from './layers';
 
-export type AssetId='geometry'|'locations'|'encounters'|'events'|'routing'|'textures'|'WM2'|'WM3'|'textures-WM2'|'textures-WM3'|'transitions'|'explorer'|'presentation'|'atlas'|'field-context';
+export type AssetId='geometry'|'locations'|'encounters'|'events'|'routing'|'textures'|'WM2'|'WM3'|'textures-WM2'|'textures-WM3'|'transitions'|'explorer'|'presentation'|'atlas'|'field-context'|'field-walkmesh';
 export type DataStatus='missing'|'optional'|'loading'|'loaded'|'incompatible'|'corrupt'|'legacy'|'unsupported';
 export interface AssetState {status:DataStatus;bytes:number;version?:number;reason?:string;sourceHashes?:Record<string,string>;}
 export type SelectionKind='triangle'|'location'|'entrance'|'encounter'|'event'|'transition'|'route'|'measurement'|'explorer'|'atlas'|'user-feature'|'save'|'field';

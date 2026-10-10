@@ -2,7 +2,14 @@
 
 Formal version changes; historical acceptance evidence remains in Git history and Releases.
 
-## v3.0.0 — candidate, not yet published
+## v3.1.0 — candidate, not yet published
+
+- Bounded original-PC Section-5 Walkmesh decoding in a strictly separate FieldLocal domain.
+- One private binary scene pack with lazy per-scene decoding and source-bound incremental reuse.
+- Inspector Canvas selection, directed-neighbor/blocked-edge evidence, pan/zoom and raw-component colouring.
+- Existing Atlas/Field graph integration, old-context fallback and five-language compact touch controls.
+
+## v3.0.0
 
 - Native portable startup progress, remembered installation and recoverable retry/cancellation.
 - Inline player shortcuts, clearer connected/public states and optional technical resource details.

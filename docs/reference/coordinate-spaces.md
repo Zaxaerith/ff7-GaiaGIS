@@ -29,3 +29,14 @@ WM3 section placement also uses the engine's 9-column block addressing, but
 this is storage/addressing machinery, not proof of a WM0 geographic inset.
 Its complete native domain is 65536×65536. Geometric edge periodicity does not
 create a spherical or polar reconstruction.
+
+## FieldLocal
+
+Section-5 Field vertices are signed local `x, y, z, padding` components.
+`FieldLocal` is distinct from all Gaia geographic/cartesian/game and WM native
+spaces. The viewer draws raw XY with +X right and +Y up as an explicitly chosen
+plan convention; Z is available for component colouring. These are not metres,
+map north, world elevations or a global transform. Padding is preserved without
+assigning collision semantics. No Field vertex enters globe projections,
+ShareState, routing or user-geometry storage. An existing world Entrance action
+continues to borrow only that Entrance's independently validated anchor.

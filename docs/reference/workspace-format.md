@@ -760,3 +760,30 @@ Original FF7 models, skeletons, animation frames, pixels and derived movement
 geometry remain rights-holder material. GPL-3.0-only applies to the original
 GaiaGIS parser, transport/renderer/walker code, docs and synthetic tests. No game
 asset, decoded OBJ/GLB or screenshot is included in Git or source-only build.
+
+## Private Field Walkmesh
+
+`field_context.py` keeps `gaia-field-context.json` v2 as the compact identity /
+topology owner and emits one optional `gaia-field-walkmesh.bin`. Older v1/v2
+contexts continue to load without the binary; their Walkmesh is unavailable.
+The component depends on Field Context, with shared (non-global) map ownership,
+source fingerprints and the `field-context-5` generator revision in the manifest.
+Changing the source, generator or either file invalidates this component pair;
+geometry/textures and other unrelated resources stay reusable.
+
+Binary header: eight bytes `GAIAFLD\0`, little-endian uint32 version 1 and
+uint32 UTF-8 metadata length. Metadata has schema `gaiagis-field-walkmesh`,
+version 1, coordinateSpace `FieldLocal`, generator_revision `field-walkmesh-1`,
+flevel/maplist hashes, and scene spans/statistics. Available scenes have fieldId,
+offset, bytes, triangles and anomaly counters; corrupt scenes have only identity
+and status. Offsets are relative to the following raw Section-5 pool. Ordered,
+contiguous spans cover it exactly; each scene is stored once. No backgrounds,
+scripts, messages, models or texture dumps are embedded.
+
+Limits: 32,000,000 total bytes, 512,000 metadata bytes, 2,000 indexed scenes and
+65,535 triangles per scene (0xffff is reserved for blocked access). Exact section
+size is `4 + 30 * count`; target indices must be within the same scene. The Web
+owner retains one validated File and decodes only the selected slice. The existing
+local static asset endpoint transports it; no API, per-scene files or cache
+database is added. Manual folder import uses the same manifest/hash checks.
+No binary is included in public builds or release packages.

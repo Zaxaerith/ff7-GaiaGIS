@@ -273,3 +273,38 @@ Unresolved. Resolved means the binding has a validated anchor; identity-only
 records are not grouped with those anchors. The same authored content remains
 searchable offline. No save bytes, scripts/messages dump, complete graph or
 coordinate tables are shipped in the public Web artifact.
+
+### Field-local Walkmesh
+
+The existing Field Inspector offers **View Walkmesh** for a locally generated
+scene. The Canvas is a raw XY plan (+X right, +Y up), not the game's camera or a
+world-map inset. Original triangle IDs, vertex order, signed XYZ and the fourth
+int16 component are retained. Z colouring is optional and shows the raw third
+component; it is not metres, a sea-level datum or an assertion of global height.
+The documented fourth component is alignment padding (equal to v0.z in the
+examined installation), never a collision flag. Its values are not rewritten.
+
+Section 5 starts with a uint32 count, followed by 24 bytes of vertices and 6
+bytes of directed access per triangle. Edge slots are **v0→v1, v1→v2, v2→v0**,
+unlike the opposite-corner convention of the existing world surface. A target
+of 0xffff is blocked. Non-reciprocal links, self-links, endpoint mismatches and
+3D/XY degeneracy are counted and preserved, not repaired. Invalid lengths,
+counts or target indices make the scene mesh unavailable without removing
+its valid identity/script/gateway context. Static access is not current
+story-dependent reachability.
+
+Selection highlights outgoing neighbors and exposes raw vertices, edge targets
+and anomaly labels. Drag pans; wheel/buttons zoom; Home resets; arrow keys and
+the triangle-ID input allow selection of overlapping triangles. Returning to
+scene connections preserves the selected identity. No Field locomotion,
+physics, pathfinding, global conversion or entry-point markers are provided.
+Gateway local alignment remains unverified here; Section 8 and MAPJUMP continue
+to be separate topology evidence.
+
+Format references: [Qhimm Section 5](https://qhimm.ifcaro.net/qhimm/index.php/FF7/Field/Walkmesh/),
+[PC Field layout](https://ff7-mods.github.io/ff7-flat-wiki/FF7/Field.html), and
+[Makou Reactor's pinned mesh presentation](https://github.com/myst6re/makoureactor/blob/2452025714c033d698d1754a776bdcd5713427bd/src/3d/WalkmeshWidget.cpp).
+The two wiki descriptions share historical material; the editor and actual
+local records provide the additional cross-check, not an independent second
+wiki claim. Reference descriptions do not establish equivalence to a live
+modern executable.

@@ -39,7 +39,7 @@ describe('Atlas spatial rigor',()=>{
 });
 
 // Field topology fixtures are synthetic and contain no source-derived dataset.
-import {FieldIndex,parseFieldPack,validateFieldPoi,currentSaveField,resolveFieldAtlas,fieldEvidence,atlasEvidence,spatialStatus,fieldAliases} from '../src/data/fieldContext';
+import {FieldIndex,parseFieldPack,validateFieldPoi,currentSaveField,resolveFieldAtlas,fieldEvidence,atlasEvidence,spatialStatus,fieldAliases,decodeWalkmesh,parseWalkmeshHeader,openWalkmeshPack} from '../src/data/fieldContext';
 import type {FieldPack} from '../src/data/fieldContext';
 import type {SaveSlot} from '../src/data/save';
 const fieldFixture=():FieldPack=>({schema:'gaiagis-field-context',version:1,coordinateSpace:'FieldLocalIdentity',archive:'flevel.lgp',sources:Object.fromEntries(['flevel.lgp','maplist','field.tbl','wm0.ev','wm0.map'].map(k=>[k,k==='maplist'?'d6ac24b79403a77feeb338450b7cb2169cdbcfa5d071a6cee4884e93b700bc29':'a'.repeat(64)])),nodes:[{id:100,name:'fixture_a',status:'available',saveId:100},{id:101,name:'fixture_b',status:'available',saveId:101},{id:102,name:'fixture_c',status:'available',saveId:null},{id:103,name:'missing',status:'missing',saveId:null}],edges:[{fromField:100,to:101,gateway:0,offset:56},{fromField:101,to:100,gateway:0,offset:56},{fromField:101,to:102,gateway:1,offset:80}],exits:[{fromField:100,to:1,gateway:1,offset:80,name:'wm0'}],unresolved:[{fromField:101,to:103,gateway:2,reason:'missing_destination'}],bindings:[{entranceId:'entry-1',locationId:'midgar',fieldId:100,status:'verified_direct'}],scriptTransitions:'unverified'});
@@ -96,6 +96,33 @@ describe('World archaeology and provenance',()=>{
 });
 
 it('rejects contradictory unknown and verified script evidence at the same source offset',()=>{const p=scriptFixture();p.scriptUnresolved=[{fromField:102,offset:200,reason:'unsupported_opcode'}];expect(()=>parseFieldPack(p)).toThrow();});
+
+function syntheticWalkmesh(){
+ const b=new ArrayBuffer(64),v=new DataView(b);v.setUint32(0,2,true);
+ // Deliberately asymmetric, mixed winding, one nonstandard padding value.
+ const triangles=[[0,0,0,9,10,0,0,0,0,10,0,0],[10,0,0,0,10,10,0,0,0,10,0,0]];
+ triangles.flat().forEach((n,i)=>v.setInt16(4+i*2,n,true));[65535,1,65535,65535,65535,65535].forEach((n,i)=>v.setUint16(52+i*2,n,true));return b;
+}
+function walkFile(raw=syntheticWalkmesh(),change?:(m:Record<string,unknown>)=>void){
+ const fields=fieldFixture(),mesh=decodeWalkmesh(raw),metadata:Record<string,unknown>={schema:'gaiagis-field-walkmesh',version:1,coordinateSpace:'FieldLocal',generator_revision:'field-walkmesh-1',sources:{'flevel.lgp':fields.sources['flevel.lgp'],maplist:fields.sources.maplist},scenes:[{fieldId:100,status:'available',offset:0,bytes:raw.byteLength,triangles:mesh.triangles,...mesh.stats}]};change?.(metadata);
+ const encoded=new TextEncoder().encode(JSON.stringify(metadata)),head=new Uint8Array(16+encoded.length);head.set(new TextEncoder().encode('GAIAFLD\0'));new DataView(head.buffer).setUint32(8,1,true);new DataView(head.buffer).setUint32(12,encoded.length,true);head.set(encoded,16);return {fields,head,file:new File([head,raw],'gaia-field-walkmesh.bin')};
+}
+describe('bounded FieldLocal walkmesh and private transport',()=>{
+ it('retains raw order, padding, blocked and asymmetric access without repairing topology',()=>{const m=decodeWalkmesh(syntheticWalkmesh());expect(m.coordinateSpace).toBe('FieldLocal');expect(Array.from(m.vertices.slice(0,4))).toEqual([0,0,0,9]);expect(Array.from(m.access)).toEqual([65535,1,65535,65535,65535,65535]);expect(m.stats).toMatchObject({blocked:5,accessible:1,asymmetric:1,paddingVariants:1,degenerate:0,edgeMismatch:0});});
+ it('accepts empty geometry and counts 3D/XY degeneracy separately',()=>{const empty=new ArrayBuffer(4);expect(decodeWalkmesh(empty).triangles).toBe(0);const raw=syntheticWalkmesh(),v=new DataView(raw);for(let i=0;i<24;i++)v.setInt16(4+i*2,0,true);expect(decodeWalkmesh(raw).stats).toMatchObject({degenerate:2,degenerateXY:2});});
+ it.each(['short','count','overflow','neighbor','trailing'] as const)('rejects damaged Section 5: %s',kind=>{let raw=syntheticWalkmesh();const v=new DataView(raw);if(kind==='short')raw=raw.slice(0,63);if(kind==='count')v.setUint32(0,3,true);if(kind==='overflow')v.setUint32(0,0xffffffff,true);if(kind==='neighbor')v.setUint16(52,2,true);if(kind==='trailing')raw=new Uint8Array(65).buffer;expect(()=>decodeWalkmesh(raw)).toThrow();});
+ it('loads only a selected scene and works with v1/v2 context; no global properties appear',async()=>{for(const fields of [fieldFixture(),scriptFixture()]){const f=walkFile(),pack=await openWalkmeshPack(f.file,fields);const mesh=await pack.decode(100);expect(mesh.triangles).toBe(2);expect(mesh).not.toHaveProperty('geographic');expect(mesh).not.toHaveProperty('mapId');await expect(pack.decode(101)).rejects.toThrow('unavailable');}});
+ it.each(['space','revision','source','field','offset','size','stats','duplicate','unknown'] as const)('rejects incompatible pack metadata: %s',kind=>{const f=walkFile(undefined,m=>{const s=m.scenes as Record<string,unknown>[];if(kind==='space')m.coordinateSpace='GaiaGame';if(kind==='revision')m.generator_revision='future';if(kind==='source')(m.sources as Record<string,string>)['flevel.lgp']='b'.repeat(64);if(kind==='field')s[0].fieldId=103;if(kind==='offset')s[0].offset=1;if(kind==='size')s[0].bytes=Infinity;if(kind==='stats')s[0].blocked=0;if(kind==='duplicate')s.push({...s[0]});if(kind==='unknown')m.longitude=1;});expect(()=>parseWalkmeshHeader(f.head.buffer,f.file.size,f.fields)).toThrow();});
+ it('isolates a corrupt scene without destroying identities and rejects changed scene bytes on demand',async()=>{const f=walkFile(undefined,m=>(m.scenes as Record<string,unknown>[])[0].asymmetric=0);const pack=await openWalkmeshPack(f.file,f.fields);await expect(pack.decode(100)).rejects.toThrow('statistics');expect(new FieldIndex(f.fields).nodes.size).toBe(4);const empty=walkFile(new ArrayBuffer(4));expect((await (await openWalkmeshPack(empty.file,empty.fields)).decode(100)).triangles).toBe(0);});
+ it('bounds file/header size and rejects truncated spans before decode',async()=>{const f=walkFile();await expect(openWalkmeshPack(new File([f.head],'gaia-field-walkmesh.bin'),f.fields)).rejects.toThrow();const head=f.head.slice();new DataView(head.buffer).setUint32(12,0xffffffff,true);expect(()=>parseWalkmeshHeader(head.buffer,f.file.size,f.fields)).toThrow();});
+});
+
+const privateWalkmesh=new URL('../../output/local-workspace/gaia-field-walkmesh.bin',import.meta.url);
+it.skipIf(!existsSync(privateWalkmesh)||!existsSync(localFields))('validates all optional private scenes without committing original geometry',async()=>{
+ const fields=parseFieldPack(JSON.parse(readFileSync(localFields,'utf8'))),bytes=readFileSync(privateWalkmesh),start=performance.now(),pack=await openWalkmeshPack(new File([bytes],'gaia-field-walkmesh.bin'),fields),indexMs=performance.now()-start;let triangles=0;
+ for(const [id,row] of pack.scenes)if(row.status==='available'){const m=await pack.decode(id);triangles+=m.triangles;expect(m.coordinateSpace).toBe('FieldLocal');}
+ console.log('Private Walkmesh',JSON.stringify({fields:pack.scenes.size,triangles,bytes:bytes.length,indexMs,allDecodeMs:performance.now()-start}));expect(triangles).toBeGreaterThan(0);
+});
 
 it('indexes only reviewed non-truncated script-header aliases',()=>{const p=scriptFixture(),n={id:88,name:'qa',scriptName:'q_1',saveId:88,status:'available'} as const;expect(fieldAliases(n,p)).toContain('q_1');expect(fieldAliases({...n,id:620,name:'anfrst_1',scriptName:'anfrst_'},p)).not.toContain('anfrst_');p.sources.maplist='c'.repeat(64);expect(fieldAliases(n,p)).not.toContain('q_1');});
 

@@ -33,3 +33,9 @@
 
 .atlas-fact-sources {display:block;font-size:.8em;margin-top:var(--space-1);}
 .atlas-fact-sources a {display:inline-block;margin:2px 8px 2px 0;}
+.field-walkmesh { min-width:0; }
+.field-walkmesh canvas { display:block;width:100%;height:auto;aspect-ratio:9/5;background:var(--panel, #12213b);border:1px solid var(--border);touch-action:none; }
+.field-walkmesh .user-actions { flex-wrap:wrap; }
+.field-walkmesh input[type=number] { width:5rem;max-width:100%; }
+.field-walkmesh input[type=checkbox] { width:auto; }
+.field-triangle-details pre { white-space:pre-wrap;overflow-wrap:anywhere;font-size:.8rem; }

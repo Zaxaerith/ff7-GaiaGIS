@@ -1,7 +1,7 @@
-"""Private, bounded PC field identities and section-8 gateway topology.
+"""Private, bounded PC field identity, topology and Section-5 walkmesh.
 
-This is not a field script interpreter or a spatial transform. Only identity,
-gateway destinations and evidence indices leave the decompression buffer.
+This is not a field script interpreter or a global spatial transform. Identity
+and evidence stay compact; raw local walkmesh sections enter one private pack.
 """
 # SPDX-License-Identifier: GPL-3.0-only
 import hashlib
@@ -17,7 +17,48 @@ from .poi import parse_maplist
 from .safety import output_path
 from .web_export import sha256
 
-GENERATOR_VERSION = 'field-context-4'
+GENERATOR_VERSION = 'field-context-5'
+WALKMESH_REVISION = 'field-walkmesh-1'
+MAX_WALKMESH_TRIANGLES = 65535  # 0xffff is reserved for a blocked edge.
+
+
+def parse_walkmesh(section: bytes) -> dict:
+    """Validate raw Section 5; preserve order, padding and directed edge access.
+
+    XYZ are signed local components, not GaiaGame or metres. The fourth
+    component is retained even when it differs from the documented padding.
+    No reciprocal links, winding or degenerate triangles are repaired.
+    """
+    if len(section) < 4:
+        raise FormatError('Truncated Field walkmesh count')
+    count = struct.unpack_from('<I', section)[0]
+    if count > MAX_WALKMESH_TRIANGLES or len(section) != 4 + count * 30:
+        raise FormatError('Field walkmesh count/size limit')
+    vertices = list(struct.iter_unpack('<12h', section[4:4 + count * 24]))
+    access = list(struct.iter_unpack('<3H', section[4 + count * 24:]))
+    if any(target != 0xffff and target >= count for row in access for target in row):
+        raise FormatError('Field walkmesh adjacency outside triangle pool')
+    stats = dict(blocked=0, accessible=0, asymmetric=0, edgeMismatch=0,
+                 selfLinks=0, degenerate=0, degenerateXY=0, paddingVariants=0)
+    for i, (v, links) in enumerate(zip(vertices, access)):
+        points = [v[j:j+3] for j in (0, 4, 8)]
+        a, b = [tuple(points[k][j]-points[0][j] for j in range(3)) for k in (1, 2)]
+        cross = (a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0])
+        stats['degenerate'] += cross == (0, 0, 0)
+        stats['degenerateXY'] += cross[2] == 0
+        stats['paddingVariants'] += sum(v[j] != v[2] for j in (3, 7, 11))
+        for edge, target in enumerate(links):
+            if target == 0xffff:
+                stats['blocked'] += 1
+                continue
+            stats['accessible'] += 1
+            stats['asymmetric'] += i not in access[target]
+            stats['selfLinks'] += target == i
+            other = vertices[target]
+            other_points = [other[j:j+3] for j in (0, 4, 8)]
+            segment = {points[edge], points[(edge+1) % 3]}
+            stats['edgeMismatch'] += not any(segment == {other_points[j], other_points[(j+1) % 3]} for j in range(3))
+    return dict(triangles=count, **stats)
 
 # Reviewed against ff7tk's pinned classic-PC module/location table. Other
 # maplists still support graph browsing, but never inherit save compatibility.
@@ -163,14 +204,17 @@ def save_identity(field_id: int, maplist_hash: str) -> int | None:
     return field_id if maplist_hash == PC_MAPLIST_SHA256 and field_id not in SAVE_ID_CONFLICTS else None
 
 
-def field_sections(payload: bytes) -> tuple[bytes, bytes]:
+def field_sections(payload: bytes, *, walkmesh=False) -> tuple:
     if len(payload) < 4 or struct.unpack_from('<I', payload)[0] != len(payload) - 4:
         raise FormatError('Field compressed length')
     data = decompress(payload[4:], max_output=8_000_000)
     if len(data) < 42 or struct.unpack_from('<HI', data) != (0, 9):
         raise FormatError('Field section header')
     offsets = struct.unpack_from('<9I', data, 6)
-    if offsets[0] < 42 or any(a >= b for a, b in zip(offsets, offsets[1:])) or offsets[-1] + 4 > len(data):
+    # Only Section 5/6 pointers may be isolated in the optional mesh path.
+    # Script/gateway pointers keep their original strict bounds.
+    required = tuple(offsets[i] for i in (0, 1, 2, 3, 6, 7, 8)) if walkmesh else offsets
+    if required[0] < 42 or any(a >= b for a, b in zip(required, required[1:])) or required[-1] + 4 > len(data):
         raise FormatError('Field section bounds')
     start = offsets[7]
     size = struct.unpack_from('<I', data, start)[0]
@@ -180,7 +224,15 @@ def field_sections(payload: bytes) -> tuple[bytes, bytes]:
     script_size = struct.unpack_from('<I', data, script_start)[0]
     if script_start + 4 + script_size != offsets[1]:
         raise FormatError('Field script section size')
-    return data[script_start+4:script_start+4+script_size], data[start + 4:start + 4 + size]
+    result = (data[script_start+4:script_start+4+script_size], data[start + 4:start + 4 + size])
+    if not walkmesh:
+        return result
+    # A damaged Section 5 is isolated from identity/script/gateway evidence.
+    at = offsets[4]
+    valid_span = offsets[3] + 4 <= at and at + 4 <= offsets[5] < offsets[6]
+    local_size = struct.unpack_from('<I', data, at)[0] if valid_span else -1
+    local = data[at+4:at+4+local_size] if local_size >= 0 and at+4+local_size == offsets[5] else None
+    return (*result, local)
 
 
 def gateway_section(payload: bytes) -> bytes:
@@ -259,6 +311,7 @@ def build_field_context(source: Path, directory: Path) -> dict:
     # World entry pseudo-fields are identities, not native WM2/WM3 maps.
     world = {i: name for i, name in enumerate(names) if name.startswith('wm') and name[2:].isdigit()}
     nodes, edges, exits, unresolved, script_edges, script_exits, script_unknown = [], [], [], [], [], [], []
+    scenes, walkmesh_data = [], bytearray()
     for field_id, name in enumerate(names):
         if not name or name == 'dummy' or field_id in world:
             continue
@@ -268,13 +321,23 @@ def build_field_context(source: Path, directory: Path) -> dict:
         if not entry:
             continue
         try:
-            script, gateway = field_sections(read_entry(archive, entry))
+            script, gateway, local = field_sections(read_entry(archive, entry), walkmesh=True)
             gateways = parse_gateways(gateway)
         except FormatError:
             node['status'] = 'corrupt'
             unresolved.append(dict(fromField=field_id, to=None, gateway=None, reason='invalid_section'))
             continue
         node['status'] = 'available'
+        try:
+            if local is None:
+                raise FormatError('Invalid Section 5 bounds')
+            stats = parse_walkmesh(local)
+            if len(walkmesh_data) + len(local) > 31_000_000:
+                raise FormatError('Field walkmesh pack limit')
+            scenes.append(dict(fieldId=field_id, status='available', offset=len(walkmesh_data), bytes=len(local), **stats))
+            walkmesh_data.extend(local)
+        except FormatError:
+            scenes.append(dict(fieldId=field_id, status='corrupt'))
         node['saveId'] = save_identity(field_id, hashlib.sha256(maplist).hexdigest())
         try:
             script_name, jumps, unknown = parse_script(script)
@@ -329,5 +392,13 @@ def build_field_context(source: Path, directory: Path) -> dict:
                   nativeRelations=native)
     if sha256(archive) != archive_hash:
         raise RuntimeError('Field source changed during generation')
-    (directory / 'gaia-field-context.json').write_text(json.dumps(result, separators=(',', ':'), sort_keys=True) + '\n', encoding='utf8')
+    metadata = dict(schema='gaiagis-field-walkmesh', version=1, coordinateSpace='FieldLocal',
+                    generator_revision=WALKMESH_REVISION,
+                    sources={'flevel.lgp': archive_hash, 'maplist': hashlib.sha256(maplist).hexdigest()}, scenes=scenes)
+    encoded = json.dumps(metadata, separators=(',', ':'), sort_keys=True).encode('utf8')
+    if len(encoded) > 512_000 or 16 + len(encoded) + len(walkmesh_data) > 32_000_000:
+        raise FormatError('Field walkmesh metadata/pack limit')
+    # One private binary owner; offsets are relative to the raw Section-5 pool.
+    output_path(directory / 'gaia-field-walkmesh.bin').write_bytes(b'GAIAFLD\0' + struct.pack('<II', 1, len(encoded)) + encoded + walkmesh_data)
+    output_path(directory / 'gaia-field-context.json').write_text(json.dumps(result, separators=(',', ':'), sort_keys=True) + '\n', encoding='utf8')
     return result

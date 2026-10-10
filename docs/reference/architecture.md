@@ -197,3 +197,13 @@ transition fingerprints. Conditional script edges do not change containment or
 Atlas geographic precision. Contextual field_only resolution is invalidated
 with the in-memory Field index; no second archaeology pack or storage system is
 introduced. Current contracts are documented in [Atlas/Field evidence](atlas.md).
+
+Field spatial browsing extends these same owners: the Python generator extracts
+and validates Section 5 during its existing field pass; the data owner indexes
+one optional private binary File and lazily decodes a selected scene. The Field
+Inspector renders that scene with one Canvas, with no per-triangle DOM or second
+Three.js viewer. Pointer moves only update pan state and request a coalesced draw;
+no perpetual render loop runs. Selection changes, workspace replacement and
+disposal cancel stale decode results and release the previous Canvas listeners.
+The File survives only for the current workspace; no persistent private storage
+or global Field coordinate is created.

@@ -138,3 +138,46 @@ export function fieldAliases(n:FieldNode,pack:FieldPack):string[]{
  if(pack.sources.maplist===saveMaplist&&n.id>=88&&n.id<=91&&n.saveId===n.id&&n.scriptName==='q_'+(n.id-87))aliases.push(n.scriptName);
  return aliases;
 }
+
+/** Section 5 is a separate local domain; no geographic/projected coordinates. */
+export interface WalkmeshStats {blocked:number;accessible:number;asymmetric:number;edgeMismatch:number;selfLinks:number;degenerate:number;degenerateXY:number;paddingVariants:number;}
+export interface FieldWalkmesh {coordinateSpace:'FieldLocal';triangles:number;vertices:Int16Array;access:Uint16Array;stats:WalkmeshStats;}
+export function decodeWalkmesh(buffer:ArrayBuffer):FieldWalkmesh{
+ const v=new DataView(buffer);if(v.byteLength<4)throw Error('Truncated walkmesh');const count=v.getUint32(0,true);
+ if(count>65535||v.byteLength!==4+count*30)throw Error('Walkmesh count/size limit');
+ const vertices=new Int16Array(count*12),access=new Uint16Array(count*3);
+ for(let i=0;i<vertices.length;i++)vertices[i]=v.getInt16(4+i*2,true);
+ for(let i=0;i<access.length;i++){const n=v.getUint16(4+count*24+i*2,true);if(n!==65535&&n>=count)throw Error('Walkmesh adjacency bounds');access[i]=n;}
+ const stats:WalkmeshStats={blocked:0,accessible:0,asymmetric:0,edgeMismatch:0,selfLinks:0,degenerate:0,degenerateXY:0,paddingVariants:0};
+ const point=(i:number,k:number)=>Array.from(vertices.subarray(i*12+k*4,i*12+k*4+3));
+ const equal=(a:number[],b:number[])=>a.every((v,i)=>v===b[i]);
+ for(let i=0;i<count;i++){
+  const p=[point(i,0),point(i,1),point(i,2)],a=p[1].map((v,j)=>v-p[0][j]),b=p[2].map((v,j)=>v-p[0][j]);const c=[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+  stats.degenerate+=Number(c.every(v=>v===0));stats.degenerateXY+=Number(c[2]===0);for(let k=0;k<3;k++)stats.paddingVariants+=Number(vertices[i*12+k*4+3]!==vertices[i*12+2]);
+  for(let k=0;k<3;k++){const n=access[i*3+k];if(n===65535){stats.blocked++;continue;}stats.accessible++;stats.asymmetric+=Number(!access.subarray(n*3,n*3+3).includes(i));stats.selfLinks+=Number(n===i);
+   const a=p[k],b=p[(k+1)%3];stats.edgeMismatch+=Number(![0,1,2].some(j=>{const u=point(n,j),w=point(n,(j+1)%3);return equal(a,u)&&equal(b,w)||equal(a,w)&&equal(b,u);}));
+  }
+ }
+ return {coordinateSpace:'FieldLocal',triangles:count,vertices,access,stats};
+}
+export interface WalkmeshScene extends Partial<WalkmeshStats>{fieldId:number;status:'available'|'corrupt';offset?:number;bytes?:number;triangles?:number;}
+export function parseWalkmeshHeader(buffer:ArrayBuffer,total:number,fields:FieldPack){
+ const v=new DataView(buffer);if(total>32_000_000||v.byteLength<16||new TextDecoder().decode(buffer.slice(0,8))!=='GAIAFLD\0'||v.getUint32(8,true)!==1)throw Error('Walkmesh pack header');
+ const length=v.getUint32(12,true),base=16+length;if(length>512_000||base>total||v.byteLength!==base)throw Error('Walkmesh metadata bounds');
+ const m=shape(JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(buffer.slice(16))),['schema','version','coordinateSpace','generator_revision','sources','scenes']);
+ if(m.schema!=='gaiagis-field-walkmesh'||m.version!==1||m.coordinateSpace!=='FieldLocal'||m.generator_revision!=='field-walkmesh-1')throw Error('Walkmesh schema/revision');
+ const sources=shape(m.sources,['flevel.lgp','maplist']);if(Object.entries(sources).some(([k,h])=>h!==fields.sources[k]))throw Error('Walkmesh Field source identity mismatch');
+ const scenes=new Map<number,WalkmeshScene>();let end=0;const statsKeys=Object.keys({blocked:0,accessible:0,asymmetric:0,edgeMismatch:0,selfLinks:0,degenerate:0,degenerateXY:0,paddingVariants:0});
+ for(const value of list(m.scenes,2000)){const r=value as WalkmeshScene,o=shape(value,['fieldId','status',...(r.status==='available'?['offset','bytes','triangles',...statsKeys]:[])]);
+  if(!integer(o.fieldId)||scenes.has(r.fieldId)||!fields.nodes.some(n=>n.id===r.fieldId&&n.status==='available')||!['available','corrupt'].includes(r.status))throw Error('Walkmesh scene identity');
+  if(r.status==='available'){if(!integer(r.triangles)||r.offset!==end||r.bytes!==4+r.triangles!*30||statsKeys.some(k=>!integer(o[k],196605))||Number(o.blocked)+Number(o.accessible)!==r.triangles!*3||base+end+r.bytes!>total)throw Error('Walkmesh scene span/statistics');end+=r.bytes!;}scenes.set(r.fieldId,r);
+ }
+ if(base+end!==total)throw Error('Walkmesh trailing/unindexed bytes');return {base,scenes};
+}
+/** Keep one File handle; only the selected raw Section 5 is decoded, no database. */
+export async function openWalkmeshPack(file:File,fields:FieldPack){
+ if(file.name!=='gaia-field-walkmesh.bin'||file.size>32_000_000||file.size<16)throw Error('Walkmesh file bounds');
+ const head=new DataView(await file.slice(0,16).arrayBuffer()),length=head.getUint32(12,true);if(length>512_000||16+length>file.size)throw Error('Walkmesh metadata limit');
+ const header=parseWalkmeshHeader(await file.slice(0,16+length).arrayBuffer(),file.size,fields);
+ return {scenes:header.scenes,async decode(id:number){const r=header.scenes.get(id);if(!r||r.status!=='available')throw Error('Walkmesh unavailable');const mesh=decodeWalkmesh(await file.slice(header.base+r.offset!,header.base+r.offset!+r.bytes!).arrayBuffer());if(mesh.triangles!==r.triangles||Object.entries(mesh.stats).some(([k,v])=>r[k as keyof WalkmeshStats]!==v))throw Error('Walkmesh statistics mismatch');return mesh;}};
+}

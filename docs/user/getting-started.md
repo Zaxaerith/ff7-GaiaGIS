@@ -12,6 +12,13 @@ Explore contains a compact Start exploring section: Find a place, My Save, My ma
 
 Local candidate ZIPs are developer validation products, not official Release artifacts. Source ZIP/TAR downloads alone are not Windows executables.
 
+To browse a place's local scene geometry, open its Atlas card → Field Context,
+select a scene and choose **View Walkmesh**. Select triangles by clicking/tapping
+or by triangle ID; drag to pan and use the zoom/reset buttons. This is a local XY
+plan with optional raw-Z colouring, not a global map or playable Field engine.
+Older workspaces keep their scene connections but need regeneration for the
+optional Walkmesh pack. Public mode never contains original-game scene geometry.
+
 ## Source checkout
 
 Use Python 3.12+ and Node 24. In the checkout:
