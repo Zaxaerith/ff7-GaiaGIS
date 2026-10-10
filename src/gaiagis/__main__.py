@@ -7,6 +7,9 @@ from ._version import __version__
 COMMANDS={'local':'local','validate':'cli','build-workspace':'build_workspace','build-sphere':'sphere_cli','clean-output':'clean_output'}
 def main(argv=None):
     args=list(sys.argv[1:] if argv is None else argv)
+    if args and args[0]=='user-gis':
+        from .gis_export import user_exchange_main
+        return user_exchange_main(args[1:])
     if args==['--version']:print(__version__);return 0
     if args and args[0] in COMMANDS:
         return importlib.import_module('.'+COMMANDS[args.pop(0)],__package__).main(args)
@@ -16,6 +19,6 @@ def main(argv=None):
         return validate(args)
     parser=argparse.ArgumentParser(description='GaiaGIS read-only local GIS tools')
     parser.add_argument('--version',action='version',version=__version__)
-    parser.add_argument('command',choices=COMMANDS)
+    parser.add_argument('command',choices=[*COMMANDS,'user-gis'])
     parser.print_help();return 0
 if __name__=='__main__':raise SystemExit(main())

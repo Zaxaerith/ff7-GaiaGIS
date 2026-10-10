@@ -52,4 +52,16 @@ export const userMappingCatalog=[
  ['user26.active','Tool: {tool} · {count} vertices','工具：{tool} · {count} 顶点','工具：{tool} · {count} 頂點','ツール: {tool} · {count} 頂点','도구: {tool} · {count} 꼭짓점'],
  ['nav23.mapping','My Layers','我的图层','我的圖層','マイレイヤー','내 레이어'],
  ['nav23.user','User placemarks','用户地标','使用者地標','ユーザーの地点','사용자 장소'],
+['user26.importMode','Import mode','导入方式','匯入方式','読込方法','가져오기 방식'],
+ ['user26.merge','Merge as new copies','Merge：添加新副本','Merge：加入新副本','Merge：新規コピー','Merge: 새 복사본 추가'],
+ ['user26.update','Update matching IDs','Update：更新相同 ID','Update：更新相同 ID','Update：同じ ID を更新','Update: 같은 ID 갱신'],
+ ['user26.exchangeHelp','Merge creates new identities. Update keeps matching identities; conflicts keep local values unless checked. Missing features are never deleted. Checked rows use all incoming values. Existing layer order is retained.','Merge 创建新 ID。Update 保留相同 ID；冲突默认保留本地值，勾选后使用该项全部导入值。缺失要素不会被删除，现有图层顺序保留。','Merge 建立新 ID。Update 保留相同 ID；衝突預設保留本機值，勾選後使用該項全部匯入值。缺少的要素不會刪除，現有圖層順序保留。','Merge は新しい ID を作成。Update は同じ ID を保持し、選択した競合行のみ読込値で置換。未収録の要素は削除せず、既存レイヤ順序を保持。','Merge는 새 ID를 만듭니다. Update는 같은 ID를 유지하며 선택한 충돌 행만 가져온 값으로 대체합니다. 누락된 피처는 삭제하지 않고 기존 레이어 순서를 유지합니다.'],
+ ['user26.importSummary','{layers} layers / {features} features / {conflicts} conflicts','{layers} 图层 / {features} 要素 / {conflicts} 冲突','{layers} 圖層 / {features} 要素 / {conflicts} 衝突','{layers} レイヤ / {features} 要素 / {conflicts} 競合','레이어 {layers} / 피처 {features} / 충돌 {conflicts}'],
+ ['user26.useIncoming','Use incoming values','使用导入值','使用匯入值','読込値を使用','가져온 값 사용'],
+ ['user26.applyImport','Apply import','应用导入','套用匯入','読込みを適用','가져오기 적용'],
+ ['user26.staleImport','Mapping changed. Reload the Viewer and import again.','地图数据已改变，请重新加载 Viewer 后再导入。','地圖資料已變更，請重新載入 Viewer 後再匯入。','データが変更されました。Viewer を再読み込みしてからインポートしてください。','데이터가 변경되었습니다. Viewer를 새로고침한 후 다시 가져오세요.'],
+
+
+ ['user26.type','Geometry type','几何类型','幾何類型','形状の種類','도형 유형'],
+ ['user26.style','Style','样式','樣式','スタイル','스타일'],
 ] as const;

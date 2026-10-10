@@ -12,6 +12,7 @@ gaiagis local --source YOUR_FF7_INSTALLATION
 gaiagis build-workspace --source YOUR_FF7_INSTALLATION --output output/local-workspace
 gaiagis validate --help
 gaiagis build-sphere --help
+gaiagis user-gis --help
 ```
 
 The full developer spherical GIS exporter can use an installed QGIS/GDAL runtime selected with `GAIAGIS_QGIS_ROOT`. The portable workspace runtime uses its bundled transport and needs no QGIS installation. The shared native-map workspace exporter is used by both source and frozen launchers.

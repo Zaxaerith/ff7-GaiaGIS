@@ -2,6 +2,12 @@
 
 Formal version changes; historical acceptance evidence remains in Git history and Releases.
 
+## v3.2.0 — candidate, not yet published
+
+- Local user GaiaJSON ↔ GeoPackage exchange through the existing GDAL GIS owner.
+- Original GaiaGame Float64 geometry, stable IDs, layer metadata and user attributes retained without reprojection.
+- Five-language import preview with new-copy Merge and explicitly selected Update conflicts; no implicit deletion.
+
 ## v3.1.0 — candidate, not yet published
 
 - Bounded original-PC Section-5 Walkmesh decoding in a strictly separate FieldLocal domain.

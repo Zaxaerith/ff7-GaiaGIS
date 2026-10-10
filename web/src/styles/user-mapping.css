@@ -14,8 +14,13 @@
 #user-vertices{max-height:180px;overflow:auto;display:grid;gap:4px}
 #user-vertices button{min-width:0;white-space:normal;overflow-wrap:anywhere}
 #user-layer-dialog{box-sizing:border-box;max-width:calc(100vw - 24px);width:360px}
-#user-layer-dialog input{box-sizing:border-box;max-width:100%;width:100%}
+#user-layer-dialog input:not([type=checkbox]){box-sizing:border-box;max-width:100%;width:100%}
 #user-mapping-status{min-height:1.5em}#user-storage-warning{color:var(--warning,#ffe18c)}
 
 .user-drawing-active .location-markers,.user-drawing-active .location-markers *{pointer-events:none!important}
 #user-feature-card input[type=color]{min-height:36px;width:100%;box-sizing:border-box}
+
+#user-import-conflicts{max-height:40vh;overflow:auto;min-width:0}
+#user-import-conflicts label{display:flex;gap:8px;align-items:flex-start;padding-block:6px}
+#user-import-conflicts input{flex:0 0 auto;width:auto}
+#user-layer-dialog select{max-width:100%;width:100%;box-sizing:border-box}

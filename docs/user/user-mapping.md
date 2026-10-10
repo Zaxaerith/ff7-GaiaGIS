@@ -97,3 +97,11 @@ removes listeners, buffers and objects. No object per vertex/segment is created.
 See [GaiaJSON](../reference/gaiajson.md) and [validation](../development/testing.md) for exchange boundaries
 and measured local performance. Future GIS export may use a local Python/QGIS
 exporter with explicit Gaia custom CRS metadata; v2.6 exports no fake EPSG GeoJSON.
+
+## Editing with QGIS
+
+Export GaiaJSON, use the optional local GDAL `user-gis` conversion, edit the raw
+Point/Line/Polygon layers in QGIS, save, convert back and import with **Update**.
+Review conflicts and check only rows you intend to replace; **Merge** creates
+new copies. Cancel leaves the map unchanged. See the [exchange contract](../reference/gaiajson.md#geopackage--qgis-exchange)
+for commands, fields, limits and the raw coordinate policy.

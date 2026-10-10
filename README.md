@@ -36,7 +36,7 @@ The [public Viewer](https://zaxaerith.github.io/ff7-GaiaGIS/) is source-only: au
 - Atlas provenance, spoiler controls, local search, Bookmarks, Recent, Nearby and Tours.
 - Static routing/playback, route profile, terrain/encounter exposure, slope/aspect and service area.
 - Explorer keyboard/touch previews using locally decoded original models; no game-runtime simulation.
-- User points/lines/polygons, layers, reference-sphere measurement and bounded local GaiaJSON exchange.
+- User points/lines/polygons, layers, reference-sphere measurement and bounded local GaiaJSON exchange, optional raw-coordinate QGIS/GeoPackage roundtrips and explicit Merge/Update conflicts.
 - Read-only fifteen-slot PC/Steam 2013 Save Explorer. Verified WM0 world saves can locate Player Position; field/unknown/native records receive no fabricated marker.
 - Private Field Scene identities and verified gateway/MAPJUMP topology and Spatial Evidence, linked to existing entrances, Atlas and Current Field in My Save; no interior global coordinates.
 - Unified FF7-inspired shell, explicit Scientific theme, desktop/320/390px layouts and five languages.
@@ -55,7 +55,7 @@ Steam 2026 executable equivalence remains **NOT VERIFIED**. WM2/WM3 have no fabr
 
 ## Build / development
 
-`src/gaiagis/_version.py` is the application-version authority. Unified CLI: `gaiagis local`, `build-workspace`, `validate`, `build-sphere`. The checkout adapter preserves `python -m gaiagis.local` without installing globally.
+`src/gaiagis/_version.py` is the application-version authority. Unified CLI: `gaiagis local`, `build-workspace`, `validate`, `build-sphere`, `user-gis`. The checkout adapter preserves `python -m gaiagis.local` without installing globally.
 
 `npm --prefix web test` · `npm --prefix web run build` · `npm --prefix web run build:release` · `npm --prefix web run audit:release`.
 
