@@ -20,7 +20,7 @@ import webbrowser
 
 from .build_workspace import ASSETS, build_workspace
 from .dataset import child_ci, discover, fingerprint
-from .safety import WORKSPACE_ROOT, output_path
+from .safety import WORKSPACE_ROOT, output_path, resource_path, protect_input
 from .web_export import sha256
 
 PREFIX = '/__gaiagis_local__/'
@@ -54,7 +54,15 @@ def validate_source(source):
         field = child_ci(dataset.wm_directory.parent, 'field')
         archive = child_ci(field, 'flevel.lgp') if field else None
         if not archive or not archive.is_file():raise ValueError('Missing data/field/flevel.lgp')
+        protect_input(archive)
         report['files'].append(dict(filename='flevel.lgp',size=archive.stat().st_size,sha256=sha256(archive),known_match=None))
+        # These optional files are read by Explorer and the original menu audio owner.
+        for directory, names in ((field, ('char.lgp',)), (child_ci(dataset.wm_directory.parent, 'sound'), ('audio.fmt', 'audio.dat'))):
+            for name in names:
+                path = child_ci(directory, name) if directory else None
+                if path and path.is_file():
+                    protect_input(path)
+                    report['files'].append(dict(filename=name,size=path.stat().st_size,sha256=sha256(path),known_match=None))
         if any(r['size'] <= 0 for r in report['files']):raise ValueError('Empty source file')
         return report
     except (OSError, ValueError) as error:
@@ -85,9 +93,8 @@ def choose_source(value, remember=False):
         if not sys.stdin.isatty():raise ValueError('Provide --source YOUR_FF7_INSTALLATION (or --remember-source once)')
         value = input('FF7 installation root: ').strip().strip('"')
     source = Path(value).resolve()
-    report = validate_source(source)
-    from .safety import protect_input
     protect_input(source)
+    report = validate_source(source)
     if remember:
         runtime_path(CONFIG).write_text(json.dumps({'source':str(source)},indent=2)+'\n',encoding='utf8')
     return source, report
@@ -147,7 +154,9 @@ def server_manifest(root):
 
 
 def make_server(root, dist, host='127.0.0.1', port=5173):
-    root=output_path(Path(root));dist=output_path(Path(dist))
+    root=output_path(Path(root));dist=resource_path(Path(dist))
+    if host not in ('127.0.0.1', 'localhost'):
+        raise ValueError('Local Viewer must bind to loopback')
     manifest=server_manifest(root)
     assets={a['filename']:a for a in manifest['assets']}
     static=set()
@@ -283,6 +292,19 @@ def _main(argv=None, scratch=None, progress=None, ready=None):
 def main(argv=None, *, progress=None, ready=None):
     from .output_lifecycle import OutputRun
     class StartFailed(Exception):pass
+    # Refuse overlapping input before even lifecycle scratch can be written.
+    selected=parser().parse_args(argv).source
+    if selected is None and CONFIG.is_file():
+        try:selected=json.loads(CONFIG.read_text(encoding='utf8')).get('source')
+        except (ValueError,OSError,AttributeError):pass
+    if selected:
+        selected=Path(selected).resolve()
+        if WORKSPACE_ROOT.is_relative_to(selected):
+            message='GaiaGIS workspace cannot be inside the selected game source'
+            print(message,file=sys.stderr)
+            if progress:progress('error: '+message,0,15)
+            return 1
+        protect_input(selected)
     try:
         with OutputRun('runtime') as job:
             code=_main(argv,job.path/'tmp',progress,ready)

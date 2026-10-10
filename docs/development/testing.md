@@ -19,6 +19,10 @@ Python QA harnesses use `with gaiagis.output_lifecycle.OutputRun('qa') as job:` 
 
 Portable acceptance extracts a fresh ZIP into a unique current-job directory, removes developer PATH/environment, verifies embedded runtime, Viewer integrity, licences, source/public-asset audit and loopback security. Success deletes the entire extraction/temp tree; failure moves it to `output/dev/failed-smoke/`, cleared after the next successful smoke. A local process-isolation smoke is not a claim of testing a fresh Windows VM. A release runner additionally repeats clean-checkout build and package smoke, explicitly keeping upload artifacts.
 
+Both platforms always launch the actual frozen HTTP server with a small synthetic manifest/asset pair when private inputs are absent, checking status, manifest, compiled Viewer, payload checksums, Host/Origin denial and forbidden paths. This is labelled synthetic HTTP smoke, never real reconstruction acceptance. `--source` additionally runs a real cold build, warm geometry reuse and before/after fingerprints of required WM/Field plus present character/sound inputs. Original files are read-only.
+
+Mac smoke restores ZIP permissions and confined framework links, overrides HOME/workspace/temp into the checkout, scrubs Python/dynamic-library environments and checks every bundled Mach-O's ARM64 slices, dependency paths and signatures. Windowed self-test writes an explicit workspace-local result file. Native ARM64 build, Tcl/Tk, frozen service, Finder chooser/browser/exit, moved app, real cold/warm data, quarantined download/Gatekeeper and target-device functions are distinct acceptance items. Local Windows implementation and workflow lint do not claim any unexecuted Mac/Actions result. [Commands](building.md).
+
 Historical numerical acceptance reports remain available through Git tags, commits and Releases. This document describes current test responsibilities rather than storing another version-specific validation report.
 
 ## Repeatable player flows

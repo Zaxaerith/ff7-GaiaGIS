@@ -29,12 +29,14 @@ def discover(selected: Path) -> SourceDataset:
     selected = selected.resolve()
     patterns = ((), ("data", "wm"), ("wm",), ("workingdir", "data", "wm"),
                 ("ff7", "workingdir", "data", "wm"))
-    candidates = []
+    candidates = []; incomplete = []
     for parts in patterns:
         directory = descend(selected, parts)
         if directory is None:
             continue
         found = {name: child_ci(directory, name) for name in KNOWN}
+        missing = [name for name,path in found.items() if path is None or not path.is_file()]
+        if missing and any(path is not None for path in found.values()):incomplete.append((directory,missing))
         if all(p is not None and p.is_file() for p in found.values()):
             for name in ("wm0.bot", "wm2.bot", "wm3.bot"):
                 p = child_ci(directory, name)
@@ -43,10 +45,14 @@ def discover(selected: Path) -> SourceDataset:
             if directory not in [c[0] for c in candidates]:
                 candidates.append((directory, found))
     if len(candidates) != 1:
+        if not candidates and incomplete:
+            directory,missing=min(incomplete,key=lambda item:len(item[1]))
+            raise ValueError(f"Missing required files under {directory}: {', '.join(missing)}")
         raise ValueError(f"Expected one complete world dataset, found {len(candidates)} under {selected}")
     directory, found = candidates[0]
     from .safety import protect_input
     protect_input(directory)
+    for path in found.values():protect_input(path)
     for name in ('field','sound'):
         sibling=child_ci(directory.parent,name)
         if sibling and sibling.is_dir():protect_input(sibling)

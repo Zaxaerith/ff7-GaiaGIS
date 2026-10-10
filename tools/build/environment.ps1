@@ -14,6 +14,8 @@ New-Item -ItemType Directory -Force -Path $gaiaRuntime | Out-Null
 $env:TEMP = $gaiaRuntime
 $env:TMP = $gaiaRuntime
 $env:NPM_CONFIG_CACHE = Join-Path $gaiaWorkspace '.cache\npm'
+$env:PIP_CACHE_DIR = Join-Path $gaiaWorkspace '.cache\pip'
+$env:PYINSTALLER_CONFIG_DIR = Join-Path $gaiaWorkspace '.cache\pyinstaller'
 $env:PLAYWRIGHT_BROWSERS_PATH = Join-Path $gaiaWorkspace '.cache\playwright'
 $env:PYTHONDONTWRITEBYTECODE = '1'
 $env:PYTHONUTF8 = '1'

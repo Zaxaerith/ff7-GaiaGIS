@@ -6,6 +6,8 @@ A local-first GIS reconstruction of the original FINAL FANTASY VII world, with a
 
 For Windows players: download the Windows ZIP from [Releases](https://github.com/Zaxaerith/ff7-GaiaGIS/releases), extract it to a writable folder and run **GaiaGIS.exe**. Choose your original FF7 installation. The startup window shows progress, opens the Viewer and remembers the folder for next time. No Python or Node installation is needed. In the Viewer, **Explore → Start exploring** offers the main player shortcuts.
 
+The local **v3.3.0 candidate** adds a macOS Apple Silicon recipe for `GaiaGIS.app` in `GaiaGIS-v3.3.0-macos-arm64.zip`. It reuses the same Python core, native folder chooser and browser Viewer. Mac runtime data stays in `~/Library/Application Support/GaiaGIS`, outside the app. Select your own supported original FF7 **PC data folder**, including a complete copy transferred to Mac; no Windows game executable, Wine, Rosetta, Python, Node or QGIS is required by the portable Viewer. Native Mac build, Finder/Gatekeeper and target-device acceptance remain pending; this checkout does not claim a published Mac binary. [Mac build and acceptance](docs/development/building.md).
+
 For a source checkout:
 
 ```powershell
@@ -18,7 +20,7 @@ Use Python 3.12+ and Node 24 in a source checkout. The launcher reads your insta
 
 ## Windows Release
 
-Approved Releases may provide `GaiaGIS-vX.Y.Z-windows-x64.zip` and `SHA256SUMS.txt`. Extract everything and run `GaiaGIS.exe`; select your own installation. The portable runtime needs no Python/Node installation. Official binaries are built by GitHub Actions from the exact annotated tag. Local candidate ZIPs are recipe-validation products only; local candidates remain pending explicit publication approval.
+Approved Releases may provide Windows x64 and macOS ARM64 ZIPs with one `SHA256SUMS.txt`. The v3.3 recipe builds both platforms natively and publishes only after both packages pass; publication requires separate approval. The portable Viewer needs no Python/Node installation. Official binaries are built by GitHub Actions from the exact annotated tag. Local candidate ZIPs are recipe-validation products only. Optional GaiaJSON/GeoPackage exchange still requires a GDAL-enabled Python; the app does not bundle QGIS/GDAL.
 
 [Releases](https://github.com/Zaxaerith/ff7-GaiaGIS/releases) · [Release process](docs/development/release-process.md)
 

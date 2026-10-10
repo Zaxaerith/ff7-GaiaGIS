@@ -1,4 +1,4 @@
-name: Release — exact-tag Windows build
+name: Release — exact-tag native builds
 on:
   push:
     tags: ['v*.*.*']
@@ -19,10 +19,19 @@ concurrency:
   cancel-in-progress: false
 jobs:
   build:
-    runs-on: windows-latest
-    outputs:
-      tag: ${{ steps.verify.outputs.tag }}
-      sha: ${{ steps.verify.outputs.sha }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runner: windows-latest
+            target: windows-x64
+            architecture: x64
+            python: .cache/packaging-venv/Scripts/python.exe
+          - runner: macos-14
+            target: macos-arm64
+            architecture: arm64
+            python: .cache/packaging-venv/bin/python
+    runs-on: ${{ matrix.runner }}
     steps:
       - uses: actions/checkout@v7
         with:
@@ -35,31 +44,40 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.14.7'
-      - name: Verify annotated tag, version and exact source
-        id: verify
-        shell: pwsh
+          architecture: ${{ matrix.architecture }}
+      - name: Verify annotated tag, version and exact clean source
+        shell: python {0}
         env:
           RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
         run: |
-          if ($env:RELEASE_TAG -notmatch '^v[0-9]+\.[0-9]+\.[0-9]+$') { throw 'Invalid tag' }
-          $gaiaVersion = python -B -m gaiagis --version
-          if ($LASTEXITCODE -ne 0 -or $env:RELEASE_TAG -ne "v$gaiaVersion") { throw 'Version mismatch' }
-          $gaiaType = git cat-file -t "refs/tags/$env:RELEASE_TAG"
-          if ($LASTEXITCODE -ne 0 -or $gaiaType -ne 'tag') { throw 'Annotated tag required' }
-          $gaiaHead = git rev-parse HEAD
-          $gaiaTarget = git rev-parse "refs/tags/$env:RELEASE_TAG^{commit}"
-          if ($LASTEXITCODE -ne 0 -or $gaiaHead -ne $gaiaTarget -or (git status --porcelain)) { throw 'Exact clean tag checkout required' }
-          "tag=$env:RELEASE_TAG" >> $env:GITHUB_OUTPUT
-          "sha=$gaiaHead" >> $env:GITHUB_OUTPUT
+          import os, re, subprocess, sys
+          sys.path.insert(0, 'src')
+          from gaiagis._version import __version__
+          tag = os.environ['RELEASE_TAG']
+          def git(*args):
+              return subprocess.check_output(['git', *args], text=True).strip()
+          if not re.fullmatch(r'v\d+\.\d+\.\d+', tag) or tag != 'v' + __version__:
+              raise RuntimeError('Version/tag mismatch')
+          if git('cat-file', '-t', 'refs/tags/' + tag) != 'tag':
+              raise RuntimeError('Annotated tag required')
+          if git('rev-parse', 'HEAD') != git('rev-parse', 'refs/tags/' + tag + '^{commit}') or git('status', '--porcelain'):
+              raise RuntimeError('Exact clean tag checkout required')
       - name: Workspace-local build environment
-        shell: pwsh
+        shell: python {0}
         run: |
-          . tools/build/environment.ps1
-          "TEMP=$env:TEMP" >> $env:GITHUB_ENV
-          "TMP=$env:TMP" >> $env:GITHUB_ENV
-          "NPM_CONFIG_CACHE=$env:NPM_CONFIG_CACHE" >> $env:GITHUB_ENV
-          "PYTHONDONTWRITEBYTECODE=1" >> $env:GITHUB_ENV
-          "PYTHONUTF8=1" >> $env:GITHUB_ENV
+          import os
+          from pathlib import Path
+          root = Path.cwd().resolve()
+          scratch = root / 'output/dev/current/runtime'
+          scratch.mkdir(parents=True, exist_ok=True)
+          values = {'TEMP': scratch, 'TMP': scratch, 'TMPDIR': scratch,
+                    'NPM_CONFIG_CACHE': root / '.cache/npm', 'PIP_CACHE_DIR': root / '.cache/pip',
+                    'PYINSTALLER_CONFIG_DIR': root / '.cache/pyinstaller', 'XDG_CACHE_HOME': root / '.cache',
+                    'GAIAGIS_WORKSPACE_ROOT': root / 'output/dev/current/mac-workspace',
+                    'PYTHONDONTWRITEBYTECODE': '1', 'PYTHONUTF8': '1'}
+          with open(os.environ['GITHUB_ENV'], 'a', encoding='utf8') as stream:
+              for key, value in values.items():
+                  stream.write(f'{key}={value}\n')
       - run: npm ci
         working-directory: web
       - run: npm test
@@ -71,23 +89,79 @@ jobs:
       - run: npm run audit:release
         working-directory: web
       - run: python -B -m venv .cache/packaging-venv
-      - run: .cache/packaging-venv/Scripts/python.exe -B -m pip install --cache-dir .cache/pip -r tools/build/requirements.txt
-      - name: Freeze, public audit, ZIP, SHA256 and isolated portable launch
-        shell: pwsh
+      - run: ${{ matrix.python }} -B -m pip install --cache-dir .cache/pip -r tools/build/requirements.txt
+      - name: Native freeze, deep audit, ZIP, checksum and isolated launch
         env:
-          RELEASE_TAG: ${{ steps.verify.outputs.tag }}
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+        shell: python {0}
         run: |
-          .cache/packaging-venv/Scripts/python.exe -B tools/build/local_package.py --skip-web-build --keep-artifacts --release-tag $env:RELEASE_TAG --output-dir output/release
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          import os, subprocess, sys
+          sys.path.insert(0, 'tools/build')
+          from local_package import native_target
+          if native_target() != '${{ matrix.target }}':
+              raise RuntimeError('Runner architecture mismatch')
+          subprocess.run(['${{ matrix.python }}', '-B', 'tools/build/local_package.py', '--skip-web-build',
+                          '--keep-artifacts', '--release-tag', os.environ['RELEASE_TAG'],
+                          '--output-dir', 'output/release'], check=True)
       - uses: actions/upload-artifact@v6
         with:
-          name: release-package
+          name: release-${{ matrix.target }}
           path: |
-            output/release/GaiaGIS-v*-windows-x64.zip
+            output/release/GaiaGIS-v*-${{ matrix.target }}.zip
             output/release/SHA256SUMS.txt
           if-no-files-found: error
-  publish:
+  assemble:
     needs: build
+    runs-on: windows-latest
+    steps:
+      - uses: actions/download-artifact@v6
+        with:
+          pattern: release-*
+          path: release-artifacts
+      - name: Verify both packages and assemble one checksum manifest
+        shell: python {0}
+        env:
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          import hashlib, json, os, subprocess, zipfile
+          from pathlib import Path
+          root = Path('release-artifacts'); tag = os.environ['RELEASE_TAG']
+          combined = []; commits = set()
+          for target in ('windows-x64', 'macos-arm64'):
+              folder = root / ('release-' + target)
+              name = f'GaiaGIS-{tag}-{target}.zip'
+              lines = (folder / 'SHA256SUMS.txt').read_text(encoding='ascii').splitlines()
+              if len(lines) != 1 or lines[0].split() != [hashlib.sha256((folder / name).read_bytes()).hexdigest(), name]:
+                  raise RuntimeError('Unexpected package/checksum')
+              with zipfile.ZipFile(folder / name) as archive:
+                  path = 'GaiaGIS.app/Contents/Resources/portable-manifest.json' if target == 'macos-arm64' else 'GaiaGIS/portable-manifest.json'
+                  manifest = json.loads(archive.read(path))
+              if manifest.get('artifact_kind') != 'tag-release' or manifest.get('source_ref') != tag or manifest.get('source_dirty') is not False or manifest.get('target') != target or manifest.get('tool_version') != tag[1:]:
+                  raise RuntimeError('Build provenance mismatch')
+              commits.add(manifest['source_base_commit'])
+              (folder / name).rename(root / name)
+              combined.append(lines[0])
+          if len(commits) != 1:
+              raise RuntimeError('Packages built from different commits')
+          records = subprocess.check_output(['gh', 'api', f'repos/{os.environ["GITHUB_REPOSITORY"]}/git/ref/tags/{tag}'], text=True)
+          ref = json.loads(records)['object']
+          if ref['type'] != 'tag':
+              raise RuntimeError('Annotated tag required')
+          tagged = json.loads(subprocess.check_output(['gh', 'api', f'repos/{os.environ["GITHUB_REPOSITORY"]}/git/tags/{ref["sha"]}'], text=True))['object']
+          if tagged['type'] != 'commit' or tagged['sha'] not in commits:
+              raise RuntimeError('Tag target changed')
+          (root / 'SHA256SUMS.txt').write_text('\n'.join(combined) + '\n', encoding='ascii')
+      - uses: actions/upload-artifact@v6
+        with:
+          name: release-packages
+          path: |
+            release-artifacts/GaiaGIS-v*-windows-x64.zip
+            release-artifacts/GaiaGIS-v*-macos-arm64.zip
+            release-artifacts/SHA256SUMS.txt
+          if-no-files-found: error
+  publish:
+    needs: assemble
     if: github.event_name == 'push' || inputs.dry_run == false
     runs-on: windows-latest
     permissions:
@@ -95,29 +169,27 @@ jobs:
     steps:
       - uses: actions/download-artifact@v6
         with:
-          name: release-package
+          name: release-packages
           path: release-artifacts
-      - name: Verify downloaded artifact and publish new Release
-        shell: pwsh
+      - name: Verify checksums and publish one new Release
+        shell: python {0}
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
-          RELEASE_TAG: ${{ needs.build.outputs.tag }}
-          SOURCE_SHA: ${{ needs.build.outputs.sha }}
+          RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
         run: |
-          $gaiaLine = (Get-Content release-artifacts/SHA256SUMS.txt -Raw).Trim() -split '\s+'
-          $gaiaName = "GaiaGIS-$env:RELEASE_TAG-windows-x64.zip"
-          if ($gaiaLine.Count -ne 2 -or $gaiaLine[1] -ne $gaiaName) { throw 'Unexpected checksum manifest' }
-          $gaiaZip = Join-Path release-artifacts $gaiaName
-          if ((Get-FileHash -LiteralPath $gaiaZip -Algorithm SHA256).Hash.ToLower() -ne $gaiaLine[0]) { throw 'Checksum mismatch' }
-          Add-Type -AssemblyName System.IO.Compression.FileSystem
-          $gaiaArchive = [IO.Compression.ZipFile]::OpenRead((Resolve-Path $gaiaZip))
-          try {
-            $gaiaReader = [IO.StreamReader]::new($gaiaArchive.GetEntry('GaiaGIS/portable-manifest.json').Open())
-            try { $gaiaManifest = $gaiaReader.ReadToEnd() | ConvertFrom-Json } finally { $gaiaReader.Dispose() }
-          } finally { $gaiaArchive.Dispose() }
-          if ($gaiaManifest.artifact_kind -ne 'tag-release' -or $gaiaManifest.source_ref -ne $env:RELEASE_TAG -or $gaiaManifest.source_base_commit -ne $env:SOURCE_SHA -or $gaiaManifest.source_dirty) { throw 'Build provenance mismatch' }
-          gh release view $env:RELEASE_TAG *> $null
-          if ($LASTEXITCODE -eq 0) { throw 'Existing Release will not be overwritten' }
-          gh release create $env:RELEASE_TAG $gaiaZip release-artifacts/SHA256SUMS.txt --verify-tag --title "GaiaGIS $env:RELEASE_TAG" --generate-notes
-          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          import hashlib, os, subprocess
+          from pathlib import Path
+          root = Path('release-artifacts'); tag = os.environ['RELEASE_TAG']
+          names = {f'GaiaGIS-{tag}-{target}.zip' for target in ('windows-x64', 'macos-arm64')}
+          records = [line.split() for line in (root / 'SHA256SUMS.txt').read_text(encoding='ascii').splitlines()]
+          if len(records) != 2 or any(len(row) != 2 for row in records) or {row[1] for row in records} != names:
+              raise RuntimeError('Unexpected checksum manifest')
+          for digest, name in records:
+              if hashlib.sha256((root / name).read_bytes()).hexdigest() != digest:
+                  raise RuntimeError('Checksum mismatch')
+          existing = subprocess.run(['gh', 'release', 'view', tag], capture_output=True)
+          if existing.returncode == 0:
+              raise RuntimeError('Existing Release will not be overwritten')
+          subprocess.run(['gh', 'release', 'create', tag, *[str(root / name) for name in sorted(names)],
+                          str(root / 'SHA256SUMS.txt'), '--verify-tag', '--title', 'GaiaGIS ' + tag, '--generate-notes'], check=True)

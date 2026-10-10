@@ -2,13 +2,20 @@
 
 Formal version changes; historical acceptance evidence remains in Git history and Releases.
 
-## v3.2.0 — candidate, not yet published
+## v3.3.0 — local candidate, not yet published
+
+- Native macOS ARM64 `.app` recipe with bundled Python/Tcl/Tk and the existing code-only browser Viewer.
+- Read-only app resources separated from a stable writable Mac workspace; copied original PC data supported without a Windows game runtime.
+- Native dependency/signature audit, permission/link-preserving ZIPs, isolated frozen HTTP smoke and coordinated Windows/Mac Actions artifacts.
+- Windows build, Web and local non-climate regressions verified locally; native Mac build, Finder/Gatekeeper, target-device and Actions execution remain pending.
+
+## v3.2.0
 
 - Local user GaiaJSON ↔ GeoPackage exchange through the existing GDAL GIS owner.
 - Original GaiaGame Float64 geometry, stable IDs, layer metadata and user attributes retained without reprojection.
 - Five-language import preview with new-copy Merge and explicitly selected Update conflicts; no implicit deletion.
 
-## v3.1.0 — candidate, not yet published
+## v3.1.0
 
 - Bounded original-PC Section-5 Walkmesh decoding in a strictly separate FieldLocal domain.
 - One private binary scene pack with lazy per-scene decoding and source-bound incremental reuse.

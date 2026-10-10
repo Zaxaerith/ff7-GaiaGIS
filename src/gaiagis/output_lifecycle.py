@@ -10,10 +10,11 @@ from .safety import WORKSPACE_ROOT
 
 
 class OutputRun:
-    def __init__(self, kind, *, keep=False):
+    def __init__(self, kind, *, keep=False, package_links=False):
         if not re.fullmatch(r'[a-z][a-z-]*', kind):
             raise ValueError('Invalid output job name')
         self.kind, self.keep = kind, keep
+        self.package_links = package_links
         self.path = None
         self.environment = {}
 
@@ -40,13 +41,13 @@ class OutputRun:
         (self.path / '.owner.pid').unlink(missing_ok=True)
         if error_type is None or (error_type is SystemExit and error.code in (None, 0)):
             if not self.keep:
-                remove_output(self.path)
+                remove_output(self.path,package_links=self.package_links)
             if failure.exists():
-                remove_output(failure)
+                remove_output(failure,package_links=self.package_links)
         else:
-            reject_links(self.path)
+            reject_links(self.path,internal=self.package_links)
             if failure.exists():
-                remove_output(failure)
+                remove_output(failure,package_links=self.package_links)
             (self.path / 'failure.txt').write_text(str(error)[:4096] + '\n', encoding='utf8')
             self.path.rename(failure)
             print(f'Failed {self.kind} evidence retained: {failure}')

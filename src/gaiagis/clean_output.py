@@ -9,14 +9,23 @@ import stat
 from .safety import WORKSPACE_ROOT, output_path
 
 
-def reject_links(path):
+def reject_links(path, *, internal=False):
     """Reject all reparse points, including Windows junctions, before traversal."""
     path = Path(path)
-    if not path.exists() and not path.is_symlink():
-        return
-    info = path.lstat()
-    if stat.S_ISLNK(info.st_mode) or getattr(info, 'st_file_attributes', 0) & 0x400:
+    if not path.exists() and not path.is_symlink():return
+    info=path.lstat()
+    if stat.S_ISLNK(info.st_mode) or getattr(info,'st_file_attributes',0)&0x400:
         raise ValueError(f'Refusing symlink/junction/reparse point: {path}')
+    if internal:
+        # PyInstaller .app frameworks require links. Never follow them while cleaning.
+        root=path.resolve()
+        for directory,dirs,files in os.walk(path,followlinks=False):
+            for name in dirs+files:
+                child=Path(directory)/name;info=child.lstat()
+                if child.is_symlink():
+                    if not child.exists() or not child.resolve().is_relative_to(root):raise ValueError('Escaping/broken package link')
+                elif getattr(info,'st_file_attributes',0)&0x400:raise ValueError('Unexpected package reparse point')
+        return
     if path.is_dir():
         for child in path.iterdir():
             reject_links(child)
@@ -39,11 +48,11 @@ def checked_output(path):
     return path
 
 
-def remove_output(path):
+def remove_output(path, *, package_links=False):
     path = checked_output(path)
     if path == WORKSPACE_ROOT / 'output':
         raise ValueError('Cannot remove output root itself')
-    reject_links(path)
+    reject_links(path,internal=package_links)
     if path.is_dir():
         shutil.rmtree(path)
     elif path.exists():
@@ -58,7 +67,17 @@ def size(path):
 
 def plan(include_workspace=False):
     root = checked_output(WORKSPACE_ROOT / 'output')
-    reject_links(root)  # Check the whole tree before making the first deletion.
+    def check_tree(path):
+        # Only disposable package/smoke trees can contain framework links.
+        parts=path.relative_to(root).parts
+        packaged=bool(parts) and (parts[0] in ('distribution','release') or len(parts)>=2 and parts[:2] in (('dev','failed-package'),('dev','failed-smoke')) or len(parts)>=3 and parts[:2]==('dev','current') and parts[2].startswith(('package-','smoke-')))
+        if packaged:reject_links(path,internal=True);return
+        if not path.exists() and not path.is_symlink():return
+        info=path.lstat()
+        if stat.S_ISLNK(info.st_mode) or getattr(info,'st_file_attributes',0)&0x400:raise ValueError('Refusing filesystem redirect: '+str(path))
+        if path.is_dir():
+            for child in path.iterdir():check_tree(child)
+    check_tree(root)  # Validate the whole tree before making the first deletion.
     if not root.exists():
         return []
     result = []
@@ -117,7 +136,7 @@ def main(argv=None):
         print(f'Expected release: {total:,} bytes ({total / 1_000_000_000:.3f} GB)')
         if args.execute:
             for path, _ in entries:
-                remove_output(path)
+                remove_output(path,package_links=True)  # plan already limited allowed links
             dev = WORKSPACE_ROOT / 'output/dev'
             if dev.is_dir() and not any(dev.iterdir()):
                 dev.rmdir()

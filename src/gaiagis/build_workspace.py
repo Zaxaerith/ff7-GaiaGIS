@@ -9,7 +9,7 @@ import subprocess
 import sys
 
 from .dataset import discover, fingerprint, child_ci
-from .safety import WORKSPACE_ROOT, output_path
+from .safety import WORKSPACE_ROOT, RESOURCE_ROOT, output_path
 from .web_export import build_web_assets, sha256
 from .atlas import GENERATOR_VERSION as ATLAS_VERSION, curated_hash, build_atlas
 
@@ -111,7 +111,7 @@ def ensure_stage1(source, stage1, cache):
     from .map_reader import parse_map
     from .caps import build_caps
     from .gis_export import make_crs, export_packages
-    config = read_config(WORKSPACE_ROOT / 'config/default.toml')
+    config = read_config(RESOURCE_ROOT / 'config/default.toml')
     world = parse_map(dataset.files['wm0.map'], 0)
     if world.failures or world.unknown_sections:
         raise ValueError('Incomplete WM0 source')

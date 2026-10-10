@@ -9,7 +9,7 @@ from dataclasses import asdict
 import json
 from pathlib import Path
 import sqlite3
-from .safety import WORKSPACE_ROOT, output_path
+from .safety import RESOURCE_ROOT, output_path
 from .dataset import discover, fingerprint
 from .map_reader import parse_map
 from .reconstruction import Mapping, read_config
@@ -18,7 +18,7 @@ from .gis_export import source_attributes
 
 def build_portable_stage(source, cache):
     cache=output_path(Path(cache));cache.mkdir(parents=True,exist_ok=True)
-    ds=discover(Path(source));config=read_config(WORKSPACE_ROOT/'config/default.toml')
+    ds=discover(Path(source));config=read_config(RESOURCE_ROOT/'config/default.toml')
     world=parse_map(ds.files['wm0.map'],0)
     if world.failures or world.unknown_sections:raise ValueError('Incomplete WM0 source')
     mapping=Mapping(*world.extent,config);caps=build_caps(world,mapping)

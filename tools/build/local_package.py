@@ -1,4 +1,4 @@
-"""Reproducible-input Windows x64 portable build. No publication/network operation."""
+"""Native Windows x64 / macOS ARM64 portable build. No publication operation."""
 # SPDX-License-Identifier: GPL-3.0-only
 import argparse
 import hashlib
@@ -11,20 +11,44 @@ import subprocess
 import sys
 import zipfile
 import time
+import plistlib
+import importlib.metadata
+import sysconfig
 
 ROOT=Path(__file__).resolve().parents[2]
 sys.path.insert(0,str(ROOT/'src'))
 from gaiagis._version import __version__
 from gaiagis.output_lifecycle import OutputRun
-from gaiagis.clean_output import checked_output, reject_links, remove_output
+from gaiagis.clean_output import checked_output, remove_output
+from audit_package import package_entries, mac_native_audit
 def run(args,**kwargs):subprocess.run(args,cwd=ROOT,check=True,**kwargs)
 def digest(path):return hashlib.sha256(path.read_bytes()).hexdigest()
+
+def native_target():
+    if sys.platform=='win32' and platform.machine().upper() in ('AMD64','X86_64'):return 'windows-x64'
+    if sys.platform=='darwin' and platform.machine()=='arm64':
+        translated=subprocess.run(['/usr/sbin/sysctl','-in','sysctl.proc_translated'],capture_output=True,text=True)
+        if translated.returncode==0 and translated.stdout.strip()=='1':raise RuntimeError('Rosetta builds are not supported')
+        return 'macos-arm64'
+    raise RuntimeError('Build natively on Windows x64 or macOS ARM64; cross builds are not supported')
+
+def zip_package(package,archive,epoch):
+    """Preserve POSIX permissions and internal links without traversing them."""
+    with zipfile.ZipFile(archive,'w',zipfile.ZIP_DEFLATED) as z:
+        for path in sorted(package_entries(package)):
+            name=package.name+'/'+path.relative_to(package).as_posix()
+            info=zipfile.ZipInfo(name+'/' if path.is_dir() and not path.is_symlink() else name,time.gmtime(max(315532800,epoch))[:6])
+            info.create_system=3;info.compress_type=zipfile.ZIP_DEFLATED
+            info.external_attr=path.lstat().st_mode<<16
+            if path.is_symlink():data=os.readlink(path).encode('utf8')
+            elif path.is_file():data=path.read_bytes()
+            else:data=b'';info.external_attr|=0x10
+            z.writestr(info,data)
 def build(args, scratch):
-    if sys.platform!='win32' or platform.machine().upper() not in ('AMD64','X86_64'):raise RuntimeError('Build on Windows x64')
+    target=native_target();mac=target=='macos-arm64'
     if sys.version_info[:3]!=(3,14,7):raise RuntimeError('Use the pinned CPython 3.14.7 build runtime')
     out=checked_output(args.output_dir)
     if out not in (ROOT/'output/distribution',ROOT/'output/release'):raise ValueError('Use output/distribution or output/release for package artifacts')
-    reject_links(out)
     if not out.is_relative_to(ROOT/'output'):raise ValueError('Build outputs must stay within workspace/output')
     git=['git','-c',f'safe.directory={ROOT.as_posix()}']
     head=subprocess.check_output([*git,'rev-parse','HEAD'],cwd=ROOT,text=True).strip()
@@ -36,33 +60,41 @@ def build(args, scratch):
         if subprocess.check_output([*git,'rev-parse',ref+'^{commit}'],cwd=ROOT,text=True).strip()!=head or dirty:raise ValueError('Release requires clean exact-tag checkout')
     out.mkdir(parents=True,exist_ok=True)
     scratch.mkdir(parents=True,exist_ok=True)
-    os.environ.update(TEMP=str(scratch),TMP=str(scratch),TMPDIR=str(scratch),PYTHONDONTWRITEBYTECODE='1',PYINSTALLER_CONFIG_DIR=str(ROOT/'.cache/pyinstaller'),NPM_CONFIG_CACHE=str(ROOT/'.cache/npm'))
+    os.environ.update(TEMP=str(scratch),TMP=str(scratch),TMPDIR=str(scratch),PYTHONDONTWRITEBYTECODE='1',PYINSTALLER_CONFIG_DIR=str(ROOT/'.cache/pyinstaller'),NPM_CONFIG_CACHE=str(ROOT/'.cache/npm'),XDG_CACHE_HOME=str(ROOT/'.cache'),GAIAGIS_WORKSPACE_ROOT=str(scratch/'runtime-workspace'))
     epoch=int(subprocess.check_output(['git','-c',f'safe.directory={ROOT.as_posix()}','show','-s','--format=%ct','HEAD'],cwd=ROOT,text=True).strip())
     os.environ['SOURCE_DATE_EPOCH']=str(epoch)
     def add_file(z,path,name):
         info=zipfile.ZipInfo(name,time.gmtime(max(315532800,epoch))[:6]);info.compress_type=zipfile.ZIP_DEFLATED;info.external_attr=0o100644<<16
         z.writestr(info,path.read_bytes())
-    npm=shutil.which('npm.cmd')
+    npm=shutil.which('npm.cmd' if os.name=='nt' else 'npm')
+    if not npm:raise RuntimeError('Build requires Node/npm; the portable runtime does not')
     if not args.skip_web_build:run([npm,'--prefix','web','run','build:release'])
     run([npm,'--prefix','web','run','audit:release'])
     version=__version__
-    run([sys.executable,'-B','-m','PyInstaller','--noconfirm','--clean','--onedir','--noupx','--name','GaiaGIS','--paths',str(ROOT/'src'),'--distpath',str(out/'build'),'--workpath',str(out/'work'),'--specpath',str(out),'--collect-data','gaiagis','--exclude-module','gaiagis.climate','--exclude-module','scripts','--hidden-import','tkinter','--hidden-import','tkinter.filedialog',str(ROOT/'tools/build/portable_entry.py')])
-    package=out/'build/GaiaGIS'
+    freeze=[sys.executable,'-B','-m','PyInstaller','--noconfirm','--clean','--onedir','--noupx','--name','GaiaGIS','--paths',str(ROOT/'src'),'--distpath',str(out/'build'),'--workpath',str(out/'work'),'--specpath',str(out),'--collect-data','gaiagis','--exclude-module','gaiagis.climate','--exclude-module','scripts','--exclude-module','osgeo','--hidden-import','tkinter','--hidden-import','tkinter.filedialog']
+    # The checkout adapter can hide package data from --collect-data discovery.
+    for name in ('atlas_data/content.json','traversal_profiles.json','wm0_texture_catalog.tsv','native_texture_catalog.tsv'):
+        source=ROOT/'src/gaiagis'/name
+        destination=(Path('gaiagis')/Path(name).parent).as_posix()
+        freeze+=['--add-data',str(source)+':'+destination]
+    if mac:freeze+=['--windowed','--target-arch','arm64','--osx-bundle-identifier','org.gaiagis.viewer']
+    run([*freeze,str(ROOT/'tools/build/portable_entry.py')])
+    package=out/('build/GaiaGIS.app' if mac else 'build/GaiaGIS')
+    resources=package/'Contents/Resources' if mac else package
     # Explicit public allowlist. Never copy output/, .cache/, installation or workspace.
-    for source,target in [(ROOT/'web/dist-release',package/'web/dist-release'),(ROOT/'config/default.toml',package/'config/default.toml')]:
-        if source.is_dir():shutil.copytree(source,target,dirs_exist_ok=True)
-        else:target.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(source,target)
-    shutil.copyfile(ROOT/'LICENSE',package/'LICENSE.txt')
-    shutil.copyfile(ROOT/'THIRD_PARTY_NOTICES.md',package/'THIRD_PARTY_NOTICES.txt')
-    shutil.copyfile(ROOT/'docs/user/getting-started.md',package/'README.txt')
-    for data in (ROOT/'src/gaiagis').rglob('*'):
-        if data.is_file() and data.suffix in ('.json','.tsv') and 'climate' not in data.parts:
-            target=package/'_internal/gaiagis'/data.relative_to(ROOT/'src/gaiagis');target.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(data,target)
-    licenses=package/'licenses';licenses.mkdir(exist_ok=True)
-    import PyInstaller
-    shutil.copyfile(Path(PyInstaller.__file__).parent.parent/'pyinstaller-6.22.3.dist-info/licenses/COPYING.txt',licenses/'PYINSTALLER.txt')
-    python_license=Path(sys.base_prefix)/'LICENSE.txt'
-    if not python_license.is_file():raise RuntimeError('Python LICENSE.txt missing')
+    for source,destination in [(ROOT/'web/dist-release',resources/'web/dist-release'),(ROOT/'config/default.toml',resources/'config/default.toml')]:
+        if source.is_dir():shutil.copytree(source,destination,dirs_exist_ok=True)
+        else:destination.parent.mkdir(parents=True,exist_ok=True);shutil.copyfile(source,destination)
+    shutil.copyfile(ROOT/'LICENSE',resources/'LICENSE.txt')
+    shutil.copyfile(ROOT/'THIRD_PARTY_NOTICES.md',resources/'THIRD_PARTY_NOTICES.txt')
+    shutil.copyfile(ROOT/'docs/user/getting-started.md',resources/'README.txt')
+    # Authored package data was collected before bundle signing.
+    licenses=resources/'licenses';licenses.mkdir(exist_ok=True)
+    distribution=importlib.metadata.distribution('pyinstaller')
+    copying=next(p for p in distribution.files if str(p).endswith('/licenses/COPYING.txt'))
+    shutil.copyfile(distribution.locate_file(copying),licenses/'PYINSTALLER.txt')
+    python_license=next((p for p in (Path(sys.base_prefix)/'LICENSE.txt',Path(sys.base_prefix)/'LICENSE',Path(sysconfig.get_path('stdlib'))/'LICENSE.txt',Path(sys.base_prefix)/'Resources/English.lproj/Documentation/LICENSE.txt') if p.is_file()),None)
+    if python_license is None:raise RuntimeError('Python licence missing from the pinned build runtime')
     shutil.copyfile(python_license,licenses/'PYTHON.txt')
     import tkinter as tk
     window=tk.Tk();window.withdraw()
@@ -73,7 +105,7 @@ def build(args, scratch):
     window.destroy()
     shutil.copyfile(ROOT/'tools/build/licenses/OPENSSL.txt',licenses/'OPENSSL.txt')
     # Include the exact build scripts and authored source needed to reproduce this binary.
-    source_zip=package/'GaiaGIS-source.zip'
+    source_zip=resources/'GaiaGIS-source.zip'
     tracked=subprocess.check_output(['git','-c',f'safe.directory={ROOT.as_posix()}','ls-files','-z'],cwd=ROOT).decode().split('\0')
     additions=[] if args.release_tag else subprocess.check_output([*git,'ls-files','--others','--exclude-standard','-z'],cwd=ROOT).decode().split('\0')
     def corresponding_source(name):
@@ -83,14 +115,22 @@ def build(args, scratch):
             p=ROOT/name
             if not name or not p.is_file() or not corresponding_source(name):continue
             add_file(z,p,name)
-    viewer={p.relative_to(package/'web/dist-release').as_posix():digest(p) for p in (package/'web/dist-release').rglob('*') if p.is_file()}
-    manifest=dict(schema='gaiagis-portable',version=1,tool_version=version,source_base_commit=head,source_ref=args.release_tag,source_dirty=dirty,artifact_kind='tag-release' if args.release_tag else 'development-validation-only',source_archive_sha256=digest(source_zip),viewer=viewer)
-    (package/'portable-manifest.json').write_text(json.dumps(manifest,sort_keys=True,indent=2)+'\n',encoding='utf8')
+    viewer={p.relative_to(resources/'web/dist-release').as_posix():digest(p) for p in (resources/'web/dist-release').rglob('*') if p.is_file()}
+    manifest=dict(schema='gaiagis-portable',version=1,tool_version=version,target=target,build_os=platform.mac_ver()[0] if mac else platform.release(),source_base_commit=head,source_ref=args.release_tag,source_dirty=dirty,artifact_kind='tag-release' if args.release_tag else 'development-validation-only',source_archive_sha256=digest(source_zip),viewer=viewer)
+    if mac:
+        native=mac_native_audit(package,verify_signature=False)
+        plist_path=package/'Contents/Info.plist'
+        plist=plistlib.loads(plist_path.read_bytes())
+        plist.update(CFBundleShortVersionString=version,CFBundleVersion=version,LSMinimumSystemVersion=native['minimum_os'])
+        plist_path.write_bytes(plistlib.dumps(plist))
+        manifest.update(minimum_os=native['minimum_os'],signing='ad-hoc',notarized=False)
+    (resources/'portable-manifest.json').write_text(json.dumps(manifest,sort_keys=True,indent=2)+'\n',encoding='utf8')
+    if mac:
+        run(['/usr/bin/codesign','--force','--deep','--sign','-',str(package)])
+        mac_native_audit(package)
     run([sys.executable,'-B',str(ROOT/'tools/build/audit_package.py'),str(package)])
-    archive=out/f'GaiaGIS-v{version}-windows-x64.zip'
-    with zipfile.ZipFile(archive,'w',zipfile.ZIP_DEFLATED) as z:
-        for p in sorted(package.rglob('*')):
-            if p.is_file():add_file(z,p,'GaiaGIS/'+p.relative_to(package).as_posix())
+    archive=out/f'GaiaGIS-v{version}-{target}.zip'
+    zip_package(package,archive,epoch)
     checksum=digest(archive);(out/(archive.name+'.sha256')).write_text(f'{checksum}  {archive.name}\n',encoding='ascii')
     (out/'SHA256SUMS.txt').write_text(f'{checksum}  {archive.name}\n',encoding='ascii')
     print(json.dumps(dict(zip=str(archive),bytes=archive.stat().st_size,sha256=checksum),indent=2))
@@ -105,18 +145,21 @@ def main(argv=None):
     args=cli.parse_args(argv)
     out=checked_output(args.output_dir)
     if out not in (ROOT/'output/distribution',ROOT/'output/release'):raise ValueError('Invalid package output directory')
-    reject_links(out)
-    with OutputRun('package') as job:
+    # A previous retained .app contains legitimate internal framework links.
+    # Remove only this dedicated build tree through the package-aware boundary.
+    if out.exists():
+        for child in out.iterdir():remove_output(child,package_links=True)
+    with OutputRun('package',package_links=True) as job:
         try:
             archive=build(args,job.path/'tmp')
             from portable_smoke import main as smoke
             smoke([str(archive),'--keep-artifacts'])
             if not args.keep_artifacts:
-                remove_output(out)
+                remove_output(out,package_links=True)
                 print('Package validated; ZIP and intermediate build removed. Use --keep-artifacts to retain them.')
         except BaseException:
             if out.exists():
-                reject_links(out)
+                package_entries(out)
                 out.rename(job.path/'artifacts')
             raise
     return 0
