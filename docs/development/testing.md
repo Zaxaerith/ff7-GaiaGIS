@@ -6,7 +6,7 @@ Field regressions extend the existing Atlas tests with bounded identity codecs,
 direct entrance evidence, directed gateways/cycles, entry-rooted MAPJUMP and
 instruction boundaries, conflicting native targets, ambiguous or missing parents,
 reviewed save/header alias gates, provenance chains, private contextual precision
-promotion and the unchanged no-coordinate Field policy. The optional
+promotion and the unchanged no-global-coordinate Field policy. The optional
 private Field/POI pair is checked only when an ignored local workspace exists;
 CI uses the synthetic cases. Browser checks also replace POI/workspace inputs to
 ensure stale scene cards, search entries and save bindings are invalidated.
@@ -37,3 +37,14 @@ npm --prefix web run test:browser
 ```
 
 The one player-flow suite exercises Atlas/Field, Explorer preview movement and model switching, routing/analysis, authored geometry editing/export/import, a synthetic multi-slot save, map/projection switching and compact touch layouts. It uses an isolated browser context and disposes profiles/downloads on exit. No original saves are fixtures. `GAIA_MEASURE_ONLY=1` runs the same loaded-UI and Save Inspector mutation measurements for a before/after comparison without changing application code. Actual model aesthetics, ground-contact fidelity, the native chooser on an ordinary user's desktop and a live Steam world-module save comparison require human acceptance. Synthetic player-binding success does not verify Steam runtime equivalence.
+
+Field anchor regressions extend the same Atlas/Field owner with synthetic
+boundary, winding, degenerate, vertical and extreme-coordinate cases, damaged
+record rejection, old-context fallback and target-only arrival placement.
+`GAIA_TEST_WORKSPACE` optionally redirects private Web tests to an isolated
+checkout-local generated workspace. For the audited source hashes, the regression
+baseline is 128 records / 65 entrances / 63 placeholders, 1036 source lines,
+978 arrivals (14 boundary), 58 world targets, and 801/225/10 source relations.
+These counts are source-specific test evidence, never generator constants.
+The player-flow suite checks marker picking, paired scenarios, navigation,
+geometry warnings and ordinary Field lifecycle/mobile/public regressions.

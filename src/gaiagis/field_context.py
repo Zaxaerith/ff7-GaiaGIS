@@ -6,6 +6,7 @@ and evidence stay compact; raw local walkmesh sections enter one private pack.
 # SPDX-License-Identifier: GPL-3.0-only
 import hashlib
 from collections import deque
+from fractions import Fraction
 import json
 from pathlib import Path
 import struct
@@ -13,16 +14,16 @@ import struct
 from .dataset import discover, child_ci
 from .lgp import inventory, read_entry
 from .lzss import decompress, FormatError
-from .poi import parse_maplist
+from .poi import parse_maplist, parse_field_table
 from .safety import output_path
 from .web_export import sha256
 
-GENERATOR_VERSION = 'field-context-5'
+GENERATOR_VERSION = 'field-context-6'
 WALKMESH_REVISION = 'field-walkmesh-1'
 MAX_WALKMESH_TRIANGLES = 65535  # 0xffff is reserved for a blocked edge.
 
 
-def parse_walkmesh(section: bytes) -> dict:
+def parse_walkmesh(section: bytes, *, geometry=False) -> dict | tuple:
     """Validate raw Section 5; preserve order, padding and directed edge access.
 
     XYZ are signed local components, not GaiaGame or metres. The fourth
@@ -40,8 +41,11 @@ def parse_walkmesh(section: bytes) -> dict:
         raise FormatError('Field walkmesh adjacency outside triangle pool')
     stats = dict(blocked=0, accessible=0, asymmetric=0, edgeMismatch=0,
                  selfLinks=0, degenerate=0, degenerateXY=0, paddingVariants=0)
+    geometry_points = []
     for i, (v, links) in enumerate(zip(vertices, access)):
         points = [v[j:j+3] for j in (0, 4, 8)]
+        if geometry:
+            geometry_points.append(tuple(points))
         a, b = [tuple(points[k][j]-points[0][j] for j in range(3)) for k in (1, 2)]
         cross = (a[1]*b[2]-a[2]*b[1], a[2]*b[0]-a[0]*b[2], a[0]*b[1]-a[1]*b[0])
         stats['degenerate'] += cross == (0, 0, 0)
@@ -58,7 +62,8 @@ def parse_walkmesh(section: bytes) -> dict:
             other_points = [other[j:j+3] for j in (0, 4, 8)]
             segment = {points[edge], points[(edge+1) % 3]}
             stats['edgeMismatch'] += not any(segment == {other_points[j], other_points[(j+1) % 3]} for j in range(3))
-    return dict(triangles=count, **stats)
+    result = dict(triangles=count, **stats)
+    return (result, geometry_points) if geometry else result
 
 # Reviewed against ff7tk's pinned classic-PC module/location table. Other
 # maplists still support graph browsing, but never inherit save compatibility.
@@ -247,8 +252,105 @@ def parse_gateways(section: bytes) -> list[dict]:
         offset = 56 + gateway * 24
         destination = struct.unpack_from('<H', section, offset + 18)[0]
         if destination != 0x7fff:
-            records.append(dict(to=destination, gateway=gateway, offset=offset))
+            a = struct.unpack_from('<6h2hHH4B', section, offset)
+            records.append(dict(to=destination, gateway=gateway, offset=offset,
+                                sourceA=list(a[:3]), sourceB=list(a[3:6]),
+                                targetXY=list(a[6:8]), targetTriangle=a[8], direction=list(a[10:])))
     return records
+
+
+def _normal(points):
+    a, b, c = points
+    u, v = ([p[i]-a[i] for i in range(3)] for p in (b, c))
+    return (u[1]*v[2]-u[2]*v[1], u[2]*v[0]-u[0]*v[2], u[0]*v[1]-u[1]*v[0])
+
+
+def _weights(points, point, axes=(0, 1)):
+    x, y = axes
+    a, b, c = points
+    den = (b[y]-c[y])*(a[x]-c[x])+(c[x]-b[x])*(a[y]-c[y])
+    if not den:
+        return None
+    u = Fraction((b[y]-c[y])*(point[x]-c[x])+(c[x]-b[x])*(point[y]-c[y]), den)
+    v = Fraction((c[y]-a[y])*(point[x]-c[x])+(a[x]-c[x])*(point[y]-c[y]), den)
+    return u, v, 1-u-v
+
+
+def _clip(points, a, b, axes=(0, 1)):
+    wa, wb = _weights(points, a, axes), _weights(points, b, axes)
+    if wa is None:
+        # A vertical surface projects to a segment, not an empty XY set.
+        x, y = axes
+        cross = lambda u, v: u[0]*v[1]-u[1]*v[0]
+        r = (b[x]-a[x], b[y]-a[y])
+        spans = []
+        for i, p in enumerate(points):
+            q = points[(i+1) % 3]
+            s, delta = (q[x]-p[x], q[y]-p[y]), (p[x]-a[x], p[y]-a[y])
+            den = cross(r, s)
+            if den:
+                t, u = Fraction(cross(delta, s), den), Fraction(cross(delta, r), den)
+                if 0 <= t <= 1 and 0 <= u <= 1:
+                    spans.append((t, t))
+            elif r == (0, 0):
+                if cross(s, delta) == 0 and all(min(p[k], q[k]) <= a[k] <= max(p[k], q[k]) for k in axes):
+                    spans.append((Fraction(0), Fraction(1)))
+            elif cross(delta, r) == 0:
+                k = x if r[0] else y
+                t, u = Fraction(p[k]-a[k], b[k]-a[k]), Fraction(q[k]-a[k], b[k]-a[k])
+                lo, hi = max(0, min(t, u)), min(1, max(t, u))
+                if lo <= hi:
+                    spans.append((lo, hi))
+        return (min(s[0] for s in spans), max(s[1] for s in spans)) if spans else None
+    lo, hi = Fraction(0), Fraction(1)
+    for u, v in zip(wa, wb):
+        d = v-u
+        if d > 0:
+            lo = max(lo, -u/d)
+        elif d < 0:
+            hi = min(hi, -u/d)
+        elif u < 0:
+            return None
+    return (lo, hi) if lo <= hi else None
+
+
+def validate_local_point(points, triangle, xy):
+    """Exact XY containment, retaining boundaries; no snapping or unit conversion."""
+    if points is None:
+        return dict(status='mesh_unavailable', derivedZ=None)
+    if not 0 <= triangle < len(points):
+        return dict(status='invalid_triangle', derivedZ=None)
+    weights = _weights(points[triangle], xy)
+    if weights is None:
+        return dict(status='degenerate', derivedZ=None)
+    if min(weights) < 0:
+        return dict(status='outside', derivedZ=None)
+    return dict(status='boundary' if min(weights) == 0 else 'inside',
+                derivedZ=float(sum(w*p[2] for w, p in zip(weights, points[triangle]))))
+
+
+def validate_gateway_segment(points, a, b):
+    """Exact rational segment/triangle tests, including vertical triangles.
+
+    The dominant-axis projection is used only for testing 3D containment.
+    It never changes exported raw XYZ or promotes evidence to passability.
+    """
+    if points is None:
+        return 'unknown'
+    xy = False
+    for p in points:
+        n = _normal(p)
+        if n == (0, 0, 0):
+            continue
+        xy |= _clip(p, a, b) is not None
+        axis = max(range(3), key=lambda k: abs(n[k]))
+        span = _clip(p, a, b, tuple(k for k in range(3) if k != axis))
+        if span is None:
+            continue
+        da, db = (sum(n[k]*(q[k]-p[0][k]) for k in range(3)) for q in (a, b))
+        if da == db == 0 or da != db and span[0] <= Fraction(-da, db-da) <= span[1]:
+            return 'surface'
+    return 'xy_only' if xy else 'disjoint'
 
 
 def entrance_bindings(poi: dict, nodes: list[dict]) -> list[dict]:
@@ -311,7 +413,7 @@ def build_field_context(source: Path, directory: Path) -> dict:
     # World entry pseudo-fields are identities, not native WM2/WM3 maps.
     world = {i: name for i, name in enumerate(names) if name.startswith('wm') and name[2:].isdigit()}
     nodes, edges, exits, unresolved, script_edges, script_exits, script_unknown = [], [], [], [], [], [], []
-    scenes, walkmesh_data = [], bytearray()
+    scenes, walkmesh_data, meshes, spatial_gateways = [], bytearray(), {}, []
     for field_id, name in enumerate(names):
         if not name or name == 'dummy' or field_id in world:
             continue
@@ -331,9 +433,10 @@ def build_field_context(source: Path, directory: Path) -> dict:
         try:
             if local is None:
                 raise FormatError('Invalid Section 5 bounds')
-            stats = parse_walkmesh(local)
+            stats, points = parse_walkmesh(local, geometry=True)
             if len(walkmesh_data) + len(local) > 31_000_000:
                 raise FormatError('Field walkmesh pack limit')
+            meshes[field_id] = points
             scenes.append(dict(fieldId=field_id, status='available', offset=len(walkmesh_data), bytes=len(local), **stats))
             walkmesh_data.extend(local)
         except FormatError:
@@ -356,7 +459,8 @@ def build_field_context(source: Path, directory: Path) -> dict:
             script_unknown.append(dict(fromField=field_id, offset=None, reason='invalid_script'))
         for row in gateways:
             destination = row['to']
-            record = dict(fromField=field_id, **row)
+            spatial_gateways.append(dict(fromField=field_id, **row))
+            record = dict(fromField=field_id, to=destination, gateway=row['gateway'], offset=row['offset'])
             if destination in world:
                 exits.append(dict(**record, name=world[destination]))
             else:
@@ -377,6 +481,28 @@ def build_field_context(source: Path, directory: Path) -> dict:
     poi = json.loads((directory / 'gaia-poi.json').read_text(encoding='utf8'))
     if hashlib.sha256(maplist).hexdigest() != poi['sources'].get('maplist'):
         raise FormatError('Field/POI maplist identity mismatch')
+    # FIELD.TBL is read independently of WM trigger coverage: preserve all 128
+    # paired records, including placeholders and alternative identities.
+    world_archive = ds.files['world_us.lgp']
+    world_hash = sha256(world_archive)
+    table_entries = [e for e in inventory(world_archive)['entries'] if e['filename'].casefold() == 'field.tbl']
+    if len(table_entries) != 1:
+        raise FormatError('Expected one FIELD.TBL')
+    table_bytes = read_entry(world_archive, table_entries[0])
+    if hashlib.sha256(table_bytes).hexdigest() != poi['sources'].get('field.tbl'):
+        raise FormatError('Field/POI FIELD.TBL source mismatch')
+    entrances = []
+    for (entry_id, scenario), row in parse_field_table(table_bytes, names).items():
+        placeholder = (row['field_name'] == 'dummy' and not any(table_bytes[row['field_table_byte_offset']:row['field_table_byte_offset']+12]))
+        result_point = dict(status='placeholder', derivedZ=None) if placeholder else (
+            validate_local_point(meshes.get(row['field_id']), row['field_triangle'], (row['field_x'], row['field_y']))
+            if row['field_id'] in available else dict(status='missing', derivedZ=None))
+        entrances.append(dict(entry=entry_id, scenario=scenario, **row, **result_point))
+    for row in spatial_gateways:
+        row['sourceRelation'] = validate_gateway_segment(meshes.get(row['fromField']), row['sourceA'], row['sourceB'])
+        row['destination'] = (dict(status='world', derivedZ=None) if row['to'] in world else
+                              validate_local_point(meshes.get(row['to']), row['targetTriangle'], row['targetXY'])
+                              if row['to'] in available else dict(status='missing', derivedZ=None))
     native = []
     transitions_path = directory / 'gaia-transitions.json'
     sources = {**poi['sources'], 'flevel.lgp': archive_hash}
@@ -384,13 +510,13 @@ def build_field_context(source: Path, directory: Path) -> dict:
         transitions = json.loads(transitions_path.read_text(encoding='utf8'))
         native = native_relations(transitions, available, sources)
         sources.update(transitions['sources'])
-    result = dict(schema='gaiagis-field-context', version=2, coordinateSpace='FieldLocalIdentity',
+    result = dict(schema='gaiagis-field-context', version=3, coordinateSpace='FieldLocalIdentity',
                   archive='flevel.lgp', sources=sources,
                   nodes=nodes, edges=verified, exits=exits, unresolved=unresolved,
                   bindings=entrance_bindings(poi, nodes), scriptTransitions='bounded_mapjump',
                   scriptEdges=verified_scripts, scriptExits=script_exits, scriptUnresolved=script_unknown,
-                  nativeRelations=native)
-    if sha256(archive) != archive_hash:
+                  nativeRelations=native, entrances=entrances, gateways=spatial_gateways)
+    if sha256(archive) != archive_hash or sha256(world_archive) != world_hash:
         raise RuntimeError('Field source changed during generation')
     metadata = dict(schema='gaiagis-field-walkmesh', version=1, coordinateSpace='FieldLocal',
                     generator_revision=WALKMESH_REVISION,

@@ -763,11 +763,12 @@ asset, decoded OBJ/GLB or screenshot is included in Git or source-only build.
 
 ## Private Field Walkmesh
 
-`field_context.py` keeps `gaia-field-context.json` v2 as the compact identity /
-topology owner and emits one optional `gaia-field-walkmesh.bin`. Older v1/v2
-contexts continue to load without the binary; their Walkmesh is unavailable.
+`field_context.py` keeps `gaia-field-context.json` v3 as the compact identity /
+topology and spatial-anchor owner and emits one optional `gaia-field-walkmesh.bin`. Older v1/v2
+contexts remain readable with their compatible optional Walkmesh binary; spatial
+anchors are unavailable until the Field component is regenerated.
 The component depends on Field Context, with shared (non-global) map ownership,
-source fingerprints and the `field-context-5` generator revision in the manifest.
+source fingerprints and the `field-context-6` generator revision in the manifest.
 Changing the source, generator or either file invalidates this component pair;
 geometry/textures and other unrelated resources stay reusable.
 
@@ -787,3 +788,28 @@ owner retains one validated File and decodes only the selected slice. The existi
 local static asset endpoint transports it; no API, per-scene files or cache
 database is added. Manual folder import uses the same manifest/hash checks.
 No binary is included in public builds or release packages.
+
+### Field Context spatial anchors (v3)
+
+Context v3 adds `entrances` (all 128 paired FIELD.TBL records) and `gateways`
+(non-0x7FFF Section-8 records), without changing nodes, edges, script topology or
+Walkmesh v1. Entrances reuse the POI parser's `field_*` fields and retain `entry`,
+`scenario`, `status` and nullable `derivedZ`. All-zero dummy records are
+`placeholder`, never origin markers. Only `inside` and `boundary` point records
+are drawn after validating against the selected mesh.
+
+Gateways retain `fromField`, `to`, `gateway`, section-relative `offset`,
+`sourceA/sourceB` signed raw XYZ, `targetXY`, unsigned `targetTriangle`, four raw
+`direction` bytes, `sourceRelation`, and `destination {status, derivedZ}`.
+Source relation is `surface`, `xy_only`, `disjoint` or `unknown`. Destination
+status distinguishes inside, boundary, outside, invalid_triangle, degenerate,
+mesh_unavailable, missing and world. A target Triangle ID is not Z. Arrivals
+belong only to the destination scene; each source record retains directionality.
+
+The Python generator uses exact rational containment/intersection without
+snapping or tolerance promotion. The Web owner independently rechecks selected
+scene geometry using integer determinants / BigInt before presenting anchors.
+Derived Z remains a computed raw component, not a source height or metre value.
+Context source hashes bind FIELD.TBL/maplist/flevel evidence; browser input is
+bounded and shape-checked. No camera/background, runtime pathfinding or public
+complete anchor dataset is added.

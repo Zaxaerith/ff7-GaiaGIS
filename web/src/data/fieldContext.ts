@@ -9,12 +9,16 @@ export interface FieldScriptEdge {fromField:number;to:number;opcode:96;offset:nu
 export type SceneEdge=FieldEdge|FieldScriptEdge;
 export interface NativeFieldRelation {map:'WM0'|'WM2'|'WM3';fieldId:number;entry:number;scenario:number;function:number;offset:number;opcode:792;}
 export interface FieldBinding {entranceId:string;locationId:string;fieldId:number;status:'verified_direct'|'unresolved';}
+export type PointStatus='inside'|'boundary'|'outside'|'invalid_triangle'|'degenerate'|'mesh_unavailable'|'missing'|'placeholder'|'world';
+export interface FieldEntrance extends Pick<import('./poi').Entrance,'field_id'|'field_name'|'field_x'|'field_y'|'field_triangle'|'field_direction'|'field_table_record'|'field_table_byte_offset'>{entry:number;scenario:0|1;status:PointStatus;derivedZ:number|null;}
+export interface FieldGateway extends FieldEdge {sourceA:[number,number,number];sourceB:[number,number,number];targetXY:[number,number];targetTriangle:number;direction:[number,number,number,number];sourceRelation:'surface'|'xy_only'|'disjoint'|'unknown';destination:{status:PointStatus;derivedZ:number|null};}
 export interface FieldPack {
- schema:'gaiagis-field-context';version:1|2;coordinateSpace:'FieldLocalIdentity';archive:'flevel.lgp';sources:Record<string,string>;
+ schema:'gaiagis-field-context';version:1|2|3;coordinateSpace:'FieldLocalIdentity';archive:'flevel.lgp';sources:Record<string,string>;
  nodes:FieldNode[];edges:FieldEdge[];exits:(FieldEdge&{name:string})[];
  unresolved:{fromField:number;to:number|null;gateway:number|null;reason:'invalid_section'|'missing_destination'}[];
  bindings:FieldBinding[];scriptTransitions:'unverified'|'bounded_mapjump';
  scriptEdges?:FieldScriptEdge[];scriptExits?:(FieldScriptEdge&{name:string})[];scriptUnresolved?:{fromField:number;offset:number|null;reason:'invalid_script'|'unsupported_opcode'|'unverified_boundary'|'missing_destination'}[];nativeRelations?:NativeFieldRelation[];
+ entrances?:FieldEntrance[];gateways?:FieldGateway[];
 }
 const fail=():never=>{throw Error('Invalid Field Context identity/evidence');};
 const integer=(v:unknown,max=65535)=>Number.isSafeInteger(v)&&Number(v)>=0&&Number(v)<=max;
@@ -29,9 +33,9 @@ const text=(v:unknown)=>typeof v==='string'&&/^[a-zA-Z0-9_-]{1,100}$/.test(v);
 const saveMaplist='d6ac24b79403a77feeb338450b7cb2169cdbcfa5d071a6cee4884e93b700bc29';
 const saveConflicts=new Set([88,89,90,91,404,526,593,594,699]);
 export function parseFieldPack(value:unknown):FieldPack {
- const v2=(value as {version?:unknown})?.version===2;
- const d=shape(value,['schema','version','coordinateSpace','archive','sources','nodes','edges','exits','unresolved','bindings','scriptTransitions',...(v2?['scriptEdges','scriptExits','scriptUnresolved','nativeRelations']:[])]);
- if(d.schema!=='gaiagis-field-context'||![1,2].includes(Number(d.version))||d.coordinateSpace!=='FieldLocalIdentity'||d.archive!=='flevel.lgp'||d.scriptTransitions!==(v2?'bounded_mapjump':'unverified'))fail();
+ const version=(value as {version?:unknown})?.version,v2=version===2||version===3,v3=version===3;
+ const d=shape(value,['schema','version','coordinateSpace','archive','sources','nodes','edges','exits','unresolved','bindings','scriptTransitions',...(v2?['scriptEdges','scriptExits','scriptUnresolved','nativeRelations']:[]),...(v3?['entrances','gateways']:[])]);
+ if(d.schema!=='gaiagis-field-context'||![1,2,3].includes(Number(d.version))||d.coordinateSpace!=='FieldLocalIdentity'||d.archive!=='flevel.lgp'||d.scriptTransitions!==(v2?'bounded_mapjump':'unverified'))fail();
  if(!d.sources||typeof d.sources!=='object'||Array.isArray(d.sources))fail();const sources=d.sources as Record<string,unknown>;
  if(Object.keys(sources).length>32||!['flevel.lgp','maplist','field.tbl','wm0.ev','wm0.map'].every(k=>Object.hasOwn(sources,k))||!Object.entries(sources).every(([k,v])=>/^[a-z0-9_.-]{1,80}$/.test(k)&&typeof v==='string'&&/^[a-f0-9]{64}$/.test(v)))fail();
  const ids=new Map<number,FieldNode>(),names=new Set<string>();
@@ -56,6 +60,25 @@ export function parseFieldPack(value:unknown):FieldPack {
   const nativeRecords=new Set<string>();for(const value of list(d.nativeRelations,10000)){const e=shape(value,['map','fieldId','entry','scenario','function','offset','opcode']);if(!['WM0','WM2','WM3'].includes(String(e.map))||!valid(e.fieldId)||!integer(e.entry,64)||e.entry===0||!integer(e.scenario,1)||!integer(e.function)||!integer(e.offset)||e.opcode!==792||!sources[String(e.map).toLowerCase()+'.ev']||nativeRecords.has(e.map+':'+e.function+':'+e.offset))fail();nativeRecords.add(e.map+':'+e.function+':'+e.offset);}
  }
  const bindings=new Set<string>();for(const value of list(d.bindings,10000)){const b=shape(value,['entranceId','locationId','fieldId','status']);if(!text(b.entranceId)||!text(b.locationId)||!integer(b.fieldId)||!['verified_direct','unresolved'].includes(String(b.status))||b.status==='verified_direct'&&!valid(b.fieldId)||bindings.has(String(b.entranceId)))fail();bindings.add(String(b.entranceId));}
+ if(v3){
+  const signed=(v:unknown)=>Number.isInteger(v)&&Number(v)>=-32768&&Number(v)<=32767;
+  const vector=(v:unknown,n:number)=>Array.isArray(v)&&v.length===n&&v.every(signed);
+  const point=(v:unknown,allowed:string[])=>{const p=shape(v,['status','derivedZ']);if(!allowed.includes(String(p.status))||(['inside','boundary'].includes(String(p.status))?typeof p.derivedZ!=='number'||!Number.isFinite(p.derivedZ)||Math.abs(p.derivedZ)>32768:p.derivedZ!==null))fail();};
+  const statuses=['inside','boundary','outside','invalid_triangle','degenerate','mesh_unavailable','missing'];
+  const entrances=list(d.entrances,128);if(entrances.length!==128)fail();
+  for(const [record,value] of entrances.entries()){const e=shape(value,['entry','scenario','field_id','field_name','field_x','field_y','field_triangle','field_direction','field_table_record','field_table_byte_offset','status','derivedZ']);point({status:e.status,derivedZ:e.derivedZ},[...statuses,'placeholder']);
+   if(e.field_table_record!==record||e.field_table_byte_offset!==record*12||e.entry!==Math.floor(record/2)+1||e.scenario!==record%2||!integer(e.field_id)||!text(e.field_name)||String(e.field_name).length>32||!signed(e.field_x)||!signed(e.field_y)||!integer(e.field_triangle)||!integer(e.field_direction,255))fail();
+   if(e.status==='placeholder'){if(e.field_name!=='dummy'||[e.field_id,e.field_x,e.field_y,e.field_triangle,e.field_direction].some(v=>v!==0))fail();}
+   else if(e.status==='missing'?valid(e.field_id)||ids.has(Number(e.field_id))&&ids.get(Number(e.field_id))?.name!==e.field_name:ids.get(Number(e.field_id))?.name!==e.field_name||!valid(e.field_id))fail();
+  }
+  const gateways=new Set<string>();for(const value of list(d.gateways,24000)){const g=shape(value,['fromField','to','gateway','offset','sourceA','sourceB','targetXY','targetTriangle','direction','sourceRelation','destination']);const key=g.fromField+':'+g.gateway;
+   if(!valid(g.fromField)||!integer(g.to)||g.to===32767||!integer(g.gateway,11)||g.offset!==56+Number(g.gateway)*24||!vector(g.sourceA,3)||!vector(g.sourceB,3)||!vector(g.targetXY,2)||!integer(g.targetTriangle)||!Array.isArray(g.direction)||g.direction.length!==4||!g.direction.every(v=>integer(v,255))||!['surface','xy_only','disjoint','unknown'].includes(String(g.sourceRelation))||gateways.has(key)||!records.has(key))fail();
+   point(g.destination,[...statuses,'world']);const p=g.destination as {status:string};const exits=d.exits as FieldEdge[],edges=d.edges as FieldEdge[],unresolved=d.unresolved as {fromField:number;to:number|null;gateway:number|null}[];
+   const evidence=[...exits,...edges,...unresolved].find(e=>e.fromField===g.fromField&&e.gateway===g.gateway);
+   if(evidence?.to!==g.to||(p.status==='world')!==exits.some(e=>e.fromField===g.fromField&&e.gateway===g.gateway)||p.status==='missing'&&valid(g.to)||p.status!=='world'&&p.status!=='missing'&&!valid(g.to))fail();gateways.add(key);
+  }
+  const expected=(d.edges as unknown[]).length+(d.exits as unknown[]).length+(d.unresolved as {reason:string}[]).filter(e=>e.reason==='missing_destination').length;if(gateways.size!==expected)fail();
+ }
  return d as unknown as FieldPack;
 }
 export function validateFieldPoi(pack:FieldPack,poi:PoiDataset){
@@ -142,6 +165,47 @@ export function fieldAliases(n:FieldNode,pack:FieldPack):string[]{
 /** Section 5 is a separate local domain; no geographic/projected coordinates. */
 export interface WalkmeshStats {blocked:number;accessible:number;asymmetric:number;edgeMismatch:number;selfLinks:number;degenerate:number;degenerateXY:number;paddingVariants:number;}
 export interface FieldWalkmesh {coordinateSpace:'FieldLocal';triangles:number;vertices:Int16Array;access:Uint16Array;stats:WalkmeshStats;}
+export function localPoint(mesh:FieldWalkmesh,triangle:number,xy:readonly number[]):{status:PointStatus;derivedZ:number|null}{
+ if(xy.length!==2||!xy.every(n=>Number.isInteger(n)&&n>=-32768&&n<=32767))return {status:'outside',derivedZ:null};
+ if(!Number.isInteger(triangle)||triangle<0||triangle>=mesh.triangles)return {status:'invalid_triangle',derivedZ:null};
+ const v=mesh.vertices,o=triangle*12,a=[v[o],v[o+1]],b=[v[o+4],v[o+5]],c=[v[o+8],v[o+9]],d=(b[1]-c[1])*(a[0]-c[0])+(c[0]-b[0])*(a[1]-c[1]);
+ if(!d)return {status:'degenerate',derivedZ:null};const u=((b[1]-c[1])*(xy[0]-c[0])+(c[0]-b[0])*(xy[1]-c[1]))/d,w=((c[1]-a[1])*(xy[0]-c[0])+(a[0]-c[0])*(xy[1]-c[1]))/d;
+ // Third numerator is computed independently: a rounded 1-u-w must not turn
+ // an exact edge into an outside point. All XY determinants fit safe integers.
+ const z=((a[1]-b[1])*(xy[0]-b[0])+(b[0]-a[0])*(xy[1]-b[1]))/d;
+ return Math.min(u,w,z)<0?{status:'outside',derivedZ:null}:{status:Math.min(u,w,z)===0?'boundary':'inside',derivedZ:u*v[o+2]+w*v[o+6]+z*v[o+10]};
+}
+/** Independent exact integer predicate, evaluated only for this scene's lines. */
+export function gatewayRelation(mesh:FieldWalkmesh,a:readonly number[],b:readonly number[]):FieldGateway['sourceRelation']{
+ if([a,b].some(p=>p.length!==3||!p.every(n=>Number.isInteger(n)&&n>=-32768&&n<=32767)))return 'unknown';
+ type Rat=[bigint,bigint];const fraction=(n:bigint,d:bigint):Rat=>d<0n?[-n,-d]:[n,d],less=(a:Rat,b:Rat)=>a[0]*b[1]<b[0]*a[1];
+ const aa=a.map(BigInt),bb=b.map(BigInt);let xy=false;
+ for(let i=0;i<mesh.triangles;i++){
+  const p=[0,1,2].map(k=>Array.from(mesh.vertices.subarray(i*12+k*4,i*12+k*4+3),BigInt)),u=p[1].map((v,k)=>v-p[0][k]),v=p[2].map((v,k)=>v-p[0][k]),n=[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]];
+  if(n.every(v=>v===0n))continue;
+  const clip=(x:number,y:number):[Rat,Rat]|null=>{const cross=(a:bigint[],b:bigint[],q:bigint[])=>(b[x]-a[x])*(q[y]-a[y])-(b[y]-a[y])*(q[x]-a[x]),area=cross(p[0],p[1],p[2]);
+   if(!area){const r=[bb[x]-aa[x],bb[y]-aa[y]],cross2=(a:bigint[],b:bigint[])=>a[0]*b[1]-a[1]*b[0],zero:Rat=[0n,1n],one:Rat=[1n,1n],spans:[Rat,Rat][]=[];
+    for(let k=0;k<3;k++){const q=p[k],end=p[(k+1)%3],s=[end[x]-q[x],end[y]-q[y]],delta=[q[x]-aa[x],q[y]-aa[y]],den=cross2(r,s);
+     if(den){const t=fraction(cross2(delta,s),den),u=fraction(cross2(delta,r),den);if(!less(t,zero)&&!less(one,t)&&!less(u,zero)&&!less(one,u))spans.push([t,t]);}
+     else if(r.every(v=>v===0n)){if(cross2(s,delta)===0n&&[x,y].every(i=>aa[i]>=(q[i]<end[i]?q[i]:end[i])&&aa[i]<=(q[i]>end[i]?q[i]:end[i])))spans.push([zero,one]);}
+     else if(cross2(delta,r)===0n){const i=r[0]?x:y,t=fraction(q[i]-aa[i],bb[i]-aa[i]),u=fraction(end[i]-aa[i],bb[i]-aa[i]);let lo=less(t,u)?t:u,hi=less(t,u)?u:t;if(less(lo,zero))lo=zero;if(less(one,hi))hi=one;if(!less(hi,lo))spans.push([lo,hi]);}
+    }return spans.length?[spans.reduce((a,b)=>less(a,b[0])?a:b[0],one),spans.reduce((a,b)=>less(a,b[1])?b[1]:a,zero)]:null;
+   }
+   const sign=area<0n?-1n:1n;let lo:Rat=[0n,1n],hi:Rat=[1n,1n];for(let k=0;k<3;k++){const start=sign*cross(p[k],p[(k+1)%3],aa),end=sign*cross(p[k],p[(k+1)%3],bb),delta=end-start;if(!delta){if(start<0n)return null;}else{const t=fraction(-start,delta);if(delta>0n){if(less(lo,t))lo=t;}else if(less(t,hi))hi=t;}}return less(hi,lo)?null:[lo,hi];};
+  xy||=clip(0,1)!==null;const abs=(n:bigint)=>n<0n?-n:n,axis=abs(n[0])>=abs(n[1])&&abs(n[0])>=abs(n[2])?0:abs(n[1])>=abs(n[2])?1:2,axes=[0,1,2].filter(k=>k!==axis),span=clip(axes[0],axes[1]);if(!span)continue;
+  const da=n.reduce((sum,n,k)=>sum+n*(aa[k]-p[0][k]),0n),db=n.reduce((sum,n,k)=>sum+n*(bb[k]-p[0][k]),0n);
+  if(da===0n&&db===0n)return 'surface';if(da!==db){const t=fraction(-da,db-da);if(!less(t,span[0])&&!less(span[1],t))return 'surface';}
+ }
+ return xy?'xy_only':'disjoint';
+}
+export type FieldAnchor={key:string;kind:'entrance';record:FieldEntrance;x:number;y:number}|{key:string;kind:'segment'|'arrival';record:FieldGateway;x:number;y:number};
+export function sceneAnchors(pack:FieldPack,mesh:FieldWalkmesh,id:number):FieldAnchor[]{
+ const result:FieldAnchor[]=[];const agrees=(status:PointStatus,z:number|null,triangle:number,xy:number[])=>{const p=localPoint(mesh,triangle,xy);return p.status===status&&p.derivedZ!==null&&z!==null&&Math.abs(p.derivedZ-z)<1e-8;};
+ for(const e of pack.entrances??[])if(e.field_id===id&&['inside','boundary'].includes(e.status)&&agrees(e.status,e.derivedZ,e.field_triangle,[e.field_x,e.field_y]))result.push({key:'entrance:'+e.field_table_record,kind:'entrance',record:e,x:e.field_x,y:e.field_y});
+ for(const g of pack.gateways??[]){if(g.fromField===id){const verified={...g,sourceRelation:gatewayRelation(mesh,g.sourceA,g.sourceB)};result.push({key:'segment:'+g.fromField+':'+g.gateway,kind:'segment',record:verified,x:(g.sourceA[0]+g.sourceB[0])/2,y:(g.sourceA[1]+g.sourceB[1])/2});}
+  if(g.to===id&&['inside','boundary'].includes(g.destination.status)&&agrees(g.destination.status,g.destination.derivedZ,g.targetTriangle,g.targetXY))result.push({key:'arrival:'+g.fromField+':'+g.gateway,kind:'arrival',record:g,x:g.targetXY[0],y:g.targetXY[1]});}
+ return result;
+}
 export function decodeWalkmesh(buffer:ArrayBuffer):FieldWalkmesh{
  const v=new DataView(buffer);if(v.byteLength<4)throw Error('Truncated walkmesh');const count=v.getUint32(0,true);
  if(count>65535||v.byteLength!==4+count*30)throw Error('Walkmesh count/size limit');

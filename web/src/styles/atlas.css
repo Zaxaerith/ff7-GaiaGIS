@@ -55,6 +55,10 @@ body.field-active #comparison-viewport{display:none}
 .field-canvas-controls label{display:flex;gap:6px;align-items:center;min-width:0;max-width:100%;font-size:12px}
 .field-canvas-controls input[type=number]{width:5rem}
 .field-canvas-controls select{max-width:min(260px,100%)}
+.field-anchor-controls{flex-shrink:0;min-width:0;font-size:12px;max-height:30%;overflow:auto}
+.field-anchor-controls p{margin:4px 0;overflow-wrap:anywhere}
+.field-anchor-controls .field-canvas-controls{padding:4px 0}
+.field-anchor-controls select{width:min(240px,60vw)}
 #field-workspace :is(#field-walkmesh-canvas,#field-graph){flex:1;min-height:80px;height:0;width:100%;aspect-ratio:auto;border:0;display:block;touch-action:none;overscroll-behavior:contain}
 .field-edge[data-kind=mapjump]{stroke-dasharray:6 4}
 .field-legend{flex-shrink:0;font-size:12px;max-height:28%;overflow:auto}

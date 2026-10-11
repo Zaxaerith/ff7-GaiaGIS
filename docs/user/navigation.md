@@ -207,3 +207,32 @@ bookmark equality, mobile touch, five locales, invalid/corrupt/missing resources
 source-only fallback and lifecycle cleanup. This is browser evidence on the test
 host. Windows portable smoke, native macOS build, Finder/Tk/Gatekeeper and target
 Mac device operation are separate checks; unexecuted native checks remain pending.
+
+### Field Spatial Anchors
+
+In Walkmesh, expand **Spatial anchor layers** to toggle Entrances, Gateway
+Segments and Arrival Points. Gold circles are Default FIELD.TBL entrances;
+hollow gold circles are Alternative records. Teal diamonds are arrivals from
+other scenes. Purple lines intersect the exact 3D mesh, dashed amber lines
+intersect only XY coverage, and dashed red lines do not intersect the mesh.
+Abnormal source lines retain their original endpoints and participate in Fit.
+
+Click a marker or use **Select anchor** for keyboard access and overlapping
+records. The shared Inspector switches between anchor and triangle properties.
+Selecting a Triangle ID restores triangle selection. Scene switches clear the
+previous sub-selection. Source/target Field buttons follow the existing scene
+selection without returning to World. A world-map pseudo-target remains an
+identity label; it does not gain a Field-local arrival point.
+
+The Inspector retains raw XY/XYZ, Triangle ID, direction bytes, record index,
+section-relative offset and source hashes. FIELD.TBL and Gateway destinations
+have no recorded Z: **Derived Raw Z** comes from the specified triangle plane.
+Coordinates are raw Field-local units, without metres or global transformation.
+Geometry does not establish runtime passability; script/story conditions remain
+UNKNOWN. Gateway evidence stays distinct from MAPJUMP.
+
+An older private workspace can still display its Graph/Walkmesh, with an explicit
+anchors-unavailable notice. Run the ordinary local launcher against your own
+supported original PC data to regenerate the Field component incrementally;
+do not use a full rebuild solely to upgrade anchors. Public Pages supplies no
+private anchors and never probes the local game installation.

@@ -2,6 +2,14 @@
 
 Formal version changes; historical acceptance evidence remains in Git history and Releases.
 
+## v3.5.0 — local RC, awaiting human acceptance
+
+- Field Spatial Anchors in the existing Walkmesh Canvas and Inspector: FIELD.TBL Default/Alternative entrances, raw source Gateway segments and target-only arrival points.
+- Exact point/triangle and rational segment/surface checks; boundary, XY-only, disjoint, missing and world-target states remain explicit. Derived Raw Z is plane-derived, never recorded height or metres.
+- Context schema v3 / `field-context-6`; previous v1/v2 contexts and the unchanged Section-5 binary remain readable. Incremental regeneration affects the Field component, leaving unrelated assets reusable.
+- Five-language layers, keyboard anchor selection, Canvas hit testing and directed Field navigation; code-only public fallback remains private-data-free.
+- Local Windows/Web validation; macOS ARM64/Gatekeeper remain pending. Field Network Analysis is deferred to v3.6; no runtime/script simulation or camera/background implementation.
+
 ## v3.4.0 — local RC, awaiting human acceptance
 
 - Main-viewport Field Graph (SVG) and Field Walkmesh (Canvas 2D), sharing the existing Field selection, lazy decoder and Inspector.
