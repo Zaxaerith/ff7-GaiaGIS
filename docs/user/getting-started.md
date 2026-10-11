@@ -13,15 +13,15 @@ Explore contains a compact Start exploring section: Find a place, My Save, My ma
 Local candidate ZIPs are developer validation products, not official Release artifacts. Source ZIP/TAR downloads alone are not Windows executables.
 
 To browse a place's local scene geometry, open its Atlas card → Field Context,
-select a scene and choose **View Walkmesh**. Select triangles by clicking/tapping
+select a scene and choose **Open Field Workspace**, then **Walkmesh**. Select triangles by clicking/tapping
 or by triangle ID; drag to pan and use the zoom/reset buttons. This is a local XY
 plan with optional raw-Z colouring, not a global map or playable Field engine.
 Older workspaces keep their scene connections but need regeneration for the
-optional Walkmesh pack. Public mode never contains original-game scene geometry.
+optional Walkmesh pack. The Graph/Walkmesh main viewport shares scene selection with the Inspector and returns to the original World camera. [Field workspace controls](navigation.md#field-spatial-workspace). Public mode never contains original-game scene geometry.
 
 ## macOS Apple Silicon candidate
 
-The v3.3 local recipe produces `GaiaGIS-v3.3.0-macos-arm64.zip` containing **GaiaGIS.app**. Native Mac build and ordinary-device acceptance are still pending; an edited recipe is not a published binary. After a verified build, extract the entire ZIP with Archive Utility and open the app. The app can be moved to Applications; its generated data and remembered source remain in `~/Library/Application Support/GaiaGIS`, never inside the app bundle. The startup window displays the workspace location. Moving/upgrading the app does not relocate this workspace.
+The current local recipe produces `GaiaGIS-v3.4.0-macos-arm64.zip` containing **GaiaGIS.app**. Native Mac build and ordinary-device acceptance are still pending; an edited recipe is not a published binary. After a verified build, extract the entire ZIP with Archive Utility and open the app. The app can be moved to Applications; its generated data and remembered source remain in `~/Library/Application Support/GaiaGIS`, never inside the app bundle. The startup window displays the workspace location. Moving/upgrading the app does not relocate this workspace.
 
 Select a complete supported original FF7 **PC data directory** that you legally own. A copy transferred from another computer works with the same supported `data/wm`, `wm` and `workingdir/data/wm` layouts, and adjacent `field` resources. Required inputs are WM0/WM2/WM3 MAP/BOT, `world_us.lgp` and `field/flevel.lgp`; `char.lgp` and `sound/audio.fmt`/`audio.dat` supply optional models/audio. No FF7.exe is run. PS1 discs, arbitrary ports and Remake/Rebirth are not supported inputs. Resources remain read-only, including those on external volumes. Python, Node, Wine, CrossOver, Rosetta and QGIS are not needed by the portable Viewer.
 

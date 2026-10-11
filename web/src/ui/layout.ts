@@ -45,6 +45,7 @@ export function mountLayout(root:HTMLElement) {
         <div class="model-note"><span class="eyebrow">${t('ui.canonical')}</span><p>V1 Geometric Gaia.<br/>${t('ui.originalPolygons')}<br/>${t('ui.syntheticPoles')}</p><span id="dataset-count">${t('ui.loading')}</span></div>
       </aside>
       <section id="viewport" class="viewport" aria-label="${t('ui.viewport')}">
+        <section id="field-workspace" hidden aria-label="${t('field.workspace')}"></section>
         <div id="loading" class="loading" role="status"><span class="loader"></span><h2 id="loading-title">V1 Geometric Gaia</h2><p id="loading-text">${t('ui.loadingData')}</p><div class="loading-actions" hidden><button id="open-local-data">${t('ui.openFiles')}</button><button id="retry-viewer">${t('ui.retry')}</button><button id="loading-help">${t('ui.help')}</button></div></div>
         <div class="view-caption"><span id="mode-label">${t('ui.spherical')}</span><h2 id="projection-name">Globe</h2><p id="interaction-hint">${t('ui.orbitHint')}</p></div>
         <div id="graticule-labels" class="graticule-labels" aria-hidden="true"></div>

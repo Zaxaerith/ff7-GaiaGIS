@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
+import {FieldPlanView} from '../src/ui/fieldContext';
 import {describe,it,expect} from 'vitest';
 import curated from '../../src/gaiagis/atlas_data/content.json';
 import {parseAtlasContent,parseAtlasPack,searchAtlas,resolveBinding,atlasAnchor,spoilerVisible,validateAtlasPoi,atlasFactTerms} from '../src/data/atlas';
@@ -152,4 +153,11 @@ describe('Authored Atlas knowledge and spoiler-safe search',()=>{
   expect(atlasFactTerms(e,'hide-all')).toEqual([]);
   expect(atlasFactTerms(e,'hide-major')).toContain(e.facts[0].text.en);
  });
+});
+
+// Raw plane invariants also apply to the SVG Graph, whose layout is not geography.
+describe('main Field plane',()=>{
+ it.each([[1200,700],[390,420],[320,320]])('fits actual CSS dimensions %sx%s and roundtrips raw units',(w,h)=>{const v=new FieldPlanView([-300,900,-500,600]);v.resize(w,h);for(const p of [[-300,-500],[900,600],[101,-27]]){const point=v.point(p[0],p[1]),raw=v.raw(...point);expect(raw[0]).toBeCloseTo(p[0]);expect(raw[1]).toBeCloseTo(p[1]);expect(point[0]).toBeGreaterThanOrEqual(0);expect(point[1]).toBeGreaterThanOrEqual(0);expect(point[0]).toBeLessThanOrEqual(w);expect(point[1]).toBeLessThanOrEqual(h);}});
+ it('keeps a cursor anchor through zoom and preserves pan/relative zoom on resize',()=>{const v=new FieldPlanView([0,200,0,300]);v.resize(900,600);const raw=v.raw(191,263);v.zoom(2,191,263);expect(v.raw(191,263)[0]).toBeCloseTo(raw[0]);expect(v.raw(191,263)[1]).toBeCloseTo(raw[1]);v.pan(35,-20);const center=[v.centerX,v.centerY],ratio=v.scale/v.fit;v.resize(320,450);expect([v.centerX,v.centerY]).toEqual(center);expect(v.scale/v.fit).toBeCloseTo(ratio);v.reset();expect(v.centerX).toBe(100);expect(v.centerY).toBe(150);expect(v.scale).toBe(v.fit);});
+ it('bounds zoom and tolerates a zero-area raw plane',()=>{const v=new FieldPlanView([2,2,3,3]);v.resize(1,1);v.zoom(1e8);expect(v.scale).toBe(v.fit*30);v.zoom(1e-8);expect(v.scale).toBe(v.fit*.1);expect(v.point(2,3)).toEqual([.5,.5]);});
 });

@@ -25,7 +25,7 @@ export function mountUserMapping(getViewer:()=>GaiaViewer|undefined,switchMap:(i
  const layerMemory=note('memory');layerMemory.setAttribute('role','status');layers.append(layerMemory);const layerStatus=document.createElement('p');layerStatus.id='user-layers-status';layerStatus.setAttribute('role','status');layers.append(layerStatus);
  const status=document.createElement('p'),warning=document.createElement('p'),unavailable=note('unavailable');status.id='user-mapping-status';status.setAttribute('role','status');warning.id='user-storage-warning';warning.setAttribute('role','status');drawing.append(note('local'),note('help'),unavailable,status,warning);
  const tools=actions(drawing),toolButtons=new Map<Tool,HTMLButtonElement>();let tool:Tool='select',draft:GameVertex[]=[],layerId=storage.state.userLayers[0]?.id??'',vertexIndex=0,preview:UserFeature|null=null,mappingKey='',inspectorKey='',disposed=false;
- const available=()=>!!getViewer()&&appStore.state.map.id==='WM0'&&appStore.state.explorer.phase==='idle'&&appStore.state.analysis.tool==='none';
+ const available=()=>!!getViewer()&&appStore.state.map.id==='WM0'&&appStore.state.explorer.phase==='idle'&&appStore.state.analysis.tool==='none'&&appStore.state.view.spatial==='world';
  const selected=()=>appStore.state.selection?.kind==='user-feature'?storage.state.userFeatures.find(f=>f.id===appStore.state.selection!.id):undefined;
  const message=(key:string,reason?:unknown)=>{status.textContent=layerStatus.textContent=t('user26.'+key,reason?{reason:reason instanceof Error?reason.message:String(reason)}:{});};
  function attempt(fn:()=>void){try{fn();message('saved');}catch(e){message('error',e);}}

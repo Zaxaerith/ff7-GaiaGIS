@@ -20,22 +20,51 @@
 .field-place-context,.field-card{overflow-wrap:anywhere;max-width:100%;min-width:0}
 .field-place-context button,.field-card button{display:block;max-width:100%;margin:var(--space-2) 0;white-space:normal;text-align:left}
 #field-context select{width:100%;min-width:0}
-#field-graph{display:block;width:100%;height:220px;border:1px solid var(--rim);background:var(--window-bg);touch-action:none}
+#field-graph{display:block;width:100%;border:1px solid var(--rim);background:var(--window-bg);touch-action:none}
 .field-edge{stroke:var(--muted);stroke-width:1;fill:none}
 .field-edge.neighbor{stroke:var(--accent);stroke-width:2}
 .field-node rect{fill:var(--surface-raised);stroke:var(--rim);stroke-width:2;rx:5}
 .field-node text{fill:var(--ink);font-size:12px;pointer-events:none}
 .field-node{cursor:pointer;outline:none}
 .field-node.neighbor rect,.field-node[aria-pressed=true] rect,.field-node:focus rect{stroke:var(--accent);stroke-width:3}
-@media(max-width:700px){#field-graph{height:180px}.field-card button{min-height:36px}}
+@media(max-width:700px){.field-card button{min-height:36px}}
 
 .spatial-evidence li { overflow-wrap: anywhere; margin-block: .45rem; }
 
 .atlas-fact-sources {display:block;font-size:.8em;margin-top:var(--space-1);}
 .atlas-fact-sources a {display:inline-block;margin:2px 8px 2px 0;}
-.field-walkmesh { min-width:0; }
-.field-walkmesh canvas { display:block;width:100%;height:auto;aspect-ratio:9/5;background:var(--panel, #12213b);border:1px solid var(--border);touch-action:none; }
-.field-walkmesh .user-actions { flex-wrap:wrap; }
-.field-walkmesh input[type=number] { width:5rem;max-width:100%; }
-.field-walkmesh input[type=checkbox] { width:auto; }
 .field-triangle-details pre { white-space:pre-wrap;overflow-wrap:anywhere;font-size:.8rem; }
+
+/* The shared viewport keeps world instances alive while Field borrows its surface. */
+#field-workspace{position:absolute;inset:0;z-index:35;display:flex;flex-direction:column;min-width:0;min-height:0;background:var(--window-bg);overflow:hidden}
+#field-workspace[hidden]{display:none}
+body.field-active #viewport>:not(#field-workspace){visibility:hidden;pointer-events:none}
+body.field-active .native-host{visibility:hidden;pointer-events:none}
+body.field-active .comparison-layout{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr)}
+body.field-active #comparison-viewport{display:none}
+.field-workspace-toolbar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;padding:12px;border-bottom:1px solid var(--rim);flex-shrink:0;min-width:0}
+.field-workspace-toolbar h2{margin:0;font-size:16px;overflow-wrap:anywhere;align-self:center}
+.field-mode-buttons{display:flex;gap:8px;flex-wrap:wrap;grid-column:1/-1}
+.field-mode-buttons button[aria-pressed=true]{border-color:var(--accent);color:var(--accent)}
+.field-workspace-toolbar label{grid-column:1/-1;display:flex;gap:8px;align-items:center;min-width:0}
+.field-workspace-toolbar select{flex:1;width:0}
+.field-workspace-toolbar>p{grid-column:1/-1;margin:0;font-size:12px;overflow-wrap:anywhere}
+.field-stage{display:flex;flex-direction:column;flex:1;min-height:0;min-width:0;overflow:hidden;padding:8px;gap:8px}
+.field-stage>p{margin:0;overflow-wrap:anywhere;font-size:12px}
+.field-canvas-controls{display:flex;gap:6px;flex-wrap:wrap;align-items:center;flex-shrink:0;min-width:0}
+.field-canvas-controls label{display:flex;gap:6px;align-items:center;min-width:0;max-width:100%;font-size:12px}
+.field-canvas-controls input[type=number]{width:5rem}
+.field-canvas-controls select{max-width:min(260px,100%)}
+#field-workspace :is(#field-walkmesh-canvas,#field-graph){flex:1;min-height:80px;height:0;width:100%;aspect-ratio:auto;border:0;display:block;touch-action:none;overscroll-behavior:contain}
+.field-edge[data-kind=mapjump]{stroke-dasharray:6 4}
+.field-legend{flex-shrink:0;font-size:12px;max-height:28%;overflow:auto}
+.field-workspace-toolbar #field-world-return{min-width:0;max-width:140px;white-space:normal}
+.field-world-controls{display:none}
+body.field-active .field-world-controls{display:block}
+@media(max-width:700px){.field-workspace-toolbar{padding:8px;gap:6px}.field-workspace-toolbar h2{font-size:14px}.field-workspace-toolbar #field-world-return{max-width:115px;font-size:12px}.field-stage{padding:4px}.field-canvas-controls{gap:4px}.field-canvas-controls button{font-size:12px;padding:6px}.field-canvas-controls input[type=number]{width:4rem}}
+#field-workspace-feedback:empty{display:none}
+#field-workspace-feedback:not(:empty){position:fixed;z-index:110;bottom:44px;left:50%;transform:translateX(-50%);max-width:calc(100vw - 24px);width:440px;margin:0;padding:10px;background:var(--window-bg);border:1px solid var(--accent);border-radius:6px;box-sizing:border-box;pointer-events:none;font-size:13px;overflow-wrap:anywhere}
+#field-workspace :is(canvas,svg):focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+body.field-active footer :is(#view-status,#coordinates,#fps){visibility:hidden}
+#field-workspace .field-node[aria-pressed=true] rect{fill:var(--window-bg);stroke-width:4}
+#field-workspace .field-node[aria-pressed=true] text{font-weight:700;text-decoration:underline}

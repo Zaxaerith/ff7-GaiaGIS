@@ -2,6 +2,14 @@
 
 Formal version changes; historical acceptance evidence remains in Git history and Releases.
 
+## v3.4.0 — local RC, awaiting human acceptance
+
+- Main-viewport Field Graph (SVG) and Field Walkmesh (Canvas 2D), sharing the existing Field selection, lazy decoder and Inspector.
+- Responsive CSS/DPR fit, cursor-anchored zoom, pan/pinch, triangle-ID navigation, outgoing-neighbor/blocked-edge highlighting and raw-Z colour.
+- Search/Atlas/Inspector workspace entry, direct scene switching and reversible World/Compare suspension without rebuilding the world Viewer.
+- Raw XYZ/fourth component and static Gateway/MAPJUMP evidence preserved; no inferred global Field positions or regenerated game data.
+- Five-language controls, source-only unavailable states and expanded real-scene browser/lifecycle coverage. Native macOS and human device acceptance remain pending; no publication in this task.
+
 ## v3.3.0 — local candidate, not yet published
 
 - Native macOS ARM64 `.app` recipe with bundled Python/Tcl/Tk and the existing code-only browser Viewer.

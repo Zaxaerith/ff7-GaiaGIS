@@ -146,3 +146,64 @@ access is unavailable. No share service, automatic upload or remote persistence 
 
 Source links inside Atlas cards retain explicit click-only navigation. Sharing and
 offline discovery do not fetch a Wiki page, article HTML, prose or image.
+
+## Field Spatial Workspace
+
+Search `mds5_1` in Explore, select the Field result and choose **Open Field
+Workspace** in the existing Inspector. Atlas → Technical → Field Context and
+Explore → Field Context provide the same entry. Graph and Walkmesh occupy the
+main viewport; the Inspector keeps source evidence, parent locations, verified
+Entrance actions and raw triangle properties. Its header toggle expands or
+collapses properties on compact screens.
+
+The workspace has three view states: World Map, Field Graph and Field Walkmesh.
+Graph and Walkmesh share one selected scene and the existing private Field pack.
+Use the scene selector or a Graph node to switch directly, for example
+`mds5_1 → Graph → mds5_2 → Walkmesh`. Selecting another scene resets Triangle ID;
+switching Graph/Walkmesh within a scene retains it and reuses the decoded mesh.
+Return to World Map keeps the original map ID, projection, camera and zoom.
+An active Compare remains configured and resumes with the same Viewers. World
+controls are suspended until return. Finish/cancel active drawing, measurement,
+Explorer or route/tour playback before entering; GaiaGIS reports a conflict and
+keeps those states intact.
+
+Walkmesh fits the actual container and display pixel ratio. Drag with mouse or
+one finger to pan; use the wheel, pinch or ± controls to zoom. Zoom keeps the
+cursor/pinch anchor in the raw plane. Reset fits the scene again. Click/tap a
+triangle or enter its zero-based ID to locate it. Arrow Left/Right selects IDs,
+Home resets and ± zooms when the canvas has keyboard focus. The Inspector shows
+three original XYZ vertices and each fourth raw component, three directed access
+targets, blocked `0xFFFF` edges and non-reciprocal adjacency evidence. Click an
+accessible Triangle ID to select/locate it in the same canvas. Gold is selection,
+blue is outgoing adjacency, pink edges are blocked and green edges are static
+access. Invalid IDs leave the previous valid selection intact. Raw Z colour is
+optional; it does not establish metres, physical height or global elevation.
+
+Graph initially shows the selected scene and direct neighbors, with parent-place
+or all-scene filters available. Arrows preserve direction; solid Gateway and
+dashed MAPJUMP 0x60 edges retain their separate source offsets. Unresolved edges
+remain Inspector evidence, not invented traversable routes. Graph layout is not
+a coordinate system. FieldLocal remains raw scene-local XY/XYZ, neither Gaia
+Geographic, WGS84 nor EPSG:4326. No guessed Gateway markers, north arrow or
+geographic scale is drawn. The Field modes do not run game story scripts.
+
+On 390px/320px screens, entry collapses the panels so the canvas uses available
+space; tapping a triangle opens its properties. Collapse Inspector to continue
+panning. The return button stays in the workspace toolbar. Escape from a focused
+canvas/Graph returns to World; Escape in text/select controls, existing dialogs,
+search, drawing or Explorer keeps the original owner behavior.
+
+Only connected private, source-matched packs provide real geometry. Public Pages
+keeps the workspace entry and an explicit unavailable state without probing local
+assets automatically. Scene decoding is lazy and stale requests are discarded on
+scene/mode/source changes. Closing the workspace removes its observers, input
+capture/listeners and scheduled redraw; no Field animation loop remains.
+
+For repeatable acceptance, run the existing `npm --prefix web run test:browser`
+against a built local Viewer with `GAIA_BROWSER_URL` and `GAIA_CHROME_PATH`, inside
+the checkout-scoped temporary environment described in the development guide.
+It checks real `mds5_1`, `bugin1c` (496 triangles), `nivl_b1` and `mtcrl_0`, camera
+bookmark equality, mobile touch, five locales, invalid/corrupt/missing resources,
+source-only fallback and lifecycle cleanup. This is browser evidence on the test
+host. Windows portable smoke, native macOS build, Finder/Tk/Gatekeeper and target
+Mac device operation are separate checks; unexecuted native checks remain pending.

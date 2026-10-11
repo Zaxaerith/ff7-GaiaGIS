@@ -15,13 +15,13 @@ export interface AppState {
  localWorkspace:'none'|'loading'|'loaded'|'error';
  data:{assets:Partial<Record<AssetId,AssetState>>;generation:number;};
  map:{id:MapId;coordinateSpace:'GaiaGeographic'|'WM2Native'|'WM3Native';};
- view:{projection:ProjectionId;native:'3d'|'topdown';compare:boolean;};
+ view:{projection:ProjectionId;native:'3d'|'topdown';compare:boolean;spatial:'world'|'field-graph'|'field-walkmesh';};
  selection:Selection|null;
  analysis:{tool:'none'|'routing'|'measurement'|'distortion'|'compare';};
  explorer:{phase:'idle'|'placing'|'active';};
  preferences:PreferenceState;
 }
-export function initialState():AppState{return {localWorkspace:'none',data:{assets:{},generation:0},map:{id:'WM0',coordinateSpace:'GaiaGeographic'},view:{projection:'globe',native:'3d',compare:false},selection:null,analysis:{tool:'none'},explorer:{phase:'idle'},preferences:{panel:'explore',language:'en',graticule:'auto',surfaceStyle:'terrain'}};}
+export function initialState():AppState{return {localWorkspace:'none',data:{assets:{},generation:0},map:{id:'WM0',coordinateSpace:'GaiaGeographic'},view:{projection:'globe',native:'3d',compare:false,spatial:'world'},selection:null,analysis:{tool:'none'},explorer:{phase:'idle'},preferences:{panel:'explore',language:'en',graticule:'auto',surfaceStyle:'terrain'}};}
 export type Action=
  |{type:'asset';id:AssetId;asset:AssetState}
  |{type:'reset-data'}
@@ -58,8 +58,8 @@ export const appStore=new AppStore();
 export type Capability='canProjectGlobally'|'canMeasureSphere'|'canRoute'|'canExplore'|'canUseOriginalTexture'|'canShowEncounters'|'canShowTransitions'|'canShowLocations'|'canShowEvents'|'canInspectSurface';
 export function capabilities(s:Readonly<AppState>):Record<Capability,boolean>{
  const ready=(id:AssetId)=>['loaded','legacy'].includes(s.data.assets[id]?.status??'missing');
- const wm0=s.map.id==='WM0',geometry=ready(s.map.id==='WM0'?'geometry':s.map.id),overview=s.explorer.phase==='idle';
- return {canProjectGlobally:wm0&&geometry&&overview,canMeasureSphere:wm0&&geometry&&overview,canRoute:wm0&&geometry&&ready('routing')&&ready('locations')&&overview,canExplore:geometry&&ready('explorer'),canUseOriginalTexture:geometry&&ready(wm0?'textures':s.map.id==='WM2'?'textures-WM2':'textures-WM3'),canShowEncounters:wm0&&geometry&&ready('encounters'),canShowTransitions:ready('transitions'),canShowLocations:wm0&&geometry&&ready('locations'),canShowEvents:wm0&&geometry&&ready('events'),canInspectSurface:geometry};
+ const wm0=s.map.id==='WM0',geometry=ready(s.map.id==='WM0'?'geometry':s.map.id),overview=s.explorer.phase==='idle'&&s.view.spatial==='world';
+ return {canProjectGlobally:wm0&&geometry&&overview,canMeasureSphere:wm0&&geometry&&overview,canRoute:wm0&&geometry&&ready('routing')&&ready('locations')&&overview,canExplore:geometry&&ready('explorer')&&s.view.spatial==='world',canUseOriginalTexture:geometry&&ready(wm0?'textures':s.map.id==='WM2'?'textures-WM2':'textures-WM3'),canShowEncounters:wm0&&geometry&&ready('encounters'),canShowTransitions:ready('transitions'),canShowLocations:wm0&&geometry&&ready('locations'),canShowEvents:wm0&&geometry&&ready('events'),canInspectSurface:geometry};
 }
 export interface FeatureDefinition {id:string;labelKey:string;requiredCapabilities:Capability[];requiredData:AssetId[];supportedMaps:MapId[];defaultVisibility:boolean;panel:PanelId;opacityLayers?:LayerId[];defaultOpacity?:number;}
 export const features:FeatureDefinition[]=[
