@@ -64,6 +64,8 @@ def mac_native_audit(root, *, verify_signature=True):
             dependencies.append(name)
         details[path]=(rpaths,dependencies)
     def expand(name,path):
+        if name=='@loader_path':return path.parent
+        if name=='@executable_path':return exe.parent
         if name.startswith('@loader_path/') :return path.parent/name[len('@loader_path/'):]
         if name.startswith('@executable_path/'):return exe.parent/name[len('@executable_path/'):]
         return Path(name)
