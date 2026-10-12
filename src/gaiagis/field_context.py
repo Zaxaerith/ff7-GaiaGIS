@@ -340,7 +340,7 @@ def validate_local_point(points, triangle, xy):
                 derivedZ=float(sum(w*p[2] for w, p in zip(weights, points[triangle]))))
 
 
-def validate_gateway_segment(points, a, b):
+def validate_gateway_segment(points, a, b, *, candidates=None):
     """Exact rational segment/triangle tests, including vertical triangles.
 
     The dominant-axis projection is used only for testing 3D containment.
@@ -348,8 +348,8 @@ def validate_gateway_segment(points, a, b):
     """
     if points is None:
         return 'unknown'
-    xy = False
-    for p in points:
+    xy = surface = False
+    for triangle, p in enumerate(points):
         n = _normal(p)
         if n == (0, 0, 0):
             continue
@@ -360,8 +360,66 @@ def validate_gateway_segment(points, a, b):
             continue
         da, db = (sum(n[k]*(q[k]-p[0][k]) for k in range(3)) for q in (a, b))
         if da == db == 0 or da != db and span[0] <= Fraction(-da, db-da) <= span[1]:
-            return 'surface'
-    return 'xy_only' if xy else 'disjoint'
+            if candidates is None:return 'surface'
+            candidates.append(triangle);surface=True
+    return 'surface' if surface else 'xy_only' if xy else 'disjoint'
+
+
+def walkmesh_network(access, start=None, end=None):
+    """Same directed Access/slot order and min-ID labels as Web WalkmeshNetwork.
+
+    Iterative Kosaraju and BFS, O(V+E). Shared vertices never create edges.
+    """
+    n=len(access)
+    if n>MAX_WALKMESH_TRIANGLES or any(len(row)!=3 or any(type(t) is not int or t!=65535 and not 0<=t<n for t in row) for row in access):
+        raise FormatError('Invalid network Access')
+    for value in (start,end):
+        if value is not None and (type(value) is not int or not 0<=value<n):raise ValueError('Invalid Triangle ID')
+    if end is not None and start is None:raise ValueError('Path requires a start triangle')
+    outgoing=[[t for t in row if t!=65535] for row in access];incoming=[[] for _ in range(n)]
+    for i,row in enumerate(outgoing):
+        for target in row:incoming[target].append(i)
+    def components(order, neighbors):
+        labels=[-1]*n;groups=[]
+        for i in order:
+            if labels[i]!=-1:continue
+            group=[];stack=[i];labels[i]=len(groups)
+            while stack:
+                at=stack.pop();group.append(at)
+                for target in neighbors(at):
+                    if labels[target]==-1:labels[target]=labels[i];stack.append(target)
+            groups.append(group)
+        remap={};normalized=[];result=[]
+        for i,old in enumerate(labels):
+            if old not in remap:remap[old]=len(normalized);normalized.append([])
+            label=remap[old];result.append(label);normalized[label].append(i)
+        return dict(groups=normalized,labels=result)
+    wcc=components(range(n),lambda i:outgoing[i]+incoming[i]);seen=set();order=[]
+    for i in range(n):
+        if i in seen:continue
+        seen.add(i);stack=[(i,0)]
+        while stack:
+            at,k=stack[-1]
+            if k==len(outgoing[at]):order.append(at);stack.pop();continue
+            stack[-1]=(at,k+1);target=outgoing[at][k]
+            if target not in seen:seen.add(target);stack.append((target,0))
+    scc=components(reversed(order),lambda i:incoming[i]);reach=None;path=None
+    if start is not None:
+        distance=[-1]*n;parent=[-1]*n;slot=[-1]*n;queue=deque([start]);distance[start]=0
+        while queue:
+            at=queue.popleft()
+            for edge,target in enumerate(access[at]):
+                if target==65535 or distance[target]!=-1:continue
+                distance[target]=distance[at]+1;parent[target]=at;slot[target]=edge;queue.append(target)
+        reach=dict(start=start,distance=distance,parent=parent,slot=slot)
+        if end is not None:
+            ids=[]
+            if distance[end]!=-1:
+                at=end
+                while at!=-1:ids.append(at);at=parent[at]
+                ids.reverse()
+            path=dict(start=start,end=end,ids=ids,reason=None if ids else 'different_wcc' if wcc['labels'][start]!=wcc['labels'][end] else 'direction')
+    return dict(wcc=wcc,scc=scc,isolated=[g[0] for g in wcc['groups'] if len(g)==1],reach=reach,path=path)
 
 
 def entrance_bindings(poi: dict, nodes: list[dict]) -> list[dict]:

@@ -2,7 +2,14 @@
 
 Formal version changes; historical acceptance evidence remains in Git history and Releases.
 
-## v3.7.0 — local RC, awaiting human acceptance
+## v3.8.0 — local RC, awaiting human acceptance
+
+- Read-only single-Field `field-gis export` from source-bound Context schema 3 / Walkmesh v1, using GDAL >= 3.9. No workspace regeneration, background embedding or dependency added to Web/portable Viewer.
+- Standard undefined Cartesian GeoPackage (SRS -1): exact original Polygon Z, three directed Access edge slots, independent raw vertices/raw4, validated paired FIELD.TBL entrances, source Gateway segments, target-only arrivals and all exact 3D candidate relations. XY-only/disjoint evidence remains unchanged.
+- Deterministic iterative WCC/SCC and optional explicit-start BFS/minimum-hop snapshots cross-checked against Web network results. Raw units are neither metres nor geography; runtime passability remains UNKNOWN.
+- Bounded metadata, source/hash checks, authorized ignored outputs, no overwrite, atomic delivery and SQLite/OGR reread validation. Windows-only release policy is retained. Existing WM0 user-GIS exchange and Web camera/background tools remain separate.
+
+## v3.7.0 — local RC, human accepted
 
 - Original Section-2 camera records and raw Q12 projection in the existing Field Canvas, with manual camera selection, exact inverse camera centre, 240-pixel FOV basis and explicit near/behind-camera omissions.
 - Bounded Section-4/9 parsing and compact private indexed-tile resource, independent visual pack schema 1. RC correction (`field-visual-2`): retain all Layer-0 tiles and the unconditional, unblended Layer-1 static subset in source depth/sub-ID order, covering original green placeholder texels instead of treating green as transparency. Only the visual component is regenerated; old visual resources remain readable. Only the selected scene is decoded; unsupported layers, conditions, blending and malformed references remain explicit. No original assets enter public builds or packages.

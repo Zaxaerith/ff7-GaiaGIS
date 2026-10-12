@@ -101,9 +101,9 @@ class Package:
         self.dataset.StartTransaction()
         self.counts = {}
 
-    def layer(self,name,crs,point=False,fields=None,geometry_type=None):
+    def layer(self,name,crs,point=False,fields=None,geometry_type=None,options=None):
         from osgeo import ogr
-        layer = self.dataset.CreateLayer(name,crs,(geometry_type if geometry_type is not None else ogr.wkbPoint25D if point else ogr.wkbPolygon25D),options=["SPATIAL_INDEX=YES"])
+        layer = self.dataset.CreateLayer(name,crs,(geometry_type if geometry_type is not None else ogr.wkbPoint25D if point else ogr.wkbPolygon25D),options=["SPATIAL_INDEX=YES",*(options or [])])
         if layer is None:
             raise RuntimeError(f"Cannot create layer {name}")
         for key,kind in (fields or FIELDS).items():

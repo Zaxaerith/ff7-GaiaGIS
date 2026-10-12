@@ -6,7 +6,7 @@ A local-first GIS reconstruction of the original FINAL FANTASY VII world, with a
 
 For Windows players: download the Windows ZIP from [Releases](https://github.com/Zaxaerith/ff7-GaiaGIS/releases), extract it to a writable folder and run **GaiaGIS.exe**. Choose your original FF7 installation. The startup window shows progress, opens the Viewer and remembers the folder for next time. No Python or Node installation is needed. In the Viewer, **Explore → Start exploring** offers the main player shortcuts.
 
-The **v3.7.0 local RC** adds original Field camera projection and a bounded private static-base background preview in the existing Field Canvas. The distribution target is **Windows x64 + Web**. macOS packaging is retained as unmaintained historical code; new CI/Release jobs do not build or publish Mac packages. [Field view and evidence limits](docs/user/navigation.md#field-camera-and-background).
+The **v3.8.0 local RC** adds private, single-Field GeoPackage research export from the existing workspace: original Polygon Z/LineString Z, validated anchors and directed network snapshots, with undefined Cartesian CRS and raw units. Camera/background browsing remains in the existing Web Canvas. The distribution target is **Windows x64 + Web**. macOS packaging remains unmaintained historical code. [FieldLocal QGIS export](docs/user/workspace.md#fieldlocal-geopackage-research-export).
 
 For a source checkout:
 
@@ -20,7 +20,7 @@ Use Python 3.12+ and Node 24 in a source checkout. The launcher reads your insta
 
 ## Windows Release
 
-Approved new Releases provide one Windows x64 ZIP and `SHA256SUMS.txt`. GitHub Actions checks the exact annotated tag, runs Web and isolated package validation, and publishes only the verified Windows artifact after separate approval. Local candidate ZIPs are validation products. The portable Viewer needs no Python/Node installation; optional GaiaJSON/GeoPackage exchange still requires GDAL-enabled Python and does not bundle QGIS. v3.7 is a local candidate, not a published Release.
+Approved new Releases provide one Windows x64 ZIP and `SHA256SUMS.txt`. GitHub Actions checks the exact annotated tag, runs Web and isolated package validation, and publishes only the verified Windows artifact after separate approval. Local candidate ZIPs are validation products. The portable Viewer needs no Python/Node installation; optional GaiaJSON/GeoPackage exchange and FieldLocal export require GDAL-enabled Python and does not bundle QGIS. v3.8 is a local candidate, not a published Release.
 
 [Releases](https://github.com/Zaxaerith/ff7-GaiaGIS/releases) · [Release process](docs/development/release-process.md)
 
@@ -58,7 +58,7 @@ Steam 2026 executable equivalence remains **NOT VERIFIED**. WM2/WM3 have no fabr
 
 ## Build / development
 
-`src/gaiagis/_version.py` is the application-version authority. Unified CLI: `gaiagis local`, `build-workspace`, `validate`, `build-sphere`, `user-gis`. The checkout adapter preserves `python -m gaiagis.local` without installing globally.
+`src/gaiagis/_version.py` is the application-version authority. Unified CLI: `gaiagis local`, `build-workspace`, `validate`, `build-sphere`, `user-gis`, `field-gis`. The checkout adapter preserves `python -m gaiagis.local` without installing globally.
 
 `npm --prefix web test` · `npm --prefix web run build` · `npm --prefix web run build:release` · `npm --prefix web run audit:release`.
 

@@ -229,6 +229,15 @@ describe('main Field plane',()=>{
 });
 
 
+it.skipIf(!process.env.GAIA_FIELD_GIS_ORACLE)('FieldLocal GIS labels, reach snapshots and paths agree with the actual Web network',async()=>{
+ const {readFile}=await import('node:fs/promises'),rows=JSON.parse(await readFile(process.env.GAIA_FIELD_GIS_ORACLE!,'utf8'));
+ expect(rows).toHaveLength(5);
+ for(const row of rows){const bytes=Uint8Array.from(row.section5.match(/../g), (s:string)=>parseInt(s,16)),network=new WalkmeshNetwork(decodeWalkmesh(bytes.buffer));
+  for(const kind of ['wcc','scc'] as const){expect(network[kind].groups).toEqual(row.network[kind].groups);expect(Array.from(network[kind].labels)).toEqual(row.network[kind].labels);}
+  expect(network.isolated).toEqual(row.network.isolated);
+  if(row.start!==null){const reach=network.reach(row.start);expect(Array.from(reach.distance)).toEqual(row.network.reach.distance);expect(Array.from(reach.parent)).toEqual(row.network.reach.parent);expect(Array.from(reach.parentEdge)).toEqual(row.network.reach.slot);const path=network.path(row.start,row.end);expect(path.ids).toEqual(row.network.path.ids);expect(path.reason).toEqual(row.network.path.reason);}
+ }
+});
 describe('Field camera and private background contract',()=>{
  it('rejects oversized visual resources before hashing or network adoption',async()=>{await expect(discoverWorkspace([{name:'gaia-field-visual.bin',size:64_000_001} as File])).rejects.toThrow('large');expect(()=>parseManifest({schema:'gaiagis-workspace',version:1,tool_version:'0.0.0',timestamp_policy:'omitted',sources:{},assets:[{filename:'gaia-field-visual.bin',type:'field-visual',mapId:'shared',bytes:64_000_001,sha256:'a'.repeat(64),dependencies:[]}]})).toThrow('budget');});
  const camera:FieldCamera={id:0,offset:0,matrix:[4096,0,0,0,4096,0,0,0,4096],translation:[10,-20,100],repeatedRzz:4096,extra:[0,0,0,0],zoom:955};
