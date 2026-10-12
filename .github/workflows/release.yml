@@ -19,19 +19,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   build:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - runner: windows-latest
-            target: windows-x64
-            architecture: x64
-            python: .cache/packaging-venv/Scripts/python.exe
-          - runner: macos-14
-            target: macos-arm64
-            architecture: arm64
-            python: .cache/packaging-venv/bin/python
-    runs-on: ${{ matrix.runner }}
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v7
         with:
@@ -44,7 +32,7 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.14.7'
-          architecture: ${{ matrix.architecture }}
+          architecture: x64
       - name: Verify annotated tag, version and exact clean source
         shell: python {0}
         env:
@@ -73,7 +61,7 @@ jobs:
           values = {'TEMP': scratch, 'TMP': scratch, 'TMPDIR': scratch,
                     'NPM_CONFIG_CACHE': root / '.cache/npm', 'PIP_CACHE_DIR': root / '.cache/pip',
                     'PYINSTALLER_CONFIG_DIR': root / '.cache/pyinstaller', 'XDG_CACHE_HOME': root / '.cache',
-                    'GAIAGIS_WORKSPACE_ROOT': root / 'output/dev/current/mac-workspace',
+                    'GAIAGIS_WORKSPACE_ROOT': root / 'output/dev/current/build-workspace',
                     'PYTHONDONTWRITEBYTECODE': '1', 'PYTHONUTF8': '1'}
           with open(os.environ['GITHUB_ENV'], 'a', encoding='utf8') as stream:
               for key, value in values.items():
@@ -89,7 +77,7 @@ jobs:
       - run: npm run audit:release
         working-directory: web
       - run: python -B -m venv .cache/packaging-venv
-      - run: ${{ matrix.python }} -B -m pip install --cache-dir .cache/pip -r tools/build/requirements.txt
+      - run: .cache/packaging-venv/Scripts/python.exe -B -m pip install --cache-dir .cache/pip -r tools/build/requirements.txt
       - name: Native freeze, deep audit, ZIP, checksum and isolated launch
         env:
           RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
@@ -98,16 +86,16 @@ jobs:
           import os, subprocess, sys
           sys.path.insert(0, 'tools/build')
           from local_package import native_target
-          if native_target() != '${{ matrix.target }}':
+          if native_target() != 'windows-x64':
               raise RuntimeError('Runner architecture mismatch')
-          subprocess.run(['${{ matrix.python }}', '-B', 'tools/build/local_package.py', '--skip-web-build',
+          subprocess.run(['.cache/packaging-venv/Scripts/python.exe', '-B', 'tools/build/local_package.py', '--skip-web-build',
                           '--keep-artifacts', '--release-tag', os.environ['RELEASE_TAG'],
                           '--output-dir', 'output/release'], check=True)
       - uses: actions/upload-artifact@v6
         with:
-          name: release-${{ matrix.target }}
+          name: release-windows-x64
           path: |
-            output/release/GaiaGIS-v*-${{ matrix.target }}.zip
+            output/release/GaiaGIS-v*-windows-x64.zip
             output/release/SHA256SUMS.txt
           if-no-files-found: error
   assemble:
@@ -118,7 +106,7 @@ jobs:
         with:
           pattern: release-*
           path: release-artifacts
-      - name: Verify both packages and assemble one checksum manifest
+      - name: Verify Windows package and assemble one checksum manifest
         shell: python {0}
         env:
           RELEASE_TAG: ${{ inputs.tag || github.ref_name }}
@@ -128,14 +116,14 @@ jobs:
           from pathlib import Path
           root = Path('release-artifacts'); tag = os.environ['RELEASE_TAG']
           combined = []; commits = set()
-          for target in ('windows-x64', 'macos-arm64'):
+          for target in ('windows-x64',):
               folder = root / ('release-' + target)
               name = f'GaiaGIS-{tag}-{target}.zip'
               lines = (folder / 'SHA256SUMS.txt').read_text(encoding='ascii').splitlines()
               if len(lines) != 1 or lines[0].split() != [hashlib.sha256((folder / name).read_bytes()).hexdigest(), name]:
                   raise RuntimeError('Unexpected package/checksum')
               with zipfile.ZipFile(folder / name) as archive:
-                  path = 'GaiaGIS.app/Contents/Resources/portable-manifest.json' if target == 'macos-arm64' else 'GaiaGIS/portable-manifest.json'
+                  path = 'GaiaGIS/portable-manifest.json'
                   manifest = json.loads(archive.read(path))
               if manifest.get('artifact_kind') != 'tag-release' or manifest.get('source_ref') != tag or manifest.get('source_dirty') is not False or manifest.get('target') != target or manifest.get('tool_version') != tag[1:]:
                   raise RuntimeError('Build provenance mismatch')
@@ -157,7 +145,6 @@ jobs:
           name: release-packages
           path: |
             release-artifacts/GaiaGIS-v*-windows-x64.zip
-            release-artifacts/GaiaGIS-v*-macos-arm64.zip
             release-artifacts/SHA256SUMS.txt
           if-no-files-found: error
   publish:
@@ -181,9 +168,9 @@ jobs:
           import hashlib, os, subprocess
           from pathlib import Path
           root = Path('release-artifacts'); tag = os.environ['RELEASE_TAG']
-          names = {f'GaiaGIS-{tag}-{target}.zip' for target in ('windows-x64', 'macos-arm64')}
+          names = {f'GaiaGIS-{tag}-{target}.zip' for target in ('windows-x64',)}
           records = [line.split() for line in (root / 'SHA256SUMS.txt').read_text(encoding='ascii').splitlines()]
-          if len(records) != 2 or any(len(row) != 2 for row in records) or {row[1] for row in records} != names:
+          if len(records) != 1 or any(len(row) != 2 for row in records) or {row[1] for row in records} != names:
               raise RuntimeError('Unexpected checksum manifest')
           for digest, name in records:
               if hashlib.sha256((root / name).read_bytes()).hexdigest() != digest:

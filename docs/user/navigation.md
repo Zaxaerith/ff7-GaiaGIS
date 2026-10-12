@@ -273,3 +273,14 @@ unchanged: v3.5 workspaces need no regeneration for this frontend feature.
 All output is **Static Walkmesh Topology — Not Verified Gameplay Reachability**.
 There is no character walking trace, metre distance, reverse-edge repair,
 story-condition simulation, global Field route or camera/background registration.
+
+
+## Field camera and background
+
+In **Walkmesh → Field Camera & Background**, select Plan View, Original Camera View or Background Overlay. Original Camera records keep their own IDs; selection is manual, with no inferred runtime condition. Opacity, mesh edges and Triangle IDs affect browsing only. Background and projected geometry share the same pan/zoom; independent position/rotation/scale corrections are unavailable. Returning to Plan restores its pan/zoom. Triangle/anchor selection and directed network results stay in the existing Inspector.
+
+The Inspector retains raw R (nine S16 Q12 components), t (three S32 camera-space translations), repeated Rzz, four extra bytes, U16 Zoom and Section-2 byte offset. `q = (raw R / 4096) XYZ + t`, `u = Zoom qx/qz`, `v = Zoom qy/qz`; screen Y is downward. The camera centre is `-inverse(R)t`, not t. FOV uses the original 320×240 logical viewport; the 224-pixel display crop does not replace 240. Base-tile screen bounds are distinct from declared layer dimensions. Camera Fit uses the 320×240 viewport plus base-tile bounds, not extreme projected vertices near the view plane; the dashed frame preserves the original logical viewport. Geometry outside it is not relocated and can be inspected with shared pan/zoom. No units become metres or global coordinates.
+
+Only validated unblended, unconditional, 8-bit indexed layer-0 tiles are currently rendered. All page spans and references are checked; unsafe data is rejected. Other layers, animation, scrolling, conditions, complex blending and depth occlusion are omitted and labelled Partial/Unsupported. Tile evidence retains source offset, texture and palette IDs. Near-zero/negative depth triangles and unprojectable markers are omitted, without relocation. Visible overlap is not proof of occlusion or gameplay alignment.
+
+Evidence levels remain separate: raw parsing; mathematical projection; static tile reconstruction; visual correspondence; original runtime comparison. For the audited files, `mds5_1` Camera 0 places 455/489 vertices in the base bounds, Camera 1/2 place 0/489; `bugin1c` 287/1488 and `nivl_b1` 300/336. These rectangle counts are reproducible regression checks, not registration-error measurements. Runtime alignment remains UNKNOWN. Human acceptance should compare original-game captures at known camera IDs and crop/scroll state; do not tune layers until they appear to match.

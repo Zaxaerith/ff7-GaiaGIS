@@ -6,19 +6,7 @@ permissions:
   contents: read
 jobs:
   web:
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - runner: windows-latest
-            target: windows-x64
-            architecture: x64
-            python: .cache/packaging-venv/Scripts/python.exe
-          - runner: macos-14
-            target: macos-arm64
-            architecture: arm64
-            python: .cache/packaging-venv/bin/python
-    runs-on: ${{ matrix.runner }}
+    runs-on: windows-latest
     steps:
       - uses: actions/checkout@v7
         with:
@@ -29,7 +17,7 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: '3.14.7'
-          architecture: ${{ matrix.architecture }}
+          architecture: x64
       - name: Workspace-local build environment
         shell: python {0}
         run: |
@@ -41,7 +29,7 @@ jobs:
           values = {'TEMP': scratch, 'TMP': scratch, 'TMPDIR': scratch,
                     'NPM_CONFIG_CACHE': root / '.cache/npm', 'PIP_CACHE_DIR': root / '.cache/pip',
                     'PYINSTALLER_CONFIG_DIR': root / '.cache/pyinstaller', 'XDG_CACHE_HOME': root / '.cache',
-                    'GAIAGIS_WORKSPACE_ROOT': root / 'output/dev/current/mac-workspace',
+                    'GAIAGIS_WORKSPACE_ROOT': root / 'output/dev/current/build-workspace',
                     'PYTHONDONTWRITEBYTECODE': '1', 'PYTHONUTF8': '1'}
           with open(os.environ['GITHUB_ENV'], 'a', encoding='utf8') as stream:
               for key, value in values.items():
@@ -57,13 +45,13 @@ jobs:
       - run: npm run audit:release
         working-directory: web
       - run: python -B -m venv .cache/packaging-venv
-      - run: ${{ matrix.python }} -B -m pip install --cache-dir .cache/pip -r tools/build/requirements.txt
+      - run: .cache/packaging-venv/Scripts/python.exe -B -m pip install --cache-dir .cache/pip -r tools/build/requirements.txt
       - name: Native build and isolated code-only launch
         shell: python {0}
         run: |
           import subprocess, sys
           sys.path.insert(0, 'tools/build')
           from local_package import native_target
-          if native_target() != '${{ matrix.target }}':
+          if native_target() != 'windows-x64':
               raise RuntimeError('Runner architecture mismatch')
-          subprocess.run(['${{ matrix.python }}', '-B', 'tools/build/local_package.py', '--skip-web-build'], check=True)
+          subprocess.run(['.cache/packaging-venv/Scripts/python.exe', '-B', 'tools/build/local_package.py', '--skip-web-build'], check=True)

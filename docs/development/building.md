@@ -2,7 +2,7 @@
 
 All project writes, caches and outputs belong in the checkout. Original installations and saves are read-only. Start PowerShell sessions with `. tools/build/environment.ps1` to set workspace-local temporary/npm/Playwright paths.
 
-On macOS use `source tools/build/environment.sh` from bash/zsh. This also scopes pip/PyInstaller caches and the frozen Mac workspace to this checkout; it does not modify global settings.
+Historical unmaintained Mac source only: use `source tools/build/environment.sh` from bash/zsh. This also scopes pip/PyInstaller caches and the frozen Mac workspace to this checkout; it does not modify global settings.
 
 ## Python
 
@@ -23,7 +23,7 @@ The full developer spherical GIS exporter can use an installed QGIS/GDAL runtime
 
 Node 24: `npm --prefix web ci`, `npm --prefix web test`, `npm --prefix web run build`. Source-only public builds use `build:release` followed by `audit:release`; they never copy private packs. Vite reads the Python version authority through `web/scripts/version.mjs`.
 
-## Local portable recipe verification
+## Local Windows x64 recipe verification
 
 Use pinned CPython 3.14.7, create `.cache/packaging-venv`, install `tools/build/requirements.txt`, and run its Python on `tools/build/local_package.py`. The recipe automatically performs portable launch smoke and removes the local ZIP/build on success. Add `--keep-artifacts` only when intentionally retaining a temporary candidate. A separately invoked `portable_smoke.py` accepts a read-only `--source` for cold workspace verification; it always removes its extracted tree on success, and removes input distribution artifacts unless `--keep-artifacts` is supplied.
 
@@ -69,3 +69,5 @@ Source `user-gis` still requires GDAL-enabled Python. The app uses the existing 
 ## Output cleanup
 
 `gaiagis clean-output` previews paths and expected bytes without deleting. `gaiagis clean-output --execute` deletes disposable output while retaining `output/local-workspace` and `output/dev/STATUS.md`. Add `--all` to include the regenerable workspace. Filesystem redirects and active job ownership are rejected; contained framework links are accepted only in dedicated package/smoke output trees and are never followed during deletion. The command never acts outside workspace/output.
+
+New distribution maintenance is Windows x64 + Web only. CI and Release no longer build macOS; historical recipes are retained without a promise of a working Mac bundle. Camera/background generation uses stdlib parsing/compression and private workspace storage; it does not add GDAL or an FF7 engine to the portable app.

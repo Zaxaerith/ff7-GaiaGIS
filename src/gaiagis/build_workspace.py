@@ -15,6 +15,7 @@ from .atlas import GENERATOR_VERSION as ATLAS_VERSION, curated_hash, build_atlas
 
 from .field_context import GENERATOR_VERSION as FIELD_VERSION, build_field_context
 from .presentation import GENERATOR_VERSION as PRESENTATION_VERSION
+from .field_camera import GENERATOR_VERSION as VISUAL_VERSION, build_field_visual
 from ._version import __version__
 TOOL_VERSION = __version__
 GENERATOR_VERSION = 'workspace-1'
@@ -36,6 +37,7 @@ ASSETS = {
     'gaia-atlas.json': ('atlas', 'WM0', ['gaia-poi.json']),
     'gaia-field-context.json': ('field-context', 'WM0', ['gaia-poi.json']),
     'gaia-field-walkmesh.bin': ('field-walkmesh', 'shared', ['gaia-field-context.json']),
+    'gaia-field-visual.bin': ('field-visual', 'shared', ['gaia-field-context.json']),
 }
 
 # Source dependencies, not a Steam-version switch. Generator/transport versions
@@ -43,6 +45,7 @@ ASSETS = {
 SOURCE_DEPENDENCIES = {
     'gaia-field-context.json': ['wm0.map', 'world_us.lgp', 'flevel.lgp', 'field-poi.json', 'field-transitions.json'],
     'gaia-field-walkmesh.bin': ['flevel.lgp', 'field-poi.json', 'field-transitions.json'],
+    'gaia-field-visual.bin': ['flevel.lgp'],
     'gaia-meta.json': ['wm0.map'], 'gaia-mesh.bin': ['wm0.map'],
     'gaia-poi.json': ['wm0.map', 'world_us.lgp', 'flevel.lgp'],
     'gaia-encounters.json': ['wm0.map', 'world_us.lgp'],
@@ -64,7 +67,7 @@ def write_manifest(directory, sources):
         if path.is_file():
             assets.append(dict(filename=filename, type=kind, mapId=map_id,
                                sha256=sha256(path), bytes=path.stat().st_size,
-                               dependencies=dependencies, generator_version='explorer-party-1' if kind=='explorer' else PRESENTATION_VERSION if kind=='presentation' else ATLAS_VERSION if kind=='atlas' else FIELD_VERSION if kind in ('field-context','field-walkmesh') else GENERATOR_VERSION))
+                               dependencies=dependencies, generator_version='explorer-party-1' if kind=='explorer' else PRESENTATION_VERSION if kind=='presentation' else ATLAS_VERSION if kind=='atlas' else VISUAL_VERSION if kind=='field-visual' else FIELD_VERSION if kind in ('field-context','field-walkmesh') else GENERATOR_VERSION))
     names = {a['filename'] for a in assets}
     if any(set(a['dependencies']) - names for a in assets):
         raise ValueError('Workspace dependency missing; manifest was not written')
@@ -91,6 +94,7 @@ def reusable(manifest, sources, directory, names, _visited=None):
         if name=='gaia-presentation.json' and record.get('generator_version')!=PRESENTATION_VERSION:return False
         if name=='gaia-atlas.json' and record.get('generator_version')!=ATLAS_VERSION:return False
         if name in ('gaia-field-context.json','gaia-field-walkmesh.bin') and record.get('generator_version')!=FIELD_VERSION:return False
+        if name=='gaia-field-visual.bin' and record.get('generator_version')!=VISUAL_VERSION:return False
         dependencies = ASSETS[name][2]
         if record.get('dependencies') != dependencies:return False
         if dependencies and not reusable(manifest, sources, directory, dependencies, visited | {name}):return False
@@ -152,7 +156,7 @@ def build_workspace(source, destination, stage1=None, *, rebuild=False, allow_op
     except (FileNotFoundError, ValueError):old = None
     results = []
     def step(label, names, action):
-        if progress:progress(label,len(results),15)
+        if progress:progress(label,len(results),16)
         if not rebuild and reusable(old, sources, out, names):
             print(f'Reuse {label}', flush=True);results.append(dict(step=label, reused=True));return
         print(f'Build {label}', flush=True)
@@ -205,13 +209,14 @@ def build_workspace(source, destination, stage1=None, *, rebuild=False, allow_op
     if (out/'gaia-poi.json').is_file():sources['field-poi.json']=sha256(out/'gaia-poi.json')
     if (out/'gaia-transitions.json').is_file():sources['field-transitions.json']=sha256(out/'gaia-transitions.json')
     step('field-context', ['gaia-field-context.json','gaia-field-walkmesh.bin'], lambda: build_field_context(source,out))
+    step('field-visual', ['gaia-field-visual.bin'], lambda: build_field_visual(source,out))
     after = {r['filename']:r['sha256'].lower() for r in fingerprint(dataset)['files']}
     if any(after[k] != v for k,v in sources.items() if k in after):raise RuntimeError('Source fingerprint changed during workspace build')
     if field_archive and sha256(field_archive)!=sources['flevel.lgp']:raise RuntimeError('Field source fingerprint changed during workspace build')
     for asset,name in [(char,'char.lgp')]+[(child_ci(sound,n) if sound else None,n) for n in ('audio.dat','audio.fmt')]:
         if asset and sha256(asset)!=sources[name]:raise RuntimeError('Optional source fingerprint changed during build')
     manifest = write_manifest(out, sources)
-    if progress:progress('ready',15,15)
+    if progress:progress('ready',16,16)
     return dict(assets=len(manifest['assets']), steps=results, manifest_sha256=sha256(old_path), ff7_source_modified='NO')
 
 def main(argv=None):

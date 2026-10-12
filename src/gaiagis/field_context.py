@@ -209,7 +209,7 @@ def save_identity(field_id: int, maplist_hash: str) -> int | None:
     return field_id if maplist_hash == PC_MAPLIST_SHA256 and field_id not in SAVE_ID_CONFLICTS else None
 
 
-def field_sections(payload: bytes, *, walkmesh=False) -> tuple:
+def field_sections(payload: bytes, *, walkmesh=False, visual=False) -> tuple:
     if len(payload) < 4 or struct.unpack_from('<I', payload)[0] != len(payload) - 4:
         raise FormatError('Field compressed length')
     data = decompress(payload[4:], max_output=8_000_000)
@@ -230,6 +230,17 @@ def field_sections(payload: bytes, *, walkmesh=False) -> tuple:
     if script_start + 4 + script_size != offsets[1]:
         raise FormatError('Field script section size')
     result = (data[script_start+4:script_start+4+script_size], data[start + 4:start + 4 + size])
+    if visual:
+        parts = []
+        for i in (1, 3, 8):
+            at = offsets[i]
+            length = struct.unpack_from('<I', data, at)[0]
+            end = offsets[i+1] if i < 8 else len(data)
+            section_end = at + 4 + length
+            if section_end != end and not (i == 8 and data[section_end:end] == b'FINAL FANTASY7'):
+                raise FormatError('Field visual section size')
+            parts.append(data[at+4:section_end])
+        return tuple(parts)
     if not walkmesh:
         return result
     # A damaged Section 5 is isolated from identity/script/gateway evidence.
