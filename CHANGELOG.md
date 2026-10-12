@@ -2,7 +2,14 @@
 
 Formal version changes; historical acceptance evidence remains in Git history and Releases.
 
-## v3.5.0 — local RC, awaiting human acceptance
+## v3.6.0 — local RC, awaiting human acceptance
+
+- Field Static Network Analysis in the existing Canvas/Inspector: iterative deterministic WCC/SCC, raw directed Access BFS, reachability layers and least-crossing paths with original record offsets and anomaly evidence.
+- Validated FIELD.TBL scenarios and target-only arrivals become independent starts. Exact 3D Gateway candidates retain ambiguity; XY-only/disjoint records receive no topology association, and no cross-Field route is inferred.
+- Lazy mesh-scoped caching, explicit clear/mode/source cleanup, five-language controls and responsive keyboard/touch use. Existing Context v3, Walkmesh v1 and Python generators remain unchanged.
+- Static topology is not verified gameplay reachability. No runtime/script simulation, physical distance, global Field coordinates or camera/background implementation. macOS ARM64/Gatekeeper remain pending.
+
+## v3.5.0 — local RC, human accepted
 
 - Field Spatial Anchors in the existing Walkmesh Canvas and Inspector: FIELD.TBL Default/Alternative entrances, raw source Gateway segments and target-only arrival points.
 - Exact point/triangle and rational segment/surface checks; boundary, XY-only, disjoint, missing and world-target states remain explicit. Derived Raw Z is plane-derived, never recorded height or metres.

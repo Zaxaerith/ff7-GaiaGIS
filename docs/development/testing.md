@@ -48,3 +48,12 @@ baseline is 128 records / 65 entrances / 63 placeholders, 1036 source lines,
 These counts are source-specific test evidence, never generator constants.
 The player-flow suite checks marker picking, paired scenarios, navigation,
 geometry warnings and ordinary Field lifecycle/mobile/public regressions.
+
+Static network cases use the same test owners: exact WCC/SCC sets, raw-slot BFS
+paths/depths, one-way chains, cycles/self-links, equal-depth choices, blocked and
+invalid IDs, geometry mismatch evidence and a 65535-node iterative chain.
+Optional private scenes are cross-checked with independent all-pairs directed
+reachability and undirected closure, without hardcoding component counts.
+Browser flows verify entrance/arrival starts, all 3D Gateway candidates,
+XY-only exclusion, UNKNOWN states, cache reuse and source/mode cleanup. Algorithm
+time, geometry association time and full UI interaction time are separate.

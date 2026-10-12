@@ -176,10 +176,10 @@ export function localPoint(mesh:FieldWalkmesh,triangle:number,xy:readonly number
  return Math.min(u,w,z)<0?{status:'outside',derivedZ:null}:{status:Math.min(u,w,z)===0?'boundary':'inside',derivedZ:u*v[o+2]+w*v[o+6]+z*v[o+10]};
 }
 /** Independent exact integer predicate, evaluated only for this scene's lines. */
-export function gatewayRelation(mesh:FieldWalkmesh,a:readonly number[],b:readonly number[]):FieldGateway['sourceRelation']{
+export function gatewayRelation(mesh:FieldWalkmesh,a:readonly number[],b:readonly number[],candidates?:number[]):FieldGateway['sourceRelation']{
  if([a,b].some(p=>p.length!==3||!p.every(n=>Number.isInteger(n)&&n>=-32768&&n<=32767)))return 'unknown';
  type Rat=[bigint,bigint];const fraction=(n:bigint,d:bigint):Rat=>d<0n?[-n,-d]:[n,d],less=(a:Rat,b:Rat)=>a[0]*b[1]<b[0]*a[1];
- const aa=a.map(BigInt),bb=b.map(BigInt);let xy=false;
+ const aa=a.map(BigInt),bb=b.map(BigInt);let xy=false,surface=false;
  for(let i=0;i<mesh.triangles;i++){
   const p=[0,1,2].map(k=>Array.from(mesh.vertices.subarray(i*12+k*4,i*12+k*4+3),BigInt)),u=p[1].map((v,k)=>v-p[0][k]),v=p[2].map((v,k)=>v-p[0][k]),n=[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]];
   if(n.every(v=>v===0n))continue;
@@ -194,9 +194,10 @@ export function gatewayRelation(mesh:FieldWalkmesh,a:readonly number[],b:readonl
    const sign=area<0n?-1n:1n;let lo:Rat=[0n,1n],hi:Rat=[1n,1n];for(let k=0;k<3;k++){const start=sign*cross(p[k],p[(k+1)%3],aa),end=sign*cross(p[k],p[(k+1)%3],bb),delta=end-start;if(!delta){if(start<0n)return null;}else{const t=fraction(-start,delta);if(delta>0n){if(less(lo,t))lo=t;}else if(less(t,hi))hi=t;}}return less(hi,lo)?null:[lo,hi];};
   xy||=clip(0,1)!==null;const abs=(n:bigint)=>n<0n?-n:n,axis=abs(n[0])>=abs(n[1])&&abs(n[0])>=abs(n[2])?0:abs(n[1])>=abs(n[2])?1:2,axes=[0,1,2].filter(k=>k!==axis),span=clip(axes[0],axes[1]);if(!span)continue;
   const da=n.reduce((sum,n,k)=>sum+n*(aa[k]-p[0][k]),0n),db=n.reduce((sum,n,k)=>sum+n*(bb[k]-p[0][k]),0n);
-  if(da===0n&&db===0n)return 'surface';if(da!==db){const t=fraction(-da,db-da);if(!less(t,span[0])&&!less(span[1],t))return 'surface';}
+  let contact=da===0n&&db===0n;if(da!==db){const t=fraction(-da,db-da);contact=!less(t,span[0])&&!less(span[1],t);}
+  if(contact){surface=true;if(!candidates)return 'surface';candidates.push(i);}
  }
- return xy?'xy_only':'disjoint';
+ return surface?'surface':xy?'xy_only':'disjoint';
 }
 export type FieldAnchor={key:string;kind:'entrance';record:FieldEntrance;x:number;y:number}|{key:string;kind:'segment'|'arrival';record:FieldGateway;x:number;y:number};
 export function sceneAnchors(pack:FieldPack,mesh:FieldWalkmesh,id:number):FieldAnchor[]{
@@ -205,6 +206,56 @@ export function sceneAnchors(pack:FieldPack,mesh:FieldWalkmesh,id:number):FieldA
  for(const g of pack.gateways??[]){if(g.fromField===id){const verified={...g,sourceRelation:gatewayRelation(mesh,g.sourceA,g.sourceB)};result.push({key:'segment:'+g.fromField+':'+g.gateway,kind:'segment',record:verified,x:(g.sourceA[0]+g.sourceB[0])/2,y:(g.sourceA[1]+g.sourceB[1])/2});}
   if(g.to===id&&['inside','boundary'].includes(g.destination.status)&&agrees(g.destination.status,g.destination.derivedZ,g.targetTriangle,g.targetXY))result.push({key:'arrival:'+g.fromField+':'+g.gateway,kind:'arrival',record:g,x:g.targetXY[0],y:g.targetXY[1]});}
  return result;
+}
+
+export interface WalkmeshAccess {from:number;to:number;edge:number;offset:number;asymmetric:boolean;self:boolean;mismatch:boolean;}
+export interface WalkmeshReach {start:number;ids:number[];distance:Int32Array;parent:Int32Array;parentEdge:Int8Array;}
+export interface WalkmeshPath {ids:number[];steps:WalkmeshAccess[];reason:'different_wcc'|'direction'|null;}
+/** One scene's raw directed Access graph. No geometric edges or reverse repairs.
+ * Iterative Kosaraju and undirected traversal are O(V+E), including canonical
+ * component numbering and member ordering by ascending Triangle ID.
+ */
+export class WalkmeshNetwork {
+ readonly outgoing:number[][];readonly incoming:number[][];
+ readonly wcc:{groups:number[][];labels:Int32Array};readonly scc:{groups:number[][];labels:Int32Array};readonly isolated:number[];
+ private lastReach:WalkmeshReach|null=null;private contacts=new WeakMap<FieldGateway,number[]>();
+ constructor(readonly mesh:FieldWalkmesh){
+  const n=mesh.triangles;if(!Number.isInteger(n)||n<0||n>65535||mesh.access.length!==n*3)throw Error('Invalid walkmesh network');
+  this.outgoing=Array.from({length:n},()=>[]);this.incoming=Array.from({length:n},()=>[]);
+  for(let id=0;id<n;id++)for(let edge=0;edge<3;edge++){const to=mesh.access[id*3+edge];if(to===65535)continue;if(to>=n)throw Error('Invalid Access target');this.outgoing[id].push(to);this.incoming[to].push(id);}
+  const normalize=(raw:Int32Array)=>{const remap=new Map<number,number>(),groups:number[][]=[],labels=new Int32Array(n);for(let id=0;id<n;id++){const old=raw[id];if(!remap.has(old)){remap.set(old,groups.length);groups.push([]);}const c=remap.get(old)!;labels[id]=c;groups[c].push(id);}return {groups,labels};};
+  const weak=new Int32Array(n).fill(-1);let component=0;
+  for(let id=0;id<n;id++)if(weak[id]===-1){weak[id]=component;const stack=[id];while(stack.length){const at=stack.pop()!;for(const to of [...this.outgoing[at],...this.incoming[at]])if(weak[to]===-1){weak[to]=component;stack.push(to);}}component++;}
+  this.wcc=normalize(weak);this.isolated=this.wcc.groups.filter(g=>g.length===1).map(g=>g[0]);
+  const seen=new Uint8Array(n),order:number[]=[];
+  for(let id=0;id<n;id++)if(!seen[id]){seen[id]=1;const stack:[number,number][]=[[id,0]];while(stack.length){const frame=stack[stack.length-1],edges=this.outgoing[frame[0]];if(frame[1]===edges.length){order.push(frame[0]);stack.pop();continue;}const to=edges[frame[1]++];if(!seen[to]){seen[to]=1;stack.push([to,0]);}}}
+  const strong=new Int32Array(n).fill(-1);component=0;
+  for(let i=order.length-1;i>=0;i--){const id=order[i];if(strong[id]!==-1)continue;strong[id]=component;const stack=[id];while(stack.length){const at=stack.pop()!;for(const to of this.incoming[at])if(strong[to]===-1){strong[to]=component;stack.push(to);}}component++;}
+  this.scc=normalize(strong);
+ }
+ valid(id:number){return Number.isInteger(id)&&id>=0&&id<this.mesh.triangles;}
+ reach(start:number):WalkmeshReach {
+  if(!this.valid(start))throw Error('Invalid start Triangle ID');if(this.lastReach?.start===start)return this.lastReach;
+  const n=this.mesh.triangles,distance=new Int32Array(n).fill(-1),parent=new Int32Array(n).fill(-1),parentEdge=new Int8Array(n).fill(-1),queue=[start];distance[start]=0;
+  // Equal-length paths follow original Access slot order 0,1,2, never a
+  // guessed geometric route. Indexed queue avoids quadratic array shifts.
+  for(let i=0;i<queue.length;i++){const at=queue[i];for(let edge=0;edge<3;edge++){const to=this.mesh.access[at*3+edge];if(to===65535||distance[to]!==-1)continue;distance[to]=distance[at]+1;parent[to]=at;parentEdge[to]=edge;queue.push(to);}}
+  const ids:number[]=[];for(let i=0;i<n;i++)if(distance[i]>=0)ids.push(i);return this.lastReach={start,ids,distance,parent,parentEdge};
+ }
+ path(start:number,end:number):WalkmeshPath {
+  if(!this.valid(end))throw Error('Invalid end Triangle ID');const r=this.reach(start);
+  if(r.distance[end]===-1)return {ids:[],steps:[],reason:this.wcc.labels[start]!==this.wcc.labels[end]?'different_wcc':'direction'};
+  const ids=[end],steps:WalkmeshAccess[]=[];for(let at=end;at!==start;at=r.parent[at]){steps.push(this.evidence(r.parent[at],r.parentEdge[at]));ids.push(r.parent[at]);}return {ids:ids.reverse(),steps:steps.reverse(),reason:null};
+ }
+ evidence(from:number,edge:number):WalkmeshAccess {
+  if(!this.valid(from)||!Number.isInteger(edge)||edge<0||edge>2)throw Error('Invalid Access record');const m=this.mesh,to=m.access[from*3+edge];if(to===65535)throw Error('Blocked Access record');
+  const point=(id:number,k:number)=>Array.from(m.vertices.subarray(id*12+k*4,id*12+k*4+3)),equal=(a:number[],b:number[])=>a.every((n,i)=>n===b[i]),a=point(from,edge),b=point(from,(edge+1)%3);
+  const mismatch=![0,1,2].some(k=>{const c=point(to,k),d=point(to,(k+1)%3);return equal(a,c)&&equal(b,d)||equal(a,d)&&equal(b,c);});
+  return {from,to,edge,offset:4+m.triangles*24+(from*3+edge)*2,asymmetric:!this.outgoing[to].includes(from),self:to===from,mismatch};
+ }
+ gateway(g:FieldGateway):number[]{
+  if(g.sourceRelation!=='surface')return [];const cached=this.contacts.get(g);if(cached)return cached;const candidates:number[]=[];gatewayRelation(this.mesh,g.sourceA,g.sourceB,candidates);this.contacts.set(g,candidates);return candidates;
+ }
 }
 export function decodeWalkmesh(buffer:ArrayBuffer):FieldWalkmesh{
  const v=new DataView(buffer);if(v.byteLength<4)throw Error('Truncated walkmesh');const count=v.getUint32(0,true);

@@ -236,3 +236,40 @@ anchors-unavailable notice. Run the ordinary local launcher against your own
 supported original PC data to regenerate the Field component incrementally;
 do not use a full rebuild solely to upgrade anchors. Public Pages supplies no
 private anchors and never probes the local game installation.
+
+
+### Field Static Network Analysis
+
+Expand **Network Analysis** in the existing Walkmesh view. **Components** uses
+WCC or SCC colouring; the Inspector lists deterministic component IDs, sizes,
+current triangle membership and members. Isolated triangles have no Access
+connection to another triangle, even when a raw self-link is present.
+
+**Reachability** follows only the three original directed Access slots from the
+chosen Triangle ID. The Inspector reports BFS depth, reachable/unreachable
+counts and ratio. Select a validated entrance or arrival marker, then choose
+**Analyze from this validated anchor**. Default and Alternative records remain
+separate starts; arrivals belong only to their destination Field.
+
+**Path** finds the minimum number of Access crossings within this scene. Equal
+paths use source slot order 0/1/2. The Inspector preserves the Triangle ID
+sequence, section-relative Access offsets and asymmetric/mismatched evidence.
+▶ marks the start, ■ the end, blue reachable triangles, dim triangles unreachable,
+and green the topology path. A zero-crossing path contains the start triangle;
+no-path results distinguish different WCCs from directed disconnection.
+
+Only exact 3D Gateway intersections supply candidate triangles. All candidates
+are retained, including ambiguity; clicking a result selects its raw source
+segment and outlines candidates. XY-only records are excluded and disjoint
+association remains UNKNOWN. Reaching a candidate means topology connects to
+Gateway geometry, never verified runtime passage or a route to another Field.
+
+**Clear Analysis** restores ordinary mesh browsing. Scene/mode changes, return
+to World and replacement data clear inapplicable selections; mesh-scoped caches
+cannot carry results between sources. Existing v1/v2 contexts can analyze their
+compatible Walkmesh without anchors. Context v3/Walkmesh v1 and generators are
+unchanged: v3.5 workspaces need no regeneration for this frontend feature.
+
+All output is **Static Walkmesh Topology — Not Verified Gameplay Reachability**.
+There is no character walking trace, metre distance, reverse-edge repair,
+story-condition simulation, global Field route or camera/background registration.

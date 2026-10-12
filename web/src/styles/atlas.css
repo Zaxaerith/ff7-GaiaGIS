@@ -59,6 +59,10 @@ body.field-active #comparison-viewport{display:none}
 .field-anchor-controls p{margin:4px 0;overflow-wrap:anywhere}
 .field-anchor-controls .field-canvas-controls{padding:4px 0}
 .field-anchor-controls select{width:min(240px,60vw)}
+.field-network-results pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:.8rem;max-height:220px;overflow:auto}
+.field-network-results button{white-space:normal;overflow-wrap:anywhere;max-width:100%}
+.field-network-controls select{width:auto}
+.field-network-controls input[aria-invalid=true]{outline:2px solid var(--accent)}
 #field-workspace :is(#field-walkmesh-canvas,#field-graph){flex:1;min-height:80px;height:0;width:100%;aspect-ratio:auto;border:0;display:block;touch-action:none;overscroll-behavior:contain}
 .field-edge[data-kind=mapjump]{stroke-dasharray:6 4}
 .field-legend{flex-shrink:0;font-size:12px;max-height:28%;overflow:auto}
