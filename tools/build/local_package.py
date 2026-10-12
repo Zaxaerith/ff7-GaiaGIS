@@ -77,9 +77,7 @@ def build(args, scratch):
         source=ROOT/'src/gaiagis'/name
         destination=(Path('gaiagis')/Path(name).parent).as_posix()
         freeze+=['--add-data',str(source)+':'+destination]
-    # PyInstaller uses strip -S on macOS: remove vendor debug build paths,
-    # retaining exported symbols. Audit and final ad-hoc signing still follow.
-    if mac:freeze+=['--windowed','--strip','--target-arch','arm64','--osx-bundle-identifier','org.gaiagis.viewer']
+    if mac:freeze+=['--windowed','--target-arch','arm64','--osx-bundle-identifier','org.gaiagis.viewer']
     run([*freeze,str(ROOT/'tools/build/portable_entry.py')])
     package=out/('build/GaiaGIS.app' if mac else 'build/GaiaGIS')
     resources=package/'Contents/Resources' if mac else package
@@ -100,23 +98,11 @@ def build(args, scratch):
     shutil.copyfile(python_license,licenses/'PYTHON.txt')
     import tkinter as tk
     window=tk.Tk();window.withdraw()
-    try:
-        for name,library in [('TCL',window.tk.eval('info library')),('TK',window.tk.eval('set tk_library'))]:
-            try:
-                # Tcl's filesystem API also reads Windows' embedded zipfs.
-                handle=window.tk.call('open',library+'/license.terms','r')
-            except tk.TclError:
-                directory=Path(library)
-                # Framework Resources may hold the licence beside Scripts.
-                licence=directory.parent/'license.terms'
-                if not licence.is_file():raise RuntimeError(f'{name} licence missing from the pinned build runtime: {directory}')
-                shutil.copyfile(licence,licenses/(name+'.txt'))
-            else:
-                try:text=window.tk.call('read',handle)
-                finally:window.tk.call('close',handle)
-                (licenses/(name+'.txt')).write_text(text,encoding='utf8')
-    finally:
-        window.destroy()
+    for name,library in [('TCL',window.tk.eval('info library')),('TK',window.tk.eval('set tk_library'))]:
+        handle=window.tk.call('open',library+'/license.terms','r')
+        text=window.tk.call('read',handle);window.tk.call('close',handle)
+        (licenses/(name+'.txt')).write_text(text,encoding='utf8')
+    window.destroy()
     shutil.copyfile(ROOT/'tools/build/licenses/OPENSSL.txt',licenses/'OPENSSL.txt')
     # Include the exact build scripts and authored source needed to reproduce this binary.
     source_zip=resources/'GaiaGIS-source.zip'
