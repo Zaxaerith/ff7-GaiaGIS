@@ -77,7 +77,9 @@ def build(args, scratch):
         source=ROOT/'src/gaiagis'/name
         destination=(Path('gaiagis')/Path(name).parent).as_posix()
         freeze+=['--add-data',str(source)+':'+destination]
-    if mac:freeze+=['--windowed','--target-arch','arm64','--osx-bundle-identifier','org.gaiagis.viewer']
+    # PyInstaller uses strip -S on macOS: remove vendor debug build paths,
+    # retaining exported symbols. Audit and final ad-hoc signing still follow.
+    if mac:freeze+=['--windowed','--strip','--target-arch','arm64','--osx-bundle-identifier','org.gaiagis.viewer']
     run([*freeze,str(ROOT/'tools/build/portable_entry.py')])
     package=out/('build/GaiaGIS.app' if mac else 'build/GaiaGIS')
     resources=package/'Contents/Resources' if mac else package
