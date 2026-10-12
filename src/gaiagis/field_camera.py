@@ -2,7 +2,8 @@
 
 Format facts cross-checked with Makou Reactor BackgroundTilesIOPC::readData,
 BackgroundTexturesIOPC::read and LGP Explorer parseBackgroundSection. No engine
-code is copied. Only unconditional, unblended layer-0 indexed tiles are drawn.
+code is copied. Layer 0 and unconditional, unblended layer-1 indexed tiles are
+drawn. Layer-0 param/state/blending operands are unused in the classic PC format.
 """
 # SPDX-License-Identifier: GPL-3.0-only
 import hashlib
@@ -20,7 +21,7 @@ from .poi import parse_maplist
 from .safety import output_path
 from .web_export import sha256
 
-GENERATOR_VERSION = 'field-visual-1'
+GENERATOR_VERSION = 'field-visual-2'
 MAX_PACK = 64_000_000
 MAX_PIXELS = 4_000_000
 
@@ -49,7 +50,7 @@ def project(camera, point):
 
 
 def parse_background(palette, data):
-    """Validate every layer/page reference; export only the supported base subset.
+    """Validate every layer/page reference; export the supported static subset.
 
     Retain dimensions, tile evidence and explicit omissions. Tile size in classic
     layer 0 is 16; its width/height operands may be zero and are not substitutes
@@ -90,7 +91,8 @@ def parse_background(palette, data):
             tiles.append(dict(layer=layer,id=i,x=x,y=y,size=size,sourceOffset=at,
                               sx=data[at+8],sy=data[at+10],palette=data[at+20],
                               param=data[at+24],state=data[at+25],blend=data[at+26],blendType=data[at+28],
-                              texture=data[at+32] if layer and data[at+26] else data[at+30],depth=data[at+34]))
+                              texture=data[at+32] if layer and data[at+26] else data[at+30],depth=data[at+34],
+                              z=u16(at+22) if layer else 4095,sub=struct.unpack_from('<I',data,at+36)[0]))
             if layer and data[at+26]:tiles[-1].update(sx=data[at+12],sy=data[at+14])
             at+=52
     span(at,7)
@@ -110,16 +112,21 @@ def parse_background(palette, data):
         if page is None or tile['depth']!=page[0] or tile['sx']+tile['size']>256 or tile['sy']+tile['size']>256:
             raise FormatError('Tile texture reference')
         if page[0]<2 and tile['palette']>=count:raise FormatError('Tile palette reference')
-        if tile['layer'] or tile['param'] or tile['blend'] or page[0]!=1:
+        if tile['layer']>1 or tile['layer']==1 and (tile['param'] or tile['state'] or tile['blend']) or page[0]!=1:
             omitted+=1;continue
         offset=len(pixels);used.add(tile['palette'])
         for row in range(16):
             for col in range(16):
                 index=page[1][(tile['sy']+row)*256+tile['sx']+col]
                 pixels.append(index)
-        base.append(dict(x=tile['x'],y=tile['y'],id=tile['id'],offset=offset,sourceOffset=tile['sourceOffset'],texture=tile['texture'],palette=tile['palette']))
-    all_base=[t for t in tiles if t['layer']==0]
-    bounds=[min((t['x'] for t in all_base),default=0),min((t['y'] for t in all_base),default=0),max((t['x']+16 for t in all_base),default=0),max((t['y']+16 for t in all_base),default=0)]
+        base.append(dict(x=tile['x'],y=tile['y'],id=tile['id'],layer=tile['layer'],offset=offset,sourceOffset=tile['sourceOffset'],texture=tile['texture'],palette=tile['palette'],z=tile['z'],sub=tile['sub']))
+    # Draw back to front using stored depth/sub-ID, never a geometric adjustment.
+    # Repack indexed texels in the same order as the compact tile descriptors.
+    base.sort(key=lambda t:(-t['z'],-t['sub'],t['layer'],t['id']))
+    pixels=b''.join(pixels[t['offset']:t['offset']+256] for t in base)
+    for i,tile in enumerate(base):tile['offset']=i*256
+    footprint=[t for t in tiles if t['layer']==0]+base
+    bounds=[min((t['x'] for t in footprint),default=0),min((t['y'] for t in footprint),default=0),max((t['x']+16 for t in footprint),default=0),max((t['y']+16 for t in footprint),default=0)]
     if len(pixels)>MAX_PIXELS*2 or (bounds[2]-bounds[0])*(bounds[3]-bounds[1])>MAX_PIXELS:
         raise FormatError('Background pixel budget')
     return dict(status='partial' if omitted else 'static_base',bounds=bounds,layers=layers,tiles=base,omitted=omitted,pixelBytes=len(pixels),paletteRefs=[dict(id=i,transparent=bool(i<20 and flags[i])) for i in sorted(used)]),b''.join(struct.pack('<256H',*colors[i]) for i in sorted(used))+bytes(pixels)
@@ -142,7 +149,9 @@ def build_field_visual(source:Path,directory:Path):
             record['cameras']=parse_cameras(camera)
             try:
                 meta,pixels=parse_background(palette,background)
-                tiles=meta.pop('tiles');descriptors=b''.join(struct.pack('<hhHBB',t['x'],t['y'],t['id'],t['texture'],t['palette']) for t in tiles);meta['tileCount']=len(tiles)
+                # Revision 2 uses bit 6 of the texture byte for layer 0/1; page
+                # IDs remain 0..41. The 8-byte descriptor/pack schema stay v1.
+                tiles=meta.pop('tiles');descriptors=b''.join(struct.pack('<hhHBB',t['x'],t['y'],t['id'],t['texture']|(t['layer']<<6),t['palette']) for t in tiles);meta['tileCount']=len(tiles)
                 decoded=descriptors+pixels;compressed=zlib.compress(decoded,9);meta.update(offset=len(pool),bytes=len(compressed),sha256=hashlib.sha256(decoded).hexdigest());pool.extend(compressed);record['background']=meta
             except FormatError as error:record['background']['reason']=str(error)
         except FormatError as error:record['reason']=str(error)

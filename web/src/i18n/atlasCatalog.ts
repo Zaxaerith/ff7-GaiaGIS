@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 export const atlasCatalog=[
  ['camera.title','Field Camera & Background','场景摄像机与背景','場景攝影機與背景','フィールドカメラと背景','필드 카메라와 배경'],
- ['camera.coverage','In base bounds: {count}/{total} vertices; near/behind: {invalid}. Dashed rectangle: original 320×240 viewport. Inclusion is not alignment proof.','基础背景范围内：{count}/{total} 顶点；近零/镜头后方：{invalid}。虚线框为原版 320×240 视口。矩形内计数不证明配准。','基礎背景範圍內：{count}/{total} 頂點；近零/鏡頭後方：{invalid}。虛線框為原版 320×240 視口。矩形內計數不證明配準。','基本背景内：{count}/{total} 頂点。ゼロ近傍・後方：{invalid}。破線は原作の 320×240 画面。範囲内の数は整合性の証明ではありません。','기본 배경 내: {count}/{total} 정점. 영점 근처/뒤: {invalid}. 점선은 원본 320×240 화면. 범위 내 수치는 정합 증거가 아님.'],
+ ['camera.coverage','In static tile bounds: {count}/{total} vertices; near/behind: {invalid}. Dashed rectangle: original 320×240 viewport. Inclusion is not alignment proof.','静态瓦片范围内：{count}/{total} 顶点；近零/镜头后方：{invalid}。虚线框为原版 320×240 视口。矩形内计数不证明配准。','靜態瓦片範圍內：{count}/{total} 頂點；近零/鏡頭後方：{invalid}。虛線框為原版 320×240 視口。矩形內計數不證明配準。','静的タイル内：{count}/{total} 頂点。ゼロ近傍・後方：{invalid}。破線は原作の 320×240 画面。範囲内の数は整合性の証明ではありません。','정적 타일 내: {count}/{total} 정점. 영점 근처/뒤: {invalid}. 점선은 원본 320×240 화면. 범위 내 수치는 정합 증거가 아님.'],
  ['camera.view','View','视图','視圖','ビュー','보기'],
  ['camera.plan','Field Plan View','场景俯视图','場景俯視圖','フィールド平面図','필드 평면 보기'],
  ['camera.camera','Original Camera View','原版摄像机视图','原版攝影機視圖','原作カメラビュー','원본 카메라 보기'],
@@ -12,7 +12,7 @@ export const atlasCatalog=[
  ['camera.ids','Triangle IDs','三角形编号','三角形編號','三角形 ID','삼각형 ID'],
  ['camera.unavailable','Private camera/background resource unavailable. Load a rebuilt local workspace; Plan View remains available.','缺少私有摄像机/背景资源。加载更新的本地工作区；俯视图仍可使用。','缺少私有攝影機/背景資源。載入更新的本地工作區；俯視圖仍可使用。','非公開カメラ・背景データがありません。更新したローカルワークスペースを読み込んでください。平面図は利用可能です。','비공개 카메라/배경 데이터 없음. 갱신한 로컬 작업 공간을 불러오세요. 평면 보기는 사용 가능합니다.'],
  ['camera.rejected','Background data rejected; camera projection remains available.','背景数据被拒绝；仍可查看摄像机投影。','背景資料被拒絕；仍可檢視攝影機投影。','背景データを拒否しました。カメラ投影は利用可能です。','배경 데이터 거부됨. 카메라 투영은 사용 가능합니다.'],
- ['camera.partial','Partial: supported static base tiles only. Other layers and conditional tiles omitted.','部分支持：仅静态基础瓦片；省略其他图层与条件瓦片。','部分支援：僅靜態基礎瓦片；省略其他圖層與條件瓦片。','部分対応：静的基本タイルのみ。他のレイヤー・条件付きタイルは省略。','부분 지원: 정적 기본 타일만. 다른 레이어와 조건부 타일은 생략.'],
+ ['camera.partial','Partial: supported static tiles only; conditions, blending and unsupported layers omitted.','部分支持：仅受支持的静态瓦片；省略条件、混合效果及不支持的图层。','部分支援：僅受支援的靜態瓦片；省略條件、混合效果及不支援的圖層。','部分対応：対応済みの静的タイルのみ。条件付き・合成効果・未対応レイヤーは省略。','부분 지원: 정적 기본 타일만. 조건부 타일, 혼합 효과 및 미지원 레이어는 생략.'],
  ['camera.static_base','Static base decoded; runtime alignment UNKNOWN.','静态基础背景已解码；运行时配准 UNKNOWN。','靜態基礎背景已解碼；執行時配準 UNKNOWN。','静的基本背景を復号済み。実行時の整合性は UNKNOWN。','정적 기본 배경 해독됨. 런타임 정합 UNKNOWN.'],
  ['camera.unsupported','Background unsupported; no substitute image.','背景不受支持；不使用替代图像。','背景不受支援；不使用替代圖像。','背景は未対応です。代替画像は表示しません。','배경 미지원. 대체 이미지를 표시하지 않음.'],
  ['camera.omitted','Omitted tiles:','省略瓦片：','省略瓦片：','省略タイル：','생략 타일:'],

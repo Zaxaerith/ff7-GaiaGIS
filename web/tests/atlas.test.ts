@@ -242,4 +242,29 @@ describe('Field camera and private background contract',()=>{
  it('bounds per-scene spans, references and pixel budgets before decode',()=>{const b={status:'static_base',bounds:[0,0,16,16],layers:Array.from({length:4},(_,id)=>({id,width:16,height:16,tiles:id===0?1:0})),tileCount:1,paletteRefs:[{id:0,transparent:true}],omitted:0,pixelBytes:256,offset:0,bytes:1,sha256:'a'.repeat(64)};const m=()=>({...meta(),scenes:[{fieldId:1,cameras:[camera],background:structuredClone(b)}]});expect(header(m(),1)().scenes.size).toBe(1);for(const bad of [{offset:1},{bytes:100},{pixelBytes:8_000_001},{tileCount:8193},{bounds:[0,0,4096,4096]},{paletteRefs:[{id:256,transparent:true}]}]){const value=m();Object.assign(value.scenes[0].background,bad);expect(header(value,1)).toThrow();}});
  it('validates source-tile descriptors after bounded decompression',async()=>{const raw=new Uint8Array(776);raw[6]=42;const compressed=await new Response(new Blob([raw]).stream().pipeThrough(new CompressionStream('deflate'))).arrayBuffer(),digest=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',raw)),n=>n.toString(16).padStart(2,'0')).join('');const m={...meta(),scenes:[{fieldId:1,cameras:[camera],background:{status:'static_base',bounds:[0,0,16,16],layers:Array.from({length:4},(_,id)=>({id,width:16,height:16,tiles:id===0?1:0})),tileCount:1,paletteRefs:[{id:0,transparent:true}],omitted:0,pixelBytes:256,offset:0,bytes:compressed.byteLength,sha256:digest}}]},json=new TextEncoder().encode(JSON.stringify(m)),head=new Uint8Array(16),v=new DataView(head.buffer);head.set(new TextEncoder().encode('GAIACAM\0'));v.setUint32(8,1,true);v.setUint32(12,json.length,true);const file=new File([head,json,compressed],'gaia-field-visual.bin'),pack=await openFieldVisual(file,fields);await expect(pack.decode(1)).rejects.toThrow('reference');});
  it('rebuilds RGB555 tiles in screen coordinates, retaining transparency',()=>{const pixels=new Uint8Array(256);pixels[0]=1;const scene={fieldId:1,cameras:[camera],background:{status:'static_base' as const,bounds:[-16,-8,0,8],pixelBytes:256,paletteRefs:[{id:0,transparent:true}],palettes:[Array.from({length:256},(_,i)=>i===1?31:0)],tiles:[{x:-16,y:-8,id:0,offset:0,sourceOffset:52,texture:0,palette:0}]}};const image=baseBackground(scene,pixels);expect(image.width).toBe(16);expect(Array.from(image.rgba.slice(0,8))).toEqual([255,0,0,255,0,0,0,0]);});
+ it('keeps green opaque, aliases zero CLUT entries and does not treat bit 15 as alpha',()=>{
+  const pixels=new Uint8Array(256);pixels.set([0,1,2,3]);const palette=Array(256).fill(0);palette[0]=992;palette[2]=0x801f;palette[3]=992;
+  const scene={fieldId:1,cameras:[],background:{status:'static_base' as const,bounds:[0,0,16,16],pixelBytes:256,paletteRefs:[{id:5,transparent:true}],palettes:[palette],tiles:[{x:0,y:0,id:0,offset:0,sourceOffset:52,texture:0,palette:5}]}};
+  expect(Array.from(baseBackground(scene,pixels).rgba.slice(0,16))).toEqual([0,0,0,0,0,255,0,255,255,0,0,255,0,255,0,255]);
+  scene.background.paletteRefs[0].transparent=false;expect(Array.from(baseBackground(scene,pixels).rgba.slice(0,4))).toEqual([0,255,0,255]);
+ });
+ it('composes static overlays with the tile CLUT and preserves lower pixels through transparent index 0',()=>{
+  const pixels=new Uint8Array(512);pixels.fill(1,0,256);pixels[256]=1;
+  const scene={fieldId:1,cameras:[],background:{status:'static_base' as const,bounds:[0,0,16,16],pixelBytes:512,paletteRefs:[{id:0,transparent:true},{id:1,transparent:true}],palettes:[Array(256).fill(992),Array(256).fill(31744)],tiles:[{x:0,y:0,id:0,layer:0,offset:0,sourceOffset:52,texture:0,palette:0},{x:0,y:0,id:0,layer:1,offset:256,sourceOffset:131,texture:0,palette:1}]}};
+  expect(Array.from(baseBackground(scene,pixels).rgba.slice(0,8))).toEqual([0,0,255,255,0,255,0,255]);
+ });
+ it('decodes revision-2 layer-local IDs, order and source offsets and rejects forged descriptors',async()=>{
+  async function pack(edit?:(raw:Uint8Array)=>void){
+   const raw=new Uint8Array(1040);raw[14]=64;edit?.(raw);
+   const compressed=await new Response(new Blob([raw]).stream().pipeThrough(new CompressionStream('deflate'))).arrayBuffer(),sha256=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',raw)),n=>n.toString(16).padStart(2,'0')).join('');
+   const m={...meta(),generator_revision:'field-visual-2',scenes:[{fieldId:1,cameras:[camera],background:{status:'static_base',bounds:[0,0,16,16],layers:Array.from({length:4},(_,id)=>({id,width:16,height:16,tiles:id<2?1:0})),tileCount:2,paletteRefs:[{id:0,transparent:true}],omitted:0,pixelBytes:512,offset:0,bytes:compressed.byteLength,sha256}}]},json=new TextEncoder().encode(JSON.stringify(m)),head=new Uint8Array(16),v=new DataView(head.buffer);head.set(new TextEncoder().encode('GAIACAM\0'));v.setUint32(8,1,true);v.setUint32(12,json.length,true);
+   return openFieldVisual(new File([head,json,compressed],'gaia-field-visual.bin'),fields);
+  }
+  const decoded=await(await pack()).decode(1);expect(decoded.scene.background.tiles!.map(t=>[t.layer,t.id,t.texture,t.sourceOffset])).toEqual([[0,0,0,52],[1,0,0,131]]);
+  for(const edit of [(r:Uint8Array)=>r[14]=128,(r:Uint8Array)=>r[14]=106,(r:Uint8Array)=>r[14]=0,(r:Uint8Array)=>r[12]=1])await expect((await pack(edit)).decode(1)).rejects.toThrow('reference');
+ });
+ it('rejects revision-2 total tiles beyond the bounded original section',()=>{
+  const m={...meta(),generator_revision:'field-visual-2',scenes:[{fieldId:1,cameras:[camera],background:{status:'partial',bounds:[0,0,16,16],layers:Array.from({length:4},(_,id)=>({id,width:16,height:16,tiles:8192})),tileCount:16384,paletteRefs:[],omitted:16384,pixelBytes:16384*256,offset:0,bytes:1,sha256:'a'.repeat(64)}}]};
+  expect(header(m,1)).toThrow('accounting');
+ });
 });

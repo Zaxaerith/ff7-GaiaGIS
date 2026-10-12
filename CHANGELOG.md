@@ -5,7 +5,7 @@ Formal version changes; historical acceptance evidence remains in Git history an
 ## v3.7.0 — local RC, awaiting human acceptance
 
 - Original Section-2 camera records and raw Q12 projection in the existing Field Canvas, with manual camera selection, exact inverse camera centre, 240-pixel FOV basis and explicit near/behind-camera omissions.
-- Bounded Section-4/9 parsing and compact private indexed-base-tile resource, independent `field-visual-1` contract. Only the selected scene is decoded; unsupported layers, conditions, blending and malformed references remain explicit. No original assets enter public builds or packages.
+- Bounded Section-4/9 parsing and compact private indexed-tile resource, independent visual pack schema 1. RC correction (`field-visual-2`): retain all Layer-0 tiles and the unconditional, unblended Layer-1 static subset in source depth/sub-ID order, covering original green placeholder texels instead of treating green as transparency. Only the visual component is regenerated; old visual resources remain readable. Only the selected scene is decoded; unsupported layers, conditions, blending and malformed references remain explicit. No original assets enter public builds or packages.
 - Plan / Camera / Background Overlay share one renderer and selection, with shared pan/zoom, opacity, mesh edges, triangle IDs, five languages and preserved anchors/network analysis. Runtime camera choice, occlusion and game-screen alignment remain UNKNOWN.
 - CI and exact-tag Release now target Windows x64 only. Historical Mac build code is unmaintained; no Mac repair or remote publishing in this local candidate.
 
