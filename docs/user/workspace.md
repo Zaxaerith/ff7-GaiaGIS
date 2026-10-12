@@ -20,6 +20,10 @@ An explicit build is available:
 python -m gaiagis build-workspace --source "YOUR_FF7_INSTALLATION" --output output/local-workspace
 ```
 
+For an existing workspace, run this command with its **same output folder**, without `--rebuild`. Generation checks component hashes and generator compatibility, preserves reusable world/GIS components, and updates the manifest. A Viewer upgrade alone does not add missing private resources to an older workspace.
+
+For v3.7 Camera View / Background Overlay, the folder must contain `gaia-field-context.json`, `gaia-field-walkmesh.bin` and `gaia-field-visual.bin`, registered in `gaia-workspace.json`. After generation finishes, use **Data → Workspace Folder** in the browser to select that updated folder again. This works with the ordinary Web Viewer; neither the Windows EXE nor the auto-local server is required. The browser imports generated files only and does not generate resources from the game installation.
+
 ## Available resources
 
 The manifest describes geometry/metadata, locations, encounters, events, routing, WM0 textures, WM2/WM3 native geometry and textures, transitions, Explorer models/animation, presentation audio, Atlas and optional Field Context. Availability depends on valid original inputs and enabled generation options. Data UI reports availability rather than implying a missing asset has loaded.

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 import {describe,it,expect,vi} from 'vitest';
 import {loadLocalWorkspace,localAdvertised} from '../src/app/localWorkspace';
-import {WorkspaceLoader,fileHash,workspaceOrder} from '../src/app/workspace';
+import {WorkspaceLoader,directoryFiles,fileHash,workspaceOrder} from '../src/app/workspace';
 import type {WorkspaceManifest} from '../src/app/workspace';
 import {initialState,reduce} from '../src/app/state';
 async function fixture(){
@@ -22,4 +22,33 @@ describe('private local workspace transport',()=>{
  it('derives order from dependency registry even if listed backwards',async()=>{const f=await fixture();f.manifest.assets.reverse();expect(workspaceOrder(f.manifest).slice(0,2)).toEqual(['geometry','locations']);});
  it('preserves local mode while geometry replaces dataset state',()=>{const s=reduce(initialState(),{type:'local-workspace',phase:'loading'});expect(reduce(s,{type:'reset-data'}).localWorkspace).toBe('loading');});
  it('canceled network adoption cannot replace manual data',async()=>{const f=await fixture(),control=new AbortController(),adopt=vi.fn();control.abort();await expect(loadLocalWorkspace({load:adopt},f.fetcher,control.signal)).rejects.toThrow();expect(adopt).not.toHaveBeenCalled();});
+ it('manual folder import includes private visuals and adopts Field owners after geometry bootstrap',async()=>{
+  const {files,manifest}=await fixture();
+  for(const [name,type,dependency] of [
+   ['gaia-field-context.json','field-context','gaia-poi.json'],
+   ['gaia-field-walkmesh.bin','field-walkmesh','gaia-field-context.json'],
+   ['gaia-field-visual.bin','field-visual','gaia-field-context.json'],
+  ] as const){
+   const file=new File([name.endsWith('.json')?'{}':new Uint8Array(16)],name);files.push(file);
+   manifest.assets.push({filename:name,type,mapId:type==='field-context'?'WM0':'shared',bytes:file.size,sha256:await fileHash(file),dependencies:[dependency]});
+  }
+  manifest.assets.reverse();files.push(new File([JSON.stringify(manifest)],'gaia-workspace.json'));
+  const ignored=vi.fn(async()=>{throw Error('raw input must not be opened');});
+  const selected=await directoryFiles({kind:'directory',async *values(){
+   yield {kind:'file',name:'flevel.lgp',getFile:ignored};
+   for(const file of files)yield {kind:'file',name:file.name,getFile:async()=>file};
+  }});
+  expect(ignored).not.toHaveBeenCalled();expect(selected.map(f=>f.name)).toContain('gaia-field-visual.bin');
+  const adopted:string[]=[],states:string[]=[],loader=new WorkspaceLoader((id,state)=>states.push(id+':'+state.status));
+  loader.register('geometry',async()=>{
+   adopted.push('geometry');await Promise.resolve();
+   for(const id of ['field-context','field-walkmesh','field-visual'] as const)loader.register(id,async()=>{adopted.push(id);});
+  });
+  loader.register('locations',async()=>{adopted.push('locations');});
+  await loader.load(selected);
+  expect(adopted).toEqual(['geometry','locations','field-context','field-walkmesh','field-visual']);
+  expect(states).toContain('field-visual:loaded');
+  await loader.load(selected.filter(f=>f.name!=='gaia-field-visual.bin'));
+  expect(states).toContain('field-visual:missing');expect(states.filter(s=>s==='field-walkmesh:loaded')).toHaveLength(2);
+ });
 });
