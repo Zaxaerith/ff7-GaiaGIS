@@ -103,7 +103,11 @@ def audit(root):
     for p in files:
         name=p.relative_to(root).as_posix()
         if p.suffix.lower() in FORBIDDEN or any(x in Path(name).parts for x in ('output','.cache','tests','node_modules','local-workspace')) or p.name.startswith('gaia-') or p.name in ('gaia-workspace.json','local-launch.json','.gaiagis-local.json'):errors.append('Forbidden '+name)
-        if p.suffix.lower() in ('.json','.txt','.toml','.js','.css','.html','.pyc','.exe','.dll','.pyd','.pyz','.dylib','.so','') and PRIVATE.search(p.read_bytes()):errors.append('Private path '+name)
+        if p.suffix.lower() in ('.json','.txt','.toml','.js','.css','.html','.pyc','.exe','.dll','.pyd','.pyz','.dylib','.so',''):
+            raw=p.read_bytes();match=PRIVATE.search(raw)
+            if match:
+                evidence=raw[match.start():match.start()+192].split(b'\0',1)[0]
+                errors.append('Private path '+name+' @ '+str(match.start())+' '+repr(evidence))
     source=resources/'GaiaGIS-source.zip'
     if source.is_file():
         with zipfile.ZipFile(source) as z:
