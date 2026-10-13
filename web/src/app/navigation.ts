@@ -7,6 +7,18 @@ import type {GeoPoint} from '../projections/Projection';
 let selectionContext:{location:Location;entrance:Entrance}|null=null;
 export function setNavigationSelection(value:typeof selectionContext){selectionContext=value;}
 export function navigationSelection(){return selectionContext;}
+/** Session-only Field evidence snapshots; independent of bookmarks, tours and URLs. */
+export class BoundedFieldHistory<T>{
+  private steps:T[]=[];
+  constructor(readonly max=32){if(!Number.isInteger(max)||max<1||max>32)throw new RangeError('Field history limit must be 1–32');}
+  get entries():readonly T[]{return Object.freeze([...this.steps]);}
+  get current():T|undefined{return this.steps.at(-1);}
+  reset(value?:T){this.clear();if(value!==undefined)this.steps.push(value);}
+  push(value:T){this.steps.push(value);if(this.steps.length>this.max)this.steps.shift();}
+  replace(value:T){if(this.steps.length)this.steps[this.steps.length-1]=value;else this.push(value);}
+  back():T|undefined{this.steps.pop();return this.current;}
+  clear(){this.steps=[];}
+}
 export interface NavigationEntry {id:string;kind:'location'|'entrance'|'transition'|'event'|'atlas'|'user-feature'|'field';name:string;aliases:string[];mapId:MapId;navigate:()=>void;target?:IdentityTarget;anchor?:GeoPoint;precision?:'entrance_level'|'verified_anchor'|'exact_source'|'user_created';group?:'places'|'secrets'|'transitions'|'user';canTour?:boolean;}
 const owners=new Map<string,NavigationEntry[]>();
 export function registerNavigation(owner:string,entries:NavigationEntry[]){owners.set(owner,entries);if(typeof document!=='undefined')document.dispatchEvent(new Event('gaiagis-navigation'));}

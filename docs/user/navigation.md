@@ -190,7 +190,8 @@ geographic scale is drawn. The Field modes do not run game story scripts.
 On 390px/320px screens, entry collapses the panels so the canvas uses available
 space; tapping a triangle opens its properties. Collapse Inspector to continue
 panning. The return button stays in the workspace toolbar. Escape from a focused
-canvas/Graph returns to World; Escape in text/select controls, existing dialogs,
+canvas/Graph returns one session step when available, otherwise to World.
+Escape in text/select controls, existing dialogs,
 search, drawing or Explorer keeps the original owner behavior.
 
 Only connected private, source-matched packs provide real geometry. Public Pages
@@ -205,8 +206,69 @@ the checkout-scoped temporary environment described in the development guide.
 It checks real `mds5_1`, `bugin1c` (496 triangles), `nivl_b1` and `mtcrl_0`, camera
 bookmark equality, mobile touch, five locales, invalid/corrupt/missing resources,
 source-only fallback and lifecycle cleanup. This is browser evidence on the test
-host. Windows portable smoke, native macOS build, Finder/Tk/Gatekeeper and target
-Mac device operation are separate checks; unexecuted native checks remain pending.
+host. Windows portable smoke is a separate check. Windows x64 is the only
+maintained native distribution; historical macOS build code is unmaintained.
+
+### World ↔ Field Multiscale Navigation
+
+Select a WM0 Location, Entrance or its Atlas place and choose **View verified
+Field entrances**. The list preserves **Default** and **Alternative** as separate
+original records, even when they lead to different scenes. Choose a record
+explicitly; GaiaGIS never selects the first candidate automatically. All nonempty
+FIELD.TBL records are local entry evidence, not necessarily verified world points.
+
+Exact entry navigation requires the original WM0 entrance/ENTER_FIELD 0x318 and
+FIELD.TBL identities to agree, a matching maplist Field, an available private
+Walkmesh, valid Triangle ID and original XY inside or on that triangle. POI,
+Context and Walkmesh source fingerprints must agree. Failed or incomplete checks
+provide identity browsing only, with a reason; they do not snap the point, fly to
+a guessed world location or silently select another record. Older Context v1/v2
+and public source-only data retain basic Field browsing without exact entry actions.
+
+A verified Midgar entry can open `mds5_5` in Walkmesh, select its original
+FIELD.TBL marker and Triangle 16, and retain the source record in the shared
+Inspector. **Analyze from this validated anchor** follows directed Access only;
+the audited source reaches 85/87 triangles and excludes isolated 82 and 83.
+At `farm`, Default Triangle 10 and Alternative Triangle 79 are independent
+starts; neither is replaced by Triangle 0.
+
+The Field toolbar shows a compact evidence breadcrumb and **Back one step**.
+World-origin entries retain their original place context; direct Field search
+begins with scene identity, without an invented world parent. Gateway, MAPJUMP
+and FIELD.TBL remain different relation types. History holds at most 32 snapshots
+in the current session and is cleared when data changes or the workspace closes.
+It is not added to Bookmarks, Recently Viewed, Tours, ShareState or the browser
+URL. Back restores the prior scene, triangle/anchor and relation context. Return
+to World resumes the saved map, projection, camera, zoom, Compare and layers,
+without restarting the World Viewer.
+
+For Gateway evidence, **View original source segment** selects the source Field's
+raw line; **View target scene** follows the directed target identity. A valid
+target XY/Triangle plus a revalidated 3D source intersection selects the target-only Arrival Point. XY-only/disjoint source records open identity browsing without automatic local placement. For example, the audited
+`mds5_1` Gateway 0 retains both source candidates 115 and 116 and targets
+`mds5_3` at raw XY `(172, 373)`, Triangle 40. Back returns to the source evidence.
+This is viewing the recorded transition destination, not executing a game move.
+
+Only exact three-dimensional source intersections can associate a Gateway with
+reachable triangles. XY-only or disjoint records remain visible with their
+limitations. Missing target geometry can still provide an identity-only view.
+MAPJUMP 0x60 provides its separate script identity/offset and does not acquire a
+Gateway line, arrival coordinate or Triangle ID. The existing SVG Graph preserves
+direction and relation evidence; its layout is not geographic space.
+
+WM2/WM3 relations and `wm*` pseudo-scenes never borrow WM0 geographic anchors.
+Without verified native entry geometry, world landing remains **UNKNOWN**.
+FieldLocal XYZ remains scene-local raw data: no WGS84/Gaia Geographic conversion,
+metres, inferred interior world point or cross-Field shortest route. Static Access
+reachability, the existence of a transition record and runtime Gateway permission
+are separate facts; runtime permission remains **UNKNOWN**.
+
+The same actions work with keyboard focus or touch in compact layouts. Back and
+Escape respect text inputs, selectors, dialogs, search and existing Explorer
+ownership. To manually accept the flow, enter `mds5_5` from a verified WM0 record,
+run reachability, browse `mds5_1` Gateway 0's source and target evidence, return
+one step, then return to World and compare the saved camera/projection. No game
+data or unrelated GIS regeneration is needed for this frontend feature.
 
 ### Field Spatial Anchors
 

@@ -6,7 +6,7 @@ A local-first GIS reconstruction of the original FINAL FANTASY VII world, with a
 
 For Windows players: download the Windows ZIP from [Releases](https://github.com/Zaxaerith/ff7-GaiaGIS/releases), extract it to a writable folder and run **GaiaGIS.exe**. Choose your original FF7 installation. The startup window shows progress, opens the Viewer and remembers the folder for next time. No Python or Node installation is needed. In the Viewer, **Explore → Start exploring** offers the main player shortcuts.
 
-The **v3.8.0 local RC** adds private, single-Field GeoPackage research export from the existing workspace: original Polygon Z/LineString Z, validated anchors and directed network snapshots, with undefined Cartesian CRS and raw units. Camera/background browsing remains in the existing Web Canvas. The distribution target is **Windows x64 + Web**. macOS packaging remains unmaintained historical code. [FieldLocal QGIS export](docs/user/workspace.md#fieldlocal-geopackage-research-export).
+The **v3.9.0 local RC** adds evidence-bound World ↔ Field browsing: explicit Default/Alternative entrance choices, original directed Gateway targets, identity-only MAPJUMP records and session breadcrumbs. Source-matched records locate verified local triangles without converting Field coordinates into global positions or simulating gameplay. [Multiscale navigation](docs/user/navigation.md#world--field-multiscale-navigation). The distribution target remains **Windows x64 + Web**; macOS packaging is unmaintained historical code. Existing [FieldLocal QGIS export](docs/user/workspace.md#fieldlocal-geopackage-research-export) and Camera/Background browsing remain available.
 
 For a source checkout:
 
@@ -20,7 +20,7 @@ Use Python 3.12+ and Node 24 in a source checkout. The launcher reads your insta
 
 ## Windows Release
 
-Approved new Releases provide one Windows x64 ZIP and `SHA256SUMS.txt`. GitHub Actions checks the exact annotated tag, runs Web and isolated package validation, and publishes only the verified Windows artifact after separate approval. Local candidate ZIPs are validation products. The portable Viewer needs no Python/Node installation; optional GaiaJSON/GeoPackage exchange and FieldLocal export require GDAL-enabled Python and does not bundle QGIS. v3.8 is a local candidate, not a published Release.
+Approved new Releases provide one Windows x64 ZIP and `SHA256SUMS.txt`. GitHub Actions checks the exact annotated tag, runs Web and isolated package validation, and publishes only the verified Windows artifact after separate approval. Local candidate ZIPs are validation products. The portable Viewer needs no Python/Node installation; optional GaiaJSON/GeoPackage exchange and FieldLocal export require GDAL-enabled Python and does not bundle QGIS. v3.9 is a local candidate, not a published Release.
 
 [Releases](https://github.com/Zaxaerith/ff7-GaiaGIS/releases) · [Release process](docs/development/release-process.md)
 
@@ -42,6 +42,7 @@ The [public Viewer](https://zaxaerith.github.io/ff7-GaiaGIS/) is source-only: au
 - Read-only fifteen-slot PC/Steam 2013 Save Explorer. Verified WM0 world saves can locate Player Position; field/unknown/native records receive no fabricated marker.
 - Field Spatial Workspace: World Map, directed SVG Field Graph and responsive Canvas Field Walkmesh in the main viewport. Search a scene such as `mds5_1`, then **Open Field Workspace**. Scene switching, raw-Z colour, triangle/adjacency attributes and Field Spatial Anchors share the existing Inspector. Validated FIELD.TBL entrances, source Gateway segments and target-only arrival points retain raw coordinates, paired scenarios and source offsets; geometry warnings never imply runtime passability. World camera/projection and Compare are retained on return. Static Gateway/MAPJUMP evidence and Field-local raw units remain distinct from geography. [Field guide](docs/user/navigation.md#field-spatial-workspace).
 - Field Static Network Analysis: deterministic WCC/SCC, directed BFS reachability and least-Access-crossing paths, validated entrance/arrival starts and conservative 3D Gateway candidates. Static topology does not establish gameplay reachability; no global route, metre distance or repaired adjacency. [Field guide](docs/user/navigation.md#field-static-network-analysis).
+- World ↔ Field evidence navigation: independently chosen WM0 Default/Alternative entrances, directed Gateway arrival browsing, separate MAPJUMP identities and bounded session Back/breadcrumbs. Returning to World resumes its saved view; Field searches do not acquire invented world parents. [Navigation guide](docs/user/navigation.md#world--field-multiscale-navigation).
 - Unified FF7-inspired shell, explicit Scientific theme, desktop/320/390px layouts and five languages.
 
 ## Documentation

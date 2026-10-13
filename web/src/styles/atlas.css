@@ -42,6 +42,7 @@ body.field-active #viewport>:not(#field-workspace){visibility:hidden;pointer-eve
 body.field-active .native-host{visibility:hidden;pointer-events:none}
 body.field-active .comparison-layout{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1fr)}
 body.field-active #comparison-viewport{display:none}
+body.field-active .comparison-layout>#viewport{grid-column:1;grid-row:1}
 .field-workspace-toolbar{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;padding:12px;border-bottom:1px solid var(--rim);flex-shrink:0;min-width:0}
 .field-workspace-toolbar h2{margin:0;font-size:16px;overflow-wrap:anywhere;align-self:center}
 .field-mode-buttons{display:flex;gap:8px;flex-wrap:wrap;grid-column:1/-1}
@@ -76,3 +77,12 @@ body.field-active .field-world-controls{display:block}
 body.field-active footer :is(#view-status,#coordinates,#fps){visibility:hidden}
 #field-workspace .field-node[aria-pressed=true] rect{fill:var(--window-bg);stroke-width:4}
 #field-workspace .field-node[aria-pressed=true] text{font-weight:700;text-decoration:underline}
+
+#field-breadcrumb{grid-column:1/-1;display:flex;align-items:center;gap:8px;min-width:0;font-size:12px}
+#field-breadcrumb button{flex-shrink:0;font-size:12px;max-width:115px;white-space:normal}
+.field-crumbs{min-width:0;max-height:3.3em;overflow:auto;overflow-wrap:anywhere;line-height:1.5}
+.field-entry-actions{font-size:12px;min-width:0}
+.field-entry-actions button{max-width:100%;white-space:normal;overflow-wrap:anywhere;margin:4px 0}
+.field-entry-actions p{margin:4px 0;overflow-wrap:anywhere}
+.field-edge[role=button]{cursor:pointer;pointer-events:stroke;stroke-width:3}
+.field-edge[aria-pressed=true],.field-edge:focus-visible{stroke:var(--text);stroke-width:5;outline:none}

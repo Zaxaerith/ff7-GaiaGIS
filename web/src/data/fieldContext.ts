@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
-import type {PoiDataset} from './poi';
+import type {Entrance,PoiDataset} from './poi';
 import type {AtlasEntity,AtlasBinding,Precision} from './atlas';
 import type {SaveSlot} from './save';
 
@@ -86,6 +86,44 @@ export function validateFieldPoi(pack:FieldPack,poi:PoiDataset){
  for(const e of poi.entrances){const b=pack.bindings.find(b=>b.entranceId===e.id),n=pack.nodes.find(n=>n.id===e.field_id),verified=n?.status==='available'&&n.name===e.field_name&&e.source_kind==='derived_from_entry_trigger'&&e.script_calls.length>0&&e.world_map===0;
   if(!b||b.locationId!==e.location_id||b.fieldId!==e.field_id||b.status!==(verified?'verified_direct':'unresolved'))throw Error('Field entrance identity mismatch');
  }
+}
+
+export type WorldEntranceReason='context_unavailable'|'poi_unavailable'|'unknown_entrance'|'non_wm0'|'world_evidence_missing'|'source_mismatch'|'field_unavailable'|'legacy_context'|'table_mismatch'|'transition_mismatch'|'mesh_unavailable'|'point_invalid';
+export interface WorldEntranceValidation {ok:boolean;reason:WorldEntranceReason|null;field:FieldNode|null;record:FieldEntrance|null;relations:NativeFieldRelation[];anchor:FieldAnchor|null;}
+/** Cross-scale identity browsing, not a coordinate transform or runtime jump.
+ * The POI representative must retain WM0 trigger provenance; a FIELD.TBL row
+ * alone never establishes a global entrance. Decode only the selected scene
+ * through openWalkmeshPack before passing its mesh and verified source hashes.
+ */
+export function validateWorldEntrance(pack:FieldPack|null,poi:PoiDataset|null,entrance:Entrance,mesh?:FieldWalkmesh|null,walkmeshSources?:Record<string,string>|null):WorldEntranceValidation {
+ const result:WorldEntranceValidation={ok:false,reason:null,field:null,record:null,relations:[],anchor:null};
+ const reject=(reason:WorldEntranceReason)=>({...result,reason});
+ if(!pack)return reject('context_unavailable');if(!poi)return reject('poi_unavailable');
+ const e=poi.entrances.find(e=>e.id===entrance.id);if(!e)return reject('unknown_entrance');
+ result.field=pack.nodes.find(n=>n.id===e.field_id)??null;
+ if(e.world_map!==0||entrance.world_map!==0)return reject('non_wm0');
+ const sourceFields=['source_kind','source_file','source_record','source_script','confidence','section_id','mesh_id','triangle_id'] as const;
+ const triggersAgree=Array.isArray(entrance.trigger_triangle_ids)&&entrance.trigger_triangle_ids.length===e.trigger_triangle_ids.length&&entrance.trigger_triangle_ids.every((id,i)=>id===e.trigger_triangle_ids[i]);
+ const callsAgree=Array.isArray(entrance.script_calls)&&entrance.script_calls.length===e.script_calls.length&&entrance.script_calls.every((call,i)=>call&&call.call_table_record===e.script_calls[i].call_table_record&&call.instruction_word_offset===e.script_calls[i].instruction_word_offset);
+ if(sourceFields.some(key=>entrance[key]!==e[key])||!triggersAgree||!callsAgree||e.source_kind!=='derived_from_entry_trigger'||e.source_file!=='wm0.map'||e.confidence!=='verified_trigger_derived_position'||e.source_record!==e.triangle_id||!e.trigger_triangle_ids.includes(e.triangle_id)||!e.script_calls.length||!e.script_calls.every(c=>integer(c.call_table_record,255)&&c.call_table_record>0&&integer(c.instruction_word_offset,13823)&&c.instruction_word_offset>0))return reject('world_evidence_missing');
+ const hash=(v:unknown):v is string=>typeof v==='string'&&/^[a-f0-9]{64}$/i.test(v);
+ const same=(a:unknown,b:unknown)=>hash(a)&&hash(b)&&a.toLowerCase()===b.toLowerCase();
+ if(['wm0.map','wm0.ev','field.tbl','maplist'].some(k=>!same(pack.sources[k],poi.sources[k]))||!hash(pack.sources['flevel.lgp'])||Object.entries(poi.sources).some(([key,value])=>Object.hasOwn(pack.sources,key)&&!same(value,pack.sources[key])))return reject('source_mismatch');
+ const binding=pack.bindings.find(b=>b.entranceId===e.id);
+ if(!result.field||result.field.status!=='available'||result.field.name!==e.field_name||!binding||binding.fieldId!==e.field_id||binding.locationId!==e.location_id||binding.status!=='verified_direct')return reject('field_unavailable');
+ if(pack.version!==3||!pack.entrances)return reject('legacy_context');
+ result.record=pack.entrances.find(r=>r.field_table_record===e.field_table_record)??null;const r=result.record;
+ const fields=['location_id','field_id','field_name','field_x','field_y','field_triangle','field_direction','field_table_record','field_table_byte_offset','entrance_table_id','scenario'] as const;
+ if(!r||fields.some(key=>entrance[key]!==e[key])||r.entry!==e.entrance_table_id||r.scenario!==e.scenario||r.field_table_record!==(r.entry-1)*2+r.scenario||r.field_table_byte_offset!==r.field_table_record*12||(['field_id','field_name','field_x','field_y','field_triangle','field_direction','field_table_record','field_table_byte_offset'] as const).some(key=>r[key]!==e[key])||!['inside','boundary'].includes(r.status))return reject('table_mismatch');
+ const calls=new Set(e.script_calls.map(c=>c.instruction_word_offset));
+ const related=(pack.nativeRelations??[]).filter(n=>n.map==='WM0'&&calls.has(n.offset));
+ result.relations=related.filter(n=>n.opcode===0x318&&n.entry===r.entry&&n.scenario===r.scenario&&n.fieldId===r.field_id);
+ if(related.length!==result.relations.length||[...calls].some(offset=>!result.relations.some(n=>n.offset===offset)))return reject('transition_mismatch');
+ if(!mesh)return reject('mesh_unavailable');
+ if(!walkmeshSources||['flevel.lgp','maplist'].some(k=>!same(walkmeshSources[k],pack.sources[k])))return reject('source_mismatch');
+ const p=localPoint(mesh,r.field_triangle,[r.field_x,r.field_y]);
+ if(!['inside','boundary'].includes(p.status)||p.status!==r.status||p.derivedZ===null||r.derivedZ===null||Math.abs(p.derivedZ-r.derivedZ)>1e-8)return reject('point_invalid');
+ result.ok=true;result.anchor={key:'entrance:'+r.field_table_record,kind:'entrance',record:r,x:r.field_x,y:r.field_y};return result;
 }
 
 /** Topology only. A unique mutual gateway association is not spatial containment. */
@@ -287,12 +325,12 @@ export function parseWalkmeshHeader(buffer:ArrayBuffer,total:number,fields:Field
   if(!integer(o.fieldId)||scenes.has(r.fieldId)||!fields.nodes.some(n=>n.id===r.fieldId&&n.status==='available')||!['available','corrupt'].includes(r.status))throw Error('Walkmesh scene identity');
   if(r.status==='available'){if(!integer(r.triangles)||r.offset!==end||r.bytes!==4+r.triangles!*30||statsKeys.some(k=>!integer(o[k],196605))||Number(o.blocked)+Number(o.accessible)!==r.triangles!*3||base+end+r.bytes!>total)throw Error('Walkmesh scene span/statistics');end+=r.bytes!;}scenes.set(r.fieldId,r);
  }
- if(base+end!==total)throw Error('Walkmesh trailing/unindexed bytes');return {base,scenes};
+ if(base+end!==total)throw Error('Walkmesh trailing/unindexed bytes');return {base,scenes,sources:sources as Record<string,string>};
 }
 /** Keep one File handle; only the selected raw Section 5 is decoded, no database. */
 export async function openWalkmeshPack(file:File,fields:FieldPack){
  if(file.name!=='gaia-field-walkmesh.bin'||file.size>32_000_000||file.size<16)throw Error('Walkmesh file bounds');
  const head=new DataView(await file.slice(0,16).arrayBuffer()),length=head.getUint32(12,true);if(length>512_000||16+length>file.size)throw Error('Walkmesh metadata limit');
  const header=parseWalkmeshHeader(await file.slice(0,16+length).arrayBuffer(),file.size,fields);
- return {scenes:header.scenes,async decode(id:number){const r=header.scenes.get(id);if(!r||r.status!=='available')throw Error('Walkmesh unavailable');const mesh=decodeWalkmesh(await file.slice(header.base+r.offset!,header.base+r.offset!+r.bytes!).arrayBuffer());if(mesh.triangles!==r.triangles||Object.entries(mesh.stats).some(([k,v])=>r[k as keyof WalkmeshStats]!==v))throw Error('Walkmesh statistics mismatch');return mesh;}};
+ return {scenes:header.scenes,sources:header.sources,async decode(id:number){const r=header.scenes.get(id);if(!r||r.status!=='available')throw Error('Walkmesh unavailable');const mesh=decodeWalkmesh(await file.slice(header.base+r.offset!,header.base+r.offset!+r.bytes!).arrayBuffer());if(mesh.triangles!==r.triangles||Object.entries(mesh.stats).some(([k,v])=>r[k as keyof WalkmeshStats]!==v))throw Error('Walkmesh statistics mismatch');return mesh;}};
 }

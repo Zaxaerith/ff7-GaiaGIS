@@ -2,7 +2,14 @@
 
 Formal version changes; historical acceptance evidence remains in Git history and Releases.
 
-## v3.8.0 — local RC, awaiting human acceptance
+## v3.9.0 — local RC, awaiting human acceptance
+
+- Evidence-bound World → Field navigation reuses WM0 Entrance identities, ENTER_FIELD 0x318 / FIELD.TBL records and source-matched Context/Walkmesh resources. Default/Alternative choices stay separate; exact local navigation requires validated target identity, triangle and original XY.
+- Directed Gateway evidence can select its original source segment or a validated target-only Arrival Point. MAPJUMP 0x60 remains identity-only evidence; pseudo-world targets and incomplete geometry acquire no invented location or route.
+- Session-only, bounded Field breadcrumbs and Back restore prior scene selections while preserving the original World camera, projection, Compare and layers. No new persisted history, loader, renderer, Field schema or game-data regeneration.
+- Existing static Access analysis, camera/background and FieldLocal GeoPackage remain separate evidence tools. Runtime Gateway activation and unknown world landings remain UNKNOWN; no cross-Field path or global Field coordinate conversion.
+
+## v3.8.0 — local RC, human accepted
 
 - Read-only single-Field `field-gis export` from source-bound Context schema 3 / Walkmesh v1, using GDAL >= 3.9. No workspace regeneration, background embedding or dependency added to Web/portable Viewer.
 - Standard undefined Cartesian GeoPackage (SRS -1): exact original Polygon Z, three directed Access edge slots, independent raw vertices/raw4, validated paired FIELD.TBL entrances, source Gateway segments, target-only arrivals and all exact 3D candidate relations. XY-only/disjoint evidence remains unchanged.

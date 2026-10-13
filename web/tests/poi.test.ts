@@ -4,6 +4,8 @@ import {existsSync,readFileSync} from 'node:fs';
 import {parseMesh} from '../src/data/mesh';
 import {Vector3} from 'three';
 import {parsePoi,searchLocations,filterLocation,loadOptionalPoi,readLocalPoi,validatePoiMesh} from '../src/data/poi';
+import {validateWorldEntrance,parseFieldPack,parseWalkmeshHeader,decodeWalkmesh,WalkmeshNetwork} from '../src/data/fieldContext';
+import type {FieldEntrance} from '../src/data/fieldContext';
 import type {Location} from '../src/data/poi';
 import {projections} from '../src/projections';
 import {markerPosition,markerVisible} from '../src/viewer/locations';
@@ -59,6 +61,86 @@ describe('location search',()=>{
   it('ranks exact, prefix, substring, alias, field name',()=>expect(searchLocations(locations,' TeSt ').map(l=>l.id)).toEqual(['exact','prefix','substring','alias','field']));
   it('normalizes accents and finds aliases/internal fields',()=>{expect(searchLocations([{...base,display_name:'Café'}],'CAFE')).toHaveLength(1);expect(searchLocations([base],'synthetic')).toHaveLength(1);expect(searchLocations([base],'fixture_field')).toHaveLength(1);});
   it('filters categories and reports empty results',()=>{expect(filterLocation({...base,category:'cave'},'dungeons')).toBe(true);expect(searchLocations([base],'','dungeons')).toHaveLength(0);expect(searchLocations([base],'missing')).toHaveLength(0);});
+});
+describe('World → Field original entrance evidence',()=>{
+ function evidence(){
+  const p=fixture();Object.assign(p.entrances[0],{field_x:2,field_y:2});
+  const poi=parsePoi(p),e=poi.entrances[0];
+  const blank=(record:number):FieldEntrance=>({entry:Math.floor(record/2)+1,scenario:record%2 as 0|1,field_id:0,field_name:'dummy',field_x:0,field_y:0,field_triangle:0,field_direction:0,field_table_record:record,field_table_byte_offset:record*12,status:'placeholder',derivedZ:null});
+  const record:FieldEntrance={entry:1,scenario:0,field_id:1,field_name:'fixture_field',field_x:2,field_y:2,field_triangle:0,field_direction:0,field_table_record:0,field_table_byte_offset:0,status:'inside',derivedZ:0};
+  const entrances=Array.from({length:128},(_,i)=>i?blank(i):record);
+  const pack=parseFieldPack({schema:'gaiagis-field-context',version:3,coordinateSpace:'FieldLocalIdentity',archive:'flevel.lgp',sources:{...poi.sources,'flevel.lgp':sha},nodes:[{id:1,name:'fixture_field',status:'available',saveId:null,scriptName:null}],edges:[],exits:[],unresolved:[],bindings:[{entranceId:e.id,locationId:e.location_id,fieldId:1,status:'verified_direct'}],scriptTransitions:'bounded_mapjump',scriptEdges:[],scriptExits:[],scriptUnresolved:[],nativeRelations:[{map:'WM0',fieldId:1,entry:1,scenario:0,function:1,offset:1,opcode:792}],entrances,gateways:[]});
+  const raw=new ArrayBuffer(34),view=new DataView(raw);view.setUint32(0,1,true);[0,0,0,0,10,0,0,0,0,10,0,0].forEach((v,i)=>view.setInt16(4+i*2,v,true));for(let i=0;i<3;i++)view.setUint16(28+i*2,65535,true);
+  return {poi,e,pack,mesh:decodeWalkmesh(raw),sources:{'flevel.lgp':sha,maplist:sha}};
+ }
+ it('requires original WM0 script/table identity and selected geometry, without inventing a global coordinate',()=>{
+  const {poi,e,pack,mesh,sources}=evidence();expect(validateWorldEntrance(pack,poi,e).reason).toBe('mesh_unavailable');const r=validateWorldEntrance(pack,poi,e,mesh,sources);expect(r.ok).toBe(true);expect(r.anchor).toEqual({key:'entrance:0',kind:'entrance',record:pack.entrances![0],x:2,y:2});expect(r.relations.map(n=>n.offset)).toEqual([1]);expect(r).not.toHaveProperty('longitude');
+ });
+ it('retains Default/Alternative as separate evidence and targets',()=>{
+  const {poi,e,pack,mesh,sources}=evidence(),alternative={...e,id:'alternative',scenario:1,field_id:2,field_name:'other_field',field_table_record:1,field_table_byte_offset:12,script_calls:[{call_table_record:2,instruction_word_offset:2}]};poi.entrances.push(alternative);pack.nodes.push({id:2,name:'other_field',status:'available',saveId:null});pack.bindings.push({entranceId:'alternative',locationId:e.location_id,fieldId:2,status:'verified_direct'});pack.entrances![1]={...pack.entrances![0],scenario:1,field_id:2,field_name:'other_field',field_table_record:1,field_table_byte_offset:12};pack.nativeRelations!.push({map:'WM0',fieldId:2,entry:1,scenario:1,function:2,offset:2,opcode:792});
+  expect(validateWorldEntrance(pack,poi,e,mesh,sources).field?.id).toBe(1);const r=validateWorldEntrance(pack,poi,alternative,mesh,sources);expect(r.ok).toBe(true);expect(r.field?.id).toBe(2);expect(r.anchor?.key).toBe('entrance:1');expect(r.record?.scenario).toBe(1);
+ });
+ it('keeps identity browsing but refuses old Context and absent resources',()=>{
+  const {poi,e,pack,mesh,sources}=evidence();for(const version of [1,2] as const)expect(validateWorldEntrance({...pack,version},poi,e,mesh,sources)).toMatchObject({ok:false,reason:'legacy_context',field:{id:1}});expect(validateWorldEntrance(null,poi,e).reason).toBe('context_unavailable');expect(validateWorldEntrance(pack,null,e).reason).toBe('poi_unavailable');expect(validateWorldEntrance(pack,poi,{...e,id:'missing'}).reason).toBe('unknown_entrance');expect(validateWorldEntrance(pack,poi,e,mesh).reason).toBe('source_mismatch');
+ });
+ it.each(['wm0.map','wm0.ev','field.tbl','maplist','flevel.lgp'])('rejects source mismatch %s',key=>{
+  const {poi,e,pack,mesh,sources}=evidence();if(key==='flevel.lgp')sources[key]='b'.repeat(64);else pack.sources[key]='b'.repeat(64);expect(validateWorldEntrance(pack,poi,e,mesh,sources).reason).toBe('source_mismatch');
+ });
+ it.each([2,3])('does not borrow WM0 geometry for WM%d identity',map=>{const {poi,e,pack,mesh,sources}=evidence();e.world_map=map;expect(validateWorldEntrance(pack,poi,e,mesh,sources).reason).toBe('non_wm0');});
+ it('rejects missing, contradictory and unrelated ENTER_FIELD calls rather than choosing the first',()=>{
+  const {poi,e,pack,mesh,sources}=evidence();const check=()=>validateWorldEntrance(pack,poi,e,mesh,sources);pack.nativeRelations![0].offset=2;expect(check().reason).toBe('transition_mismatch');pack.nativeRelations![0].offset=1;pack.nativeRelations!.push({...pack.nativeRelations![0],fieldId:2,function:2});expect(check().reason).toBe('transition_mismatch');pack.nativeRelations!.pop();e.script_calls.push({call_table_record:2,instruction_word_offset:3});expect(check().reason).toBe('transition_mismatch');
+ });
+ it('rejects dummy, tampered table coordinates, invalid/outside mesh and unproved Z instead of snapping',()=>{
+  const f=evidence();f.pack.entrances![0].status='placeholder';expect(validateWorldEntrance(f.pack,f.poi,f.e,f.mesh,f.sources).reason).toBe('table_mismatch');
+  const g=evidence();expect(validateWorldEntrance(g.pack,g.poi,{...g.e,field_x:3},g.mesh,g.sources).reason).toBe('table_mismatch');g.pack.entrances![0].field_x=99;expect(validateWorldEntrance(g.pack,g.poi,g.e,g.mesh,g.sources).reason).toBe('table_mismatch');
+  const h=evidence();h.mesh.vertices[4]=1;h.mesh.vertices[9]=1;expect(validateWorldEntrance(h.pack,h.poi,h.e,h.mesh,h.sources).reason).toBe('point_invalid');
+  const z=evidence();z.pack.entrances![0].derivedZ=2;expect(validateWorldEntrance(z.pack,z.poi,z.e,z.mesh,z.sources).reason).toBe('point_invalid');
+ });
+ it('preserves exact boundary points',()=>{const {poi,e,pack,mesh,sources}=evidence();e.field_x=0;e.field_y=5;Object.assign(pack.entrances![0],{field_x:0,field_y:5,status:'boundary'});expect(validateWorldEntrance(pack,poi,e,mesh,sources).ok).toBe(true);});
+ it('refuses non-trigger or missing target identity even with a valid FIELD.TBL point',()=>{
+  const {poi,e,pack,mesh,sources}=evidence();e.source_kind='field_table_only';expect(validateWorldEntrance(pack,poi,e,mesh,sources).reason).toBe('world_evidence_missing');e.source_kind='derived_from_entry_trigger';pack.nodes[0].status='missing';expect(validateWorldEntrance(pack,poi,e,mesh,sources).reason).toBe('field_unavailable');
+ });
+ it('cannot use WM2/WM3 ENTER_FIELD identity as proof of a WM0 entrance',()=>{
+  for(const map of ['WM2','WM3'] as const){const {poi,e,pack,mesh,sources}=evidence();pack.nativeRelations![0].map=map;expect(validateWorldEntrance(pack,poi,e,mesh,sources).reason).toBe('transition_mismatch');}
+ });
+ it('requires ENTER_FIELD opcode and bounded original instruction offsets',()=>{
+  for(const offset of [0,-1,13824,Infinity]){const {poi,e,pack,mesh,sources}=evidence();e.script_calls[0].instruction_word_offset=offset;expect(validateWorldEntrance(pack,poi,e,mesh,sources).reason).toBe('world_evidence_missing');}
+  const f=evidence();(f.pack.nativeRelations![0] as unknown as {opcode:number}).opcode=0x60;expect(validateWorldEntrance(f.pack,f.poi,f.e,f.mesh,f.sources).reason).toBe('transition_mismatch');
+ });
+ it('rejects invalid target IDs and XY outside S16 bounds without mutating evidence',()=>{
+  const invalid=evidence();invalid.e.field_id=65536;expect(validateWorldEntrance(invalid.pack,invalid.poi,invalid.e,invalid.mesh,invalid.sources).reason).toBe('field_unavailable');
+  for(const [key,value] of [['field_triangle',65535],['field_x',32768],['field_y',-32769]] as const){const f=evidence();f.e[key]=value;f.pack.entrances![0][key]=value;expect(validateWorldEntrance(f.pack,f.poi,f.e,f.mesh,f.sources).reason).toBe('point_invalid');expect(f.e[key]).toBe(value);expect(f.pack.entrances![0][key]).toBe(value);}
+ });
+ it('requires hashes on every necessary source and independently verifies the Walkmesh maplist',()=>{
+  for(const key of ['wm0.map','wm0.ev','field.tbl','maplist','flevel.lgp']){const f=evidence();delete f.pack.sources[key];expect(validateWorldEntrance(f.pack,f.poi,f.e,f.mesh,f.sources).reason).toBe('source_mismatch');}
+  const f=evidence();f.sources.maplist='b'.repeat(64);expect(validateWorldEntrance(f.pack,f.poi,f.e,f.mesh,f.sources).reason).toBe('source_mismatch');
+ });
+ it('rejects same-ID entrance arguments that borrow another map, location or source record',()=>{
+  const {poi,e,pack,mesh,sources}=evidence();const validate=(v:typeof e)=>validateWorldEntrance(pack,poi,v,mesh,sources);
+  expect(validate(structuredClone(e)).ok).toBe(true);
+  for(const world_map of [2,3])expect(validate({...e,world_map}).reason).toBe('non_wm0');
+  expect(validate({...e,location_id:'different_parent'}).reason).toBe('table_mismatch');
+  for(const key of ['source_kind','source_file','source_record','source_script','section_id','mesh_id','triangle_id'] as const){const modified={...e,[key]:typeof e[key]==='string'?'tampered':Number(e[key])+1};expect(validate(modified).reason).toBe('world_evidence_missing');}
+ });
+ it('compares raw trigger and script-call arrays by original order and values, not merely entrance ID',()=>{
+  const {poi,e,pack,mesh,sources}=evidence();const validate=(v:typeof e)=>validateWorldEntrance(pack,poi,v,mesh,sources);
+  expect(validate({...e,trigger_triangle_ids:[0,1]}).reason).toBe('world_evidence_missing');
+  expect(validate({...e,trigger_triangle_ids:[1]}).reason).toBe('world_evidence_missing');
+  expect(validate({...e,script_calls:[{call_table_record:2,instruction_word_offset:1}]}).reason).toBe('world_evidence_missing');
+  expect(validate({...e,script_calls:[{call_table_record:1,instruction_word_offset:2}]}).reason).toBe('world_evidence_missing');
+  e.trigger_triangle_ids=[0,1];e.script_calls=[{call_table_record:1,instruction_word_offset:1},{call_table_record:2,instruction_word_offset:2}];pack.nativeRelations!.push({...pack.nativeRelations![0],function:2,offset:2});expect(validate(structuredClone(e)).ok).toBe(true);
+  expect(validate({...e,trigger_triangle_ids:[1,0]}).reason).toBe('world_evidence_missing');expect(validate({...e,script_calls:[...e.script_calls].reverse()}).reason).toBe('world_evidence_missing');
+ });
+});
+it.skipIf(!process.env.GAIA_FIELD_NAV_WORKSPACE)('verifies real WM0 entrance records against the same local Field/Walkmesh source',()=>{
+ const root=process.env.GAIA_FIELD_NAV_WORKSPACE!;
+ const pack=parseFieldPack(JSON.parse(readFileSync(root+'/gaia-field-context.json','utf8'))),poi=parsePoi(JSON.parse(readFileSync(root+'/gaia-poi.json','utf8'))),raw=readFileSync(root+'/gaia-field-walkmesh.bin');
+ const length=raw.readUInt32LE(12),buffer=raw.buffer.slice(raw.byteOffset,raw.byteOffset+raw.byteLength),header=parseWalkmeshHeader(buffer.slice(0,16+length),raw.length,pack),verified=[];
+ for(const e of poi.entrances){const scene=header.scenes.get(e.field_id)!;expect(scene.status).toBe('available');const mesh=decodeWalkmesh(buffer.slice(header.base+scene.offset!,header.base+scene.offset!+scene.bytes!));const result=validateWorldEntrance(pack,poi,e,mesh,header.sources);expect(result.ok,e.id+' / '+result.reason).toBe(true);verified.push({e,mesh,result});}
+ const midgar=verified.filter(v=>v.e.field_name==='mds5_5');expect(midgar.length).toBeGreaterThan(0);for(const v of midgar){expect(v.result.record?.field_triangle).toBe(16);const reach=new WalkmeshNetwork(v.mesh).reach(16);expect(reach.ids).toHaveLength(85);expect(reach.ids).not.toContain(82);expect(reach.ids).not.toContain(83);}
+ const farm=verified.filter(v=>v.e.field_name==='farm');expect(new Set(farm.map(v=>v.e.scenario))).toEqual(new Set([0,1]));for(const v of farm){expect(v.result.record?.field_triangle).toBe(v.e.scenario?79:10);expect(new WalkmeshNetwork(v.mesh).reach(v.e.field_triangle).ids).toHaveLength(184);}
+ // FIELD.TBL has identities without WM0 anchors: never synthesize POIs from it.
+ expect(verified.length).toBeLessThan(pack.entrances!.filter(e=>e.status==='inside'||e.status==='boundary').length);
 });
 describe('mesh provenance binding',()=>{
   const mesh={triangleCount:1,indices:new Uint32Array([0,1,2]),geographic:new Float32Array([0,0,0,-1,-1,0,1,1,0]),attributes:()=>({origin:0,section:0,mesh:0,triangle:0,region:0,script:7})};
