@@ -32,6 +32,8 @@ Current local candidates are validated locally; workflow execution is separate a
 
 These are future publication instructions, not operations performed during local RC development. Tag checks, workflow Python syntax and checksum/provenance guards can be locally exercised with synthetic packages and mocked Git/GitHub responses. Such tests create no real tag, contact no GitHub API and do not verify runner availability, action versions, account permissions or a successful cloud build.
 
+Single-platform assembly downloads the explicitly named `release-windows-x64` artifact into its explicitly named subdirectory; it does not depend on a pattern download's single-artifact flattening behavior. If release orchestration fails after a tag exists, preserve that tag, commit a minimal workflow fix normally and require its main CI to pass. An authorized dispatch from the corrected workflow ref can then rebuild the existing tag with `dry_run=false`; application checkout, package provenance and tag-target checks still use that unchanged annotated tag. Report the workflow commit separately from the tagged application commit.
+
 ## Distribution boundary
 
 Portable delivery contains authored application code, compiled source-only Viewer, required open-source runtime, corresponding source and licence notices. It excludes private tests/logs, user saves, workspaces, screenshots, original assets and complete game-derived datasets. Generated assets are built from the user's installation after launch.

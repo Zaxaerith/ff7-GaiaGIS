@@ -104,8 +104,8 @@ jobs:
     steps:
       - uses: actions/download-artifact@v6
         with:
-          pattern: release-*
-          path: release-artifacts
+          name: release-windows-x64
+          path: release-artifacts/release-windows-x64
       - name: Verify Windows package and assemble one checksum manifest
         shell: python {0}
         env:
