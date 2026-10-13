@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-only
 import {describe,it,expect} from 'vitest';
-import {validateWorkspaceChoice,WorkspaceImportError,localWorkspacePath,DEFAULT_WORKSPACE} from '../src/app/workspaceUX';
+import {validateWorkspaceChoice,WorkspaceImportError,localWorkspacePath,DEFAULT_WORKSPACE,beginWorkspaceImport,currentWorkspaceImport,cancelWorkspaceImport} from '../src/app/workspaceUX';
 import {fileHash} from '../src/app/workspace';
 async function fixture(){const files=[new File(['{}'],'gaia-meta.json'),new File([new Uint8Array(16)],'gaia-mesh.bin')];const assets=await Promise.all(files.map(async f=>({filename:f.name,type:f.name==='gaia-meta.json'?'metadata':'geometry',mapId:'WM0',bytes:f.size,sha256:await fileHash(f),dependencies:f.name==='gaia-meta.json'?[]:['gaia-meta.json']})));const manifest={schema:'gaiagis-workspace',version:1,tool_version:'2.0.0',timestamp_policy:'omitted',sources:{},assets};return {files,manifest,selected:()=>[...files,new File([JSON.stringify(manifest)],'gaia-workspace.json')]};}
 describe('manual workspace guidance and validation',()=>{
+ it('retains latest-choice ownership across geometry/shell adoption and invalidates on page exit',()=>{const first=beginWorkspaceImport();expect(currentWorkspaceImport(first)).toBe(true);const latest=beginWorkspaceImport();expect(currentWorkspaceImport(first)).toBe(false);expect(currentWorkspaceImport(latest)).toBe(true);cancelWorkspaceImport();expect(currentWorkspaceImport(latest)).toBe(false);expect(currentWorkspaceImport(beginWorkspaceImport())).toBe(true);});
  it('agrees with the launcher default',()=>expect(DEFAULT_WORKSPACE).toBe('output/local-workspace'));
  it('explains a raw FF7 directory without reading game files',async()=>{await expect(validateWorkspaceChoice([new File(['raw'],'wm0.map')])).rejects.toMatchObject({key:'shell.missingManifest'});});
  it('explains an empty selection',async()=>{await expect(validateWorkspaceChoice([])).rejects.toBeInstanceOf(WorkspaceImportError);});

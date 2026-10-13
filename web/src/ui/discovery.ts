@@ -1,7 +1,6 @@
 import {navigationActions} from '../app/navigationActions';
 import {legendRow} from './legend';
 // SPDX-License-Identifier: GPL-3.0-only
-import '../styles/discovery.css';
 import {appStore} from '../app/state';
 import {findNavigation,navigationEntries} from '../app/navigation';
 import type {NavigationEntry} from '../app/navigation';

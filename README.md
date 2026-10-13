@@ -4,9 +4,11 @@ A local-first GIS reconstruction of the original FINAL FANTASY VII world, with a
 
 ## Quick start
 
-For Windows players: download the Windows ZIP from [Releases](https://github.com/Zaxaerith/ff7-GaiaGIS/releases), extract it to a writable folder and run **GaiaGIS.exe**. Choose your original FF7 installation. The startup window shows progress, opens the Viewer and remembers the folder for next time. No Python or Node installation is needed. In the Viewer, **Explore → Start exploring** offers the main player shortcuts.
+The **Web Viewer is the main interface**. Open the [public Viewer](https://zaxaerith.github.io/ff7-GaiaGIS/) for authored Atlas/search and local user tools. For original map and Field data, first create a private Workspace from your legally held original FF7 PC data, then choose **Data → Workspace Folder** in that same browser Viewer. Select the generated folder containing `gaia-workspace.json`, not the game directory. [Browser setup and Workspace creation](docs/user/getting-started.md).
 
-The **v3.9.0 local RC** adds evidence-bound World ↔ Field browsing: explicit Default/Alternative entrance choices, original directed Gateway targets, identity-only MAPJUMP records and session breadcrumbs. Source-matched records locate verified local triangles without converting Field coordinates into global positions or simulating gameplay. [Multiscale navigation](docs/user/navigation.md#world--field-multiscale-navigation). The distribution target remains **Windows x64 + Web**; macOS packaging is unmaintained historical code. Existing [FieldLocal QGIS export](docs/user/workspace.md#fieldlocal-geopackage-research-export) and Camera/Background browsing remain available.
+For Windows players, an approved [Release](https://github.com/Zaxaerith/ff7-GaiaGIS/releases) ZIP supplies **GaiaGIS.exe** to create/connect the Workspace and open that browser interface. Extract the whole ZIP to a writable folder, select the original FF7 data and keep the launcher open. No Python or Node installation is needed by the portable runtime.
+
+The **v4.0.0 local RC** stabilizes the existing World/Field controls, Inspector and documentation; it adds no new GIS or reverse-engineering algorithm. It is developed on `stabilize/v4.0`, while `main` retains the v3.9 RC for separate human acceptance. v3.9 technical checks passed; browser human acceptance is still pending. The maintained targets are **Web + Windows x64**; historical macOS packaging is unmaintained. [Multiscale navigation](docs/user/navigation.md#world--field-multiscale-navigation), [FieldLocal QGIS export](docs/user/workspace.md#fieldlocal-geopackage-research-export) and Camera/Background browsing keep their existing data contracts.
 
 For a source checkout:
 
@@ -16,11 +18,11 @@ npm --prefix web ci
 python -m gaiagis local --source "YOUR_FF7_INSTALLATION"
 ```
 
-Use Python 3.12+ and Node 24 in a source checkout. The launcher reads your installation, incrementally generates **output/local-workspace**, connects it automatically and opens the browser. It never modifies game files. [Getting started](docs/user/getting-started.md).
+Use Python 3.12+ and Node 24 in a source checkout. Fresh source geometry generation additionally needs GDAL/QGIS or a compatible existing Stage-1 cache; the Windows portable launcher uses its bundled stdlib transport. The source launcher incrementally generates **output/local-workspace**, connects it automatically and opens the browser. It never modifies game files. An existing Workspace can instead be imported into the ordinary Web Viewer without running the launcher. [Getting started](docs/user/getting-started.md).
 
 ## Windows Release
 
-Approved new Releases provide one Windows x64 ZIP and `SHA256SUMS.txt`. GitHub Actions checks the exact annotated tag, runs Web and isolated package validation, and publishes only the verified Windows artifact after separate approval. Local candidate ZIPs are validation products. The portable Viewer needs no Python/Node installation; optional GaiaJSON/GeoPackage exchange and FieldLocal export require GDAL-enabled Python and does not bundle QGIS. v3.9 is a local candidate, not a published Release.
+Approved new Releases provide one Windows x64 ZIP and `SHA256SUMS.txt`. GitHub Actions checks the exact annotated tag, runs Web and isolated package validation, and publishes only the verified Windows artifact after publication approval. Local candidate ZIPs are validation products. Optional GaiaJSON/GeoPackage exchange and FieldLocal export require GDAL-enabled Python; QGIS is not bundled. v4.0 is a local candidate, not a published Release. Neither cloud Actions execution nor human acceptance follows from local technical checks.
 
 [Releases](https://github.com/Zaxaerith/ff7-GaiaGIS/releases) · [Release process](docs/development/release-process.md)
 
@@ -46,6 +48,19 @@ The [public Viewer](https://zaxaerith.github.io/ff7-GaiaGIS/) is source-only: au
 - Unified FF7-inspired shell, explicit Scientific theme, desktop/320/390px layouts and five languages.
 
 ## Documentation
+
+[Getting started](docs/user/getting-started.md) covers browser setup, Workspace creation, World/Field browsing and the optional QGIS path.
+
+Evidence is kept distinct throughout the Viewer:
+
+| Level | Meaning |
+|---|---|
+| Verified source evidence | Original records, source hashes, identities and independently checked local geometry; this does not establish gameplay permission. |
+| Research reconstruction | The frozen V1 reference sphere/projections and static Access analysis, with their stated assumptions. |
+| Partial support | Manual original-camera viewing and a bounded static background subset; dynamic conditions, blending and occlusion are incomplete. |
+| UNKNOWN | Runtime story/Gateway conditions, complete background alignment, Field global positions and unverified world landings. |
+
+FieldLocal uses raw units, never metres or geographic coordinates. Parsing cameras for 702 Fields does not mean their backgrounds are all accurately aligned.
 
 [Explorer](docs/user/explorer.md) · [Save Explorer](docs/user/save-explorer.md) · [User Mapping](docs/user/user-mapping.md) · [Navigation](docs/user/navigation.md)
 

@@ -1,6 +1,6 @@
 # Local workspace
 
-A workspace is GaiaGIS-generated data, not the FF7 installation or its raw `wm` folder. The default location is **`output/local-workspace`**, relative to the checkout or portable package. The alternative root `local-workspace` folder is not the launcher default.
+A workspace is GaiaGIS-generated data, not the FF7 installation or its raw `wm` folder. The default location is **`output/local-workspace`**, relative to the checkout or portable package. The alternative root `local-workspace` folder is not the launcher default. Web is the primary Viewer; the same generated folder can be selected in its Data panel without running the native launcher.
 
 Historical, unmaintained macOS behaviour (not a current distribution target): `output/local-workspace` is relative to the dedicated writable root **`~/Library/Application Support/GaiaGIS`**. App resources stay read-only in `GaiaGIS.app/Contents/Resources`. The launcher displays the writable root; remembered source, caches, temporary files and logs stay beneath it. `GAIAGIS_WORKSPACE_ROOT` or the Mac app's `--workspace-root` launch argument can explicitly select an absolute dedicated root. Developer/packaging tests always use a checkout-local override. Windows EXE and source-checkout defaults are unchanged.
 
@@ -12,7 +12,7 @@ The Data status card distinguishes auto-local, manually selected folder and publ
 
 ## Manual selection
 
-Choose the generated folder containing `gaia-workspace.json`. Do **not** select the installation or its `wm` directory. The folder picker checks the manifest and reports missing/invalid components. Public source-only mode remains usable when optional components are absent.
+Use **Data → Workspace Folder** and choose the generated folder containing `gaia-workspace.json`. Do **not** select the installation or its `wm` directory. The folder picker checks the manifest and reports missing/invalid components. Public source-only mode remains usable when optional components are absent. Manual file handles stay in the current page session; re-select the folder after refresh. Auto-local mode instead reconnects to its still-running loopback launcher/server.
 
 An explicit build is available:
 
@@ -20,9 +20,17 @@ An explicit build is available:
 python -m gaiagis build-workspace --source "YOUR_FF7_INSTALLATION" --output output/local-workspace
 ```
 
-For an existing workspace, run this command with its **same output folder**, without `--rebuild`. Generation checks component hashes and generator compatibility, preserves reusable world/GIS components, and updates the manifest. A Viewer upgrade alone does not add missing private resources to an older workspace.
+For an existing workspace, run this command with its **same output folder**. Generation checks component hashes and generator compatibility, preserves reusable world/GIS components, and updates the manifest. The explicit builder is incremental by default; avoid the local launcher's full `--rebuild` for a Viewer upgrade. A Viewer upgrade alone does not add missing private resources to an older workspace. Fresh source geometry generation requires GDAL/QGIS or a compatible existing Stage-1 cache; an incremental build with reusable core geometry does not regenerate it.
 
-For v3.7 Camera View / Background Overlay, the folder must contain `gaia-field-context.json`, `gaia-field-walkmesh.bin` and `gaia-field-visual.bin`, registered in `gaia-workspace.json`. After generation finishes, use **Data → Workspace Folder** in the browser to select that updated folder again. This works with the ordinary Web Viewer; neither the Windows EXE nor the auto-local server is required. The browser imports generated files only and does not generate resources from the game installation.
+For Camera View / Background Overlay, the folder must contain `gaia-field-context.json`, `gaia-field-walkmesh.bin` and `gaia-field-visual.bin`, registered in `gaia-workspace.json`. After generation finishes, use **Data → Workspace Folder** in the browser to select that updated folder again. This works with the ordinary Web Viewer; neither the Windows EXE nor the auto-local server is required. The browser imports generated files only and does not generate resources from the game installation.
+
+## Compatibility and failed imports
+
+Application version and data-format version serve different purposes. v4.0 retains Manifest v1, Field Context schema 3, Walkmesh v1, visual pack v1, FieldLocal GeoPackage v1 and existing GaiaJSON/WM0 exchange contracts. An otherwise compatible v3.x Workspace does not need regeneration just because its `tool_version` differs from the Viewer version.
+
+The manifest's asset lengths/hashes and dependencies are checked, followed by each component's bounded parser and source bindings. Unsupported format versions, truncation or inconsistent `flevel.lgp`/maplist/world hashes are rejected; selecting unrelated individually valid files does not make them a matched Workspace. Inspect **Data → Resources** for the affected component and availability, then re-select the complete, source-matched generated folder. Do not edit hashes or invent missing payloads to bypass validation.
+
+Old Field Context v1/v2 can retain scene identity/Graph and compatible Walkmesh browsing. Missing Spatial Anchors disable exact entrance/arrival navigation; missing visual data leaves Plan View available. Missing private packs in Public source-only mode are expected, rather than proof of a parsing failure. Data replacement invalidates incompatible Field navigation history and caches. Manual import uses one page-session request identity across the normal UI remount during geometry adoption; older manual validation/status cannot replace a newer choice. Automatic-local responses cannot replace an already validated manual Workspace. A rejected manual choice keeps its alert through automatic connection but does not block that valid connection; a successful manual retry clears the alert. Page exit invalidates requests, and cancelled source reads do not begin owner adoption.
 
 ## Available resources
 
@@ -30,7 +38,7 @@ The manifest describes geometry/metadata, locations, encounters, events, routing
 
 Generation uses component input hashes. Authored Atlas changes rebuild Atlas without re-extracting textures or geometry. Missing/corrupt optional Atlas does not invalidate the rest of the workspace. Native maps keep their own coordinate semantics. See [workspace format](../reference/workspace-format.md) for schemas, compatibility and components.
 
-Workspaces, local launch receipts, private screenshots and user saves remain ignored and must never enter public packages. Deleting a generated workspace is safe once unique private evidence has been preserved; the launcher can rebuild it.
+Workspaces, local launch receipts, private screenshots and user saves remain ignored and must never enter public packages. Keep the existing Workspace, research exports and unique private evidence during upgrades; no routine upgrade requires deleting them. Disposable QA/build cleanup is separate from Workspace maintenance.
 
 ## Private camera/background resource
 

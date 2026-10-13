@@ -22,7 +22,15 @@ Development completion does not grant publication permission. Obtain explicit us
 
 Manually dispatch `release.yml` with an existing recipe-containing annotated tag and **dry_run=true** to build/upload Actions artifacts without creating a Release. If the candidate has no tag yet, run the same recipe locally; this is equivalent recipe validation, not a remote workflow execution or official artifact.
 
-v3.7 changes are validated locally; workflow execution is separate and requires publication approval. Historical macOS code is unmaintained and is not a prerequisite for Windows publication. A code-only smoke cannot establish original-game background alignment.
+Current local candidates are validated locally; workflow execution is separate and requires publication approval. Historical macOS code is unmaintained and is not a prerequisite for Windows publication. A code-only smoke cannot establish original-game background alignment. v4.0 development stays on `stabilize/v4.0`; main's v3.9 browser human acceptance remains pending.
+
+## Short path after acceptance and publication approval
+
+1. Accept both the retained v3.9 main build and the v4.0 stability branch, then explicitly approve merging/publication. On a clean checkout, preserve main history and fast-forward the accepted branch when possible; if main advanced, resolve/revalidate instead of resetting or forcing it. Push the accepted main normally and wait for its real Windows/Web CI.
+2. Confirm `_version.py` is `4.0.0` at the accepted main SHA. If `v4.0.0` is absent, create `git tag -a v4.0.0 ACCEPTED_MAIN_SHA -m "GaiaGIS v4.0.0"` and push only `refs/tags/v4.0.0`. If present, verify annotation and the peeled commit first; never overwrite it. This tag push automatically starts the exact-tag cloud build and, after all jobs pass, the single publish job.
+3. Wait for Release Actions build → assemble → publish. Open the public Release, download `GaiaGIS-v4.0.0-windows-x64.zip` and `SHA256SUMS.txt`, compare SHA256 and verify the tag/source commit. Official uploads come from Actions; no local ZIP upload is needed. Pages deployment is a separate authorized operation.
+
+These are future publication instructions, not operations performed during local RC development. Tag checks, workflow Python syntax and checksum/provenance guards can be locally exercised with synthetic packages and mocked Git/GitHub responses. Such tests create no real tag, contact no GitHub API and do not verify runner availability, action versions, account permissions or a successful cloud build.
 
 ## Distribution boundary
 

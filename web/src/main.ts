@@ -14,7 +14,12 @@ import type {ExplorerController} from './explorer/controller';
 // SPDX-License-Identifier: GPL-3.0-only
 import './styles/viewer.css';
 import './styles/app-shell.css';
-import {updateWorkspaceConnection} from './app/workspaceUX';
+// Session-wide styles must not be loaded by a Viewer-bound dynamic import:
+// settled CSS preload listeners can retain that import's first Viewer closure.
+import './styles/discovery.css';
+import './styles/user-mapping.css';
+import './styles/atlas.css';
+import {updateWorkspaceConnection,cancelWorkspaceImport,workspaceConnection} from './app/workspaceUX';
 import {mountLayout} from './ui/layout';
 import {loadMesh,readLocalDataset,MissingDatasetError} from './data/mesh';
 import type {GaiaMesh,GaiaMeta} from './data/mesh';
@@ -169,7 +174,7 @@ async function start(provided?:{mesh:GaiaMesh;meta:GaiaMeta}){
     applicationShell=mountShell();const {mountDiscovery}=await import('./ui/discovery');if(request===operation)discoveryOwner=mountDiscovery(()=>activeViewer,()=>multimaps.viewer,id=>multimaps.switchMap(id));const {mountUserMapping}=await import('./ui/userMapping');if(request===operation)userMappingOwner=mountUserMapping(()=>activeViewer,id=>multimaps.switchMap(id));attachSave();fieldOwner=mountFieldContext(viewer,locationControls.dataset,()=>multimaps.viewer);
   } catch(error){if(request!==operation)return;activeViewer?.dispose();activeViewer=undefined;fail(error instanceof Error?error.message:String(error),error instanceof MissingDatasetError);const {mountAtlas}=await import('./ui/atlas');if(request!==operation)return;atlasOwner=mountAtlas();applicationShell=mountShell();spatialEmptyOwner=(await import('./ui/spatialAnalysis')).mountSpatialUnavailable();const {mountDiscovery}=await import('./ui/discovery');if(request===operation)discoveryOwner=mountDiscovery(()=>activeViewer,()=>multimaps.viewer,id=>multimaps.switchMap(id));const {mountUserMapping}=await import('./ui/userMapping');if(request===operation)userMappingOwner=mountUserMapping(()=>activeViewer,id=>multimaps.switchMap(id));attachSave();fieldOwner=mountFieldContext();}
 }
-window.addEventListener('pagehide',()=>{fieldOwner?.dispose();saveOwner?.dispose();saveSession.clear();operation++;workspaceLoader.cancel();userMappingOwner?.dispose();userMappingOwner=undefined;spatialEmptyOwner?.dispose();discoveryOwner?.dispose();atlasOwner?.dispose();locationOwner?.dispose();explorer?.dispose();applicationShell?.dispose();multimaps.dispose();projectionLocale?.();galleryControls?.dispose();analysisControls?.dispose();activeViewer?.dispose();stopTranslations();},{once:true});
+window.addEventListener('pagehide',()=>{cancelWorkspaceImport();fieldOwner?.dispose();saveOwner?.dispose();saveSession.clear();operation++;workspaceLoader.cancel();userMappingOwner?.dispose();userMappingOwner=undefined;spatialEmptyOwner?.dispose();discoveryOwner?.dispose();atlasOwner?.dispose();locationOwner?.dispose();explorer?.dispose();applicationShell?.dispose();multimaps.dispose();projectionLocale?.();galleryControls?.dispose();analysisControls?.dispose();activeViewer?.dispose();stopTranslations();},{once:true});
 async function adoptGeometry(data:{mesh:GaiaMesh;meta:GaiaMeta}){await multimaps.resetData();explorer?.resetData();appStore.dispatch({type:'reset-data'});await start(data);if(!activeViewer)throw Error('Geometry adoption failed');}
 workspaceLoader.register('geometry',async files=>adoptGeometry(await readLocalDataset(files)));
 const multimaps=mountMultimap(root,()=>activeViewer);
@@ -185,9 +190,10 @@ const localAbort=new AbortController();
 window.addEventListener('pagehide',()=>localAbort.abort(),{once:true});
 async function boot(){
  if(!localAdvertised()){await start();return;}
+ const isCurrent=()=>!localAbort.signal.aborted&&workspaceConnection.source!=='manual';
  appStore.dispatch({type:'local-workspace',phase:'loading'});
  mountLayout(root);bindCommon();setBusy(true);element('loading-text').textContent=t('workspace.autoLoading');applicationShell=mountShell();
- try{await loadLocalWorkspace(workspaceLoader,fetch,localAbort.signal);if(!activeViewer)throw Error('Core geometry unavailable');appStore.dispatch({type:'local-workspace',phase:'loaded'});}
- catch{if(localAbort.signal.aborted)return;updateWorkspaceConnection({loading:false});appStore.dispatch({type:'local-workspace',phase:'error'});if(!activeViewer)await start();}
+ try{await loadLocalWorkspace(workspaceLoader,fetch,localAbort.signal,isCurrent);if(!isCurrent())return;if(!activeViewer)throw Error('Core geometry unavailable');appStore.dispatch({type:'local-workspace',phase:'loaded'});}
+ catch{if(localAbort.signal.aborted||!isCurrent())return;updateWorkspaceConnection({loading:false});appStore.dispatch({type:'local-workspace',phase:'error'});if(!activeViewer)await start();}
 }
 void boot();

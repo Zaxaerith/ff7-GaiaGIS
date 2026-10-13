@@ -1,10 +1,29 @@
-# Navigation user state
+# Navigation
 
-GaiaGIS v2.3 adds personal browser state independently of `GaiaWorkspace` and
-project schemas. No account, sync endpoint, telemetry or upload is involved.
+Use the existing three-column Viewer: Explore/search/tools on the left, World
+or Field in the centre, and one shared Inspector on the right. World browsing
+uses Globe/projections or the independent native WM2/WM3 views. Field browsing
+uses scene identities, Graph and raw local Walkmesh; changing the view does not
+convert these coordinate spaces into each other.
+
+For a connected private Workspace, select a WM0 place and explicitly choose a
+[verified Field entrance](#world--field-multiscale-navigation), or search a scene
+and open [Field Workspace](#field-spatial-workspace). Its anchors, static network
+and camera/background tools are described below. World reference-sphere routes
+and measurement are separate from Field-local topology and raw units.
+
+The v4.0 local RC is on `stabilize/v4.0`. Main keeps v3.9's technically validated
+RC for pending browser human acceptance; these automated results do not count
+as that acceptance. Public source-only mode has authored identity browsing and
+local user tools, with explicit unavailability for private geometry.
+
+## Personal browser state
+
+Personal browser state is independent of `GaiaWorkspace` and project schemas.
+No account, sync endpoint, telemetry or upload is involved.
 The single owner is `UserStateStorage`, using `gaiagis.user-state` in localStorage.
 Schema is `gaiagis-user-state`, version 1. Existing language, presentation and
-legacy view settings retain their established owners; v2.3 adds no separate
+legacy view settings retain their established owners; there are no separate
 bookmark, history or tour storage keys.
 
 The allowlisted document contains bookmarks, recent items, tours, and navigation
@@ -155,6 +174,26 @@ Explore → Field Context provide the same entry. Graph and Walkmesh occupy the
 main viewport; the Inspector keeps source evidence, parent locations, verified
 Entrance actions and raw triangle properties. Its header toggle expands or
 collapses properties on compact screens.
+
+Scene selection, Graph/Walkmesh, breadcrumbs and return controls stay at the
+top. **Spatial visualization** groups Plan/Camera/Background, Raw Z and zoom;
+**Spatial anchor layers** groups Entrances, Gateway Segments and Arrival Points;
+**Network Analysis** keeps Components, Reachability, Path and Clear together.
+These are the existing tools, with their original coordinate/analysis semantics.
+Panel fold state is retained across redraw and locale changes in this session.
+
+The Inspector puts the selected triangle/anchor and its analysis before scene
+relationships. Camera matrices, tile records and the longer source chain can
+be expanded under **Original records and source evidence**; record IDs, offsets,
+hashes and anomalies are retained. Geometry and UNKNOWN limitations remain
+visible in their appropriate summaries. Field selection hides the World-only
+route-start/end and spherical measurement actions and explains that FieldLocal
+uses raw units. Return to World to use those world tools.
+
+Selecting a new scene, anchor or different triangle brings the Inspector's
+current selection into view. Analysis, redraw and resize preserve reading
+position. Source/Target navigation focuses the scene selector; selecting an
+adjacent Triangle ID returns keyboard focus to the Canvas.
 
 The workspace has three view states: World Map, Field Graph and Field Walkmesh.
 Graph and Walkmesh share one selected scene and the existing private Field pack.
@@ -339,7 +378,7 @@ story-condition simulation, global Field route or camera/background registration
 
 ## Field camera and background
 
-In **Walkmesh → Field Camera & Background**, select Plan View, Original Camera View or Background Overlay. Original Camera records keep their own IDs; selection is manual, with no inferred runtime condition. Opacity, mesh edges and Triangle IDs affect browsing only. Background and projected geometry share the same pan/zoom; independent position/rotation/scale corrections are unavailable. Returning to Plan restores its pan/zoom. Triangle/anchor selection and directed network results stay in the existing Inspector.
+In **Walkmesh → Spatial visualization**, select Plan View, Original Camera View or Background Overlay. Original Camera records keep their own IDs; selection is manual, with no inferred runtime condition. Raw Z and zoom controls are in the same group. Opacity, mesh edges and Triangle IDs affect browsing only. Background and projected geometry share the same pan/zoom; independent position/rotation/scale corrections are unavailable. Returning to Plan restores its pan/zoom. Triangle/anchor selection and directed network results stay in the existing Inspector. Expand its original-record details for the full matrix, offsets and tile evidence.
 
 The Inspector retains raw R (nine S16 Q12 components), t (three S32 camera-space translations), repeated Rzz, four extra bytes, U16 Zoom and Section-2 byte offset. `q = (raw R / 4096) XYZ + t`, `u = Zoom qx/qz`, `v = Zoom qy/qz`; screen Y is downward. The camera centre is `-inverse(R)t`, not t. FOV uses the original 320×240 logical viewport; the 224-pixel display crop does not replace 240. Base-tile screen bounds are distinct from declared layer dimensions. Camera Fit uses the 320×240 viewport plus base-tile bounds, not extreme projected vertices near the view plane; the dashed frame preserves the original logical viewport. Geometry outside it is not relocated and can be inspected with shared pan/zoom. No units become metres or global coordinates.
 

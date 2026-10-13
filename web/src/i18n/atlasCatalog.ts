@@ -1,5 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
 export const atlasCatalog=[
+ ['stable.fieldTools','FieldLocal uses raw units. World routes and spherical measurements are available in World view.','FieldLocal 使用原始单位。世界路线与球面测量请在 World 视图中使用。','FieldLocal 使用原始單位。世界路線與球面測量請在 World 視圖中使用。','FieldLocal は生の単位です。ワールドの経路・球面計測は World ビューで利用してください。','FieldLocal은 원시 단위입니다. 월드 경로와 구면 측정은 World 보기에서 사용하세요.'],
+ ['stable.visualization','Spatial visualization','空间可视化','空間視覺化','空間表示','공간 시각화'],
+ ['stable.evidence','Original records and source evidence','原始记录与来源证据','原始記錄與來源證據','原始レコードと出典の証拠','원본 기록과 출처 근거'],
  ['nav39.title','Multiscale Evidence Navigation','多尺度证据导航','多尺度證據導覽','多尺度の証拠ナビゲーション','다중 규모 근거 탐색'],
  ['nav39.openEntrance','View verified Field entrances','查看验证 Field 入口','檢視驗證 Field 入口','検証済みフィールド入口を見る','검증된 필드 입구 보기'],
  ['nav39.choose','Choose Default or Alternative separately; no automatic choice.','分别选择 Default 或 Alternative；不自动选择。','分別選擇 Default 或 Alternative；不自動選擇。','Default または Alternative を個別に選択。自動選択しません。','Default 또는 Alternative를 개별 선택하세요. 자동 선택하지 않습니다.'],

@@ -1,4 +1,3 @@
-import '../styles/atlas.css';
 // SPDX-License-Identifier: GPL-3.0-only
 import curated from '../../../src/gaiagis/atlas_data/content.json';
 import {appStore} from '../app/state';

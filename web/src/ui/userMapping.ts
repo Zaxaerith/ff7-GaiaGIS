@@ -1,5 +1,4 @@
 // SPDX-License-Identifier: GPL-3.0-only
-import '../styles/user-mapping.css';
 import {appStore} from '../app/state';
 import {clearNavigation,registerNavigation,setNavigationSelection} from '../app/navigation';
 import {ResourceScope} from '../app/resources';

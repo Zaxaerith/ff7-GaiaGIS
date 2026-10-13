@@ -1,3 +1,3 @@
 # SPDX-License-Identifier: GPL-3.0-only
 """Single application version authority; schema/generator versions are separate."""
-__version__ = "3.9.0"
+__version__ = "4.0.0"

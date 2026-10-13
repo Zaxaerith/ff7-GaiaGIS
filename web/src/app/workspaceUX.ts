@@ -2,11 +2,17 @@
 import {discoverWorkspace,assetFiles} from './workspace';
 import type {WorkspacePlan} from './workspace';
 export const DEFAULT_WORKSPACE='output/local-workspace';
-export interface WorkspaceConnection {source:'public'|'auto'|'manual';manifest:'absent'|'valid';folder?:string;localPath?:string;loading:boolean;}
+export interface WorkspaceConnection {source:'public'|'auto'|'manual';manifest:'absent'|'valid';folder?:string;localPath?:string;loading:boolean;issue?:{key:string;files:string};}
 export let workspaceConnection:WorkspaceConnection={source:'public',manifest:'absent',loading:false};
 const listeners=new Set<()=>void>();
 export function updateWorkspaceConnection(patch:Partial<WorkspaceConnection>){workspaceConnection={...workspaceConnection,...patch};for(const fn of listeners)fn();}
 export function onWorkspaceConnection(fn:()=>void){listeners.add(fn);return()=>listeners.delete(fn);}
+// Survives shell remount during geometry adoption; never persisted or shared.
+let importEpoch=0;
+export function workspaceImportEpoch(){return importEpoch;}
+export function beginWorkspaceImport(){return ++importEpoch;}
+export function currentWorkspaceImport(epoch:number){return epoch===importEpoch;}
+export function cancelWorkspaceImport(){importEpoch++;}
 export class WorkspaceImportError extends Error {constructor(public key:string,public files=''){super(key);}}
 /** Validate manual import before a failed choice can mutate the current owners. */
 export async function validateWorkspaceChoice(files:readonly File[]):Promise<WorkspacePlan>{
