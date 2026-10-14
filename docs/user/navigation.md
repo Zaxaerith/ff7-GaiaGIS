@@ -26,10 +26,9 @@ and open [Field Workspace](#field-spatial-workspace). Its anchors, static networ
 and camera/background tools are described below. World reference-sphere routes
 and measurement are separate from Field-local topology and raw units.
 
-v3.9/v4.0 have completed human acceptance and v4.0.0 is published. The v4.1
-candidate on local main awaits its own acceptance; automated checks do not
-replace it. Public source-only mode has authored identity browsing and local
-user tools, with explicit unavailability for private geometry.
+v3.9/v4.0/v4.1 have completed browser human acceptance. This does not establish
+original-game runtime behavior. Public source-only mode has authored identity
+browsing and local user tools, with explicit unavailability for private geometry.
 
 ## Personal browser state
 

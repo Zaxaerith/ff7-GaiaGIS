@@ -8,7 +8,7 @@ The **Web Viewer is the main interface**. Open the [public Viewer](https://zaxae
 
 For Windows players, an approved [Release](https://github.com/Zaxaerith/ff7-GaiaGIS/releases) ZIP supplies **GaiaGIS.exe** to create/connect the Workspace and open that browser interface. Extract the whole ZIP to a writable folder, select the original FF7 data and keep the launcher open. No Python or Node installation is needed by the portable runtime.
 
-**v4.0.0 is published and human accepted. v4.1.0 is a local candidate awaiting human acceptance.** It adds optional original Field interaction geometry to the existing Web Canvas and Inspector: Trigger, script LINE, constant SLINE modification evidence and dynamic/LINON source records. Static mesh/network/background associations never claim gameplay triggering. The maintained targets are **Web + Windows x64**; historical macOS packaging is unmaintained. [Multiscale navigation](docs/user/navigation.md#world--field-multiscale-navigation), [FieldLocal QGIS export](docs/user/workspace.md#fieldlocal-geopackage-research-export) and Camera/Background browsing keep their existing data contracts.
+**GaiaGIS v4.1.0 — Field Interaction Geometry** adds optional original Field interaction geometry to the existing Web Canvas and Inspector: Trigger, script LINE, constant SLINE modification evidence and dynamic/LINON source records. Browser human acceptance is complete. Static mesh/network/background associations never claim gameplay triggering. The maintained targets are **Web + Windows x64**; historical macOS packaging is unmaintained. [Multiscale navigation](docs/user/navigation.md#world--field-multiscale-navigation), [FieldLocal QGIS export](docs/user/workspace.md#fieldlocal-geopackage-research-export) and Camera/Background browsing keep their existing data contracts.
 
 For a source checkout:
 
@@ -22,7 +22,7 @@ Use Python 3.12+ and Node 24 in a source checkout. Fresh source geometry generat
 
 ## Windows Release
 
-Approved new Releases provide one Windows x64 ZIP and `SHA256SUMS.txt`. GitHub Actions checks the exact annotated tag, runs Web and isolated package validation, and publishes only the verified Windows artifact after publication approval. Local candidate ZIPs are validation products. Optional GaiaJSON/GeoPackage exchange and FieldLocal export require GDAL-enabled Python; QGIS is not bundled. v4.1 has not been published. Neither cloud Actions execution nor human acceptance follows from local technical checks.
+Approved new Releases provide one Windows x64 ZIP and `SHA256SUMS.txt`. GitHub Actions checks the exact annotated tag, runs Web and isolated package validation, and publishes only the verified Windows artifact after publication approval. Local candidate ZIPs are validation products. Optional GaiaJSON/GeoPackage exchange and FieldLocal export require GDAL-enabled Python; QGIS is not bundled. A Release is complete only after its public attachments and checksums are verified.
 
 [Releases](https://github.com/Zaxaerith/ff7-GaiaGIS/releases) · [Release process](docs/development/release-process.md)
 
@@ -38,7 +38,7 @@ To add interaction evidence to an existing source-matched Workspace without rebu
 python -m gaiagis field-interaction --source "YOUR_FF7_INSTALLATION" --workspace output/local-workspace
 ```
 
-In the **v4.1 Web Viewer**, re-import that folder, open a Field Walkmesh and expand **Interaction geometry**. Older Workspaces work without this optional pack. An older public Viewer may not recognize the new resource; this local candidate does not deploy Pages. [Interaction controls and limits](docs/user/navigation.md#field-interaction-geometry).
+In the **v4.1 Web Viewer**, re-import that folder, open a Field Walkmesh and expand **Interaction geometry**. Older Workspaces work without this optional pack. An older public Viewer may not recognize the new resource; Pages deployment is separate from a Windows Release. Use the bundled or locally built v4.1 Viewer until Pages is updated. [Interaction controls and limits](docs/user/navigation.md#field-interaction-geometry).
 
 The [public Viewer](https://zaxaerith.github.io/ff7-GaiaGIS/) is source-only: authored Atlas/search and local user state work without distributed private spatial packs. Explicit folder/file import connects privately generated assets. Missing anchors remain unavailable.
 

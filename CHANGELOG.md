@@ -1,13 +1,13 @@
 # Changelog
 
-## v4.1.0 — local RC, awaiting human acceptance
+## v4.1.0 — Field Interaction Geometry
 
 - Optional `gaia-field-interaction.bin` v1, source-bound to flevel/maplist and raw Section 5, compressed and decoded per selected scene. `field-interaction --source ... --workspace ...` updates only this component and its Manifest entry; older Workspaces keep all existing views. Full incremental generation also includes it.
 - Reuse the original Section-1 entry/width/CFG parser for LINE/LINON/SLINE and retain conservative stops, shared Actor/entry aliases and bank dependencies. Section-8 Trigger decoding supports 536/740-byte layouts and the exact unused-record sentinel. No script VM or runtime-state inference.
 - Existing Field Canvas/Inspector: distinct line styles, category/overlap selection, explicit fit including visible interaction lines, all exact/XY candidates, raw source records and plain-language explanations in five languages. Constant SLINE is separate modification evidence; dynamic SLINE and LINON never become fabricated geometry or display-state rules.
 - Field tools scroll within the existing shelf on compact screens, keeping Canvas space available. Returning to World rebuilds the shared scene Inspector and releases retired interaction/BFS button closures; lifecycle regression covers selected interaction evidence as well as component analysis.
 - Exact 3D candidates associate with existing directed BFS only; Trigger bit indices associate with validated original background tile masks without activating conditions. XY-only/Disjoint and unsupported background parsing stay explicit. Context schema 3, Walkmesh v1, visual resources and FieldLocal GeoPackage v1 remain unchanged; interaction GIS extension is deferred.
-- Web/Windows x64 only. Private game/interaction data remain outside source, public builds and portable ZIPs. This entry describes a local candidate, not publication or completed human gameplay verification.
+- Web/Windows x64 only. Private game/interaction data remain outside source, public builds and portable ZIPs. Browser human acceptance is complete; static evidence does not establish gameplay triggering or dynamic story/background state.
 
 Formal version changes; historical acceptance evidence remains in Git history and Releases.
 

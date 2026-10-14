@@ -2,7 +2,7 @@
 
 GaiaGIS is a local-first GIS viewer of the original Final Fantasy VII world. Public delivery contains code, authored knowledge and open-source runtimes; game-derived assets come from your own installation.
 
-The Web Viewer is the main interface. The Windows launcher is an optional way to prepare a private Workspace and start its local browser server. **v4.0.0 is published; v3.9/v4.0 have completed human acceptance. v4.1.0 remains a local candidate awaiting acceptance.** Use its locally built Web Viewer for the new optional interaction resource; this task does not update hosted Pages or Releases.
+The Web Viewer is the main interface. The Windows launcher is an optional way to prepare a private Workspace and start its local browser server. **v4.1.0 has completed browser human acceptance.** Use its bundled or locally built Web Viewer for the new optional interaction resource. Hosted Pages deployment is separate from the Windows Release and may still show an older version.
 
 ## Browser first
 

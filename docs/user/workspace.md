@@ -58,7 +58,7 @@ Add it to the existing source-matched folder without rebuilding world maps, back
 python -m gaiagis field-interaction --source "YOUR_FF7_INSTALLATION" --workspace output/local-workspace
 ```
 
-The command requires the existing validated Manifest, Context and Walkmesh, refuses mismatched flevel/maplist identity, builds its candidate before replacing files and updates only the pack plus Manifest entry. Normal incremental Workspace generation also registers this optional component. Re-import **Data → Workspace Folder** in the v4.1 browser Viewer; there is no requirement to run the native launcher. This local candidate does not update the hosted Pages Viewer.
+The command requires the existing validated Manifest, Context and Walkmesh, refuses mismatched flevel/maplist identity, builds its candidate before replacing files and updates only the pack plus Manifest entry. Normal incremental Workspace generation also registers this optional component. Re-import **Data → Workspace Folder** in the v4.1 browser Viewer; there is no requirement to run the native launcher. Windows Release and hosted Pages updates are separate; use a v4.1 Viewer for this resource.
 
 The pack retains Trigger slots/raw bytes, entry-rooted LINE/LINON/SLINE records, every Actor/script-entry alias and conservative decoding stops. Literal SLINE is modification evidence, never initial state; dynamic banks remain addresses and produce no invented line. Raw XYZ remain local units. Exact 3D, XY-only and Disjoint records are retained, with all candidate triangle IDs and optional validated background group/mask evidence. Runtime enabling, collision range and story conditions remain UNKNOWN.
 
