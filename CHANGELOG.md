@@ -1,19 +1,28 @@
 # Changelog
 
+## v4.1.0 — local RC, awaiting human acceptance
+
+- Optional `gaia-field-interaction.bin` v1, source-bound to flevel/maplist and raw Section 5, compressed and decoded per selected scene. `field-interaction --source ... --workspace ...` updates only this component and its Manifest entry; older Workspaces keep all existing views. Full incremental generation also includes it.
+- Reuse the original Section-1 entry/width/CFG parser for LINE/LINON/SLINE and retain conservative stops, shared Actor/entry aliases and bank dependencies. Section-8 Trigger decoding supports 536/740-byte layouts and the exact unused-record sentinel. No script VM or runtime-state inference.
+- Existing Field Canvas/Inspector: distinct line styles, category/overlap selection, explicit fit including visible interaction lines, all exact/XY candidates, raw source records and plain-language explanations in five languages. Constant SLINE is separate modification evidence; dynamic SLINE and LINON never become fabricated geometry or display-state rules.
+- Field tools scroll within the existing shelf on compact screens, keeping Canvas space available. Returning to World rebuilds the shared scene Inspector and releases retired interaction/BFS button closures; lifecycle regression covers selected interaction evidence as well as component analysis.
+- Exact 3D candidates associate with existing directed BFS only; Trigger bit indices associate with validated original background tile masks without activating conditions. XY-only/Disjoint and unsupported background parsing stay explicit. Context schema 3, Walkmesh v1, visual resources and FieldLocal GeoPackage v1 remain unchanged; interaction GIS extension is deferred.
+- Web/Windows x64 only. Private game/interaction data remain outside source, public builds and portable ZIPs. This entry describes a local candidate, not publication or completed human gameplay verification.
+
 Formal version changes; historical acceptance evidence remains in Git history and Releases.
 
-## v4.0.0 — local RC, awaiting human acceptance
+## v4.0.0 — published, human accepted
 
-- Stability/UX release on the isolated local `stabilize/v4.0` branch. `main` retains v3.9 for its pending browser human acceptance; v3.9 technical validation is not promoted to human acceptance.
+- Stability/UX developed on the isolated local `stabilize/v4.0` branch, then fast-forwarded to main after v3.9/v4.0 human acceptance. The published annotated tag and history are retained.
 - Field selections hide World-only route/measurement actions and explain the FieldLocal raw-unit boundary. Existing visualization, anchor and network controls are grouped; triangle/anchor results precede scene relations and expandable technical evidence in the shared Inspector. Fold state survives redraw/locale changes without another renderer or selection model.
 - Manual Workspace imports keep one session request identity across shell remount: late validation/status cannot replace a newer choice, and automatic-local fetches cannot replace an already validated manual Workspace. A rejected manual choice retains its alert across automatic connection without blocking that valid connection. Page exit invalidates requests; cancelled source reads do not start owner adoption. Successful retry clears the alert, and selecting a valid Triangle ID clears the prior invalid-input warning.
 - Reimport preserves the single Explorer panel before shell docks are detached. Session UI styles load from the entry point so completed dynamic CSS preload listeners cannot retain the first Viewer. Browser regression checks old Shell/Canvas weak references over repeated imports, bounded warm Field/background/network reuse and full document release; diagnostic file-input handles are explicitly released.
 - Explicit scene/anchor/changed-triangle selections bring the Inspector's current item into view; redraw, analysis and resize preserve reading position. Source/Target navigation focuses the scene selector, and adjacent-triangle navigation returns keyboard focus to the Canvas.
 - Web-first setup, incremental private Workspace instructions and clearer verified/reconstruction/partial/UNKNOWN evidence boundaries. FieldLocal raw units and static topology remain separate from world geography and gameplay.
-- Existing Windows-only exact-tag/cloud-build pipeline retained and locally checked: one Windows x64 ZIP, one checksum manifest, source provenance and refusal to overwrite an existing Release. Local simulation does not establish cloud Actions success; no publication in this task.
+- Existing Windows-only exact-tag/cloud-build pipeline retained: one Windows x64 ZIP, one checksum manifest, source provenance and refusal to overwrite an existing Release. v4.0.0 was subsequently published following approval; candidate checks alone do not authorize later publication.
 - Field Context schema 3, Walkmesh v1, camera/background, FieldLocal GeoPackage, GaiaJSON and Manifest contracts remain unchanged. No complete game-data regeneration, macOS maintenance or new spatial algorithm.
 
-## v3.9.0 — local RC, awaiting human acceptance
+## v3.9.0 — human accepted, included in v4.0
 
 - Evidence-bound World → Field navigation reuses WM0 Entrance identities, ENTER_FIELD 0x318 / FIELD.TBL records and source-matched Context/Walkmesh resources. Default/Alternative choices stay separate; exact local navigation requires validated target identity, triangle and original XY.
 - Directed Gateway evidence can select its original source segment or a validated target-only Arrival Point. MAPJUMP 0x60 remains identity-only evidence; pseudo-world targets and incomplete geometry acquire no invented location or route.

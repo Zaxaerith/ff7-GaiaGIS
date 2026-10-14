@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 import {FieldPlanView} from '../src/ui/fieldContext';
+import {openFieldInteraction,parseInteractionHeader,parseInteractionScene,interactionReach} from '../src/data/fieldInteraction';
 import {cameraFov,cameraCenter,projectField,parseVisualHeader,inflateVisual,baseBackground,openFieldVisual} from '../src/data/fieldCamera';
 import type {FieldCamera} from '../src/data/fieldCamera';
 import {discoverWorkspace,parseManifest} from '../src/app/workspace';
@@ -13,6 +14,52 @@ const content=parseAtlasContent(curated);
 const entity=content.entities.find(e=>e.id==='midgar')!;
 const poi={sources:{'wm0.map':'a'.repeat(64)},locations:[{id:'midgar',primary_entrance:'entry-1',entrance_ids:['entry-1'],field_names:['synthetic']}],entrances:[{id:'entry-1',location_id:'midgar',source_kind:'derived_from_entry_trigger',longitude:1,latitude:2,height:0}]} as unknown as PoiDataset;
 const clone=()=>structuredClone(curated);
+describe('Optional Field Interaction evidence contract',()=>{
+ const fp={sources:{'flevel.lgp':'a'.repeat(64),maplist:'b'.repeat(64)},nodes:[{id:1,name:'fixture',status:'available'}]} as unknown as FieldPack;
+ const rawMesh=()=>{const out=new Uint8Array(34),v=new DataView(out.buffer);v.setUint32(0,1,true);[0,0,0,9,4,0,0,17,0,4,0,-1].forEach((n,i)=>v.setInt16(4+i*2,n,true));[0,1,2].forEach(i=>v.setUint16(28+i*2,65535,true));return out;};
+ const bytes=(op:number,values:number[],banks:number[]=[])=>{const out=new Uint8Array(op===208?13:op===209?2:16),v=new DataView(out.buffer);out[0]=op;if(op===209)out[1]=values[0];else{out.set(banks,1);values.forEach((n,i)=>v.setInt16((op===208?1:4)+i*2,n,true));}return Array.from(out,n=>n.toString(16).padStart(2,'0')).join('');};
+ const geom=()=>({relation:'surface',candidates:[0],xyCandidates:[0],coplanar:[0],vertical:[],zeroLength:false,zeroXY:false,rawZGap:'0',rawZTriangle:0});
+ const owners=()=>[{actor:0,name:'line',slot:0,entry:104,kind:'table'}];
+ const scene=()=>({fieldId:1,name:'fixture',triangles:1,meshReason:null,section1Bytes:256,section8Bytes:536,section1SHA256:'c'.repeat(64),section8SHA256:'d'.repeat(64),section5SHA256:'e'.repeat(64),unusedTriggers:12,triggers:[] as any[],scripts:[{opcode:208,offset:105,raw:bytes(208,[1,1,0,2,1,0]),owners:owners(),entryReachable:true,a:[1,1,0],b:[2,1,0],static:true,geometry:geom()}] as any[],stops:[] as any[]});
+ const span=(s=scene())=>({fieldId:1,name:'fixture',triangles:1,section5SHA256:s.section5SHA256,offset:0,bytes:1,rawBytes:1,sha256:'f'.repeat(64)});
+ const sha=async(r:Uint8Array)=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',r as Uint8Array<ArrayBuffer>)),n=>n.toString(16).padStart(2,'0')).join('');
+ async function pack(edit?:(s:ReturnType<typeof scene>)=>void,headerEdit?:(m:any)=>void){
+  const s=scene();s.section5SHA256=await sha(rawMesh());edit?.(s);const body=new TextEncoder().encode(JSON.stringify(s)),compressed=await new Response(new Blob([body]).stream().pipeThrough(new CompressionStream('deflate'))).arrayBuffer();
+  const m={schema:'gaiagis-field-interaction',version:1,coordinateSpace:'FieldLocal',generator_revision:'field-interaction-1',sources:fp.sources,scenes:[{...span(s),bytes:compressed.byteLength,rawBytes:body.byteLength,sha256:await sha(body)}]};headerEdit?.(m);
+  const encoded=new TextEncoder().encode(JSON.stringify(m)),head=new Uint8Array(16),v=new DataView(head.buffer);head.set(new TextEncoder().encode('GAIAINT\0'));v.setUint32(8,1,true);v.setUint32(12,encoded.length,true);
+  return new File([head,encoded,compressed],'gaia-field-interaction.bin');
+ }
+ it('lazily decodes the selected source-bound scene and preserves raw4 in its mesh fingerprint',async()=>{
+  const file=await pack(),p=await openFieldInteraction(file,fp),mesh=decodeWalkmesh(rawMesh().buffer);expect(p.scenes.size).toBe(1);const decoded=await p.decode(1,mesh);expect(decoded.records[0].a).toEqual([1,1,0]);expect(decoded.records[0].geometry!.candidates).toEqual([0]);mesh.vertices[3]++;await expect(p.decode(1,mesh)).rejects.toThrow('fingerprint');
+ });
+ it('distinguishes dynamic SLINE operands from static XYZ and treats LINON as control evidence',()=>{
+  const s=scene();s.scripts.push({opcode:209,offset:120,raw:bytes(209,[0]),switch:0,owners:owners(),entryReachable:true,lineOffsets:[105]},{opcode:211,offset:122,raw:bytes(211,[21,-427,0,19,-815,0],[96,6,0]),banks:[6,0,0,6,0,0],operands:[21,-427,0,19,-815,0],static:false,owners:owners(),entryReachable:true,lineOffsets:[105]});
+  const r=parseInteractionScene(s,span(s));expect(r.scripts[2].geometry).toBeUndefined();expect(r.scripts[2].a).toBeUndefined();expect(r.scripts[1].switch).toBe(0);expect(r.scripts[2].lineOffsets).toEqual([105]);
+  s.scripts[2].a=[21,-427,0];expect(()=>parseInteractionScene(s,span(s))).toThrow();
+ });
+ it('preserves aliases and multiple actor memberships without selecting a unique owner',()=>{
+  const s=scene();s.scripts[0].owners.push({actor:1,name:'other',slot:3,entry:105,kind:'table'},{actor:0,name:'line',slot:1,entry:105,kind:'table'});expect(parseInteractionScene(s,span(s)).scripts[0].owners).toHaveLength(3);
+  s.scripts[0].owners.push(s.scripts[0].owners[0]);expect(()=>parseInteractionScene(s,span(s))).toThrow('owner');
+ });
+ it('uses Trigger state as a bit index; does not discard zero coordinates',()=>{
+  const s=scene(),v=new DataView(new ArrayBuffer(16));[1,1,0,2,1,0].forEach((n,i)=>v.setInt16(i*2,n,true));[7,3,5,2].forEach((n,i)=>v.setUint8(12+i,n));const raw=Array.from(new Uint8Array(v.buffer),n=>n.toString(16).padStart(2,'0')).join('');
+  s.unusedTriggers=11;s.triggers.push({slot:0,offset:344,raw,a:[1,1,0],b:[2,1,0],group:7,state:3,behavior:5,sound:2,classification:'record',geometry:geom(),background:{status:'matched',reason:null,matches:[{group:7,mask:8,layer:1,count:2,firstOffset:131}]}});
+  expect(parseInteractionScene(s,span(s)).triggers[0].background!.matches[0].mask).toBe(8);s.triggers[0].background.matches[0].mask=3;expect(()=>parseInteractionScene(s,span(s))).toThrow('mask');
+ });
+ it('rejects forged raw coordinates, candidates, offsets, script links and stops',()=>{
+  for(const edit of [(s:any)=>s.scripts[0].a[0]=2,(s:any)=>s.scripts[0].geometry.candidates=[1],(s:any)=>s.scripts[0].offset=250,(s:any)=>s.unusedTriggers=11,(s:any)=>s.stops=[{offset:999,opcode:253,reason:'unsupported_opcode',entryReachable:true}],(s:any)=>s.scripts[0].geometry.candidates=[0,0]]){const s=scene();edit(s);expect(()=>parseInteractionScene(s,span(s))).toThrow();}
+ });
+ it('rejects source mismatch, duplicate scene spans, over-budget metadata and truncated compression',async()=>{
+  for(const edit of [(m:any)=>m.sources={...m.sources,maplist:'0'.repeat(64)},(m:any)=>m.scenes.push(m.scenes[0]),(m:any)=>m.scenes[0].offset=1,(m:any)=>m.scenes[0].rawBytes=2_000_001])await expect(openFieldInteraction(await pack(undefined,edit),fp)).rejects.toThrow();
+  const p=await pack(),truncated=new File([await p.slice(0,p.size-1).arrayBuffer()],p.name);await expect(openFieldInteraction(truncated,fp)).rejects.toThrow();
+  expect(()=>parseInteractionHeader(new ArrayBuffer(16),8_000_001,fp)).toThrow();
+ });
+ it('associates only exact geometry with directed reachability and keeps XY-only UNKNOWN',()=>{
+  const r=parseInteractionScene(scene(),span()).scripts[0],reach=new WalkmeshNetwork(decodeWalkmesh(rawMesh().buffer)).reach(0);expect(interactionReach(r,reach).reachable).toEqual([0]);expect(interactionReach(r,null).status).toBe('not_analyzed');r.geometry!.relation='xy_only';r.geometry!.candidates=[];expect(interactionReach(r,reach).status).toBe('unknown');
+ });
+ it('fits interaction extents explicitly and restores ordinary mesh bounds',()=>{const view=new FieldPlanView([0,4,0,4]);view.resize(320,390);const normal=view.fit;view.fitTo([0,10000,0,4]);expect(view.scale).toBeLessThan(normal);view.fitTo([0,4,0,4]);expect(view.scale).toBe(normal);expect(view.centerX).toBe(2);});
+ it('cancels a discarded scene without adopting or decompressing it',async()=>{const p=await openFieldInteraction(await pack(),fp),abort=new AbortController();abort.abort();await expect(p.decode(1,decodeWalkmesh(rawMesh().buffer),abort.signal)).rejects.toThrow();});
+});
 describe('Atlas schema and provenance',()=>{
  it('accepts the authored five-locale dataset and all named identities',()=>{expect(content.entities).toHaveLength(58);expect(content.entities.filter(e=>e.spatialBinding.kind==='location')).toHaveLength(34);});
  for(const [name,mutate]of [

@@ -95,7 +95,7 @@ _WIDTHS = tuple(map(int, '''
 '''.split()))
 
 
-def parse_script(section: bytes) -> tuple[str, list[dict], list[dict]]:
+def parse_script(section: bytes, *, interactions=False):
     """Section-1 entry-rooted static topology, not runtime availability.
 
     Unknown instruction width stops that branch. Overlapping instructions or
@@ -115,6 +115,7 @@ def parse_script(section: bytes) -> tuple[str, list[dict], list[dict]]:
     if any(not base <= pc <= end for pc in entries):
         raise FormatError('Field script entry bounds')
     occupied, decoded, unknown, jumps = {}, {}, {}, {}
+    successors, main_entries = {}, {}
 
     def instruction(pc):
         if not base <= pc < end or pc in occupied and occupied[pc] != pc:
@@ -146,7 +147,7 @@ def parse_script(section: bytes) -> tuple[str, list[dict], list[dict]]:
     roots = set(pc for pc in entries if pc < end)
     # The first RET terminates each actor's initialization script; immediately
     # following it is the documented default/main script entry (no byte scan).
-    for pc in entries[::32]:
+    for actor, pc in enumerate(entries[::32]):
         seen = set()
         while pc < end and pc not in seen:
             seen.add(pc)
@@ -157,6 +158,7 @@ def parse_script(section: bytes) -> tuple[str, list[dict], list[dict]]:
             if op == 0:
                 if next_pc < end:
                     roots.add(next_pc)
+                    main_entries[actor] = next_pc
                 break
             pc = next_pc
     # Establish instruction ownership before following branches. This walks
@@ -200,9 +202,49 @@ def parse_script(section: bytes) -> tuple[str, list[dict], list[dict]]:
             target = pc + at + delta
         if target is not None:
             queue.append(target)
+            if interactions:successors.setdefault(pc, []).append(target)
         if op not in (0x10, 0x11, 0x12, 0x13) and next_pc < end:
             queue.append(next_pc)
-    return name, list(jumps.values()), list(unknown.values())
+            if interactions:successors.setdefault(pc, []).append(next_pc)
+    if not interactions:
+        return name, list(jumps.values()), list(unknown.values())
+    # An optional evidence view of this same CFG. No byte-pattern search, VM,
+    # guessed widths, or inference that an entry is actually called at runtime.
+    selected = {pc for pc in seen if pc in decoded and decoded[pc][0] in (0xd0, 0xd1, 0xd3)}
+    owners, entry_owners = {pc: [] for pc in selected}, {}
+    for actor in range(actors):
+        raw_name=section[32+actor*8:40+actor*8].split(b'\0')[0]
+        actor_name=raw_name.decode('ascii') if all(32<=v<127 for v in raw_name) else None
+        for slot, entry in enumerate(entries[actor*32:(actor+1)*32]):
+            if entry<end:entry_owners.setdefault(entry, []).append(dict(actor=actor,name=actor_name,slot=slot,entry=entry,kind='table'))
+        if actor in main_entries:
+            entry=main_entries[actor];entry_owners.setdefault(entry, []).append(dict(actor=actor,name=actor_name,slot=0,entry=entry,kind='main'))
+    for entry, identities in entry_owners.items():
+        reached={entry};pending=[entry]
+        for pc in pending:
+            if pc in owners:owners[pc].extend(identities)
+            for target in successors.get(pc, []):
+                if target not in reached:reached.add(target);pending.append(target)
+    records=[]
+    for pc in sorted(selected):
+        opcode,next_pc=decoded[pc];raw=section[pc:next_pc]
+        record=dict(opcode=opcode,offset=pc,raw=raw.hex(),owners=owners[pc],entryReachable=True)
+        if not record['owners']:raise FormatError('Interaction has no verified script entry')
+        if opcode==0xd0:
+            record.update(a=list(struct.unpack_from('<3h',raw,1)),b=list(struct.unpack_from('<3h',raw,7)),static=True)
+        elif opcode==0xd1:record.update(switch=raw[1])
+        else:
+            banks=[n for byte in raw[1:4] for n in (byte>>4,byte&15)]
+            operands=list(struct.unpack_from('<6h',raw,4));record.update(banks=banks,operands=operands,static=not any(banks))
+            if record['static']:record.update(a=operands[:3],b=operands[3:])
+        records.append(record)
+    lines=[r for r in records if r['opcode']==0xd0]
+    for record in records:
+        if record['opcode']==0xd0:continue
+        actors_set={o['actor'] for o in record['owners']}
+        record['lineOffsets']=[r['offset'] for r in lines if actors_set.intersection(o['actor'] for o in r['owners'])]
+    stops=[dict(row,opcode=section[row['offset']],entryReachable=row['offset'] in seen) for row in unknown.values()]
+    return name,list(jumps.values()),stops,records
 
 
 def save_identity(field_id: int, maplist_hash: str) -> int | None:

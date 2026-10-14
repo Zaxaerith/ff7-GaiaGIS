@@ -39,9 +39,10 @@ export function parseVisualHeader(buffer:ArrayBuffer,total:number,fields:FieldPa
   scenes.set(r.fieldId,r as FieldVisualScene);
  }if(base+end!==total)throw Error('Visual trailing bytes');return {base,scenes,revision:meta.generator_revision as string};
 }
-export async function inflateVisual(buffer:ArrayBuffer,expected:number){
+export async function inflateVisual(buffer:ArrayBuffer,expected:number,signal?:AbortSignal){
  if(!int(expected,0,8_000_000))throw Error('Visual decoded budget');const reader=new Blob([buffer]).stream().pipeThrough(new DecompressionStream('deflate')).getReader(),out=new Uint8Array(expected);let at=0;
- try{for(;;){const {done,value}=await reader.read();if(done)break;if(at+value.length>expected)throw Error('Visual decompression budget');out.set(value,at);at+=value.length;}if(at!==expected)throw Error('Visual decoded length');return out;}finally{await reader.cancel();reader.releaseLock();}
+ const cancel=()=>{void reader.cancel().catch(()=>{});};signal?.addEventListener('abort',cancel,{once:true});
+ try{signal?.throwIfAborted();for(;;){const {done,value}=await reader.read();signal?.throwIfAborted();if(done)break;if(at+value.length>expected)throw Error('Visual decompression budget');out.set(value,at);at+=value.length;}if(at!==expected)throw Error('Visual decoded length');return out;}finally{signal?.removeEventListener('abort',cancel);await reader.cancel();reader.releaseLock();}
 }
 /** File handle plus one selected scene's compact pixels; no global image collection. */
 export async function openFieldVisual(file:File,fields:FieldPack){

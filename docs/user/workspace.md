@@ -47,6 +47,23 @@ Workspaces, local launch receipts, private screenshots and user saves remain ign
 Generation is one separate incremental component; it reuses unrelated world/GIS outputs. Delete only this optional file to clear its private visual cache; the next workspace build regenerates it. Never put it in public Viewer assets or a Release. Failed background parsing leaves cameras and Plan View available, with explicit unsupported status; background omissions are not repaired with placeholder textures.
 
 
+## Optional Field Interaction resource
+
+`gaia-field-interaction.bin` is a separate private format v1. Existing Context schema 3, Walkmesh v1, visual resources, WM0 exchange and FieldLocal GeoPackage v1 do not change. Old Workspaces retain Graph, Walkmesh, anchors and cameras without this pack; the v4.1 Viewer explains that interaction evidence is unavailable.
+
+Add it to the existing source-matched folder without rebuilding world maps, background pixels, Atlas or research GeoPackages:
+
+```powershell
+. tools/build/environment.ps1
+python -m gaiagis field-interaction --source "YOUR_FF7_INSTALLATION" --workspace output/local-workspace
+```
+
+The command requires the existing validated Manifest, Context and Walkmesh, refuses mismatched flevel/maplist identity, builds its candidate before replacing files and updates only the pack plus Manifest entry. Normal incremental Workspace generation also registers this optional component. Re-import **Data → Workspace Folder** in the v4.1 browser Viewer; there is no requirement to run the native launcher. This local candidate does not update the hosted Pages Viewer.
+
+The pack retains Trigger slots/raw bytes, entry-rooted LINE/LINON/SLINE records, every Actor/script-entry alias and conservative decoding stops. Literal SLINE is modification evidence, never initial state; dynamic banks remain addresses and produce no invented line. Raw XYZ remain local units. Exact 3D, XY-only and Disjoint records are retained, with all candidate triangle IDs and optional validated background group/mask evidence. Runtime enabling, collision range and story conditions remain UNKNOWN.
+
+One source-bound header indexes compressed JSON spans, decoded only for the selected scene. Limits: pack 8,000,000 bytes; metadata 512,000 bytes; a decoded scene 2,000,000 bytes. Each scene has a payload hash and raw Section-5 hash; the Viewer compares that hash to its loaded original mesh, including raw4 and Access. Source/scene replacement and owner disposal clear selected records and decoded scene references. It stores no background images or copied LGP and adds no network file-reading API.
+
 ## FieldLocal GeoPackage research export
 
 This optional source CLI exports one scene from an existing private workspace. It does not generate game data or modify the workspace. Use Python providing **GDAL >= 3.9**; on Windows an installed standalone QGIS/OSGeo4W environment can be selected through the existing runtime adapter:

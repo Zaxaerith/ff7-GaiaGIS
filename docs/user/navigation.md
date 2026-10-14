@@ -1,5 +1,19 @@
 # Navigation
 
+## Field Interaction Geometry
+
+With the optional Interaction Pack loaded in the v4.1 Web Viewer, open **Field Walkmesh → Interaction geometry**. Trigger, Script LINE, constant SLINE modifications and geometric anomalies have separate controls. Trigger uses dash-dot lines and T labels, LINE uses dotted lines, and SLINE modifications use long dashes; square endpoints distinguish them from Gateway lines and entrance/arrival points.
+
+Choose a record by type in the Canvas controls or from the shared Inspector list. A Canvas click on overlapping lines offers a list of original records, including a Gateway when applicable, rather than silently preferring one. The Inspector begins with a plain-language explanation, then shows raw endpoints, all exact candidate triangles, classification and source evidence. Candidate-triangle buttons return to ordinary triangle inspection. An ID identifies a raw ground triangle, not a named geographic place. On narrow screens close the Inspector to use Canvas controls; its own record selector lets you browse records without closing it.
+
+**Fit visible interaction lines** explicitly includes enabled original endpoints. Disjoint geometry stays at its original coordinates. **Reset view / Home** restores ordinary mesh bounds, so far-away records do not redefine the default scene view. Pan, wheel/pinch zoom, keyboard selection and camera projection share the existing Canvas. Behind-camera/unprojectable lines remain available as raw Inspector records and receive an omission count.
+
+SLINE modifications are off by default and are never described as the initial scene state. Dynamic SLINE shows banks/operands, with no invented XYZ; LINON is control evidence and never automatically switches Viewer layers. All Actor/script aliases remain available in expandable evidence. A conservative decode stop means coverage is incomplete, not that the remainder contains no interactions.
+
+Run reachability from a validated entrance/arrival or explicit Triangle ID using the existing Network Analysis. Its interaction summary distinguishes exact candidates in/out of the reachable triangle set from insufficient geometry. XY-only/Disjoint records never become verified topology links. Background associations compare `tile.state & (1 << trigger.state)` in validated conditional tile records; no background condition is activated. Story conditions, collision range and actual gameplay triggering remain **UNKNOWN**. No global coordinates, metre distances or cross-Field route are inferred.
+
+Missing optional interaction data leaves earlier Field features usable. [Incremental generation and compatibility](workspace.md#optional-field-interaction-resource). FieldLocal GeoPackage v1 remains unchanged; this version does not add interaction GIS layers or write game data back.
+
 Use the existing three-column Viewer: Explore/search/tools on the left, World
 or Field in the centre, and one shared Inspector on the right. World browsing
 uses Globe/projections or the independent native WM2/WM3 views. Field browsing
@@ -12,10 +26,10 @@ and open [Field Workspace](#field-spatial-workspace). Its anchors, static networ
 and camera/background tools are described below. World reference-sphere routes
 and measurement are separate from Field-local topology and raw units.
 
-The v4.0 local RC is on `stabilize/v4.0`. Main keeps v3.9's technically validated
-RC for pending browser human acceptance; these automated results do not count
-as that acceptance. Public source-only mode has authored identity browsing and
-local user tools, with explicit unavailability for private geometry.
+v3.9/v4.0 have completed human acceptance and v4.0.0 is published. The v4.1
+candidate on local main awaits its own acceptance; automated checks do not
+replace it. Public source-only mode has authored identity browsing and local
+user tools, with explicit unavailability for private geometry.
 
 ## Personal browser state
 

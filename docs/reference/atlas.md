@@ -297,9 +297,10 @@ Selection highlights outgoing neighbors and exposes raw vertices, edge targets
 and anomaly labels. Drag pans; wheel/buttons zoom; Home resets; arrow keys and
 the triangle-ID input allow selection of overlapping triangles. Returning to
 scene connections preserves the selected identity. No Field locomotion,
-physics, pathfinding, global conversion or entry-point markers are provided.
-Gateway local alignment remains unverified here; Section 8 and MAPJUMP continue
-to be separate topology evidence.
+physics, runtime pathfinding or global conversion are provided. Verified local
+entrance/arrival points and source Gateway geometry are handled by the later
+Spatial Anchors feature; static candidates do not prove runtime activation.
+Section 8 and MAPJUMP continue to be separate topology evidence.
 
 Format references: [Qhimm Section 5](https://qhimm.ifcaro.net/qhimm/index.php/FF7/Field/Walkmesh/),
 [PC Field layout](https://ff7-mods.github.io/ff7-flat-wiki/FF7/Field.html), and
@@ -308,3 +309,29 @@ The two wiki descriptions share historical material; the editor and actual
 local records provide the additional cross-check, not an independent second
 wiki claim. Reference descriptions do not establish equivalence to a live
 modern executable.
+
+## Interaction evidence
+
+The optional interaction v1 resource reuses the same LGP/Field sections and
+entry-rooted script CFG; it adds no event interpreter. Section-8 Trigger slots
+use signed original XYZ and raw group/state/behavior/sound fields, with the
+exact unused sentinel. LINE/LINON/SLINE preserve raw entry-table aliases and
+conservative stops. Nonzero SLINE banks are dependencies rather than coordinates;
+literal modifications are distinct from initial LINE definitions. Exact 3D
+candidate sets may intersect directed BFS regions; XY-only/disjoint geometry
+is never snapped or promoted to a gameplay trigger.
+
+Format checks refer to Makou Reactor `InfFile::open/initEmpty`, `Opcode::position`,
+`toStringSLINE`, `Section1File::open` and `BackgroundTiles::filter` at commit
+`2452025714c033d698d1754a776bdcd5713427bd`; Fenrir `LINE/LINON/SLINE`,
+`registerLine/enableLines/setLinePosition` and `triggerTriggered` at
+`6b4d270a380d5fa5f35d3bf6bb056b99205ac69d`; LGP Explorer
+`findInitialParamStates` and FieldPreview mask filtering at
+`6c6338a3feba0e2b65f4f6cab5dd648cf6aed336`. These are technical references,
+not copied code or original-runtime acceptance. Fenrir merges some positive-side
+behaviors and uses processed layer states; LGP Explorer's linear Init scan does
+not resolve branch conditions. Raw Trigger state is a bit index while raw tile
+state is a mask. [Trigger layout](https://ff7-mods.github.io/ff7-flat-wiki/FF7/Field/Triggers)
+and [SLINE parameters](https://wiki.ffrtt.ru/index.php/FF7/Field/Script/Opcodes/D3_SLINE)
+are candidate format/behavior descriptions; UNKNOWN execution and enabling
+remain explicit. See [pack contract](workspace-format.md#optional-interaction-v1).

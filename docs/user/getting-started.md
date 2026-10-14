@@ -2,7 +2,7 @@
 
 GaiaGIS is a local-first GIS viewer of the original Final Fantasy VII world. Public delivery contains code, authored knowledge and open-source runtimes; game-derived assets come from your own installation.
 
-The Web Viewer is the main interface. The Windows launcher is an optional way to prepare a private Workspace and start its local browser server. **v4.0 is a local candidate on `stabilize/v4.0`; v3.9 on main still awaits browser human acceptance.** Neither candidate is an announced Release.
+The Web Viewer is the main interface. The Windows launcher is an optional way to prepare a private Workspace and start its local browser server. **v4.0.0 is published; v3.9/v4.0 have completed human acceptance. v4.1.0 remains a local candidate awaiting acceptance.** Use its locally built Web Viewer for the new optional interaction resource; this task does not update hosted Pages or Releases.
 
 ## Browser first
 
@@ -69,6 +69,7 @@ All developer environments, temporary files and outputs stay in the checkout. Th
 5. Select a Gateway to inspect its original source line and target evidence. Exact 3D candidates retain ambiguity. A verified target arrival can be viewed in its own Field; MAPJUMP remains identity-only. Use Back or Return to World to restore the prior context.
 6. Choose Original Camera View or Background Overlay with private visual resources. Cameras use the original matrix/Zoom; the static background is partial. No independent layer transform is used to force alignment. Runtime camera selection, occlusion and complete background alignment remain UNKNOWN.
 7. For research in QGIS, use the optional [single-Field GeoPackage export](workspace.md#fieldlocal-geopackage-research-export). Keep each Field separate with Undefined Cartesian SRS -1 and raw units. A research copy cannot be written back to the game.
+8. With the optional [Interaction Pack](workspace.md#optional-field-interaction-resource), expand **Interaction geometry** in Walkmesh. Select a Trigger or Script LINE on the Canvas or Inspector list; the plain-language explanation precedes raw evidence. Constant SLINE is a separate modification preview; dynamic SLINE/LINON remain script evidence. Exact candidates may relate to a static BFS region or background tile records, never to a proven gameplay trigger. No interaction GIS layers are added to GeoPackage v1.
 
 [Navigation](navigation.md) describes controls and provenance; [coordinate spaces](../reference/coordinate-spaces.md) separates raw evidence from the reference-sphere reconstruction. A decoded original record, a correct mathematical projection, a reconstructed static image and runtime visual alignment are different claims.
 

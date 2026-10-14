@@ -49,7 +49,7 @@ def project(camera, point):
     return (camera['zoom']*q[0]/q[2], camera['zoom']*q[1]/q[2])
 
 
-def parse_background(palette, data):
+def parse_background(palette, data, *, groups=None):
     """Validate every layer/page reference; export the supported static subset.
 
     Retain dimensions, tile evidence and explicit omissions. Tile size in classic
@@ -129,6 +129,16 @@ def parse_background(palette, data):
     bounds=[min((t['x'] for t in footprint),default=0),min((t['y'] for t in footprint),default=0),max((t['x']+16 for t in footprint),default=0),max((t['y']+16 for t in footprint),default=0)]
     if len(pixels)>MAX_PIXELS*2 or (bounds[2]-bounds[0])*(bounds[3]-bounds[1])>MAX_PIXELS:
         raise FormatError('Background pixel budget')
+    # Evidence only, after all existing palette/page/span validation succeeds.
+    # Raw tile.state is a mask; Trigger.state is a bit index. Never activates it.
+    if groups is not None:
+        grouped={}
+        for tile in tiles:
+            if not tile['layer']:continue
+            key=(tile['param'],tile['state'],tile['layer'])
+            row=grouped.setdefault(key,dict(group=key[0],mask=key[1],layer=key[2],count=0,firstOffset=tile['sourceOffset']))
+            row['count']+=1
+        groups.extend(grouped[k] for k in sorted(grouped))
     return dict(status='partial' if omitted else 'static_base',bounds=bounds,layers=layers,tiles=base,omitted=omitted,pixelBytes=len(pixels),paletteRefs=[dict(id=i,transparent=bool(i<20 and flags[i])) for i in sorted(used)]),b''.join(struct.pack('<256H',*colors[i]) for i in sorted(used))+bytes(pixels)
 
 

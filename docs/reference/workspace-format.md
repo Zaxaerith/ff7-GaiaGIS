@@ -39,11 +39,26 @@ independently; a missing or invalid base geometry prevents workspace adoption.
 | Presentation | gaia-presentation.json | optional locally generated UI audio |
 | Atlas | gaia-atlas.json | authored knowledge plus private POI identity bindings |
 | Field Context | gaia-field-context.json | private scene identities / gateway edges, depends on POI |
+| Field Walkmesh | gaia-field-walkmesh.bin | selected raw Section 5; Context identity/source binding |
+| Field Camera/background | gaia-field-visual.bin | independent optional visual v1, depends on Context |
+| Field Interaction | gaia-field-interaction.bin | optional interaction v1; Context + Walkmesh source binding |
 
-Sixteen payload files comprise fifteen logical groups. No geometry is duplicated
+Nineteen payload files comprise eighteen logical groups. No geometry is duplicated
 into a workspace wrapper. Folder loading reads recognized root files only, using
 the user-initiated directory picker or folder-input fallback. Multi-file loading
 works without File System Access API. Unmanifested legacy sets are labeled Legacy.
+
+## Optional interaction v1
+
+`gaia-field-interaction.bin` has a 16-byte little-endian header: `GAIAINT\0`, U32 format 1, U32 UTF-8 JSON metadata length. Metadata identifies `gaiagis-field-interaction`, `FieldLocal`, generator `field-interaction-1`, exact flevel/maplist SHA256, and unique available Context scene IDs/names. Scene spans are contiguous offsets relative to the end of metadata, with compressed size, decoded size, decoded SHA256, triangle count and raw Section-5 SHA256. Unindexed/trailing bytes and overlapping spans are refused. Whole pack ≤8,000,000 bytes; metadata ≤512,000; each decoded scene ≤2,000,000. Decompression uses the existing bounded stream helper.
+
+Each scene contains Section 1/8 sizes and hashes, Section-5 hash, unused-slot accounting, Trigger records, entry-rooted script records and conservative stops. Trigger offsets are `344 + slot * 16` in the length-stripped Section 8 (536/740 bytes). Only the exact `000000000000000000000000ff000000` sentinel is excluded; zero coordinates are not a deletion rule. Unknown behavior/sentinel variants are retained. The reader validates raw record bytes against XYZ and all four U8 operands.
+
+LINE/D0, LINON/D1 and SLINE/D3 retain widths 13/2/16, unique Section-1 offsets, raw bytes, every `(Actor, name, raw table slot, entry, table/Main kind)` membership and entry-rooted static coverage. Modifier LINE links mean shared Actor evidence, not a proven active runtime target. SLINE has three high/low-nibble bank pairs and six signed operands: all-zero banks permit original literal XYZ modification evidence; any nonzero bank forbids geometry fields. LINON is nonspatial control evidence. These records do not supply an execution order or script VM.
+
+Geometry retains sorted unique 3D/XY/coplanar/vertical candidate IDs, exact relation, degeneracy flags and nullable rational absolute Raw-Z gap over XY overlap. The selected mesh is reconstructed byte-for-byte (XYZ, raw4, Access) for the Section-5 fingerprint comparison before presenting associations. All candidates survive; only exact 3D candidates can associate with directed reachability. Trigger background associations are accepted only after existing full palette/tile/texture validation, matching Group and `tile.state & (1 << trigger.state)`. They include layer, mask, count and original tile offset, or explicit UNKNOWN on rejected background parsing.
+
+The Manifest type is `field-interaction`, mapId `shared`, dependencies Context + Walkmesh, generator `field-interaction-1`. Missing optional data does not invalidate earlier Workspace formats; an older Viewer may reject an unknown newer resource. Incremental `field-interaction` writes only this pack and its Manifest entry, with bounded staging/rollback. No private backgrounds, interactions or complete Field dataset enter public assets. Context/Walkmesh/visual and FieldLocal GeoPackage v1 contracts are not upgraded.
 
 ## Incremental and deterministic behavior
 

@@ -25,6 +25,12 @@ Maintained acceptance targets are Web and Windows x64. Retained Mac extraction/M
 
 Historical numerical acceptance reports remain available through Git tags, commits and Releases. This document describes current test responsibilities rather than storing another version-specific validation report.
 
+Interaction regression uses the same Section-1 decoder and synthetic operand/entry/branch cases, the exact Section-8 sentinel and both lengths, SLINE literal/bank separation, geometry classification and the optional pack's bounded/hash/source validation. The source CLI must leave unrelated Workspace files and existing research GeoPackages unchanged. Original-source counts are regression expectations gated by the matching source hash, never generic parser rules.
+
+The existing browser owner runs also exercise the optional pack during repeated imports and BFS → selected Trigger → World exit. Retired interaction header/geometry references must be collectible alongside old Shell/Viewer/Canvas owners; retained shared-Inspector buttons are not a scene cache. Interaction-specific checks use the ordinary Web folder importer (automatic-local discovery disabled), all five locales, desktop/390/320px, keyboard/touch and overlapping line choice. They preserve all candidates, compare camera projection against current original visual bounds, distinguish modifications/dynamic operands and discard a delayed interaction scene after a switch. Missing interaction data in a v4 Workspace retains ordinary Walkmesh. Run the complete player suite normally, or focus a local check with `GAIA_BROWSER_SCOPE=interaction`; use `GAIA_BROWSER_SCOPE=owners` for owner/cache/document release. Both need `GAIA_BROWSER_URL` and `GAIA_BROWSER_WORKSPACE`; `GAIA_CHROME_PATH` can select an installed Chrome instead of downloading a browser. Temporary profiles remain beneath the project through `tools/build/environment.ps1`.
+
+FieldLocal GeoPackage v1 remains unchanged and has no interaction layers in this version. A future explicit interaction GIS format requires its own strict layer/table and dynamic-evidence validation; do not silently broaden the v1 verifier. Runtime trigger availability and complete game-background behavior have no acceptance claim from static tests.
+
 ## Repeatable player flows
 
 With a built local Viewer running, use the existing Playwright dependency:
@@ -36,7 +42,7 @@ $env:GAIA_CHROME_PATH = "C:/Program Files/Google/Chrome/Application/chrome.exe"
 npm --prefix web run test:browser
 ```
 
-The one player-flow suite exercises Atlas/Field, Explorer preview movement and model switching, routing/analysis, authored geometry editing/export/import, a synthetic multi-slot save, map/projection switching and compact touch layouts. It uses an isolated browser context and disposes profiles/downloads on exit. No original saves are fixtures. `GAIA_MEASURE_ONLY=1` runs the same loaded-UI and Save Inspector mutation measurements for a before/after comparison without changing application code. Actual model aesthetics, ground-contact fidelity, the native chooser on an ordinary user's desktop and a live Steam world-module save comparison require human acceptance. Synthetic player-binding success does not verify Steam runtime equivalence. v3.9 technical regression completion does not change its pending browser human-acceptance status; v4.0 is tested on the separate `stabilize/v4.0` branch.
+The one player-flow suite exercises Atlas/Field, Explorer preview movement and model switching, routing/analysis, authored geometry editing/export/import, a synthetic multi-slot save, map/projection switching and compact touch layouts. It uses an isolated browser context and disposes profiles/downloads on exit. No original saves are fixtures. `GAIA_MEASURE_ONLY=1` runs the same loaded-UI and Save Inspector mutation measurements for a before/after comparison without changing application code. Actual model aesthetics, ground-contact fidelity, the native chooser on an ordinary user's desktop and a live Steam world-module save comparison require human acceptance. Synthetic player-binding success does not verify Steam runtime equivalence. v3.9 and v4.0 have subsequently completed human acceptance. New v4.1 technical checks remain separate from its pending human acceptance.
 
 Repeat timings under the same Viewer build, browser, viewport, Workspace and cache conditions. Report initial boot/import, cold scene/visual decode, warm scene reopening, algorithm/geometry work and complete UI interaction separately. Repeat several times and report individual samples or range; historical timings are references rather than cross-machine thresholds. Inspect observer/capture/listener cleanup over repeated navigation and data replacement, and distinguish cached JS heap from total process memory. A single GC comparison cannot prove absence or presence of a leak.
 
@@ -80,16 +86,15 @@ For a private cross-language oracle, set `GAIA_FIELD_GIS_ORACLE` to a checkout-l
 
 QGIS acceptance distinguishes real PyQGIS provider load/query/classification/render, project save/reopen and `QgsVectorFileWriter` research-copy export followed by OGR verification from interactive desktop GUI acceptance. Use an isolated checkout-local QGIS profile and undefined Cartesian CRS; do not suppress its lack of geographic reference by assigning EPSG. Compare integer XYZ/raw4 with zero tolerance, raw Access/offsets and all Gateway candidate pairs. Manual GUI review and game runtime passability remain separate checks. Windows package validation excludes the optional exporter/GDAL runtime; the source archive includes its code.
 
-## Switch back for v3.9 human acceptance
+## Current local candidate acceptance
 
-After the v4.0 local commit is complete and the working tree is clean, stop the current Viewer server and close its page. Switching branches does not replace the ignored compiled Viewer, so rebuild it from the branch being accepted:
+v3.9 and v4.0 have completed human acceptance; v4.0.0 is published. The v4.1 candidate remains on local main until separately accepted. Do not switch to an old stabilization branch or rewrite the published tag. Stop an older Viewer server and close its page before rebuilding the candidate, because branch changes alone do not replace ignored compiled assets:
 
 ```powershell
-git switch main
 . tools/build/environment.ps1
 npm --prefix web run build:release
 npm --prefix web run audit:release
 npm --prefix web run preview:release
 ```
 
-Main remains at the retained v3.9 RC `1b2b7ba5501399cdc71d0970771db51560b47b58`. Open a fresh `http://127.0.0.1:5175/` page, confirm its application version, then import the existing Workspace folder for the real multiscale acceptance flows. No Workspace regeneration or permanent second build copy is required. To return to v4.0 testing, stop the server, switch to `stabilize/v4.0` and rebuild the same Viewer output again. Do not merge or publish either branch during this acceptance step.
+Open a fresh `http://127.0.0.1:5175/` page (use the port printed by Vite), confirm version 4.1.0, and import the existing Workspace folder after its optional interaction increment. Review the plain-language Inspector, original lines, overlapping record choice, all candidates and UNKNOWN limits. No full Workspace or GIS regeneration is required. Technical checks do not perform human gameplay validation or authorize publication.

@@ -144,6 +144,7 @@ def server_manifest(root):
         if name not in ASSETS or name in names:raise ValueError('Unapproved workspace asset')
         if not isinstance(asset.get('bytes'),int) or not 0<asset['bytes']<=160_000_000:raise ValueError('Invalid asset size')
         if name=='gaia-field-visual.bin' and asset['bytes']>64_000_000:raise ValueError('Visual asset budget')
+        if name=='gaia-field-interaction.bin' and asset['bytes']>8_000_000:raise ValueError('Interaction asset budget')
         if asset.get('dependencies')!=ASSETS[name][2]:raise ValueError('Invalid asset dependencies')
         path=(root/name).resolve()
         if not path.is_relative_to(root) or not path.is_file() or sha256(path)!=asset['sha256'] or path.stat().st_size!=asset['bytes']:
