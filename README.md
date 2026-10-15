@@ -8,7 +8,7 @@ The **Web Viewer is the main interface**. Open the [public Viewer](https://zaxae
 
 For Windows players, an approved [Release](https://github.com/Zaxaerith/ff7-GaiaGIS/releases) ZIP supplies **GaiaGIS.exe** to create/connect the Workspace and open that browser interface. Extract the whole ZIP to a writable folder, select the original FF7 data and keep the launcher open. No Python or Node installation is needed by the portable runtime.
 
-**GaiaGIS v4.1.0 — Field Interaction Geometry** adds optional original Field interaction geometry to the existing Web Canvas and Inspector: Trigger, script LINE, constant SLINE modification evidence and dynamic/LINON source records. Browser human acceptance is complete. Static mesh/network/background associations never claim gameplay triggering. The maintained targets are **Web + Windows x64**; historical macOS packaging is unmaintained. [Multiscale navigation](docs/user/navigation.md#world--field-multiscale-navigation), [FieldLocal QGIS export](docs/user/workspace.md#fieldlocal-geopackage-research-export) and Camera/Background browsing keep their existing data contracts.
+**GaiaGIS v4.2.0 — FieldLocal GIS Integration** is a local candidate extending the read-only QGIS research export. The default GeoPackage v1 stays unchanged; explicit `--format-version 2` adds original Trigger/LINE geometry and normalized interaction, Actor/entry, mesh and background evidence from the existing private Interaction Pack. No new Web Viewer or game-runtime feature is added. v4.1 browser human acceptance remains complete; v4.2 QGIS desktop acceptance is pending. Maintained targets are **Web + Windows x64**; historical macOS packaging is unmaintained. [FieldLocal export and Chinese QGIS steps](docs/user/workspace.md#fieldlocal-geopackage-research-export).
 
 For a source checkout:
 
@@ -38,7 +38,7 @@ To add interaction evidence to an existing source-matched Workspace without rebu
 python -m gaiagis field-interaction --source "YOUR_FF7_INSTALLATION" --workspace output/local-workspace
 ```
 
-In the **v4.1 Web Viewer**, re-import that folder, open a Field Walkmesh and expand **Interaction geometry**. Older Workspaces work without this optional pack. An older public Viewer may not recognize the new resource; Pages deployment is separate from a Windows Release. Use the bundled or locally built v4.1 Viewer until Pages is updated. [Interaction controls and limits](docs/user/navigation.md#field-interaction-geometry).
+In the **v4.1 or newer Web Viewer**, re-import that folder, open a Field Walkmesh and expand **Interaction geometry**. Older Workspaces work without this optional pack. An older public Viewer may not recognize the new resource; Pages deployment is separate from a Windows Release. Use the bundled or locally built Viewer until Pages is updated. [Interaction controls and limits](docs/user/navigation.md#field-interaction-geometry).
 
 The [public Viewer](https://zaxaerith.github.io/ff7-GaiaGIS/) is source-only: authored Atlas/search and local user state work without distributed private spatial packs. Explicit folder/file import connects privately generated assets. Missing anchors remain unavailable.
 

@@ -71,7 +71,7 @@ This optional source CLI exports one scene from an existing private workspace. I
 ```powershell
 . tools/build/environment.ps1
 $env:GAIAGIS_QGIS_ROOT = "C:/path/to/QGIS"
-python -m gaiagis field-gis export --workspace output/local-workspace --field mds5_1 --output output/exports/fieldlocal/mds5_1.gpkg --start-triangle 16
+python -m gaiagis field-gis export --workspace output/local-workspace --field mds5_5 --output output/exports/fieldlocal/mds5_5-research.gpkg --start-triangle 16
 ```
 
 The QGIS root contains `bin/python.exe`, `apps/Python3*` and `apps/qgis/python`. A Python environment already providing `osgeo` needs no root override. QGIS/GDAL is not included in the Windows portable Viewer; the browser requires neither. No browser button claims to generate a GeoPackage.
@@ -87,3 +87,42 @@ XYZ and raw4 retain original S16 integers and source-relative offsets. Raw4 is a
 Only new `.gpkg` files beneath the ignored `output/exports/fieldlocal` directory are allowed. Existing files are refused; choose a new name. Export uses bounded staging, at least 256 MB free disk, a 128 MB output limit, source rechecks and SQLite/OGR validation before atomic delivery. It reads/hashes the existing pack but decodes only the selected raw Section 5. There is no automatic all-Field export or copied LGP/background collection.
 
 Open the GeoPackage in QGIS, inspect all layers/tables and raw attributes, classify WCC/SCC, locate anchors, then save a **research copy** and reopen it. Editing that copy does not modify FF7 or update GaiaGIS source evidence. The exporter never writes changes back. Keep exports, projects and screenshots private and ignored; do not include them in Pages, source commits or Release assets. Camera/background visualization stays in Web; no GeoTIFF, orthophoto or geographic control points are exported.
+
+### Interaction GIS: explicit v2
+
+Omitting `--format-version` (or selecting `1`) keeps the eleven v1 layers/tables and fields. Use v1 for original mesh/anchors/network research or when the optional interaction pack is unavailable. Use `2` to query original interaction evidence in QGIS:
+
+```powershell
+. tools/build/environment.ps1
+$env:GAIAGIS_QGIS_ROOT = "C:/path/to/QGIS"
+python -m gaiagis field-gis export --workspace output/local-workspace --field mds5_1 --format-version 2 --output output/exports/fieldlocal/mds5_1-interaction-v2.gpkg
+python -m gaiagis field-gis export --workspace output/local-workspace --field elm --format-version 2 --start-triangle 119 --output output/exports/fieldlocal/elm-interaction-v2.gpkg
+```
+
+Choose unused output names. V2 requires a registered, matching `gaia-field-interaction.bin`; a missing/corrupt/mismatched pack is rejected before delivery. Generate it separately with the [interaction increment](#optional-field-interaction-resource) if needed; export itself never reads the game installation or regenerates assets. V1 remains usable without this optional file. Existing five research GeoPackages are not upgraded or overwritten.
+
+V2 adds `field_triggers` and `script_lines` (LineString Z), plus six nonspatial tables: `interaction_scripts`, `interaction_memberships`, `interaction_line_links`, `interaction_candidates`, `interaction_background`, `interaction_stops`. A LINE has one geometry per original instruction offset; its multiple Actor/entry memberships remain separate rows. LINON and all SLINE records remain nonspatial evidence. Constant SLINE coordinates describe a possible modification, not an unconditional initial line; dynamic bank operands are not coordinates. `runtime_active` is NULL everywhere.
+
+### QGIS 中文操作与查询
+
+1. 先复制需要保留原始文件哈希的研究文件，再在 **浏览器** 面板找到新 `.gpkg`，展开并把所需图层拖到地图；也可用 **图层 → 添加图层 → 添加矢量图层**。表没有地图几何，但可打开属性表。每个 Field 单独研究，保留未定义 Cartesian CRS；不要在 CRS 提示中指定 WGS84、EPSG:4326 或米制投影。
+2. 右键 `field_triggers` → **打开属性表**，使用 **筛选** 查询 `group_id = 4` 或 `geometry_relation = 'disjoint'`。在 **属性 → 符号系统 → 分类** 中按 `behavior` / `group_id` 分类，再点击 **分类**。LINE、Gateway 和网格保持不同线型；颜色不说明运行时启用状态。
+3. `script_lines` 用 `instruction_offset` 查询原始 LINE；`interaction_memberships` 中用同一 `field_id` + `instruction_offset` 查询 `actor_name`、`script_slot`、`entry_offset`。共享指令不等于一个 Actor 独占。
+4. 打开 **数据库 → 数据库管理器**，连接该 GeoPackage，进入 **SQL 窗口** 查询来源或全部候选。例如：
+
+```sql
+SELECT l.instruction_offset, m.actor_name, m.script_slot, m.entry_kind
+FROM script_lines AS l JOIN interaction_memberships AS m
+ON l.field_id=m.field_id AND l.instruction_offset=m.instruction_offset;
+
+SELECT c.record_type, c.record_id, c.triangle_id, c.exact_3d,
+       c.xy_only, c.reachable, t.wcc_id, t.scc_id
+FROM interaction_candidates AS c JOIN walkmesh_triangles AS t
+ON c.field_id=t.field_id AND c.triangle_id=t.triangle_id;
+```
+
+5. `interaction_background` 的 `state_bit` 是编号，`state_mask` 是瓦片位掩码；匹配条件是 `state_mask & (1 << state_bit)` 非零。`tile_count` 与 `source_offset` 是 Section 9 静态来源证据，未复制背景像素。`unknown` 保留严格背景解析失败原因。
+6. 只有显式 `--start-triangle` 的快照才有 BFS。候选表的 `reachable` 只给精确 3D 候选；XY-only 保持 NULL。无候选或 Disjoint 不表示原版事件无效。不要把最少 Access 跨边数当作角色轨迹。
+7. 用 **项目 → 另存为** 保存私有 `.qgz`。若要编辑，用资源管理器先复制 `.gpkg` 为研究副本，再在 QGIS 开启编辑、保存、关闭并重开。编辑副本不写回 FF7，也不成为新的 GaiaGIS 原始证据。
+
+PyQGIS 自动化验收与桌面人工验收分开记录。当前本机 QGIS 的多层筛选可能显示计数 -1，并报 SQLite 打开错误；原有 v1 同条件也会发生，实际过滤记录和独立 SQLite/OGR 查询一致。遇到此情况可用数据库管理器核对结果，并在桌面复核计数；不得把 -1 当作空图层或成功计数。无地理 CRS 的 PROJ 警告不应通过赋予虚假 CRS 消除。

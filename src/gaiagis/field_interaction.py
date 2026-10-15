@@ -9,6 +9,7 @@ from fractions import Fraction
 import hashlib
 import json
 import os
+import re
 from pathlib import Path
 import struct
 import tempfile
@@ -148,6 +149,176 @@ def encode_interactions(source, directory):
     if sha256(archive)!=source_hash:raise RuntimeError('Field source changed during interaction generation')
     payload=b'GAIAINT\0'+struct.pack('<II',1,len(encoded))+encoded+pool
     return payload,dict(counts,bytes=len(payload),seconds=round(time.perf_counter()-began,3),sources=sources)
+
+
+def _shape(value, keys):
+    if not isinstance(value,dict) or set(value)!=set(keys.split()):raise ValueError('Interaction record shape')
+    return value
+
+
+def _int(value, lo=0, hi=65535):
+    if type(value) is not int or not lo<=value<=hi:raise ValueError('Interaction integer bounds')
+    return value
+
+
+def _list(value, limit):
+    if not isinstance(value,list) or len(value)>limit:raise ValueError('Interaction list budget')
+    return value
+
+
+def _fingerprint(value):
+    if not isinstance(value,str) or not re.fullmatch('[a-f0-9]{64}',value):raise ValueError('Interaction fingerprint')
+    return value
+
+
+def _decode(data):
+    def pairs(rows):
+        result={}
+        for key,value in rows:
+            if key in result:raise ValueError('Duplicate interaction JSON key')
+            result[key]=value
+        return result
+    return json.loads(data,object_pairs_hook=pairs,parse_constant=lambda _: (_ for _ in ()).throw(ValueError('Nonfinite interaction value')))
+
+
+def validate_interaction_scene(value, span, scene):
+    """Same v1 evidence contract as Web; independently recheck raw mesh contacts."""
+    s=_shape(value,'fieldId name triangles meshReason section1Bytes section8Bytes section1SHA256 section8SHA256 section5SHA256 unusedTriggers triggers scripts stops')
+    _int(s['fieldId']);_int(s['triangles'])
+    for key in ('fieldId','name','triangles','section5SHA256'):
+        if s[key]!=span[key]:raise ValueError('Interaction scene identity')
+    if s['meshReason'] is not None or s['section5SHA256']!=digest(scene['raw']):raise ValueError('Interaction Walkmesh identity')
+    for key in ('section1SHA256','section5SHA256','section8SHA256'):_fingerprint(s[key])
+    _int(s['section1Bytes'],32,8_000_000)
+    if type(s['section8Bytes']) is not int or s['section8Bytes'] not in (536,740):raise ValueError('Interaction Section 8')
+    _int(s['unusedTriggers'],0,12)
+    triggers=_list(s['triggers'],12);scripts=_list(s['scripts'],4096)
+    if (len(triggers)+sum(isinstance(r,dict) and (r.get('opcode')==208 or r.get('opcode')==211 and r.get('static') is True) for r in scripts))*s['triangles']>2_000_000:raise ValueError('Interaction geometry validation work budget')
+    def vector(value, lo=-32768, hi=32767, size=3):
+        if len(_list(value,size))!=size:raise ValueError('Interaction vector size')
+        for v in value:_int(v,lo,hi)
+    def raw(row, size):
+        if not isinstance(row['raw'],str) or not re.fullmatch('[a-f0-9]{'+str(size*2)+'}',row['raw']):raise ValueError('Interaction raw bytes')
+        return bytes.fromhex(row['raw'])
+    def geometry(row):
+        g=_shape(row['geometry'],'relation candidates xyCandidates coplanar vertical zeroLength zeroXY rawZGap rawZTriangle')
+        for key in ('candidates','xyCandidates','coplanar','vertical'):
+            ids=_list(g[key],scene['stats']['triangles'])
+            for i in ids:_int(i,0,scene['stats']['triangles']-1)
+            if ids!=sorted(set(ids)):raise ValueError('Interaction duplicate candidate')
+        if type(g['zeroLength']) is not bool or type(g['zeroXY']) is not bool or g!=segment_geometry(scene['points'],row['a'],row['b']):raise ValueError('Interaction geometry evidence mismatch')
+    previous=-1
+    for r in triggers:
+        _shape(r,'slot offset raw a b group state behavior sound classification geometry background');slot=_int(r['slot'],0,11)
+        if slot<=previous or _int(r['offset'])!=344+slot*16:raise ValueError('Trigger identity/offset')
+        previous=slot;data=raw(r,16);values=struct.unpack('<6h4B',data)
+        vector(r['a']);vector(r['b'])
+        if data==UNUSED_TRIGGER or r['a']!=list(values[:3]) or r['b']!=list(values[3:6]):raise ValueError('Trigger original XYZ')
+        for key,v in zip(('group','state','behavior','sound'),values[6:]):
+            if _int(r[key],0,255)!=v:raise ValueError('Trigger original parameter')
+        expected='unknown' if r['group']==255 or r['behavior']>5 or data==bytes(16) else 'record'
+        if r['classification']!=expected:raise ValueError('Trigger classification')
+        geometry(r);b=_shape(r['background'],'status matches reason');seen=set()
+        for m in _list(b['matches'],16384):
+            _shape(m,'group mask layer count firstOffset');key=(m['layer'],m['group'],m['mask'])
+            if key in seen or _int(m['group'],0,255)!=r['group'] or r['state']>=8 or not (_int(m['mask'],1,255)&(1<<r['state'])):raise ValueError('Trigger background mask')
+            seen.add(key);_int(m['layer'],1,3);_int(m['count'],1,16384);_int(m['firstOffset'],0,8_000_000)
+        if b['status'] not in ('matched','no_match','unknown') or (b['status']=='matched')!=bool(b['matches']) or (b['status']=='unknown')!=(b['reason'] is not None):raise ValueError('Trigger background status')
+        if b['reason'] is not None and (not isinstance(b['reason'],str) or not 0<len(b['reason'])<=256):raise ValueError('Trigger background reason')
+    if len(s['triggers'])+s['unusedTriggers']!=12:raise ValueError('Trigger slot accounting')
+    previous=-1;owner_budget=0
+    for r in scripts:
+        op=_int(r['opcode']);size={208:13,209:2,211:16}.get(op)
+        if size is None:raise ValueError('Interaction opcode')
+        constant=op==208 or op==211 and r.get('static') is True
+        keys='opcode offset raw owners entryReachable '+('a b static geometry' if op==208 else 'switch lineOffsets' if op==209 else 'banks operands static lineOffsets'+(' a b geometry' if constant else ''))
+        _shape(r,keys);offset=_int(r['offset'],0,65535-size)
+        if offset<previous or offset+size>s['section1Bytes'] or r['entryReachable'] is not True:raise ValueError('Interaction instruction boundary')
+        previous=offset+size;data=raw(r,size)
+        if data[0]!=op:raise ValueError('Interaction raw opcode')
+        owners=_list(r['owners'],2112);owner_budget+=len(owners);seen=set()
+        if not owners or owner_budget>65536:raise ValueError('Interaction owner budget')
+        for o in owners:
+            _shape(o,'actor name slot entry kind');key=(o['actor'],o['slot'],o['entry'],o['kind'])
+            _int(o['actor'],0,63);_int(o['slot'],0,31);_int(o['entry'],0,min(65535,s['section1Bytes']-1))
+            if key in seen or o['kind'] not in ('table','main') or o['kind']=='main' and o['slot']!=0 or o['name'] is not None and (not isinstance(o['name'],str) or not re.fullmatch('[\x20-\x7e]{0,8}',o['name'])):raise ValueError('Interaction membership')
+            seen.add(key)
+        if op==209:
+            if _int(r['switch'],0,255)!=data[1]:raise ValueError('LINON parameter')
+        elif op==211:
+            banks=[n for byte in data[1:4] for n in (byte>>4,byte&15)];operands=list(struct.unpack_from('<6h',data,4))
+            vector(r['banks'],0,15,6);vector(r['operands'],-32768,32767,6)
+            if r['banks']!=banks or r['operands']!=operands or type(r['static']) is not bool or r['static']!=(not any(banks)):raise ValueError('SLINE bank classification')
+            if constant and (r['a']!=operands[:3] or r['b']!=operands[3:]):raise ValueError('SLINE original literals')
+        elif r['static'] is not True or r['a']!=list(struct.unpack_from('<3h',data,1)) or r['b']!=list(struct.unpack_from('<3h',data,7)):raise ValueError('LINE original XYZ')
+        if constant:
+            vector(r['a']);vector(r['b'])
+            geometry(r)
+    lines=[r for r in s['scripts'] if r['opcode']==208]
+    for r in s['scripts']:
+        if r['opcode']==208:continue
+        related=[line['offset'] for line in lines if {o['actor'] for o in line['owners']}&{o['actor'] for o in r['owners']}]
+        for offset in _list(r['lineOffsets'],4096):_int(offset)
+        if r['lineOffsets']!=related:raise ValueError('Interaction LINE evidence link')
+    seen_stops=set()
+    for r in _list(s['stops'],4096):
+        _shape(r,'offset opcode reason entryReachable')
+        key=(r['offset'],r['opcode'],r['reason'])
+        if key in seen_stops:raise ValueError('Duplicate interaction stop')
+        seen_stops.add(key)
+        if type(r['entryReachable']) is not bool or r['reason'] not in ('unsupported_opcode','unverified_boundary','invalid_script'):raise ValueError('Interaction stop evidence')
+        if r['reason']=='invalid_script':
+            if r['offset'] is not None or r['opcode'] is not None or s['scripts']:raise ValueError('Interaction invalid script evidence')
+        else:_int(r['offset'],0,min(65535,s['section1Bytes']-1));_int(r['opcode'],0,255)
+    return s
+
+
+def read_interaction(scene):
+    """Read/hash the optional v1 pack, decompress only this selected Field."""
+    from .clean_output import reject_links
+    began=time.perf_counter();path=scene['root']/FILENAME;record=scene['assets'].get(FILENAME)
+    if not record or not path.is_file():raise ValueError('FieldLocal v2 requires Interaction Pack; run field-interaction --source YOUR_FF7_PC_DATA --workspace YOUR_WORKSPACE')
+    reject_links(path)
+    if path.stat().st_size!=_int(record['bytes'],16,MAX_PACK) or record.get('generator_version')!=GENERATOR_VERSION:raise ValueError('Interaction manifest/checksum mismatch')
+    with path.open('rb') as stream:
+        prefix=stream.read(16)
+        if len(prefix)!=16 or prefix[:8]!=b'GAIAINT\0' or struct.unpack_from('<I',prefix,8)[0]!=1:raise ValueError('Interaction pack header')
+        length=struct.unpack_from('<I',prefix,12)[0]
+        if not 0<length<=MAX_HEADER or 16+length>record['bytes']:raise ValueError('Interaction metadata budget')
+        encoded=stream.read(length);checksum=hashlib.sha256(prefix+encoded)
+        meta=_shape(_decode(encoded),'schema version coordinateSpace generator_revision sources scenes')
+        if meta['schema']!='gaiagis-field-interaction' or type(meta['version']) is not int or meta['version']!=1 or meta['coordinateSpace']!='FieldLocal' or meta['generator_revision']!=GENERATOR_VERSION:raise ValueError('Interaction schema')
+        _shape(meta['sources'],'flevel.lgp maplist')
+        if any(_fingerprint(h)!=scene['context']['sources'][k] for k,h in meta['sources'].items()):raise ValueError('Interaction source mismatch')
+        end=0;seen=set();chosen=None
+        for span in _list(meta['scenes'],2000):
+            _shape(span,'fieldId name triangles section5SHA256 offset bytes rawBytes sha256');id=_int(span['fieldId']);node=scene['nodes'].get(id)
+            if id in seen or not node or node['name']!=span['name'] or node['status']!='available':raise ValueError('Interaction Field identity')
+            seen.add(id);_int(span['triangles']);_fingerprint(span['sha256'])
+            if span['section5SHA256'] is not None:_fingerprint(span['section5SHA256'])
+            if _int(span['offset'],0,MAX_PACK)!=end or 16+length+end+_int(span['bytes'],1,MAX_SCENE)>record['bytes']:raise ValueError('Interaction compressed span')
+            end+=span['bytes'];_int(span['rawBytes'],1,MAX_SCENE)
+            if id==scene['id']:chosen=span
+        if 16+length+end!=record['bytes'] or not chosen or chosen['triangles']!=scene['stats']['triangles'] or chosen['section5SHA256']!=digest(scene['raw']):raise ValueError('Interaction selected Walkmesh/trailing bytes')
+        # Hash the same bytes from which the selected span is captured. Never
+        # reopen a mutable pathname between authentication and scene reading.
+        cursor=0;parts=[]
+        while cursor<end:
+            block=stream.read(min(1_048_576,end-cursor))
+            if not block:raise ValueError('Interaction truncated payload')
+            checksum.update(block)
+            lo=max(0,chosen['offset']-cursor);hi=min(len(block),chosen['offset']+chosen['bytes']-cursor)
+            if hi>lo:parts.append(block[lo:hi])
+            cursor+=len(block)
+        if stream.read(1) or checksum.hexdigest()!=record['sha256']:raise ValueError('Interaction manifest/checksum mismatch')
+        compressed=b''.join(parts);scene['hashes'][FILENAME]=record['sha256'];metadata_seconds=time.perf_counter()-began
+    began=time.perf_counter();decoder=zlib.decompressobj()
+    try:decoded=decoder.decompress(compressed,MAX_SCENE+1)
+    except zlib.error as error:raise ValueError('Interaction compressed scene') from error
+    if len(decoded)!=chosen['rawBytes'] or decoder.unconsumed_tail or decoder.unused_data or not decoder.eof or digest(decoded)!=chosen['sha256']:raise ValueError('Interaction decompression/scene checksum')
+    decompress_seconds=time.perf_counter()-began
+    result=validate_interaction_scene(_decode(decoded),chosen,scene)
+    return result,dict(metadata_seconds=metadata_seconds,decompress_seconds=decompress_seconds,scene_seconds=time.perf_counter()-began,decoded_bytes=len(decoded))
 
 
 def atomic_write(path, payload):

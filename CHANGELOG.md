@@ -1,5 +1,13 @@
 # Changelog
 
+## v4.2.0 — FieldLocal GIS Integration (local candidate)
+
+- Explicit `field-gis export --format-version 2` adds Trigger and original LINE LineString Z layers to the shared FieldLocal exporter. Default/explicit v1 retain the original eleven-table contract; both formats enforce their exact tables, fields and Undefined Cartesian SRS -1.
+- A bounded read-only Interaction Pack v1 reader checks Manifest/file identity, flevel/maplist and Section-5 sources, selected-scene hashes, raw records, instruction/Actor/entry structure and all recomputed mesh candidates. It decompresses only the selected scene, without game-file access or Workspace regeneration.
+- Normalized scripts, memberships, LINE control links, geometry candidates, background state-mask evidence and conservative stops retain all source identities. LINON/dynamic SLINE have no geometry; constant SLINE remains nonspatial modification evidence. Runtime activation is NULL/UNKNOWN; only exact 3D contacts can carry a requested directed BFS association.
+- Shared SQLite/OGR readback precedes atomic no-overwrite delivery and rechecks all used inputs. Manifest decoding and its starting fingerprint now use the same bounded bytes, rejecting an early replacement; selected Interaction bytes are captured during the authenticated stream read. Existing Context, Walkmesh, visual/interaction packs, Workspace, WM0 exchange and original research GeoPackages are unchanged. Exports/projects stay private; GDAL/QGIS remains optional and outside Web/portable runtime.
+- User documentation includes v1/v2 choice, Chinese QGIS filtering/join steps and evidence limits. This is a local candidate pending human desktop acceptance, with no remote publication.
+
 ## v4.1.0 — Field Interaction Geometry
 
 - Optional `gaia-field-interaction.bin` v1, source-bound to flevel/maplist and raw Section 5, compressed and decoded per selected scene. `field-interaction --source ... --workspace ...` updates only this component and its Manifest entry; older Workspaces keep all existing views. Full incremental generation also includes it.

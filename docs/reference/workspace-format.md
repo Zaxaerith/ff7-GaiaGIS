@@ -60,6 +60,18 @@ Geometry retains sorted unique 3D/XY/coplanar/vertical candidate IDs, exact rela
 
 The Manifest type is `field-interaction`, mapId `shared`, dependencies Context + Walkmesh, generator `field-interaction-1`. Missing optional data does not invalidate earlier Workspace formats; an older Viewer may reject an unknown newer resource. Incremental `field-interaction` writes only this pack and its Manifest entry, with bounded staging/rollback. No private backgrounds, interactions or complete Field dataset enter public assets. Context/Walkmesh/visual and FieldLocal GeoPackage v1 contracts are not upgraded.
 
+## FieldLocal GeoPackage research formats
+
+`gaiagis-fieldlocal-gpkg` has explicit export versions, independent of application and Workspace versions. Default/explicit v1 preserves eleven original tables and their fields. Explicit v2 shares those geometries/attributes and adds exactly eight tables: spatial `field_triggers` and `script_lines` (LineString Z), nonspatial `interaction_scripts`, `interaction_memberships`, `interaction_line_links`, `interaction_candidates`, `interaction_background`, `interaction_stops`. Strict validators reject missing/extra tables or changed fields for each version. All spatial tables use SRS -1 / Undefined Cartesian, Z=1, M=0; raw XYZ are unchanged. Raw4 remains an integer attribute.
+
+Trigger identity is `(field_id, trigger_slot)`; script identity is `(field_id, instruction_offset)`. OGR FID is storage identity only. Membership rows preserve every Actor/slot/entry/kind; LINE geometry is not duplicated. Control links mean shared Actor evidence, not execution order. All original hex, parameters, bank/literal classification and conservative stop reasons are retained. LINON/dynamic SLINE have no XYZ; constant SLINE has nonspatial literal modification attributes/candidates, never an initial geometry feature. Runtime activation is NULL/UNKNOWN.
+
+Candidate rows preserve the union of all raw exact-3D and XY contacts, with coplanar/vertical and evidence labels. Only exact 3D rows get a requested directed BFS snapshot; XY-only/disjoint records are not moved or promoted. Original zero-length/XY and rational Raw-Z gap diagnostics stay attributes. Background rows preserve validated Group/state-bit versus mask/layer/count/first Section-9 offset; unmatched/failed parsing has an explicit no_match/unknown row, not fabricated pixels or runtime state.
+
+V2 metadata adds Interaction Pack version/SHA256, selected Section-1/8 fingerprints and lengths, and interaction evidence semantics to the original v1 metadata. Section-5, flevel/maplist, Context 3 and Walkmesh 1 identities remain shared. Reader checks the registered pack's size/hash/header, all bounded metadata spans and only the selected decompressed scene; it rechecks original record bytes/offsets, owners and deterministic mesh candidates. Geometry verification is bounded to 2,000,000 record/triangle pairs. V1 does not require the optional pack. This contract does not change Interaction Pack v1 or infer script execution.
+
+Inputs are existing private Workspace assets only. File/Manifest hashes are rechecked before atomic no-clobber delivery below ignored `output/exports/fieldlocal`. SQLite integrity, exact contents/fields/CRS, OGR XYZ/raw4/Access/network and every normalized interaction row are reread before delivery. Output limit 128 MB; at least 256 MB free disk. No all-Field batch, background imagery, LGP copy, source path, coordinate transformation or writeback is introduced. See [export/QGIS steps](../user/workspace.md#fieldlocal-geopackage-research-export).
+
 ## Incremental and deterministic behavior
 
 The CLI calls the existing owners in component steps. A step is reused only
