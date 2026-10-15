@@ -16,9 +16,24 @@ gaiagis validate --help
 gaiagis build-sphere --help
 gaiagis user-gis --help
 gaiagis field-gis --help
+gaiagis field-interaction --help
+gaiagis field-visual --help
 ```
 
 The full developer spherical GIS exporter can use an installed QGIS/GDAL runtime selected with `GAIAGIS_QGIS_ROOT`. The portable workspace runtime uses its bundled transport and needs no QGIS installation. The shared native-map workspace exporter is used by both source and frozen launchers.
+
+## Increment only Field background resources
+
+For an existing source-matched Workspace, use the dedicated updater rather than a full build:
+
+```powershell
+. tools/build/environment.ps1
+python -m gaiagis field-visual --source "YOUR_FF7_INSTALLATION" --workspace output/local-workspace --audit output/dev/current/field-background-audit.json
+```
+
+The optional `--audit` target must be `.json` under `output/dev/current`; existing files must be owned `gaiagis-field-background-audit` version-1 reports. It cannot overwrite an existing Workspace, research product or source file; report replacement is atomic.
+
+This writes explicit Visual v2 (`field-visual-3`) and its Manifest entry after candidate/source validation. It preserves world/GIS products, Walkmesh, Interaction, GeoPackages and research projects. Exception rollback and `.build/visual-recovery` protect the old matching pair; interrupted two-file replacement is recoverable rather than crash-atomic. Re-import the folder into the current locally built Viewer. Visual v1 generators remain readable without this upgrade. See [format and limits](../reference/workspace-format.md#optional-field-visual-transport).
 
 ## Web
 

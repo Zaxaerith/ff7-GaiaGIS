@@ -6,22 +6,13 @@ code is copied. Layer 0 and unconditional, unblended layer-1 indexed tiles are
 drawn. Layer-0 param/state/blending operands are unused in the classic PC format.
 """
 # SPDX-License-Identifier: GPL-3.0-only
-import hashlib
-import json
 import math
 from pathlib import Path
 import struct
-import zlib
 
-from .field_context import field_sections
-from .dataset import discover, child_ci
-from .lgp import inventory, read_entry
 from .lzss import FormatError
-from .poi import parse_maplist
-from .safety import output_path
-from .web_export import sha256
 
-GENERATOR_VERSION = 'field-visual-2'
+GENERATOR_VERSION = 'field-visual-3'
 MAX_PACK = 64_000_000
 MAX_PIXELS = 4_000_000
 
@@ -143,33 +134,7 @@ def parse_background(palette, data, *, groups=None):
 
 
 def build_field_visual(source:Path,directory:Path):
-    ds=discover(source);field=child_ci(ds.wm_directory.parent,'field');archive=child_ci(field,'flevel.lgp') if field else None
-    if not archive:raise FormatError('Field archive unavailable')
-    archive_hash=sha256(archive);entries={}
-    for e in inventory(archive)['entries']:
-        name=e['filename'].casefold()
-        if name in entries:raise FormatError('Ambiguous field entry')
-        entries[name]=e
-    maplist=read_entry(archive,entries['maplist']);scenes=[];pool=bytearray()
-    for id,name in enumerate(parse_maplist(maplist)):
-        if name.casefold() not in entries:continue
-        record=dict(fieldId=id,cameras=[],background=dict(status='unsupported'))
-        try:
-            camera,palette,background=field_sections(read_entry(archive,entries[name.casefold()]),visual=True)
-            record['cameras']=parse_cameras(camera)
-            try:
-                meta,pixels=parse_background(palette,background)
-                # Revision 2 uses bit 6 of the texture byte for layer 0/1; page
-                # IDs remain 0..41. The 8-byte descriptor/pack schema stay v1.
-                tiles=meta.pop('tiles');descriptors=b''.join(struct.pack('<hhHBB',t['x'],t['y'],t['id'],t['texture']|(t['layer']<<6),t['palette']) for t in tiles);meta['tileCount']=len(tiles)
-                decoded=descriptors+pixels;compressed=zlib.compress(decoded,9);meta.update(offset=len(pool),bytes=len(compressed),sha256=hashlib.sha256(decoded).hexdigest());pool.extend(compressed);record['background']=meta
-            except FormatError as error:record['background']['reason']=str(error)
-        except FormatError as error:record['reason']=str(error)
-        scenes.append(record)
-        if len(pool)>MAX_PACK:raise FormatError('Visual pack budget exceeded')
-    metadata=dict(schema='gaiagis-field-visual',version=1,generator_revision=GENERATOR_VERSION,sources={'flevel.lgp':archive_hash,'maplist':hashlib.sha256(maplist).hexdigest()},scenes=scenes)
-    encoded=json.dumps(metadata,separators=(',',':'),sort_keys=True).encode()
-    if len(encoded)>8_000_000 or 16+len(encoded)+len(pool)>MAX_PACK:raise FormatError('Visual pack metadata/size budget')
-    if sha256(archive)!=archive_hash:raise RuntimeError('Field source changed')
-    output_path(directory/'gaia-field-visual.bin').write_bytes(b'GAIACAM\0'+struct.pack('<II',1,len(encoded))+encoded+pool)
-    return dict(scenes=len(scenes),cameras=sum(len(s['cameras']) for s in scenes),backgrounds=sum(s['background']['status']!='unsupported' for s in scenes),bytes=16+len(encoded)+len(pool))
+    # V1 decoding/fixtures above retain their original record semantics. New
+    # generation uses an explicit v2 transport, never repurposes a v1 byte.
+    from .field_background import build_field_visual as build_v2
+    return build_v2(source, directory)

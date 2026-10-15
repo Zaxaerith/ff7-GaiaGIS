@@ -1,5 +1,13 @@
 # Changelog
 
+## v4.3.0 — Field Background Reconstruction & State Explorer
+
+- Explicit private Visual Pack v2 (`field-visual-3`) retains all four layers' tile IDs, Section-9 offsets, page/palette references, raw depth, Group/state masks and support diagnostics in separate 36-byte descriptors. The Viewer still decodes Visual v1 generators `field-visual-1` and `field-visual-2` with their original semantics; Context 3, Walkmesh 1, Interaction 1, GeoPackage v1/v2 and world transports are unchanged.
+- Correct confirmed PC-format rejections: the exact `ENDFINAL FANTASY7` terminal variant, unused tile-depth operands that differ from authoritative page depth, and an empty Palette when only direct-color tiles need no CLUT. Support 4-bit and 8-bit indexed pixels plus verified PC16 direct color for Layer 0 and unblended Layer 1. Bounds, complete structure, references and source hashes remain checked.
+- Existing Field Camera/Canvas gains a foldable, five-language Background State Explorer: static base, one explicitly selected Group/state bit, visible/unsupported counts, source details, reset and statically associated Triggers. Selecting a Trigger alone changes no background state; its explicit preview action applies the user's research selection. Trigger state is a bit index and tile state is a mask. No initial game state or script execution is inferred.
+- Blend tiles, inconsistent Group/mask operands, out-of-preview target coordinates and Layer 2/3 scrolling/wrapping remain evidence with explicit omissions. Layer 2/3 retain their original 32-pixel size; no guessed alpha, scroll transform, fabricated image or camera/Walkmesh correction is introduced. Static completeness describes the applicable base preview, never complete original runtime behavior.
+- `field-visual --source ... --workspace ... [--audit ...]` validates a candidate and original source before incrementing only the Visual Pack and Manifest. Exceptions restore the old pair; a durable private `.build/visual-recovery` pair supports recovery after interruption. Only explicit v2 raises the measured total-file budget to 96 MB; v1 stays at 64 MB, with unchanged 8 MB scene / 4 MP composition limits. Selected-scene bounded decompression, shared texture reuse and lifecycle disposal remain in the existing Viewer. All private imagery and derived packs stay outside public assets and native packages.
+
 ## v4.2.0 — FieldLocal GIS Integration
 
 - Explicit `field-gis export --format-version 2` adds Trigger and original LINE LineString Z layers to the shared FieldLocal exporter. Default/explicit v1 retain the original eleven-table contract; both formats enforce their exact tables, fields and Undefined Cartesian SRS -1.

@@ -62,12 +62,17 @@ SOURCE_DEPENDENCIES = {
     'gaia-atlas.json': ['wm0.map', 'world_us.lgp', 'flevel.lgp', 'atlas-content.json', 'atlas-transitions.json'],
 }
 
-def write_manifest(directory, sources):
+def write_manifest(directory, sources, *, retained_visual=None):
     """No wall-clock timestamp, absolute input path or machine identity."""
     assets = []
     for filename, (kind, map_id, dependencies) in ASSETS.items():
         path = directory / filename
         if path.is_file():
+            if filename == 'gaia-field-visual.bin' and retained_visual is not None:
+                if retained_visual['bytes'] != path.stat().st_size or retained_visual['sha256'] != sha256(path):
+                    raise ValueError('Retained Visual changed before manifest publication')
+                assets.append(dict(retained_visual))
+                continue
             assets.append(dict(filename=filename, type=kind, mapId=map_id,
                                sha256=sha256(path), bytes=path.stat().st_size,
                                dependencies=dependencies, generator_version='explorer-party-1' if kind=='explorer' else PRESENTATION_VERSION if kind=='presentation' else ATLAS_VERSION if kind=='atlas' else VISUAL_VERSION if kind=='field-visual' else INTERACTION_VERSION if kind=='field-interaction' else FIELD_VERSION if kind in ('field-context','field-walkmesh') else GENERATOR_VERSION))
@@ -78,10 +83,11 @@ def write_manifest(directory, sources):
                     generator_version=GENERATOR_VERSION, timestamp_policy='omitted',
                     sources=dict(sorted(sources.items())), assets=assets)
     path = output_path(directory / 'gaia-workspace.json')
-    path.write_text(json.dumps(manifest, sort_keys=True, indent=2) + '\n', encoding='utf8')
+    from .field_interaction import atomic_write
+    atomic_write(path, (json.dumps(manifest, sort_keys=True, indent=2) + '\n').encode())
     return manifest
 
-def reusable(manifest, sources, directory, names, _visited=None):
+def reusable(manifest, sources, directory, names, _visited=None, *, visual_revision=None):
     if not isinstance(manifest,dict) or not isinstance(manifest.get('sources'),dict) or not isinstance(manifest.get('assets'),list) or not all(isinstance(a,dict) for a in manifest['assets']) or manifest.get('schema') != 'gaiagis-workspace' or manifest.get('version') != 1 or not isinstance(manifest.get('tool_version'),str) or not re.fullmatch(r'\d+\.\d+\.\d+',manifest['tool_version']) or manifest.get('generator_version') != GENERATOR_VERSION:
         return False
     visited = set() if _visited is None else _visited
@@ -97,12 +103,67 @@ def reusable(manifest, sources, directory, names, _visited=None):
         if name=='gaia-presentation.json' and record.get('generator_version')!=PRESENTATION_VERSION:return False
         if name=='gaia-atlas.json' and record.get('generator_version')!=ATLAS_VERSION:return False
         if name in ('gaia-field-context.json','gaia-field-walkmesh.bin') and record.get('generator_version')!=FIELD_VERSION:return False
-        if name=='gaia-field-visual.bin' and record.get('generator_version')!=VISUAL_VERSION:return False
+        if name=='gaia-field-visual.bin' and record.get('generator_version')!=(visual_revision or VISUAL_VERSION):return False
         if name=='gaia-field-interaction.bin' and record.get('generator_version')!=INTERACTION_VERSION:return False
         dependencies = ASSETS[name][2]
         if record.get('dependencies') != dependencies:return False
-        if dependencies and not reusable(manifest, sources, directory, dependencies, visited | {name}):return False
+        if dependencies and not reusable(manifest, sources, directory, dependencies, visited | {name}, visual_revision=visual_revision):return False
     return True
+
+
+def _retained_visual(manifest, sources, directory):
+    """A failed upgrade may retain a source-bound, unchanged previous codec."""
+    if not isinstance(manifest, dict) or not isinstance(manifest.get('assets'), list):
+        return None
+    record = next((a for a in manifest['assets'] if isinstance(a, dict) and a.get('filename') == 'gaia-field-visual.bin'), None)
+    if not record or record.get('generator_version') not in ('field-visual-1', 'field-visual-2', VISUAL_VERSION):
+        return None
+    revision = record['generator_version']
+    if not reusable(manifest, sources, directory, ['gaia-field-visual.bin'], visual_revision=revision):
+        return None
+    try:
+        import struct
+        path = directory/'gaia-field-visual.bin'
+        with path.open('rb') as stream:
+            header = stream.read(16)
+            if len(header) != 16 or header[:8] != b'GAIACAM\0':
+                return None
+            version, length = struct.unpack_from('<II', header, 8)
+            if version != (2 if revision == VISUAL_VERSION else 1) or not 0 < length <= 8_000_000 or 16+length > record['bytes']:
+                return None
+            meta = json.loads(stream.read(length))
+        context = json.loads((directory/'gaia-field-context.json').read_text(encoding='utf8'))
+        if meta.get('schema') != 'gaiagis-field-visual' or meta.get('version') != version or meta.get('generator_revision') != revision:
+            return None
+        if not isinstance(meta.get('sources'), dict) or any(meta['sources'].get(k) != context.get('sources', {}).get(k) for k in ('flevel.lgp', 'maplist')) or meta['sources'].get('flevel.lgp') != sources.get('flevel.lgp'):
+            return None
+    except (OSError, ValueError, KeyError, TypeError, AttributeError):
+        return None
+    return dict(record)
+
+
+def _visual_snapshot(directory):
+    """Bound the rollback pair before any exporter can replace either file."""
+    saved = {}
+    for name, limit in (('gaia-field-visual.bin', 96_000_000), ('gaia-workspace.json', 8_000_000)):
+        path = output_path(directory/name)
+        if not path.is_relative_to(directory):
+            raise ValueError('Workspace asset link escapes output root')
+        if path.exists() and (not path.is_file() or path.stat().st_size > limit):
+            raise ValueError('Previous Visual/manifest exceeds rollback budget')
+        saved[name] = path.read_bytes() if path.is_file() else None
+    return saved
+
+
+def _restore_visual(directory, saved, *, manifest=True):
+    from .field_interaction import atomic_write
+    for name in ('gaia-field-visual.bin', 'gaia-workspace.json') if manifest else ('gaia-field-visual.bin',):
+        path = output_path(directory/name)
+        previous = saved[name]
+        if previous is None:
+            path.unlink(missing_ok=True)
+        elif not path.is_file() or path.read_bytes() != previous:
+            atomic_write(path, previous)
 
 def ensure_stage1(source, stage1, cache):
     dataset = discover(source)
@@ -136,6 +197,19 @@ def ensure_stage1(source, stage1, cache):
     return cache
 
 def build_workspace(source, destination, stage1=None, *, rebuild=False, allow_optional_failure=False, clean_invalid=False, progress=None):
+    source = Path(source).resolve(); out = output_path(Path(destination))
+    if out.is_relative_to(source):
+        raise ValueError('Workspace output must not be inside the selected source dataset')
+    saved = _visual_snapshot(out)
+    try:
+        return _build_workspace(source, out, stage1, rebuild=rebuild, allow_optional_failure=allow_optional_failure,
+                                clean_invalid=clean_invalid, progress=progress, visual_snapshot=saved)
+    except BaseException:
+        _restore_visual(out, saved)
+        raise
+
+
+def _build_workspace(source, destination, stage1=None, *, rebuild=False, allow_optional_failure=False, clean_invalid=False, progress=None, visual_snapshot=None):
     source = Path(source).resolve();out = output_path(Path(destination))
     if out.is_relative_to(source):raise ValueError('Workspace output must not be inside the selected source dataset')
     # Existing filesystem links must not redirect an exporter into another tree.
@@ -158,20 +232,28 @@ def build_workspace(source, destination, stage1=None, *, rebuild=False, allow_op
     old_path = out / 'gaia-workspace.json'
     try:old = json.loads(old_path.read_text(encoding='utf8'))
     except (FileNotFoundError, ValueError):old = None
-    results = []
+    results = []; retained_visual = None
     def step(label, names, action):
+        nonlocal retained_visual
         if progress:progress(label,len(results),17)
         if not rebuild and reusable(old, sources, out, names):
             print(f'Reuse {label}', flush=True);results.append(dict(step=label, reused=True));return
         print(f'Build {label}', flush=True)
+        previous_visual = _retained_visual(old, sources, out) if label == 'field-visual' else None
         if clean_invalid:
             for name in names:
                 target=output_path(out/name)
-                if target.is_file():target.unlink()
+                if target.is_file() and not (previous_visual and name == 'gaia-field-visual.bin'):target.unlink()
         try:
             action();results.append(dict(step=label, reused=False))
         except Exception as error:
             if label=='geometry' or not allow_optional_failure and label!='presentation':raise
+            if previous_visual is not None:
+                _restore_visual(out, visual_snapshot, manifest=False)
+                retained_visual = previous_visual
+                print(f'Retain previous field-visual after failed upgrade: {error}', flush=True)
+                results.append(dict(step=label,reused=True,upgrade_unavailable=True,error=str(error)))
+                return
             # Failed/stale optional assets must never enter a fresh manifest.
             for name in names:
                 target=output_path(out/name)
@@ -220,7 +302,7 @@ def build_workspace(source, destination, stage1=None, *, rebuild=False, allow_op
     if field_archive and sha256(field_archive)!=sources['flevel.lgp']:raise RuntimeError('Field source fingerprint changed during workspace build')
     for asset,name in [(char,'char.lgp')]+[(child_ci(sound,n) if sound else None,n) for n in ('audio.dat','audio.fmt')]:
         if asset and sha256(asset)!=sources[name]:raise RuntimeError('Optional source fingerprint changed during build')
-    manifest = write_manifest(out, sources)
+    manifest = write_manifest(out, sources, retained_visual=retained_visual)
     if progress:progress('ready',17,17)
     return dict(assets=len(manifest['assets']), steps=results, manifest_sha256=sha256(old_path), ff7_source_modified='NO')
 

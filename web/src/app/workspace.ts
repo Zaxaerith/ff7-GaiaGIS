@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 import type {AssetId,AssetState} from './state';
 export const assetFiles:Record<AssetId,string[]>={geometry:['gaia-meta.json','gaia-mesh.bin'],locations:['gaia-poi.json'],encounters:['gaia-encounters.json'],events:['gaia-events.json'],routing:['gaia-routing.bin'],textures:['gaia-textures.bin'],WM2:['gaia-map-WM2.bin'],WM3:['gaia-map-WM3.bin'],'textures-WM2':['gaia-textures-WM2.bin'],'textures-WM3':['gaia-textures-WM3.bin'],transitions:['gaia-transitions.json'],explorer:['gaia-explorer.bin'],presentation:['gaia-presentation.json'],atlas:['gaia-atlas.json'],'field-context':['gaia-field-context.json'],'field-walkmesh':['gaia-field-walkmesh.bin'],'field-visual':['gaia-field-visual.bin'],'field-interaction':['gaia-field-interaction.bin']};
-export interface ManifestAsset {filename:string;type:AssetId|'metadata';mapId:'WM0'|'WM2'|'WM3'|'shared';sha256:string;bytes:number;dependencies:string[];}
+export interface ManifestAsset {filename:string;type:AssetId|'metadata';mapId:'WM0'|'WM2'|'WM3'|'shared';sha256:string;bytes:number;dependencies:string[];generator_version?:string;}
 export interface WorkspaceManifest {schema:'gaiagis-workspace';version:1;tool_version:string;sources:Record<string,string>;assets:ManifestAsset[];timestamp_policy:'omitted';}
 export interface WorkspacePlan {files:Map<string,File>;manifest:WorkspaceManifest|null;issues:Partial<Record<AssetId,AssetState>>;}
 const hex=(b:ArrayBuffer)=>Array.from(new Uint8Array(b),v=>v.toString(16).padStart(2,'0')).join('');
@@ -14,7 +14,7 @@ export function parseManifest(value:unknown):WorkspaceManifest{
  const names=new Set<string>();for(const a of m.assets){
  const type=a.type==='metadata'?'geometry':a.type;
  if(!a||!Object.hasOwn(assetFiles,type)||!assetFiles[type].includes(a.filename)||!safeName(a.filename)||names.has(a.filename)||!hash(a.sha256)||!Number.isSafeInteger(a.bytes)||a.bytes<=0||a.bytes>160_000_000||!['WM0','WM2','WM3','shared'].includes(a.mapId)||!Array.isArray(a.dependencies)||!a.dependencies.every(safeName))throw Error('Invalid workspace asset');
- if(type==='field-visual'&&a.bytes>64_000_000)throw Error('Visual asset budget');
+ if(type==='field-visual'&&a.bytes>(a.generator_version==='field-visual-3'?96_000_000:64_000_000))throw Error('Visual asset budget');
  if(type==='field-interaction'&&a.bytes>8_000_000)throw Error('Interaction asset budget');
  const expected=type==='WM2'||type==='textures-WM2'?'WM2':type==='WM3'||type==='textures-WM3'?'WM3':type==='explorer'||type==='transitions'||type==='presentation'||type==='field-walkmesh'||type==='field-visual'||type==='field-interaction'?'shared':'WM0';
  if(a.mapId!==expected||a.type==='metadata'&&a.filename!=='gaia-meta.json')throw Error('Workspace map identity mismatch');names.add(a.filename);
@@ -25,7 +25,7 @@ export function parseManifest(value:unknown):WorkspaceManifest{
 }
 export async function discoverWorkspace(selected:readonly File[]):Promise<WorkspacePlan>{
  if(selected.length>64)throw Error('Too many workspace files');const files=new Map<string,File>();
- for(const f of selected){const name=f.name;if(!safeName(name)||files.has(name))throw Error('Duplicate or unsafe workspace filename');if(f.size>160_000_000||name==='gaia-field-visual.bin'&&f.size>64_000_000||name==='gaia-field-interaction.bin'&&f.size>8_000_000)throw Error('Workspace file too large');files.set(name,f);}
+ for(const f of selected){const name=f.name;if(!safeName(name)||files.has(name))throw Error('Duplicate or unsafe workspace filename');if(f.size>160_000_000||name==='gaia-field-visual.bin'&&f.size>96_000_000||name==='gaia-field-interaction.bin'&&f.size>8_000_000)throw Error('Workspace file too large');if(name==='gaia-field-visual.bin'&&f.size>64_000_000){if(typeof f.slice!=='function')throw Error('Workspace file too large');const bytes=await f.slice(0,16).arrayBuffer();if(bytes.byteLength!==16||new TextDecoder().decode(bytes.slice(0,8))!=='GAIACAM\0'||new DataView(bytes).getUint32(8,true)!==2)throw Error('Workspace file too large');}files.set(name,f);}
  const file=files.get('gaia-workspace.json');if(file&&file.size>100_000)throw Error('Manifest too large');
  const manifest=file?parseManifest(JSON.parse(await file.text())):null,issues:WorkspacePlan['issues']={};
  if(manifest){for(const a of manifest.assets){const type=a.type==='metadata'?'geometry':a.type,f=files.get(a.filename);if(!f){issues[type]={status:'missing',bytes:0,reason:'workspace.missingAsset'};continue;}
@@ -76,6 +76,11 @@ export class WorkspaceLoader {
  }
 }
 export interface LocalDirectory {kind:'directory';values():AsyncIterable<LocalDirectory|{kind:'file';name:string;getFile():Promise<File>}>;}
+/** Folder-input fallback must match native picker's root-only inventory.
+ * Recovery pairs below .build are not a second selected Workspace. */
+export function rootWorkspaceFiles(selected:readonly File[]):File[]{
+ return selected.filter(f=>(!f.webkitRelativePath||f.webkitRelativePath.split('/').length===2)&&(f.name==='gaia-workspace.json'||Object.values(assetFiles).flat().includes(f.name)));
+}
 export async function directoryFiles(directory:LocalDirectory):Promise<File[]>{
  const files:File[]=[];for await(const entry of directory.values()){if(entry.kind==='file'&&(entry.name==='gaia-workspace.json'||Object.values(assetFiles).flat().includes(entry.name)))files.push(await entry.getFile());}return files;
 }

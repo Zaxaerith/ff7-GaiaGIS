@@ -8,7 +8,7 @@ The **Web Viewer is the main interface**. Open the [public Viewer](https://zaxae
 
 For Windows players, an approved [Release](https://github.com/Zaxaerith/ff7-GaiaGIS/releases) ZIP supplies **GaiaGIS.exe** to create/connect the Workspace and open that browser interface. Extract the whole ZIP to a writable folder, select the original FF7 data and keep the launcher open. No Python or Node installation is needed by the portable runtime.
 
-**GaiaGIS v4.2.0 — FieldLocal GIS Integration** extends the read-only QGIS research export. The default GeoPackage v1 stays unchanged; explicit `--format-version 2` adds original Trigger/LINE geometry and normalized interaction, Actor/entry, mesh and background evidence from the existing private Interaction Pack. No new Web Viewer or game-runtime feature is added. v4.1 browser human acceptance remains complete; v4.2 QGIS desktop display and attribute checks are accepted; project save/reopen is additionally verified by PyQGIS automation. Maintained targets are **Web + Windows x64**; historical macOS packaging is unmaintained. [FieldLocal export and Chinese QGIS steps](docs/user/workspace.md#fieldlocal-geopackage-research-export).
+**GaiaGIS v4.3.0 — Field Background Reconstruction & State Explorer** expands evidence-checked original PC background decoding and adds manual Group/State previews in the existing Field Canvas. Explicit Visual Pack v2 preserves original tile, page and state evidence; older v4.2 Workspaces retain their existing static previews. Blending, scrolling, actual enabled states and exact original-game alignment remain unverified. FieldLocal GeoPackage v1/v2, Interaction Pack v1 and raw local XYZ stay unchanged. Maintained targets are **Web + Windows x64**. [Background upgrade](docs/user/workspace.md#private-camerabackground-resource) · [State controls and limits](docs/user/navigation.md#field-camera-and-background).
 
 For a source checkout:
 
@@ -31,6 +31,15 @@ Approved new Releases provide one Windows x64 ZIP and `SHA256SUMS.txt`. GitHub A
 Choose GaiaGIS's generated folder containing `gaia-workspace.json`, **not** the FF7 installation or raw `wm` directory. Data displays connection source, manifest and available geometry, locations, gameplay layers, routing, textures, WM2/WM3, transitions, Explorer, Atlas and presentation resources. [Workspace guide](docs/user/workspace.md) · [Format](docs/reference/workspace-format.md).
 
 ## Web Pages
+
+To upgrade only the background resource in an existing source-matched Workspace:
+
+```powershell
+. tools/build/environment.ps1
+python -m gaiagis field-visual --source "YOUR_FF7_INSTALLATION" --workspace output/local-workspace --audit output/dev/current/field-background-audit.json
+```
+
+Re-import the folder into the locally built v4.3 Viewer, select **Background Overlay** and expand **Background State Explorer**. The default is the static base; manually selected conditions are research previews. This command preserves unrelated Workspace products and existing research exports. Local development does not update hosted Pages or create a Release.
 
 To add interaction evidence to an existing source-matched Workspace without rebuilding WM/GIS/background data:
 
@@ -65,7 +74,7 @@ Evidence is kept distinct throughout the Viewer:
 |---|---|
 | Verified source evidence | Original records, source hashes, identities and independently checked local geometry; this does not establish gameplay permission. |
 | Research reconstruction | The frozen V1 reference sphere/projections and static Access analysis, with their stated assumptions. |
-| Partial support | Manual original-camera viewing and a bounded static background subset; dynamic conditions, blending and occlusion are incomplete. |
+| Partial support | Original-camera viewing and manual background state previews; unsupported tiles are counted, and blending, scrolling and runtime occlusion remain incomplete. |
 | UNKNOWN | Runtime story/Gateway conditions, complete background alignment, Field global positions and unverified world landings. |
 
 FieldLocal uses raw units, never metres or geographic coordinates. Parsing cameras for 702 Fields does not mean their backgrounds are all accurately aligned.
@@ -82,7 +91,7 @@ Steam 2026 executable equivalence remains **NOT VERIFIED**. WM2/WM3 have no fabr
 
 ## Build / development
 
-`src/gaiagis/_version.py` is the application-version authority. Unified CLI: `gaiagis local`, `build-workspace`, `validate`, `build-sphere`, `user-gis`, `field-gis`. The checkout adapter preserves `python -m gaiagis.local` without installing globally.
+`src/gaiagis/_version.py` is the application-version authority. Unified CLI: `gaiagis local`, `build-workspace`, `validate`, `build-sphere`, `user-gis`, `field-gis`, `field-interaction`, `field-visual`. The checkout adapter preserves `python -m gaiagis.local` without installing globally.
 
 `npm --prefix web test` · `npm --prefix web run build` · `npm --prefix web run build:release` · `npm --prefix web run audit:release`.
 

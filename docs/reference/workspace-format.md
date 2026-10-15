@@ -40,13 +40,76 @@ independently; a missing or invalid base geometry prevents workspace adoption.
 | Atlas | gaia-atlas.json | authored knowledge plus private POI identity bindings |
 | Field Context | gaia-field-context.json | private scene identities / gateway edges, depends on POI |
 | Field Walkmesh | gaia-field-walkmesh.bin | selected raw Section 5; Context identity/source binding |
-| Field Camera/background | gaia-field-visual.bin | independent optional visual v1, depends on Context |
+| Field Camera/background | gaia-field-visual.bin | optional visual v1/v2, depends on Context |
 | Field Interaction | gaia-field-interaction.bin | optional interaction v1; Context + Walkmesh source binding |
 
 Nineteen payload files comprise eighteen logical groups. No geometry is duplicated
 into a workspace wrapper. Folder loading reads recognized root files only, using
 the user-initiated directory picker or folder-input fallback. Multi-file loading
 works without File System Access API. Unmanifested legacy sets are labeled Legacy.
+
+## Optional Field visual transport
+
+`gaia-field-visual.bin` has the 16-byte little-endian header `GAIACAM\0`, U32 transport version, U32 UTF-8 JSON metadata length. Application version, transport version and `generator_revision` have separate meanings. The manifest type remains `field-visual`, mapId `shared`, with Context as its dependency. Sources bind exact flevel/maplist SHA256 and available Context Field IDs; the existing 38-byte Section-2 Camera records and raw projection formula are unchanged.
+
+| Transport | Generator | Descriptor and meaning |
+|---|---|---|
+| v1 | `field-visual-1` | 8 bytes: S16 X, S16 Y, U16 layer-local Tile ID, U8 page, U8 Palette; Layer 0 only. |
+| v1 | `field-visual-2` | Same 8 bytes; page byte bits 0–5 select page 0–41, bit 6 selects Layer 0/1, bit 7 is zero. Includes unconditional unblended Layer 1. |
+| v2 | `field-visual-3` | Explicit 36-byte descriptors below for every original tile, including unsupported evidence. No v1 byte is reinterpreted. |
+
+V1 metadata/status and payload accounting retain their original `static_base`/`partial`/`unsupported` contract: descriptors, referenced 512-byte Palette blocks, then 256 indexed texels per supported 16×16 tile. The new Viewer accepts both old generators; missing v2 evidence disables state exploration while preserving their existing static preview. V1 does not acquire direct-color, conditional-state or 32-pixel semantics.
+
+V2 metadata has `schema: gaiagis-field-visual`, `version: 2`, generator `field-visual-3`, sources and unique `scenes`. Each scene retains Camera records plus background Section-4/9 SHA256. A payload-bearing background records four layer dimensions/counts, source-tile `bounds`, total/supported/base/conditional tile counts, `omitted`, referenced Palette IDs/transparency flags, page IDs/depths/byte spans, pixel bytes, decoded bytes and SHA256, and its compressed span. `offset` is relative to the pool immediately after metadata; ordered contiguous scene spans cover that pool exactly. Unsupported bases may still carry valid descriptors/pixels for research selections. A rejected structure has a reason and source hashes, without a fabricated payload.
+
+### V2 tile descriptor — 36 bytes
+
+Struct: `<hhHBBIHH8BHHII`. All offsets below are relative to one descriptor; integer fields are little-endian. IDs are layer-local and source offsets are relative to the original length-stripped Section 9.
+
+| Byte offset | Type | Field | Meaning |
+|---|---|---|---|
+| 0 | S16 | `x` | Original target X. |
+| 2 | S16 | `y` | Original target Y. |
+| 4 | U16 | `id` | Original Tile ID within its layer. |
+| 6 | U8 | `layer` | Original layer 0–3. |
+| 7 | U8 | `size` | 16 for layers 0/1; 32 for layers 2/3. |
+| 8 | U32 | `sourceOffset` | Original 52-byte tile record offset. |
+| 12 | U16 | `sx` | Selected source-page X. |
+| 14 | U16 | `sy` | Selected source-page Y. |
+| 16 | U8 | `texture` | Selected page 0–41. |
+| 17 | U8 | `palette` | Original Palette reference. |
+| 18 | U8 | `depth` | Authoritative referenced-page depth: 0/1/2. |
+| 19 | U8 | `group` | Original background Group. |
+| 20 | U8 | `mask` | Original tile state bit mask. |
+| 21 | U8 | `blend` | Original blend-enable operand. |
+| 22 | U8 | `blendType` | Original blend mode; no blend formula is implemented. |
+| 23 | U8 | `supportCode` | 0: supported; 1: blend omitted; 2: Layer 2/3 scroll/wrap omitted; 3: inconsistent Group/mask evidence; 4: target outside bounded preview. |
+| 24 | U16 | `z` | Stored ordering operand, with Layer 0 fixed to 4095. |
+| 26 | U16 | `rawDepth` | Unused original U8 tile-depth operand, widened into this U16 descriptor slot; the following source byte is unused. Page depth remains independent. |
+| 28 | U32 | `sub` | Original sub-ID ordering operand. |
+| 32 | U32 | `pixelOffset` | Offset into this scene's decoded pixel pool; `0xffffffff` for unsupported tiles. |
+
+Descriptors precede sorted referenced 512-byte Palette blocks, followed by a pixel pool. Exact decoded length is `tileCount * 36 + paletteRefs.length * 512 + pixelBytes`. Supported texture rectangles are stored once and may share a pixel offset; validated intervals cover the pixel pool exactly. Indexed depth 0 is expanded to one U8 index per pixel; depth 1 uses one U8 index; PC16 uses its original little-endian U16 word. There is no second set of full texture pages. For supported tiles, draw order is descending `z`, descending `sub`, then layer and Tile ID, retaining the descriptor order through state filtering.
+
+### Original PC format and pixel rules
+
+Section 4 starts with U32 declared length and U16 X/Y/width/count. Confirmed width is 256; length must equal both the section length and `12 + width * count * 2`. Count zero is legal for direct-color-only use; any indexed tile still needs a valid Palette reference. Section 9 retains the checked `PALETTE`, `BACK` and `TEXTURE` signatures, bounded four-layer headers and 52-byte records, 42 page slots and exact terminal `END` or `ENDFINAL FANTASY7`. Arbitrary trailing data remains rejected. Header/page variants and negative layer dimensions without enough evidence remain `unknown`; confirmed truncation, invalid references and inconsistent declared lengths remain `invalid_source`. Input/layer-dimension/tile-count limits are application preview budgets, so exceeding them is `unsupported`, not evidence that the original resource itself is corrupt.
+
+Page depths 0/1/2 represent packed 4-bit indexed, 8-bit indexed and PC16 direct color, with 256×256 logical pixels and 32,768 / 65,536 / 131,072 source bytes. Four-bit address is `y * 128 + floor(x / 2)`: even X uses the low nibble, odd X the high. UV rectangles retain the original tile size and must fit the referenced page. The unused tile `rawDepth` is not required to equal page depth. Blend-enabled later-layer records retain their alternate page/UV references and are validated even though no blend pixels are composited. Original `sx`/`sy`, page, Palette and raw-depth operands are U8 plus an unused following byte; transport U16 slots widen the value without interpreting those unused bytes. Original record byte +28 is U8 `blendType`; byte +29 is likewise unused, not the upper byte of a U16 blend mode.
+
+Indexed pixels use the existing Palette RGB555 and transparency rules: index zero is transparent only under its original Palette flag; other zero-valued CLUT entries reference Palette color zero. Green is not a color key and the RGB555 mask bit is not a universal alpha flag. PC16 is a separate encoding: word zero is transparent; `0x0821` is opaque black; R/G/B are bits 11–15 / 6–10 / 0–4, bit 5 is ignored, and a channel expands by `(v << 3) | (v >> 2)`. No Canvas opacity is used as an unverified blend equation.
+
+The independent implementation was checked against [Makou Reactor page IO](https://github.com/myst6re/makoureactor/blob/master/src/core/field/BackgroundTexturesIO.cpp), [its PC16 color conversion](https://github.com/myst6re/makoureactor/blob/master/src/core/field/BackgroundTextures.cpp), [Field footer handling](https://github.com/myst6re/makoureactor/blob/master/src/core/field/FieldPC.cpp), and [LGP Explorer tile/pixel/order readers](https://github.com/maciej-trebacz/ff7-lgp-explorer/blob/6c6338a3feba0e2b65f4f6cab5dd648cf6aed336/src/fieldfile.ts). [FFNx runtime background code](https://github.com/julianxhokaxhiu/FFNx/blob/master/src/ff7/field/background.cpp) shows camera/position/speed-dependent Layer 2/3 wrap/scroll behavior; retaining their 32×32 evidence does not establish a static transform. No upstream engine code is copied, imported or executed, and no original pixels are public test fixtures.
+
+### Completeness, state and lifecycle
+
+`static_complete` applies only to all applicable unconditional-base tiles; `static_partial` has drawable base pixels plus omissions; `unsupported` has no safely drawable base; `invalid_source` violates confirmed source constraints; `unknown` lacks sufficient evidence. Conditions and unsupported tiles are counted independently. A manual selection combines an optional base with one explicit Group and state bit 0–7. Layer 0 is always base; later tiles with nonzero Group or mask are conditional. Group must match and `mask & (1 << bit)` must be nonzero. Trigger.state is a bit number, not a mask. Selecting a Trigger changes no preview until the explicit action is taken. Current selection counts distinguish visible supported, unsupported and raw tiles. No combination is called complete merely because some pixels can be drawn.
+
+Layer 0 and unblended Layer 1 can be composited. Active blending, all Layer 2/3 runtime scroll/wrap, Palette animation, actual enabled states and original-game occlusion/alignment remain unsupported or UNKNOWN. Static Section-1 BGON/BGOFF/BGCLR/BGROL/BGROL2/Palette evidence does not establish execution, initial state or a script VM. A later-layer Group/mask pair where exactly one operand is zero has conflicting reference semantics and uses support code 3. Code 4 preserves raw S16 target X/Y outside ±4096, source descriptors and every page/UV/Palette check, while omitting pixels. Fixed preview bounds include every other original tile, including unsupported layers/blends, and exclude only code-4 targets; the omitted raw coordinates are never clamped, relocated or called a proven runtime parking rule. Applicable omitted tiles keep the base or chosen state partial. Interaction Pack v1 and its stored associations are unchanged; a new Visual Pack does not rewrite old Interaction or GeoPackage evidence.
+
+The explicit v2 / `field-visual-3` total limit is 96,000,000 bytes; v1 retains 64,000,000. Unchanged limits are 8,000,000 metadata bytes, 2,000 scenes, 8,000,000 decoded bytes per scene, 16,384 tiles total per scene (8,192 per layer), and 4,000,000 output pixels. Full-source measurement placed the validated v2 candidate at 86,084,554 bytes versus the old 54,005,790-byte v1 subset, with a 990,285-byte header and maximum 528,384-byte decoded scene. The extra storage covers more Fields, conditional pixels and direct-color texels; it does not expand per-scene/Canvas budgets or load all textures into memory. Descriptor and per-page references, counts, interval coverage, draw order, bounded decompression and decoded SHA256 are checked before drawing. The existing file/header owner loads only one selected scene's pixels; state changes reuse them. Scene/source replacement, late requests, World return and dispose release scene images and decoded references. No application forced GC, second Viewer or full 702-scene image cache is introduced.
+
+The incremental `python -m gaiagis field-visual --source ... --workspace ... --audit output/dev/current/field-background-audit.json` stages and validates a candidate, verifies original source and existing Context/Manifest identity, and updates only the Visual Pack and Manifest entry. Exceptions roll back both files; `.build/visual-recovery` retains the old matching pair for interrupted updates. This pair provides recovery, not a claim of crash-atomic multi-file replacement. Existing world/GIS/Interaction products, research exports and projects are untouched. The optional audit path must be a `.json` below `output/dev/current`; an existing target must identify itself as `gaiagis-field-background-audit`, version 1. Unowned JSON, Workspace/Pack/research/source targets and paths outside that private QA root are rejected. Audit replacement uses the existing atomic writer. Audit JSON and recovery files stay private and ignored. No full Workspace regeneration is required.
 
 ## Optional interaction v1
 

@@ -60,6 +60,14 @@ body.field-active .comparison-layout>#viewport{grid-column:1;grid-row:1}
 .field-anchor-controls p{margin:4px 0;overflow-wrap:anywhere}
 .field-anchor-controls .field-canvas-controls{padding:4px 0}
 .field-anchor-controls select{width:min(240px,60vw)}
+.field-background-state{margin-top:6px;border-top:1px solid var(--rim);padding-top:4px}
+.field-background-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;padding:6px 0;min-width:0}
+.field-background-controls label{display:flex;gap:6px;align-items:center;min-width:0;overflow-wrap:anywhere}
+.field-background-controls select{min-width:0;width:100%;max-width:100%}
+.field-background-controls button{white-space:normal;min-width:0;grid-column:1/-1}
+.field-background-state pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:180px;overflow:auto}
+#field-background-triggers button{display:block;max-width:100%;white-space:normal;margin:4px 0}
+@media(max-width:700px){.field-background-controls{grid-template-columns:minmax(0,1fr)}.field-background-controls :is(button,select){min-height:36px}.field-background-controls input{min-width:20px;min-height:20px}}
 .field-network-results pre{white-space:pre-wrap;overflow-wrap:anywhere;font-size:.8rem;max-height:220px;overflow:auto}
 .field-network-results button{white-space:normal;overflow-wrap:anywhere;max-width:100%}
 .field-network-controls select{width:auto}
