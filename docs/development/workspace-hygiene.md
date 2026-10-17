@@ -23,6 +23,7 @@ This policy keeps reusable tooling and tests in one maintained source tree, one 
 5. Avoid duplicate stdout logs when the same bytes already exist in a structured result. Preserve logs when they contain distinct diagnostics.
 6. For a new large ignored file, record its source, reason, whether it can be regenerated, and a review/retention point in the task report.
 7. At task close, keep only the active run state and unique evidence. Do not automatically delete unknown files or user-saved material.
+8. `OutputRun` retains every failed execution in a unique `output/dev/failed-<kind>-<run-id>/` directory. Generic `clean-output` previews and cleanup leave these records (and marked fallback runs) alone; inspect and remove only a specifically reviewed run after it is no longer needed.
 
 ## Read-only audit
 

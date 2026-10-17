@@ -70,7 +70,8 @@ def plan(include_workspace=False):
     def check_tree(path):
         # Only disposable package/smoke trees can contain framework links.
         parts=path.relative_to(root).parts
-        packaged=bool(parts) and (parts[0] in ('distribution','release') or len(parts)>=2 and parts[:2] in (('dev','failed-package'),('dev','failed-smoke')) or len(parts)>=3 and parts[:2]==('dev','current') and parts[2].startswith(('package-','smoke-')))
+        failed_package = len(parts) >= 2 and parts[0] == 'dev' and parts[1].startswith(('failed-package', 'failed-smoke'))
+        packaged=bool(parts) and (parts[0] in ('distribution','release') or failed_package or len(parts)>=3 and parts[:2]==('dev','current') and parts[2].startswith(('package-','smoke-')))
         if packaged:reject_links(path,internal=True);return
         if not path.exists() and not path.is_symlink():return
         info=path.lstat()
@@ -85,7 +86,20 @@ def plan(include_workspace=False):
         if path.name == 'local-workspace' and not include_workspace:
             continue
         if path.name == 'dev' and path.is_dir():
-            result.extend(p for p in sorted(path.iterdir()) if not (p.name == 'STATUS.md' and p.is_file()))
+            for item in sorted(path.iterdir()):
+                if item.name == 'STATUS.md' and item.is_file():
+                    continue
+                # Failure records are review evidence, not disposable run
+                # output. Their cleanup requires a separately reviewed action.
+                if item.name.startswith('failed-'):
+                    continue
+                if item.name == 'current' and item.is_dir():
+                    result.extend(
+                        child for child in sorted(item.iterdir())
+                        if not child.name.startswith('failed-') and not (child / '.failure-evidence').is_file()
+                    )
+                else:
+                    result.append(item)
         else:
             result.append(path)
     # An active lifecycle context owns its subtree; refuse rather than break a running job.
