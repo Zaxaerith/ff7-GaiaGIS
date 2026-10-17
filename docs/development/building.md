@@ -56,7 +56,7 @@ npm --prefix web run build
 
 The recipe performs release Viewer build/audit, a real frozen executable build, deep compressed-bytecode audit, ZIP/SHA256 creation and isolated localhost smoke. The result is `development-validation-only`, with the actual source commit and dirty state; it cannot pass as an official exact-tag artifact. A test does not need a real release tag. The embedded source ZIP and licences accompany the runtime; original FF7 resources, private workspaces, GeoPackages and saves are excluded. Optional GIS exporters/GDAL stay outside the frozen Viewer runtime.
 
-Local artifacts validate the recipe only. Jobs use disposable `output/dev/current/`; failures retain only current necessary evidence under `output/dev/failed-package/` or `failed-smoke/`. The next successful corresponding job clears its previous failure. See [release process](release-process.md) for the exact-tag Actions build that explicitly retains official upload artifacts.
+Local artifacts validate the recipe only. Jobs put task-owned temporary output in `output/dev/current/`; failures retain necessary evidence under `output/dev/failed-package/` or `failed-smoke/`. A later job may clear only the failure output it owns. Existing RC evidence remains at its original path while reports or acceptance depend on it; do not create new per-version evidence trees. See [release process](release-process.md) for the exact-tag Actions build that explicitly retains official upload artifacts, and [workspace hygiene](workspace-hygiene.md) for safe local retention and cleanup.
 
 ## Historical macOS compatibility
 
