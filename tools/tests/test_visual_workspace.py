@@ -96,6 +96,20 @@ class VisualWorkspaceFailureTests(unittest.TestCase):
         self.run_upgrade(fail,clean=True)
         self.assertEqual((self.output/'gaia-field-visual.bin').read_bytes(),self.old_pack)
 
+    def test_failed_upgrade_retains_generator_three_transport_two_without_relabelling(self):
+        meta=json.dumps(dict(schema='gaiagis-field-visual',version=2,generator_revision='field-visual-3',sources=self.pack_sources,scenes=[])).encode()
+        self.old_pack=b'GAIACAM\0'+struct.pack('<II',2,len(meta))+meta
+        (self.output/'gaia-field-visual.bin').write_bytes(self.old_pack)
+        manifest=json.loads(self.old_manifest)
+        record=next(a for a in manifest['assets'] if a['filename']=='gaia-field-visual.bin')
+        record.update(generator_version='field-visual-3',bytes=len(self.old_pack),sha256=hashlib.sha256(self.old_pack).hexdigest())
+        self.old_record=dict(record);self.old_manifest=(json.dumps(manifest,sort_keys=True,indent=2)+'\n').encode()
+        (self.output/'gaia-workspace.json').write_bytes(self.old_manifest)
+        self.run_upgrade(OSError('synthetic generator-4 upgrade unavailable'))
+        self.assertEqual((self.output/'gaia-field-visual.bin').read_bytes(),self.old_pack)
+        result=json.loads((self.output/'gaia-workspace.json').read_bytes())
+        self.assertEqual(next(a for a in result['assets'] if a['filename']=='gaia-field-visual.bin'),self.old_record)
+
     def test_fatal_visual_failure_rolls_back_pair(self):
         def fail(source, directory):
             (directory/'gaia-field-visual.bin').write_bytes(b'synthetic changed visual')

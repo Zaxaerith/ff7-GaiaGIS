@@ -1,5 +1,12 @@
 # Changelog
 
+## v4.4.0 — Field Background Compositing & Layer Research
+
+- Independently computed PC indexed Type 1 saturated addition and Type 2 clamped subtraction compose Layer 1 pixels in the retained Z/Sub order. Fractional Type 0/3 and PC16 blends remain unsupported; no Canvas blend approximation is used.
+- Existing State Explorer adds four layer switches, per-layer state/visibility/omission counts, opaque-only rendering and research blend outlines. Layer 2/3 retain full 32×32 source rectangles for an explicit Experimental raw-position preview, disabled by default; scrolling, dynamic depth and initialization remain UNKNOWN.
+- Visual transport v2 uses explicit generator `field-visual-4`, real Section-9 length and lossless shared pixel spans. Readers preserve v1 and generator-3 semantics. Source-span checks now enforce both byte length and the unchanged 8 MB budget. Incremental updates preserve existing recovery pairs as well as unrelated Workspace/GIS products.
+- Camera matrices/projection, raw FieldLocal XYZ, Interaction v1, Context 3, Walkmesh v1, GeoPackage v1/v2 and world data contracts are unchanged. Public delivery remains source-only.
+
 ## v4.3.0 — Field Background Reconstruction & State Explorer
 
 - Explicit private Visual Pack v2 (`field-visual-3`) retains all four layers' tile IDs, Section-9 offsets, page/palette references, raw depth, Group/state masks and support diagnostics in separate 36-byte descriptors. The Viewer still decodes Visual v1 generators `field-visual-1` and `field-visual-2` with their original semantics; Context 3, Walkmesh 1, Interaction 1, GeoPackage v1/v2 and world transports are unchanged.

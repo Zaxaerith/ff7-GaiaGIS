@@ -5,6 +5,8 @@ import type {BaseTile} from '../src/data/fieldCamera';
 import {parseFieldPack} from '../src/data/fieldContext';
 import type {FieldPack} from '../src/data/fieldContext';
 import {discoverWorkspace,parseManifest,rootWorkspaceFiles} from '../src/app/workspace';
+import {blendChannel,sourceSpan} from '../src/data/fieldCompositing';
+import {backgroundLayerStats} from '../src/data/fieldCamera';
 
 const fields={sources:{'flevel.lgp':'a'.repeat(64),maplist:'b'.repeat(64)},nodes:[{id:1,status:'available'}]} as unknown as FieldPack;
 const tile=(edit:Partial<BaseTile>={}):BaseTile=>({x:0,y:0,id:0,layer:0,size:16,sourceOffset:52,sx:0,sy:0,texture:0,palette:0,depth:1,group:0,mask:0,blend:0,blendType:0,supportCode:0,z:4095,rawDepth:1,sub:0,offset:0,...edit});
@@ -19,6 +21,45 @@ async function fixture(tiles:BaseTile[]=[tile()],pixels=new Uint8Array(256).fill
  return {file:new File([header,json,compressed],'gaia-field-visual.bin'),metadata:meta,header:new Uint8Array([...header,...json]),compressed};
 }
 async function decode(...args:Parameters<typeof fixture>){const f=await fixture(...args),pack=await openFieldVisual(f.file,fields);return {pack,...await pack.decode(1)};}
+
+describe('generator 4 integer blending and explicit raw-layer research',()=>{
+ const modern=(m:any)=>{m.generator_revision='field-visual-4';const b=m.scenes[0].background;b.section9Bytes=200000;b.bounds=[0,0,16,16];};
+ it('exhaustively agrees with an independent integer-channel oracle for both PC modes',()=>{for(let b=0;b<256;b++)for(let f=0;f<256;f++){expect(blendChannel(b,f,1)).toBe(b+f>255?255:b+f);expect(blendChannel(b,f,2)).toBe(b<f?0:b-f);}for(const mode of [0,3,4,255])expect(()=>blendChannel(1,2,mode)).toThrow('Unverified');});
+ it.each([[0,0,0,true],[8_000_000,0,8_000_000,true],[7_999_999,1,8_000_000,true],[7_999_999,2,8_000_000,false],[0,1,0,false],[-1,1,8,false],[1,-1,8,false],[1.5,1,8,false],[0,NaN,8,false],[Number.MAX_SAFE_INTEGER,1,8_000_000,false],[0,1,8_000_001,false],[0,0,8_000_000,true]])('checks source byte span %s + %s inside %s', (offset,length,total,expected)=>expect(sourceSpan(offset,length,total)).toBe(expected));
+ it('composites indexed add/sub in stored order and preserves the opaque-only v4.3 bytes',async()=>{
+  const tiles=[tile(),tile({layer:1,id:0,sourceOffset:131,z:100,blend:1,blendType:1,palette:1}),tile({layer:1,id:1,sourceOffset:183,z:90,blend:1,blendType:2,palette:2})],palettes=[Array(256).fill(10|(20<<5)|(30<<10)),Array(256).fill(25|(15<<5)|(5<<10)),Array(256).fill(5|(10<<5)|(31<<10))];
+  const {scene,pixels}=await decode(tiles,new Uint8Array(256).fill(1),{palettes,editMeta:modern}),image=composeBackground(scene,pixels!,staticBackgroundSelection());expect(Array.from(image.rgba.slice(0,4))).toEqual([214,173,0,255]);
+  const old=await decode([tile()],new Uint8Array(256).fill(1),{palettes:[palettes[0]]});expect(composeBackground(scene,pixels!,{...staticBackgroundSelection(),opaqueOnly:true}).rgba.slice(0,16*4)).toEqual(composeBackground(old.scene,old.pixels!,staticBackgroundSelection()).rgba.slice(0,16*4));
+  expect(backgroundLayerStats(scene,staticBackgroundSelection())[1]).toMatchObject({raw:2,applicable:2,visible:2,blend:2});
+  expect(composeBackground(scene,pixels!,{...staticBackgroundSelection(),layers:[true,false,false,false]}).visible).toBe(1);
+ });
+ it('retains a full 32px source rectangle only for explicit experimental display, without changing base completeness',async()=>{
+  const t=tile({layer:2,size:32,z:1,sourceOffset:132,supportCode:5}),{scene,pixels}=await decode([t],new Uint8Array(1024).fill(1),{editMeta:m=>{modern(m);m.scenes[0].background.bounds=[0,0,32,32];m.scenes[0].background.status='unsupported';}});
+  expect(composeBackground(scene,pixels!,staticBackgroundSelection()).visible).toBe(0);const selection={...staticBackgroundSelection(),layers:[false,false,true,false],rawLayers:true};const image=composeBackground(scene,pixels!,selection);expect([image.visible,image.width,image.height]).toEqual([1,32,32]);expect(Array.from(image.rgba.slice(-4))).toEqual([255,0,0,255]);expect(backgroundLayerStats(scene,selection)[2]).toMatchObject({raw:1,visible:1,runtime:true});
+ });
+ it('allows content-identical rectangles to share a complete span only in generator 4',async()=>{const ts=[tile(),tile({layer:1,z:1,sourceOffset:131,sx:16})];expect((await decode(ts,undefined,{editMeta:modern})).scene.background.pixelBytes).toBe(256);await expect(decode(ts)).rejects.toThrow('pixel bounds');});
+ it('does not enable conditional raw-position layers when only their layer and experiment are enabled',async()=>{
+  const t=tile({layer:2,size:32,z:1,sourceOffset:132,supportCode:5,group:1,mask:3}),{scene,pixels}=await decode([t],new Uint8Array(1024).fill(1),{editMeta:m=>{modern(m);m.scenes[0].background.bounds=[0,0,32,32];m.scenes[0].background.status='unsupported';}}),selection={...staticBackgroundSelection(),layers:[false,false,true,false],rawLayers:true};
+  expect(composeBackground(scene,pixels!,selection).visible).toBe(0);for(const bit of [0,1])expect(composeBackground(scene,pixels!,{...selection,conditional:true,group:1,bit}).visible).toBe(1);expect(composeBackground(scene,pixels!,{...selection,conditional:true,group:1,bit:2}).visible).toBe(0);
+ });
+ it('rejects missing source length, real-section overflow, budget overflow and forged support even with new hashes',async()=>{
+  for(const edit of [(b:any)=>delete b.section9Bytes,(b:any)=>b.section9Bytes=66535,(b:any)=>b.pages[0].sourceOffset=7_999_999,(b:any)=>b.section9Bytes=8_000_001])await expect(decode(undefined,undefined,{editMeta:m=>{modern(m);edit(m.scenes[0].background);}})).rejects.toThrow();
+  for(const t of [tile({layer:1,z:1,sourceOffset:131,blend:1,blendType:0}),tile({layer:1,z:1,sourceOffset:131,blend:1,blendType:3}),tile({layer:1,z:1,sourceOffset:131,depth:2,blend:1,blendType:1})])await expect(decode([t],undefined,{editMeta:modern})).rejects.toThrow();
+ });
+ it('grants the measured 100 MB cap only to explicit generator 4 and preserves the 96 MB legacy bound',async()=>{
+  const asset={filename:'gaia-field-visual.bin',type:'field-visual',mapId:'shared',sha256:'a'.repeat(64),bytes:98_099_799,dependencies:[],generator_version:'field-visual-4'},manifest={schema:'gaiagis-workspace',version:1,tool_version:'4.4.0',timestamp_policy:'omitted',sources:{},assets:[asset]};expect(parseManifest(manifest).assets[0].bytes).toBe(98_099_799);asset.generator_version='field-visual-3';expect(()=>parseManifest(manifest)).toThrow('budget');asset.generator_version='field-visual-4';asset.bytes=100_000_001;expect(()=>parseManifest(manifest)).toThrow('budget');
+  const old=await fixture(),fresh=await fixture(undefined,undefined,{editMeta:modern});expect(()=>parseVisualHeader(old.header.buffer,96_000_001,fields)).toThrow('profile budget');expect(()=>parseVisualHeader(fresh.header.buffer,100_000_001,fields)).toThrow('header');
+ });
+ it('aligns Tile/Page source lower bounds with the independent Python reader in both v2 profiles',async()=>{
+  for(const revision of ['field-visual-3','field-visual-4']){
+   const editMeta=(m:any)=>{if(revision==='field-visual-4')modern(m);};
+   for(const sourceOffset of [0,51])await expect(decode([tile({layer:1,z:1,sourceOffset})],undefined,{editMeta})).rejects.toThrow('tile reference');
+   expect((await decode([tile({layer:1,z:1,sourceOffset:52})],undefined,{editMeta})).scene.background.tiles![0].sourceOffset).toBe(52);
+   for(const sourceOffset of [0,39])await expect(decode(undefined,undefined,{editMeta:m=>{editMeta(m);m.scenes[0].background.pages[0].sourceOffset=sourceOffset;}})).rejects.toThrow('page');
+   expect((await decode(undefined,undefined,{editMeta:m=>{editMeta(m);m.scenes[0].background.pages[0].sourceOffset=40;}})).pixels).not.toBeNull();
+  }
+ });
+});
 
 describe('explicit Visual Pack v2 background evidence',()=>{
  it('imports only root products when the selected folder includes a previous visual recovery pair',async()=>{
@@ -56,4 +97,10 @@ it.skipIf(!process.env.GAIA_FIELD_VISUAL_V2)('decodes every private candidate sc
  expect([decoded,rejected]).toEqual([695,7]);let rgbaOracles=0;if(process.env.GAIA_BACKGROUND_ORACLE){const oracle=JSON.parse(await readFile(process.env.GAIA_BACKGROUND_ORACLE,'utf8'));expect(oracle.sourceSHA256).toBe(fields.sources['flevel.lgp']);for(const row of oracle.oracles){const value=await pack.decode(row.id),image=composeBackground(value.scene,value.pixels!,row.selection),digest=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',image.rgba as Uint8ClampedArray<ArrayBuffer>)),n=>n.toString(16).padStart(2,'0')).join('');expect([image.width,image.height,image.visible,image.unsupported,digest],row.field).toEqual([row.width,row.height,row.visible,row.unsupported,row.rgbaSHA256]);rgbaOracles++;}}
  const report={scenes:pack.scenes.size,decoded,rejected,tiles,pixelBytes,packBytes:file.size,totalMs:performance.now()-at,maxDecodeMs,maxComposeMs,rgbaOracles};console.log('Private Visual v2 sequential readback',JSON.stringify(report));if(process.env.GAIA_BACKGROUND_QA_REPORT)await writeFile(process.env.GAIA_BACKGROUND_QA_REPORT,JSON.stringify(report,null,2));
  const oldPath=process.env.GAIA_FIELD_VISUAL_V1??folder+'/gaia-field-visual.bin',oldBytes=await readFile(oldPath),old=await openFieldVisual(new File([Uint8Array.from(oldBytes)],'gaia-field-visual.bin'),fields);expect(old.version).toBe(1);const oldScene=await old.decode(177);expect(oldScene.pixels).not.toBeNull();expect(oldScene.scene.background.tiles!.length).toBeGreaterThan(0);
+},120_000);
+
+it.skipIf(!process.env.GAIA_FIELD_VISUAL_V2_LEGACY)('retains every generator-3 scene and its independent v4.3 pixel goldens in the new reader',async()=>{
+ const {readFile}=await import('node:fs/promises'),folder=process.env.GAIA_BROWSER_WORKSPACE??'../output/local-workspace',fields=parseFieldPack(JSON.parse(await readFile(folder+'/gaia-field-context.json','utf8'))),oldBytes=await readFile(process.env.GAIA_FIELD_VISUAL_V2_LEGACY!),old=await openFieldVisual(new File([Uint8Array.from(oldBytes)],'gaia-field-visual.bin'),fields),bytes=await readFile(process.env.GAIA_FIELD_VISUAL_V2!),current=await openFieldVisual(new File([Uint8Array.from(bytes)],'gaia-field-visual.bin'),fields);
+ expect(old.revision).toBe('field-visual-3');let decoded=0;for(const [id]of old.scenes)if((await old.decode(id)).pixels)decoded++;expect(decoded).toBe(695);
+ const oracle=JSON.parse(await readFile(process.env.GAIA_BACKGROUND_LEGACY_ORACLE!,'utf8'));for(const row of oracle.oracles){for(const [pack,selection]of [[old,row.selection],[current,{...row.selection,opaqueOnly:true}]] as const){const scene=await pack.decode(row.id),image=composeBackground(scene.scene,scene.pixels!,selection),digest=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',image.rgba as Uint8ClampedArray<ArrayBuffer>)),n=>n.toString(16).padStart(2,'0')).join('');expect(digest,row.field).toBe(row.rgbaSHA256);}}
 },120_000);

@@ -12,7 +12,7 @@ import struct
 
 from .lzss import FormatError
 
-GENERATOR_VERSION = 'field-visual-3'
+GENERATOR_VERSION = 'field-visual-4'
 MAX_PACK = 64_000_000
 MAX_PIXELS = 4_000_000
 

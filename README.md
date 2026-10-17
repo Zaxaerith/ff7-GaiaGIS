@@ -8,7 +8,7 @@ The **Web Viewer is the main interface**. Open the [public Viewer](https://zaxae
 
 For Windows players, an approved [Release](https://github.com/Zaxaerith/ff7-GaiaGIS/releases) ZIP supplies **GaiaGIS.exe** to create/connect the Workspace and open that browser interface. Extract the whole ZIP to a writable folder, select the original FF7 data and keep the launcher open. No Python or Node installation is needed by the portable runtime.
 
-**GaiaGIS v4.3.0 — Field Background Reconstruction & State Explorer** expands evidence-checked original PC background decoding and adds manual Group/State previews in the existing Field Canvas. Explicit Visual Pack v2 preserves original tile, page and state evidence; older v4.2 Workspaces retain their existing static previews. Blending, scrolling, actual enabled states and exact original-game alignment remain unverified. FieldLocal GeoPackage v1/v2, Interaction Pack v1 and raw local XYZ stay unchanged. Maintained targets are **Web + Windows x64**. [Background upgrade](docs/user/workspace.md#private-camerabackground-resource) · [State controls and limits](docs/user/navigation.md#field-camera-and-background).
+**GaiaGIS v4.4.0 — Field Background Compositing & Layer Research** adds evidence-backed PC indexed additive/subtractive background compositing and four-layer research controls in the existing Field Canvas. Layer 2/3 offer an explicit Experimental preview of original 32×32 tiles at stored coordinates. Runtime scrolling, initialization, fractional blends and exact original-game alignment remain unverified. Visual transport v2 uses generator `field-visual-4`; older Workspaces retain their original decoding. FieldLocal GeoPackage v1/v2, Interaction Pack v1 and raw local XYZ stay unchanged. Maintained targets are **Web + Windows x64**. [Background upgrade](docs/user/workspace.md#private-camerabackground-resource) · [State controls and limits](docs/user/navigation.md#field-camera-and-background).
 
 For a source checkout:
 
@@ -39,7 +39,7 @@ To upgrade only the background resource in an existing source-matched Workspace:
 python -m gaiagis field-visual --source "YOUR_FF7_INSTALLATION" --workspace output/local-workspace --audit output/dev/current/field-background-audit.json
 ```
 
-Re-import the folder into the locally built v4.3 Viewer, select **Background Overlay** and expand **Background State Explorer**. The default is the static base; manually selected conditions are research previews. This command preserves unrelated Workspace products and existing research exports. Local development does not update hosted Pages or create a Release.
+Re-import the folder into the locally built v4.4 Viewer, select **Background Overlay** and expand **Background State Explorer**. The default is the static base; manually selected conditions are research previews. **Layers and compositing** contains layer switches and the explicit raw-position experiment. This command preserves unrelated Workspace products and existing research exports. Local development does not update hosted Pages or create a Release.
 
 To add interaction evidence to an existing source-matched Workspace without rebuilding WM/GIS/background data:
 

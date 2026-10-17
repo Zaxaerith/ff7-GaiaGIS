@@ -116,7 +116,7 @@ def _retained_visual(manifest, sources, directory):
     if not isinstance(manifest, dict) or not isinstance(manifest.get('assets'), list):
         return None
     record = next((a for a in manifest['assets'] if isinstance(a, dict) and a.get('filename') == 'gaia-field-visual.bin'), None)
-    if not record or record.get('generator_version') not in ('field-visual-1', 'field-visual-2', VISUAL_VERSION):
+    if not record or record.get('generator_version') not in ('field-visual-1', 'field-visual-2', 'field-visual-3', VISUAL_VERSION):
         return None
     revision = record['generator_version']
     if not reusable(manifest, sources, directory, ['gaia-field-visual.bin'], visual_revision=revision):
@@ -129,7 +129,7 @@ def _retained_visual(manifest, sources, directory):
             if len(header) != 16 or header[:8] != b'GAIACAM\0':
                 return None
             version, length = struct.unpack_from('<II', header, 8)
-            if version != (2 if revision == VISUAL_VERSION else 1) or not 0 < length <= 8_000_000 or 16+length > record['bytes']:
+            if version != (2 if revision in ('field-visual-3', VISUAL_VERSION) else 1) or not 0 < length <= 8_000_000 or 16+length > record['bytes']:
                 return None
             meta = json.loads(stream.read(length))
         context = json.loads((directory/'gaia-field-context.json').read_text(encoding='utf8'))
@@ -145,7 +145,7 @@ def _retained_visual(manifest, sources, directory):
 def _visual_snapshot(directory):
     """Bound the rollback pair before any exporter can replace either file."""
     saved = {}
-    for name, limit in (('gaia-field-visual.bin', 96_000_000), ('gaia-workspace.json', 8_000_000)):
+    for name, limit in (('gaia-field-visual.bin', 100_000_000), ('gaia-workspace.json', 8_000_000)):
         path = output_path(directory/name)
         if not path.is_relative_to(directory):
             raise ValueError('Workspace asset link escapes output root')

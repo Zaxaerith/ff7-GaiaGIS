@@ -33,7 +33,7 @@ python -m gaiagis field-visual --source "YOUR_FF7_INSTALLATION" --workspace outp
 
 The optional `--audit` target must be `.json` under `output/dev/current`; existing files must be owned `gaiagis-field-background-audit` version-1 reports. It cannot overwrite an existing Workspace, research product or source file; report replacement is atomic.
 
-This writes explicit Visual v2 (`field-visual-3`) and its Manifest entry after candidate/source validation. It preserves world/GIS products, Walkmesh, Interaction, GeoPackages and research projects. Exception rollback and `.build/visual-recovery` protect the old matching pair; interrupted two-file replacement is recoverable rather than crash-atomic. Re-import the folder into the current locally built Viewer. Visual v1 generators remain readable without this upgrade. See [format and limits](../reference/workspace-format.md#optional-field-visual-transport).
+This writes explicit Visual v2 (`field-visual-4`) and its Manifest entry after candidate/source validation. It preserves world/GIS products, Walkmesh, Interaction, GeoPackages and research projects. Exception rollback and `.build/visual-recovery` protect the old matching pair; later backups use a manifest-SHA256 subdirectory so earlier recovery pairs survive. Interrupted two-file replacement is recoverable rather than crash-atomic. Re-import the folder into the current locally built Viewer. Visual v1 and v2 generator-3 remain readable without this upgrade. See [format and limits](../reference/workspace-format.md#optional-field-visual-transport).
 
 ## Web
 

@@ -130,7 +130,7 @@ class BackgroundV2WorkspaceTests(unittest.TestCase):
     def candidate(sources):
         import json
         metadata = dict(schema='gaiagis-field-visual', version=2,
-            generator_revision='field-visual-3', sources=sources.copy(), scenes=[])
+            generator_revision='field-visual-4', sources=sources.copy(), scenes=[])
         encoded = json.dumps(metadata, separators=(',',':'), sort_keys=True).encode()
         return b'GAIACAM\0'+struct.pack('<II',2,len(encoded))+encoded
 
@@ -214,12 +214,35 @@ class BackgroundV2WorkspaceTests(unittest.TestCase):
         manifest=json.loads((self.workspace/'gaia-workspace.json').read_bytes())
         self.assertEqual(manifest['sources'],self.sources)
         self.assertEqual(manifest['assets'],[dict(filename=background.FILENAME,type='field-visual',mapId='shared',
-            dependencies=['gaia-field-context.json'],generator_version='field-visual-3',
+            dependencies=['gaia-field-context.json'],generator_version='field-visual-4',
             bytes=len(self.payload),sha256=background.digest(self.payload))])
         recovery=self.workspace/'.build/visual-recovery'
         self.assertEqual((recovery/background.FILENAME).read_bytes(),self.old_pack)
         self.assertEqual((recovery/'gaia-workspace.json').read_bytes(),self.old_manifest)
         self.assert_unrelated_unchanged()
+
+    def test_existing_recovery_pair_is_never_replaced_by_a_later_upgrade(self):
+        from gaiagis import field_background as background
+        recovery=self.workspace/'.build/visual-recovery';recovery.mkdir(parents=True)
+        first_manifest=b'first recovery manifest';first_pack=b'first recovery pack'
+        (recovery/'gaia-workspace.json').write_bytes(first_manifest)
+        (recovery/background.FILENAME).write_bytes(first_pack)
+        background.update_workspace(self.source,self.workspace)
+        self.assertEqual((recovery/'gaia-workspace.json').read_bytes(),first_manifest)
+        self.assertEqual((recovery/background.FILENAME).read_bytes(),first_pack)
+        retained=recovery/background.digest(self.old_manifest)
+        self.assertEqual((retained/'gaia-workspace.json').read_bytes(),self.old_manifest)
+        self.assertEqual((retained/background.FILENAME).read_bytes(),self.old_pack)
+
+    def test_publication_rejects_a_mismatched_generator_even_if_old_payload_is_valid(self):
+        import json
+        from gaiagis import field_background as background
+        size=struct.unpack_from('<I',self.payload,12)[0]
+        meta=json.loads(self.payload[16:16+size]);meta['generator_revision']='field-visual-3'
+        encoded=json.dumps(meta).encode();self.encode.return_value=(b'GAIACAM\0'+struct.pack('<II',2,len(encoded))+encoded,self.report)
+        with self.assertRaisesRegex(ValueError,'generator publication'):
+            background.update_workspace(self.source,self.workspace)
+        self.assertEqual((self.workspace/background.FILENAME).read_bytes(),self.old_pack)
 
     def test_concurrent_pack_change_is_preserved_without_rollback_overwrite(self):
         from gaiagis import field_background as background
@@ -241,14 +264,18 @@ class BackgroundV2WorkspaceTests(unittest.TestCase):
         self.assertEqual((background.MAX_PACK,legacy.MAX_PACK),(96_000_000,64_000_000))
         # Small synthetic bounds exercise exact-limit inclusion and total-size
         # rejection without allocating a production-sized 96 MB byte buffer.
-        with patch.object(background,'MAX_PACK',len(self.payload)):
-            self.assertEqual(background.validate_visual(self.payload,self.sources)['version'],2)
-        with patch.object(background,'MAX_PACK',len(self.payload)-1):
-            with self.assertRaisesRegex(ValueError,'candidate header'):
-                background.validate_visual(self.payload,self.sources)
+        import json
+        meta=json.loads(self.payload[16:]);meta['generator_revision']='field-visual-3'
+        legacy_meta=json.dumps(meta).encode();legacy_payload=b'GAIACAM\0'+struct.pack('<II',2,len(legacy_meta))+legacy_meta
+        for payload,limit in ((legacy_payload,'MAX_PACK'),(self.payload,'MAX_COMPOSITING_PACK')):
+            with patch.object(background,limit,len(payload)):
+                self.assertEqual(background.validate_visual(payload,self.sources)['version'],2)
+            with patch.object(background,limit,len(payload)-1):
+                with self.assertRaisesRegex(ValueError,'candidate (header|profile budget)'):
+                    background.validate_visual(payload,self.sources)
         class Oversized:
             def __len__(self):
-                return 96_000_001
+                return 100_000_001
             def __getitem__(self,key):
                 raise AssertionError('An oversized payload must be rejected before any read')
         with self.assertRaisesRegex(ValueError,'candidate header'):
@@ -268,7 +295,7 @@ class BackgroundV2WorkspaceTests(unittest.TestCase):
              patch('gaiagis.lgp.inventory',return_value={'entries':[{'filename':'maplist'}]}), \
              patch('gaiagis.lgp.read_entry',return_value=b'synthetic maplist'), \
              patch('gaiagis.poi.parse_maplist',return_value=[]), \
-             patch.object(background,'MAX_PACK',16):
+             patch.object(background,'MAX_COMPOSITING_PACK',16):
             # Bypass only the updater's mock, exercising the actual encoder.
             with self.assertRaisesRegex(ValueError,'metadata/size budget'):
                 self.real_encode(self.source,self.workspace)
