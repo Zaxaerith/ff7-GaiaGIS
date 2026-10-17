@@ -178,5 +178,8 @@ jobs:
           existing = subprocess.run(['gh', 'release', 'view', tag], capture_output=True)
           if existing.returncode == 0:
               raise RuntimeError('Existing Release will not be overwritten')
-          subprocess.run(['gh', 'release', 'create', tag, *[str(root / name) for name in sorted(names)],
-                          str(root / 'SHA256SUMS.txt'), '--verify-tag', '--title', 'GaiaGIS ' + tag, '--generate-notes'], check=True)
+          command = ['gh', 'release', 'create', tag, *[str(root / name) for name in sorted(names)],
+                     str(root / 'SHA256SUMS.txt'), '--verify-tag', '--title', 'GaiaGIS ' + tag]
+          notes = Path('docs/releases') / f'{tag}.md'
+          command += ['--notes-file', str(notes)] if notes.is_file() else ['--generate-notes']
+          subprocess.run(command, check=True)

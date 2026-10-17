@@ -5,7 +5,9 @@
 - Independently computed PC indexed Type 1 saturated addition and Type 2 clamped subtraction compose Layer 1 pixels in the retained Z/Sub order. Fractional Type 0/3 and PC16 blends remain unsupported; no Canvas blend approximation is used.
 - Existing State Explorer adds four layer switches, per-layer state/visibility/omission counts, opaque-only rendering and research blend outlines. Layer 2/3 retain full 32×32 source rectangles for an explicit Experimental raw-position preview, disabled by default; scrolling, dynamic depth and initialization remain UNKNOWN.
 - Visual transport v2 uses explicit generator `field-visual-4`, real Section-9 length and lossless shared pixel spans. Readers preserve v1 and generator-3 semantics. Source-span checks now enforce both byte length and the unchanged 8 MB budget. Incremental updates preserve existing recovery pairs as well as unrelated Workspace/GIS products.
+- Across 702 Fields, the static base profile reports 695 drawable backgrounds: 617 complete and 78 partial; seven invalid sources remain rejected. Static completeness is not a claim of game-runtime restoration. Workspace auditing and non-destructive QA failure records help keep private validation evidence recoverable.
 - Camera matrices/projection, raw FieldLocal XYZ, Interaction v1, Context 3, Walkmesh v1, GeoPackage v1/v2 and world data contracts are unchanged. Public delivery remains source-only.
+- Type 0/3 and PC16 blending, Palette animation, dynamic scrolling, script execution, runtime initial state, and game-level Camera/Walkmesh registration remain unverified. Users must supply data from a legally owned FF7 installation; the project does not distribute original game files or complete derived datasets.
 
 ## v4.3.0 — Field Background Reconstruction & State Explorer
 
