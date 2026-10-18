@@ -15,7 +15,7 @@ Development completion does not grant publication permission. Obtain explicit us
 3. After explicit publication approval, push the source commit normally and wait for real CI.
 4. Create an annotated `vX.Y.Z` tag matching the authority at that exact successful commit, then push that approved tag.
 5. The Windows x64 job checks out the exact tag, verifies annotation/version/commit/cleanliness and runtime architecture, runs Web tests/build/audit, freezes the portable app, runs isolated HTTP smoke and deep public audit, then creates its ZIP/SHA256.
-6. After that job succeeds, assembly verifies the single Windows ZIP, manifest provenance and current annotated tag target. `SHA256SUMS.txt` covers only `GaiaGIS-vX.Y.Z-windows-x64.zip`. One publish job creates the new Release on an approved tag event or explicit non-dry-run dispatch. It uses `docs/releases/vX.Y.Z.md` when present, otherwise GitHub-generated notes. Build failure prevents publication; existing Releases are never overwritten. macOS is no longer built or published.
+6. After that job succeeds, assembly verifies the single Windows ZIP, manifest provenance and current annotated tag target. `SHA256SUMS.txt` covers only `GaiaGIS-vX.Y.Z-windows-x64.zip`. The publish job checks out the exact requested tag so its curated `docs/releases/vX.Y.Z.md` is available, and fails before publication if that file is missing. It creates a new Release only on an approved tag event or explicit non-dry-run dispatch. Build failure prevents publication; existing Releases are never overwritten. macOS is no longer built or published.
 7. Separately approve/run source-only Pages and verify deployment/public fallback, Release download/checksum and exact tag target.
 
 ## Dry run

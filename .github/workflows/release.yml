@@ -154,6 +154,11 @@ jobs:
     permissions:
       contents: write
     steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ inputs.tag || github.ref_name }}
+          fetch-depth: 1
+          persist-credentials: false
       - uses: actions/download-artifact@v6
         with:
           name: release-packages
@@ -181,5 +186,7 @@ jobs:
           command = ['gh', 'release', 'create', tag, *[str(root / name) for name in sorted(names)],
                      str(root / 'SHA256SUMS.txt'), '--verify-tag', '--title', 'GaiaGIS ' + tag]
           notes = Path('docs/releases') / f'{tag}.md'
-          command += ['--notes-file', str(notes)] if notes.is_file() else ['--generate-notes']
+          if not notes.is_file():
+              raise RuntimeError(f'Required curated release notes are missing: {notes}')
+          command += ['--notes-file', str(notes)]
           subprocess.run(command, check=True)
