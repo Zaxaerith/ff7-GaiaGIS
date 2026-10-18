@@ -920,3 +920,87 @@ Derived Z remains a computed raw component, not a source height or metre value.
 Context source hashes bind FIELD.TBL/maplist/flevel evidence; browser input is
 bounded and shape-checked. No camera/background, runtime pathfinding or public
 complete anchor dataset is added.
+
+
+## Optional Field script evidence
+
+`gaia-field-script-evidence.bin` is an independent, private optional product.
+Its logical Manifest type is `field-script-evidence`, map ID `shared`, dependency
+`gaia-field-context.json`, generator `field-script-evidence-1`. It does not change
+Context schema 3, Walkmesh 1, Interaction 1, Visual v2/gen4 or GeoPackage 1/2.
+New Viewers can open older Workspaces without it. An older Viewer may not
+recognize the new optional Manifest type.
+
+The 16-byte header is `GAIASCR` plus a zero byte, U32 transport version 1 and
+U32 UTF-8 JSON metadata length, little-endian. Metadata has schema
+`gaiagis-field-script-evidence`, version 1, generator revision, exact Context-file
+SHA256, flevel/maplist SHA256 and unique available Context scene IDs/names. Each
+scene records Section 1/8 SHA256, compressed-pool-relative offset, compressed and
+decoded lengths, and decoded SHA256. Contiguous ordered spans cover the pool
+exactly. Each selected scene is independently bounded zlib JSON; the Viewer
+retains a File/header and only the current expanded scene.
+
+Full archive measurement: 702 scenes, 2,025,581 bytes including a 227,044-byte
+header; maximum scene 197,283 bytes, 232 target records, 1,584 entries and 2,507
+owner references. Independent limits are 4,000,000 whole-file bytes, 512,000
+metadata bytes, 512,000 decoded/compressed scene bytes, 1,024 target records,
+2,112 entry identities and 16,384 owner references per scene. These provide
+measured headroom; they do not borrow the image pack's 100 MB budget. Section 1
+and its code boundaries, entry/actor/slot identities, instruction spans,
+non-overlapping ranges, counts, hashes, raw operands and associations are checked.
+
+The formal parser's optional evidence view exposes verified decoded boundaries,
+static reachability and entry ownership without altering existing parser return
+behavior. A target record contains offset/length/opcode, bounded raw operands,
+entry IDs, literal/variable/unknown interpretation, static associations and
+runtime UNKNOWN. BGON/BGOFF use a bit number, distinct from Tile masks. BGROL/2
+are state-rotation evidence; BGSCR operands do not establish runtime scroll
+speed. BGPDH nonzero-bank selection remains ambiguous. Palette buffer positions
+are not automatically Section-4 Palette IDs. No VM, dataflow, save-state read or
+initial-state inference occurs.
+
+Operand-layout cross-checks use [Makou Opcode declarations at 2452025](https://github.com/myst6re/makoureactor/blob/2452025714c033d698d1754a776bdcd5713427bd/src/core/field/Opcode.h), [FFNx at 0d84805](https://github.com/julianxhokaxhiu/FFNx/tree/0d84805aa88b08b7e62725c72f465d2bf40d0c55/src/ff7/field), and the [LGP Explorer reader at 6c6338a](https://github.com/maciej-trebacz/ff7-lgp-explorer/blob/6c6338a3feba0e2b65f4f6cab5dd648cf6aed336/src/fieldfile.ts). Layout agreement does not settle execution semantics. The independent decoder supports these total instruction widths, including opcode:
+
+| Bytes | Opcodes |
+| --- | --- |
+| 3 | E2 BGROL, E3 BGROL2, E4 BGCLR |
+| 4 | E0 BGON, E1 BGOFF |
+| 5 | 2C BGPDH, E5 STPAL, E6 LDPAL, E7 CPPAL, EB STPLS, EC LDPLS |
+| 7 | 2D BGSCR, E8 RTPAL |
+| 8 | ED CPPAL2, EE RTPAL2 |
+| 10 | E9 ADPAL, EA MPPAL2 |
+| 11 | DF MPPAL, EF ADPAL2 |
+
+Scene statuses are `indexed`, `empty`, `partial`, `limited`, `invalid_source`.
+Decoded/reachable counts describe this bounded CFG. `uncovered` holds bytes
+without verified decoding; `unreachable` means not established reachable by this
+bounded analysis, including stopped/unknown portions, not a proof of runtime
+unreachability. Every stop stays visible. Original background rejection is
+independent of script evidence and cannot be repaired by it. A script
+`invalid_source` means an index cannot be safely established under verified
+source constraints; it is not a claim that the whole game file is corrupt.
+Application record/owner/CFG-work budgets reject the candidate with a separate
+limit error and preserve the prior resource pair.
+
+Incremental `field-script-evidence` stages an independently validated candidate,
+rechecks Context/input/Workspace identity and preserves a matching previous
+Manifest/resource under `.build/script-evidence-recovery/<manifest SHA256>`.
+Exceptions roll back the pair. This is recoverable replacement, not crash-atomic
+multi-file publication. Audit output is owned-schema JSON under active private
+QA only. The updater does not rebuild any other product. Missing, malformed,
+unknown-version or source-mismatched evidence safely degrades to unavailable.
+
+The private Registration Lab is session data outside every Workspace contract.
+Its optional user-requested `gaiagis-registration-research` version-1 JSON export
+contains explicit frame metadata/hash/dimensions, original Camera R/T/Zoom
+snapshot, Context/flevel/maplist/Walkmesh source hashes, current research preview
+selection, pixel mapping, manual points and residuals, never the image or original
+filename. A preview snapshot describes the selected reconstruction, not executed
+game state. PNG input is restricted to
+non-interlaced 8-bit RGB/RGBA, at most 8 MB / 4 MP / 4,096 per dimension, with
+chunk/CRC/profile and bounded scanline validation before bitmap allocation.
+Compressed text/profile chunks (`iCCP`, `zTXt`, `iTXt`), animation and unknown
+chunks are rejected; metadata is bounded to 64 KiB total and each `tEXt`
+chunk to 16 KiB.
+At most 256 points are held. No automatic persistence, network upload, shared
+URL, original Camera correction or calibrated global coordinates are introduced.

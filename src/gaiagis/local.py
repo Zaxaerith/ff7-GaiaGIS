@@ -145,6 +145,9 @@ def server_manifest(root):
         if not isinstance(asset.get('bytes'),int) or not 0<asset['bytes']<=160_000_000:raise ValueError('Invalid asset size')
         if name=='gaia-field-visual.bin' and asset['bytes']>(100_000_000 if asset.get('generator_version')=='field-visual-4' else 96_000_000 if asset.get('generator_version')=='field-visual-3' else 64_000_000):raise ValueError('Visual asset budget')
         if name=='gaia-field-interaction.bin' and asset['bytes']>8_000_000:raise ValueError('Interaction asset budget')
+        if name=='gaia-field-script-evidence.bin':
+            from .field_script_evidence import MAX_PACK, GENERATOR_VERSION
+            if asset['bytes']>MAX_PACK or asset.get('generator_version')!=GENERATOR_VERSION:raise ValueError('Script evidence asset profile/budget')
         if asset.get('dependencies')!=ASSETS[name][2]:raise ValueError('Invalid asset dependencies')
         path=(root/name).resolve()
         if not path.is_relative_to(root) or not path.is_file() or sha256(path)!=asset['sha256'] or path.stat().st_size!=asset['bytes']:

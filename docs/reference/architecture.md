@@ -207,3 +207,22 @@ no perpetual render loop runs. Selection changes, workspace replacement and
 disposal cancel stale decode results and release the previous Canvas listeners.
 The File survives only for the current workspace; no persistent private storage
 or global Field coordinate is created.
+
+
+## Field evidence and private registration
+
+The optional script-evidence owner binds the existing Context file hash and
+Field/source identities, retains one File/header, and decodes only the selected
+scene. The existing Field render scope owns its filters, current decoded record,
+Inspector selection and explicit State Explorer action. Instructions are not
+executed; variable references and CFG stops remain visible.
+
+Projection diagnostics borrow original Camera and current Walkmesh/Tile evidence.
+The Registration Lab is a child of that same Field scope. It owns one bounded
+PNG bitmap, local metadata, explicit pixel mapping, manual points and temporary
+comparison canvases. Camera/Field/source replacement and World return dispose
+these resources and reject late image/index requests. They are not app-store,
+ShareState, Atlas, Workspace or browser-storage data. Explicit research export
+contains metadata/points only; no image, original filename or installation path
+is automatically saved. Existing background compositing remains the sole pixel
+renderer; comparison overlays do not become game blending rules.

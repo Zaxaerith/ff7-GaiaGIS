@@ -1,5 +1,13 @@
 # Changelog
 
+## v4.5.0 — Field Script Evidence & Spatial Registration Lab
+
+- An independent optional Field script-evidence resource indexes verified BG/Palette instruction boundaries, literal/variable operands, static entry ownership, limited CFG coverage and unknown stops. Selecting an instruction does not execute it or change background state; explicit research preview remains separate.
+- Camera diagnostics expose preserved Q12 R/T/Zoom, q, screen and Canvas coordinates, invalid depth/numeric conditions, clipping and all projected footprint candidates. A screen point does not identify a unique XYZ or prove visibility.
+- The private Registration Lab validates bounded PNGs, records unknown-aware runtime metadata, accepts explicit crop/scale mappings and manual control points, and computes reference-pixel residuals with exclusion reasons. Images are session-only; explicit research JSON export excludes the image and filename. Synthetic framework acceptance does not verify original-runtime registration.
+- Visual transport/generator, background pixels and completeness, Context 3, Walkmesh 1, Interaction 1 and FieldLocal GeoPackage 1/2 remain compatible. Type 0/3, PC16 blending, runtime scrolling, actual state initialization and character occlusion remain outside verified rendering.
+- Local packaging refuses nonempty output rather than erasing retained release artifacts; isolated `package-*` validation directories support preserving formal distributions.
+
 ## v4.4.0 — Field Background Compositing & Layer Research
 
 - Independently computed PC indexed Type 1 saturated addition and Type 2 clamped subtraction compose Layer 1 pixels in the retained Z/Sub order. Fractional Type 0/3 and PC16 blends remain unsupported; no Canvas blend approximation is used.

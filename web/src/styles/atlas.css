@@ -96,3 +96,10 @@ body.field-active footer :is(#view-status,#coordinates,#fps){visibility:hidden}
 .field-edge[aria-pressed=true],.field-edge:focus-visible{stroke:var(--text);stroke-width:5;outline:none}
 #field-inspector #field-interaction-inspector-selector{display:block;min-width:0;max-width:100%;width:100%;margin:6px 0}
 #field-tool-shelf{flex:0 1 auto;min-height:0;max-height:45%;overflow:auto;overscroll-behavior:contain;scrollbar-gutter:stable}
+
+#field-projection-diagnostics,.field-registration-lab,#field-script-evidence{min-width:0;max-width:100%;overflow-wrap:anywhere}
+#field-projection-diagnostics label,.field-registration-lab label{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin:6px 0;min-width:0}
+#field-projection-diagnostics input,.field-registration-lab input,.field-registration-lab select{max-width:100%;min-width:0;box-sizing:border-box}
+#field-projection-diagnostics input[type=number]{width:10em}
+.field-registration-lab fieldset{min-width:0;max-width:100%;box-sizing:border-box}
+.field-registration-lab pre,#field-projection-diagnostics pre{white-space:pre-wrap;overflow-wrap:anywhere;max-width:100%}

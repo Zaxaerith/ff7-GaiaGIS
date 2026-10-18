@@ -143,3 +143,31 @@ npm --prefix web run preview:release
 ```
 
 Open a fresh `http://127.0.0.1:5175/` page (use the port printed by Vite), confirm the current locally built version, and import the existing Workspace folder after its optional interaction increment. Review the plain-language Inspector, original lines, overlapping record choice, all candidates and UNKNOWN limits. No full Workspace or GIS regeneration is required. Technical checks do not perform human gameplay validation or authorize publication.
+
+
+## Script evidence and registration gates
+
+Synthetic Python tests cover the 19 BG/Palette widths, formal bounded-CFG
+interfaces, literal/variable operands, BGPDH bank ambiguity, entry ownership,
+unknown stops, source spans, resource binding and incremental rollback. The
+independent `field_registration.rational_projection` uses exact fractions and
+never calls the Web or Python production projection. Compare real source vertex
+IDs across Cameras, including depth and screen/Canvas Y conventions; numerical
+agreement is not screenshot alignment.
+
+Web tests cover optional evidence codecs, tampered ranges/counts/operands,
+source hashes, cancellation, all screen footprint candidates, strict bounded PNG
+structure/decompression, explicit mapping, excluded points, residual statistics
+and private export. Browser Lab checks use synthetic PNGs, the existing Field
+Canvas/Inspector and the same player-flow runner. Exercise five locales at
+1440/390/320px, empty/limited/rejected-background scenes, no automatic BGON state
+change, delayed image/index completion, source/Camera replacement and World
+return. Keep original frames and pixel/control-point oracles ignored.
+
+Archive acceptance must actually index all 702 Fields and report statuses,
+coverage and stops. Compare every retained raw instruction span and Section hash
+with read-only input. Existing Visual pixels and 617 complete / 78 partial / 7
+invalid classification are independent of the new script-index status. No new
+blend formula is part of these tests. Final RC also requires non-Climate Python,
+Web/Browser, public-asset audit and isolated Windows validation; record actual
+skips and failures, not prior release numbers.

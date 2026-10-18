@@ -40,3 +40,22 @@ map north, world elevations or a global transform. Padding is preserved without
 assigning collision semantics. No Field vertex enters globe projections,
 ShareState, routing or user-geometry storage. An existing world Entrance action
 continues to borrow only that Entrance's independently validated anchor.
+
+
+## Camera and registration pixel spaces
+
+Field Camera diagnostics preserve `q = (R / 4096) * XYZ + T` and
+`screen = Zoom * q.xy / q.z`; screen Y points down. Non-finite values and
+`q.z <= 0.000001` are invalid. The existing Canvas plane negates screen Y,
+then applies only the current view's CSS-pixel scale and pan. Canvas clipping,
+background-rectangle exclusion, mathematical depth failure and unknown occlusion
+are separate facts. All projected 2D triangle/Tile footprints are candidates;
+none is automatically the visible object or a unique inverse XYZ.
+
+Reference-image pixels are another coordinate space. The Registration Lab
+requires explicit screen and reference rectangles for its crop/scale mapping.
+Manual observed points and original XYZ remain separate; visual-only 2D marks
+are excluded from geometric accuracy statistics. Residuals are measured in
+reference pixels, never metres. No fitting, Camera calibration, coordinate
+correction or writeback occurs. Formula agreement, manual correspondences,
+runtime images and verified original-game registration are distinct evidence.

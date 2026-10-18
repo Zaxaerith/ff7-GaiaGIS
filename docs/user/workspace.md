@@ -152,3 +152,23 @@ In the existing State Explorer, expand **Layers and compositing**. Layer 0/1 are
 To inspect Layer 2 or Layer 3, enable that layer and **Experimental: raw positions for Layer 2/3**. Disable the other layers to inspect its full 32×32 source rectangles. This uses original target positions and stored order; camera-dependent scrolling, dynamic depth and initialization are unknown. It is never enabled automatically. Each layer lists raw/state-applicable/shown/blend counts and omission reasons. Reset restores base-only Layer 0/1 and clears research modes. Group/State remains a manual selection; Trigger selection never activates a state by itself.
 
 Existing v4.3 generator-3 packs still decode exactly as before but do not contain blend or Layer 2/3 pixels. Run the incremental command above to obtain generator 4. Earlier v1 recovery and any previous recovery pair are preserved; later matching backups use `.build/visual-recovery/<manifest SHA256>/`. These are private recovery files, not public assets. Source spans now check actual Section-9 length in generator 4; old packs retain their bounded legacy contract.
+
+
+## Private Field script evidence
+
+An older Workspace remains usable without the optional script evidence. To add
+only this product, use a source-matched existing Workspace:
+
+```powershell
+. tools/build/environment.ps1
+python -m gaiagis field-script-evidence --source "YOUR_FF7_INSTALLATION" --workspace output/local-workspace --audit output/dev/current/field-evidence-registration/script-index-audit.json
+```
+
+The source is read-only. The updater stages and validates a separate bounded
+resource, binds Context and original Section 1/8/source hashes, reads it back and
+updates its Manifest entry. A matching previous Manifest/resource pair is kept
+under the private `.build/script-evidence-recovery` directory. Interrupted
+replacement is recoverable, not a claim of crash-atomic two-file publication.
+The prior Visual/Interaction/Walkmesh, GIS products and recovery pairs are not
+rebuilt. Re-import the folder in the new Viewer. Do not select the game directory
+as a Workspace and do not publish the generated script-evidence file.

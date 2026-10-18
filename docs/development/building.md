@@ -67,3 +67,19 @@ Mac-specific roots, `.app` layout, confined-link ZIP handling and native archite
 `gaiagis clean-output` previews paths and expected bytes without deleting. `gaiagis clean-output --execute` deletes disposable output while retaining `output/local-workspace`, `output/dev/STATUS.md`, and all archived or marked failure evidence. Add `--all` to include the regenerable workspace. Review and remove individual failure records separately after confirming they are no longer needed. Filesystem redirects and active job ownership are rejected; contained framework links are accepted only in dedicated package/smoke output trees and are never followed during deletion. The command never acts outside workspace/output.
 
 New distribution maintenance is Windows x64 + Web only. CI and Release no longer build macOS; historical recipes are retained without a promise of a working Mac bundle. Camera/background generation uses stdlib parsing/compression and private workspace storage; it does not add GDAL or an FF7 engine to the portable app.
+
+
+## Isolated local package candidates
+
+Package output must be empty. Retained formal ZIPs/checksums are never erased by
+a new build. For local validation use a new task-owned destination:
+
+```powershell
+python tools/build/local_package.py --skip-web-build --keep-artifacts --output-dir output/dev/current/field-evidence-registration/package-candidate
+```
+
+Build after the final local commit to embed its actual SHA. A local ZIP is
+`development-validation-only`, not a tagged release. Preserve its smoke/audit
+results and final ZIP; remove only explicitly reviewed task-created intermediate
+build directories. Do not run a cold full Workspace reconstruction just to test
+the new optional Field evidence product.

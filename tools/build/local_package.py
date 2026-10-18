@@ -44,12 +44,17 @@ def zip_package(package,archive,epoch):
             elif path.is_file():data=path.read_bytes()
             else:data=b'';info.external_attr|=0x10
             z.writestr(info,data)
+def package_output(path):
+    out=checked_output(path)
+    private_root=ROOT/'output/dev/current'
+    private_candidate=out.is_relative_to(private_root) and len(out.relative_to(private_root).parts)>=2 and out.name.startswith('package-')
+    if out not in (ROOT/'output/distribution',ROOT/'output/release') and not private_candidate:raise ValueError('Invalid package output directory')
+    return out
+
 def build(args, scratch):
     target=native_target();mac=target=='macos-arm64'
     if sys.version_info[:3]!=(3,14,7):raise RuntimeError('Use the pinned CPython 3.14.7 build runtime')
-    out=checked_output(args.output_dir)
-    if out not in (ROOT/'output/distribution',ROOT/'output/release'):raise ValueError('Use output/distribution or output/release for package artifacts')
-    if not out.is_relative_to(ROOT/'output'):raise ValueError('Build outputs must stay within workspace/output')
+    out=package_output(args.output_dir)
     git=['git','-c',f'safe.directory={ROOT.as_posix()}']
     head=subprocess.check_output([*git,'rev-parse','HEAD'],cwd=ROOT,text=True).strip()
     dirty=bool(subprocess.check_output([*git,'status','--porcelain'],cwd=ROOT,text=True).strip())
@@ -143,12 +148,10 @@ def main(argv=None):
     cli.add_argument('--output-dir',type=Path,default=ROOT/'output/distribution')
     cli.add_argument('--keep-artifacts',action='store_true',help='Explicitly retain ZIP and build files after successful smoke (required by Actions)')
     args=cli.parse_args(argv)
-    out=checked_output(args.output_dir)
-    if out not in (ROOT/'output/distribution',ROOT/'output/release'):raise ValueError('Invalid package output directory')
-    # A previous retained .app contains legitimate internal framework links.
-    # Remove only this dedicated build tree through the package-aware boundary.
-    if out.exists():
-        for child in out.iterdir():remove_output(child,package_links=True)
+    out=package_output(args.output_dir)
+    # Retained release artifacts and previous candidates are research evidence.
+    # Never erase them to make room for a new validation run.
+    if out.exists() and any(out.iterdir()):raise ValueError('Package output must be empty; preserve existing artifacts and choose a new package-* candidate directory')
     with OutputRun('package',package_links=True) as job:
         try:
             archive=build(args,job.path/'tmp')

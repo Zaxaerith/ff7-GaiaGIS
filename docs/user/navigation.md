@@ -414,3 +414,46 @@ Evidence levels remain separate: raw parsing; mathematical projection; static ti
 Under Field Camera → Background Overlay → Background State Explorer, expand **Layers and compositing**. Layer 0/1 are the default. Indexed Type 1/2 use corroborated PC integer add/subtract equations; unsupported modes are counted and omitted. Toggle individual layers, use opaque-only rendering, or mark blend tile borders for research. None of these controls changes camera/XYZ or Walkmesh.
 
 Layer 2/3 need the explicit Experimental raw-position switch as well as their layer checkbox. Their original 32×32 tiles retain raw X/Y and stored Z/Sub ordering, while runtime scroll/wrap/dynamic depth remain unknown. Reset restores the static base and default layers. A manual Group/State selection or explicit Trigger preview may include these pixels under the same experimental assumption. This is not a script, story or original initialization simulator. Older packs without these pixels retain their original preview and show an upgrade explanation.
+
+
+## Field script evidence and registration lab
+
+Open a Field Walkmesh and expand **Spatial visualization**. **Background / Palette
+script evidence** provides opcode, actor/slot, Group, Layer and offset filters.
+Select a record to inspect its raw operands, source hashes, static entry owners
+and unknown runtime effects. Coverage details include stopped and uncovered
+ranges. Empty scenes are valid. Missing optional evidence leaves the other Field
+tools usable. Selecting BGON/BGOFF changes no pixels; only **Preview associated
+background state** explicitly applies a research Group/state selection.
+
+**Camera projection diagnostics** inspects a vertex of the currently selected
+triangle or a selected verified point anchor. It shows source XYZ, original
+R/T/Zoom, q, screen pixels and current Camera-mode Canvas pixels. Screen X/Y
+queries list every projected footprint candidate; enable **Inspect Canvas taps**
+to query in Camera/Overlay mode. Background Tile evidence requires a decoded
+Overlay. Selecting a Tile gives 2D evidence without inventing XYZ. Occlusion,
+actual game state and unique screen-to-space identity remain unknown.
+
+**Spatial Registration Lab** accepts a private bounded non-interlaced 8-bit RGB
+or RGBA PNG. Images remain in this session. Register the game/FFNx/renderer,
+resolution, frame/entry condition, Camera and image processing metadata; unknown
+fields stay unknown. Enter explicit screen and reference pixel rectangles, then
+apply the mapping. No crop, scale or alignment is guessed. Click a reference
+pixel (or enter its X/Y), select a source vertex/anchor, optionally record manual
+uncertainty, and add a point. A **visual-only** mark records a 2D feature without
+counting as a geometric correspondence.
+
+Residuals show predicted/observed pixels, vectors, RMS, median, maximum, valid
+count and exclusion reasons. No eligible points means no RMS, rather than zero.
+Small samples do not establish scene-wide accuracy. Side-by-side viewing is
+available; overlay/difference require an explicit mapping and acknowledged crop,
+scale, filter, sRGB/HDR metadata. Characters, animation, lighting and unknown
+state can explain differences. A screenshot difference is not a registration
+proof. Synthetic framework success is not original-game runtime verification.
+
+**Export research record** deliberately downloads a separate private JSON without
+the image or original filename. Keep it private: manual local XYZ and frame
+metadata can be research data. **Release reference frame**, Camera/Field changes,
+Workspace replacement and World return release the image and points. No image is
+uploaded or included in a shared link. Without a real frame the Lab clearly says
+that original-runtime reference evidence is absent.

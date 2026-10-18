@@ -73,8 +73,9 @@ SAVE_HEADER_ALIASES = {88: ('qa', 'q_1'), 89: ('qb', 'q_2'), 90: ('qc', 'q_3'), 
 
 # Instruction widths are format facts, cross-checked against Makou Reactor
 # 2452025714 and ff7tools 6bf1fbcec2. Zero means unsupported, never a guessed width.
-# Only MAPJUMP and bounded branch semantics are interpreted; other known-width
-# operands are skipped and never exported. See docs/reference/atlas.md.
+# This decoder interprets MAPJUMP and bounded branch structure. Optional views
+# expose verified boundaries to evidence consumers without evaluating runtime
+# operands. See docs/reference/atlas.md and workspace-format.md.
 _WIDTHS = tuple(map(int, '''
 1 3 3 3 3 3 3 2 2 15 6 6 0 0 2 1
 2 3 2 3 6 7 8 9 8 9 0 0 0 0 0 0
@@ -95,13 +96,17 @@ _WIDTHS = tuple(map(int, '''
 '''.split()))
 
 
-def parse_script(section: bytes, *, interactions=False):
+def parse_script(section: bytes, *, interactions=False, evidence=False):
     """Section-1 entry-rooted static topology, not runtime availability.
 
     Unknown instruction width stops that branch. Overlapping instructions or
     branches into operands reject the section's entire script evidence.
     Field-local MAPJUMP spawn coordinates are deliberately not read/exported.
+    The default three-value return remains unchanged; evidence=True adds a
+    fourth, read-only CFG/provenance view, separate from interactions=True.
     """
+    if interactions and evidence:
+        raise ValueError('Choose one optional script evidence view')
     if len(section) < 32:
         raise FormatError('Field script header')
     version, actors, _, end, sounds = struct.unpack_from('<HBBHH', section)
@@ -202,12 +207,33 @@ def parse_script(section: bytes, *, interactions=False):
             target = pc + at + delta
         if target is not None:
             queue.append(target)
-            if interactions:successors.setdefault(pc, []).append(target)
+            if interactions or evidence:successors.setdefault(pc, []).append(target)
         if op not in (0x10, 0x11, 0x12, 0x13) and next_pc < end:
             queue.append(next_pc)
-            if interactions:successors.setdefault(pc, []).append(next_pc)
-    if not interactions:
+            if interactions or evidence:successors.setdefault(pc, []).append(next_pc)
+    if not interactions and not evidence:
         return name, list(jumps.values()), list(unknown.values())
+    if evidence:
+        # A public, optional view of the already bounded decoder. Consumers can
+        # index selected instructions without profile hooks or byte searches.
+        # All offsets are relative to this length-stripped Section 1. The CFG
+        # is static entry reachability, never evidence that an actor ran.
+        identities = []
+        for actor in range(actors):
+            raw_name = section[32+actor*8:40+actor*8].split(b'\0')[0]
+            actor_name = raw_name.decode('ascii') if all(32 <= v < 127 for v in raw_name) else None
+            for slot, entry in enumerate(entries[actor*32:(actor+1)*32]):
+                if entry < end:
+                    identities.append(dict(actor=actor, name=actor_name, slot=slot, entry=entry, kind='table'))
+            if actor in main_entries:
+                identities.append(dict(actor=actor, name=actor_name, slot=0, entry=main_entries[actor], kind='main'))
+        instructions = [dict(offset=pc, length=nxt-pc, opcode=op, entryReachable=pc in seen)
+                        for pc, (op, nxt) in sorted(decoded.items())]
+        stops = [dict(row, opcode=section[row['offset']], entryReachable=row['offset'] in seen)
+                 for row in sorted(unknown.values(), key=lambda r: r['offset'])]
+        return name, list(jumps.values()), stops, dict(codeStart=base, codeEnd=end,
+            entries=identities, instructions=instructions,
+            successors={pc: sorted(set(targets)) for pc, targets in successors.items()})
     # An optional evidence view of this same CFG. No byte-pattern search, VM,
     # guessed widths, or inference that an entry is actually called at runtime.
     selected = {pc for pc in seen if pc in decoded and decoded[pc][0] in (0xd0, 0xd1, 0xd3)}
