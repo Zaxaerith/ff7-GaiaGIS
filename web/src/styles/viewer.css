@@ -89,3 +89,6 @@ dialog{color:#c6d9e3;background:#14232e;border:1px solid #426173;border-radius:1
 
 /* Persistent navigation occupies the retired top tool strip. */
 .map-breadcrumb{top:14px;left:18px;margin:0}@media(max-width:700px){.map-breadcrumb{top:14px;left:110px;max-width:calc(100vw - 118px)}}
+
+/* Native analysis shares the current map owner; raw values do not use relief. */
+#native-analysis{min-width:0;overflow-wrap:anywhere}#native-analysis label{display:block}#native-analysis select,#native-analysis input{max-width:100%;min-width:0}#native-analysis table{width:100%;font-size:.85em;font-variant-numeric:tabular-nums}#native-analysis td{padding:.2rem;text-align:right}#native-analysis fieldset{min-width:0}#native-analysis output{display:block} .native-panel dd{overflow-wrap:anywhere}

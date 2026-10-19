@@ -83,3 +83,7 @@ Build after the final local commit to embed its actual SHA. A local ZIP is
 results and final ZIP; remove only explicitly reviewed task-created intermediate
 build directories. Do not run a cold full Workspace reconstruction just to test
 the new optional Field evidence product.
+
+## Independent Native GIS export
+
+`python -m gaiagis native-gis export --source-map YOUR_WM_DIRECTORY/wm2.map --map WM2 --output output/exports/native/WM2-research.gpkg` uses installed GDAL >= 3.9. Windows may set `GAIAGIS_QGIS_ROOT` for automatic source-CLI delegation. Output must be new; no existing Workspace or GPKG is rebuilt. The portable Viewer excludes this optional GDAL exporter. [Native GIS](../reference/native-gis.md).

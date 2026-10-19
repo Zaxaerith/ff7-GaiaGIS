@@ -13,7 +13,9 @@ in raw binary XYZ. The native renderer independently uses `(X,height,Z)` and a
 uniform display normalization; exaggeration changes display height only.
 No EPSG, physical meters, sea-level datum, latitude or longitude is assigned to
 WM2/WM3. Top-down is a native X/Z plane, not a geographic projection. Physical
-distance, area, routing and gameplay layers are unavailable for these maps.
+distance, physical area, routing and gameplay layers are unavailable for these maps.
+Native raw X/Z distance, source-face area and gradients are available separately;
+see [Native GIS](native-gis.md).
 
 Classic-PC `C_007533AF` places WM2 archive block `(col,row)` at engine block
 `(col+3,row+2)`; `C_00750F3C` reverses this block lookup. Thus the documented

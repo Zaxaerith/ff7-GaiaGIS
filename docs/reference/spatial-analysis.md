@@ -123,3 +123,7 @@ the existing renderer; cost arrays and queue are request scratch, not retained u
 state. Async revision guards reject obsolete results after input/map/data changes.
 Registered layer opacity, reset and legend are reused. Threshold clipping,
 disconnection, conditional rules and multiple profiles have synthetic coverage.
+
+## Native source TIN analysis
+
+WM2/WM3 use independent raw X/Z/h spaces. Exact determinant, projected area, nullable a/b gradients, duplicate membership, edge occurrence incidence and conservative components are separate from all WM0 algorithms. Terrain totals sum source-face contributions, not union areas. No modulo, snapping, real slope angle or game reachability is inferred. [Native method and export](native-gis.md).

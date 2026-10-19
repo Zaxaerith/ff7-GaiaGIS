@@ -172,3 +172,7 @@ replacement is recoverable, not a claim of crash-atomic two-file publication.
 The prior Visual/Interaction/Walkmesh, GIS products and recovery pairs are not
 rebuilt. Re-import the folder in the new Viewer. Do not select the game directory
 as a Workspace and do not publish the generated script-evidence file.
+
+## Native map raw GIS
+
+WM2/WM3 need no new Workspace product. In Map select a Native map, then Analysis → Native TIN diagnostics; inspect ordinary faces or filter zero X/Z area, true 3D degeneracy, duplicates and edge incidence. All source faces restores normal layer colouring. Selected-corner X/Z measurement uses raw units and ignores display relief. Source vertex-table IDs and padding are available through the independent private [Native GeoPackage export](../reference/native-gis.md). QGIS may display Meter for undefined Cartesian data; this does not make FF7 raw units physical metres.

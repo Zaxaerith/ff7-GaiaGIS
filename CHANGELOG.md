@@ -1,5 +1,19 @@
 # Changelog
 
+## 4.6.0 — Native Map GIS & Source TIN Diagnostics
+
+- Existing Native Viewer: raw X/Z corner distance, exact source-face area/gradient,
+  terrain contribution totals, zero-projection/3D degeneracy/duplicate/edge filters
+  and conservative components; shared Inspector and five-language mobile controls.
+- Independent `native-gis export` writes private WM2/WM3 Native GeoPackage v1:
+  all original vertex/normal table identities and padding, every source face,
+  valid X/Z analysis polygons and compressed/decompressed provenance kept distinct.
+- Integer/Fraction source audit and cross-language all-face regressions; staged
+  no-clobber export/readback and current-map analysis ownership.
+- Native v1/Manifest, WM0 V1 reconstruction and Field/GIS contracts unchanged.
+  Undefined Cartesian/raw units imply no metres, depth, slope angle, global
+  registration, source repair, wrapping or runtime navigation. Source-only delivery.
+
 ## v4.5.0 — Field Script Evidence & Spatial Registration Lab
 
 - An independent optional Field script-evidence resource indexes verified BG/Palette instruction boundaries, literal/variable operands, static entry ownership, limited CFG coverage and unknown stops. Selecting an instruction does not execute it or change background state; explicit research preview remains separate.

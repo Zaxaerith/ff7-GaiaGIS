@@ -171,3 +171,7 @@ invalid classification are independent of the new script-index status. No new
 blend formula is part of these tests. Final RC also requires non-Climate Python,
 Web/Browser, public-asset audit and isolated Windows validation; record actual
 skips and failures, not prior release numbers.
+
+## Native GIS gates
+
+`tools/tests/test_native_analysis.py` and `test_native_gis.py` use synthetic data, exact fractions and staged export failure injection. The maintained `tools/native_map_audit.py --source-dir YOUR_WM_DIRECTORY --workspace output/local-workspace --output output/dev/current/YOUR_TASK/source-oracle.json` independently reads original mesh records and Native v1, validating every corner, normal, padding, attribute and Fraction plane. Do not publish its private oracle. Set `GAIA_NATIVE_ORACLE` and `GAIA_BROWSER_WORKSPACE` for all-face Web regression. The existing browser runner includes Native GIS checks (focused scope `GAIA_BROWSER_SCOPE=native`) for five languages/1440/390/320px, raw values, filters, keyboard/touch, relief invariance and map release. Real SQLite/OGR and PyQGIS readback/render use disposable copies, recording raw-unit/Meter limitations separately from desktop human acceptance.

@@ -226,3 +226,7 @@ ShareState, Atlas, Workspace or browser-storage data. Explicit research export
 contains metadata/points only; no image, original filename or installation path
 is automatically saved. Existing background compositing remains the sole pixel
 renderer; comparison overlays do not become game blending rules.
+
+## Native GIS ownership
+
+`native_analysis.py` provides integer/Fraction source math; `native_gis.py` is a dynamically imported optional GDAL CLI. `analysis/native.ts` independently derives current-map metrics from unchanged Native v1. `ui/nativeAnalysis.ts` integrates with the existing shell/Inspector and NativeViewer colour buffers; its analysis and diagnostic mask are cleared on map/source replacement and dispose. No second renderer, graph cache for WM0 or Workspace product is added. [Contract](native-gis.md).

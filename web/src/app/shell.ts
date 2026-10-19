@@ -36,7 +36,7 @@ export function mountShell(){
  const nativeView=document.createElement('section');get('view').append(nativeView);const nativeLayers=document.createElement('section');get('layers').append(nativeLayers);
  const nativeLayerLabel=document.createElement('label');nativeLayerLabel.htmlFor='native-layer';nativeLayerLabel.textContent=t('ui.color');nativeLayers.append(nativeLayerLabel);move(document.getElementById('native-layer'),nativeLayers);
  for(const id of ['native-view','native-relief','native-filter','native-shading']){move(document.querySelector(`label[for="${id}"]`),nativeView);move(document.getElementById(id),nativeView);}
- const nativeAnalysisNote=document.createElement('p');nativeAnalysisNote.className='control-note';nativeAnalysisNote.textContent=t('map.noGlobal');get('analysis').append(nativeAnalysisNote);
+ const nativeAnalysisNote=document.createElement('p');nativeAnalysisNote.className='control-note';nativeAnalysisNote.textContent=t('map.noGlobal');get('analysis').append(nativeAnalysisNote);move(document.getElementById('native-analysis'),get('analysis'));
 
  const infoPanel=document.getElementById('info-panel'),nativeInspector=document.getElementById('native-inspector');move(infoPanel,secondary);move(nativeInspector,secondary);
  move(document.querySelector('.projection-control'),get('view'));

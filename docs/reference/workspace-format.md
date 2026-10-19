@@ -1004,3 +1004,7 @@ chunks are rejected; metadata is bounded to 64 KiB total and each `tEXt`
 chunk to 16 KiB.
 At most 256 points are held. No automatic persistence, network upload, shared
 URL, original Camera correction or calibrated global coordinates are introduced.
+
+## Native GIS diagnostics and export
+
+v4.6 retains GAIAMAP v1, its 72-byte records, identities, hashes and the existing Manifest. No new mandatory asset or generator is introduced. Current-map analysis derives from the loaded source positions; full original table IDs/padding/spans are read separately by the optional Native GeoPackage CLI. Exported GPKGs remain private and outside Workspace/portable/Pages assets. See [Native GIS contract](native-gis.md).
