@@ -75,7 +75,7 @@ Package output must be empty. Retained formal ZIPs/checksums are never erased by
 a new build. For local validation use a new task-owned destination:
 
 ```powershell
-python tools/build/local_package.py --skip-web-build --keep-artifacts --output-dir output/dev/current/field-evidence-registration/package-candidate
+python tools/build/local_package.py --skip-web-build --keep-artifacts --output-dir output/dev/current/YOUR_TASK/package-candidate
 ```
 
 Build after the final local commit to embed its actual SHA. A local ZIP is

@@ -68,28 +68,6 @@ gaia-atlas.json
 
 # Private Python tests and local QA/research tools remain on this checkout.
 /tests/
-/web/scripts/browser-atlas-fallback-qa.mjs
-/web/scripts/browser-atlas-qa.mjs
-/web/scripts/browser-encounter-qa.mjs
-/web/scripts/browser-event-qa.mjs
-/web/scripts/browser-local-qa.mjs
-/web/scripts/browser-poi-qa.mjs
-/web/scripts/browser-production-qa.mjs
-/web/scripts/browser-qa.mjs
-/web/scripts/browser-release-qa.mjs
-/web/scripts/browser-traversal-qa.mjs
-/web/scripts/browser-v15-qa.mjs
-/web/scripts/browser-v16-qa.mjs
-/web/scripts/browser-v17-qa.mjs
-/web/scripts/browser-v18-qa.mjs
-/web/scripts/browser-v19-qa.mjs
-/web/scripts/browser-v20-qa.mjs
-/web/scripts/browser-v21-color-qa.mjs
-/web/scripts/browser-v21-qa.mjs
-/web/scripts/browser-v23-qa.mjs
-/web/scripts/browser-v24-qa.mjs
-/web/scripts/browser-v25-qa.mjs
-/web/scripts/measure-navigation23.mjs
 
 # Private Field identity/topology payload
 gaia-field-context.json
