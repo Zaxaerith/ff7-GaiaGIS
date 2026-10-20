@@ -1008,3 +1008,7 @@ URL, original Camera correction or calibrated global coordinates are introduced.
 ## Native GIS diagnostics and export
 
 v4.6 retains GAIAMAP v1, its 72-byte records, identities, hashes and the existing Manifest. No new mandatory asset or generator is introduced. Current-map analysis derives from the loaded source positions; full original table IDs/padding/spans are read separately by the optional Native GeoPackage CLI. Exported GPKGs remain private and outside Workspace/portable/Pages assets. See [Native GIS contract](native-gis.md).
+
+## Optional explicit World Variant research
+
+World Variants uses a separate source-bound JSON file with schema/generator and bounded payload hash. It is explicitly imported, never added as an unknown logical type to Manifest v1. Old/new Workspaces and canonical GAIAWEB v1 remain unchanged. [Contract, raw axes and limits](world-variants.md).

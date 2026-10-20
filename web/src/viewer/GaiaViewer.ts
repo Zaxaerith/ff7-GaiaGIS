@@ -1,6 +1,8 @@
 import {defaultOpacities} from '../app/layers';
 import type {LayerId} from '../app/layers';
 import {configureOutput} from '../explorer/lighting';
+import {WorldVariantSurface} from './WorldVariantSurface';
+import type {VariantFace,WorldVariants} from '../data/worldVariants';
 // SPDX-License-Identifier: GPL-3.0-only
 import {BufferAttribute,BufferGeometry,Color,DoubleSide,DynamicDrawUsage,LineBasicMaterial,LineSegments,
   Mesh,MeshBasicMaterial,MOUSE,OrthographicCamera,PerspectiveCamera,Raycaster,Scene,Sphere,TOUCH,
@@ -97,6 +99,9 @@ export class GaiaViewer {
   setUserMapping(frame:MappingFrame){this.userMapping.set(frame);this.comparison?.userMapping.set(frame);}
   captureMeasurement=false;
   onGeographicPick:(point:GeoPoint)=>void=()=>{};
+  onVariantSelection:(face:VariantFace|null)=>void=()=>{};
+  variantResearch:WorldVariantSurface|null=null;
+  private variantBaseVisibility={value:0};
   onViewChange:(view:LinkedView)=>void=()=>{};
   readonly diagnostics={mapId:0,gridInterval:30,gridSpacingPx:0,gridRegenerations:0,gridGenerationMs:0,tissotGenerationMs:0,comparisonDrawCalls:0,reliefUpdateMs:0,textureUVPreparationMs:0,textureUploadSubmissionMs:0};
   private gridMode:GridMode='auto';private gridMinor=true;private gridLast=-Infinity;private gridKey='';private gridCameraKey='';
@@ -168,6 +173,14 @@ export class GaiaViewer {
     const material=createSurfaceMaterial(this.sphereDepth);
     this.surface=new Mesh(geometry,material);
     this.textured=new TexturedSurface(material,geometry);
+    // Fixed source metadata, not a mutated canonical mask/index or research cache.
+    const sourceHidden=new Uint8Array(this.display.geographic.length/3);
+    for(let i=0;i<this.display.renderToSource.length;i++){const a=mesh.attributes(this.display.renderToSource[i]);if(a.origin===0&&[41,42,47,48,50,60].includes(a.section??-1))sourceHidden.fill(1,i*3,i*3+3);}
+    geometry.setAttribute('gaiaVariantHidden',new BufferAttribute(sourceHidden,1));
+    const compile=material.onBeforeCompile;material.onBeforeCompile=(shader,renderer)=>{compile(shader,renderer);shader.uniforms.gaiaVariantResearch=this.variantBaseVisibility;
+      shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nattribute float gaiaVariantHidden; varying float vGaiaVariantHidden;').replace('#include <begin_vertex>','#include <begin_vertex>\nvGaiaVariantHidden=gaiaVariantHidden;');
+      shader.fragmentShader=shader.fragmentShader.replace('#include <common>','#include <common>\nuniform float gaiaVariantResearch; varying float vGaiaVariantHidden;').replace('#include <color_fragment>','#include <color_fragment>\nif(gaiaVariantResearch>0.5 && vGaiaVariantHidden>0.5)discard;');};
+    material.customProgramCacheKey=()=> 'gaia-wm0-source-research-mask-v1';
     this.surface.frustumCulled=false;
     this.scene.add(this.surface);
     const edges=new BufferGeometry();
@@ -284,7 +297,7 @@ export class GaiaViewer {
   setTissot(value:boolean){this.tissot.line.visible=value;this.tissot.update(this.projectionId,this.context);if(this.comparison)this.comparison.tissot.line.visible=value;}
   setComparisonFlags(flags:Uint8Array|null){if(flags&&flags.length!==this.mesh.sourceTriangleCount)throw new Error('Comparison map scope differs');this.comparisonFlags=flags;this.colorSurface();}
   setComparedRoutes(paths:number[][]){if(paths.length>3)throw new Error('Maximum three route overlays');this.comparedRoutes.forEach((o,i)=>o.set(routeSegments(corridorPoints(this.mesh,paths[i]??[]))));if(this.comparison)this.comparison.comparedRoutes.forEach((o,i)=>o.set(this.comparedRoutes[i].geo));}
-  setProjectionComparison(id:ProjectionId|null){if(id===null){this.comparison?.dispose();this.comparison=null;if(this.compareLayout){this.compareLayout.before(this.container);this.compareLayout.remove();this.compareLayout=null;}this.diagnostics.comparisonDrawCalls=0;this.resize();return;}this.comparisonId=id;if(!this.comparison){const layout=document.createElement('div');layout.className='comparison-layout';this.container.before(layout);layout.append(this.container);this.compareLayout=layout;this.comparison=new ComparisonView(layout,this.display,this.surface.geometry.getAttribute('color') as BufferAttribute,l=>{this.onGeographicPick([l.longitude,l.latitude,l.height]);if(!this.captureMeasurement){this.flyToLocation(l.longitude,l.latitude);this.onLocation(l);}},l=>{const event=this.eventRecords.find(e=>e.id===l.id);if(event){this.onGeographicPick([event.longitude,event.latitude,event.height??0]);if(!this.captureMeasurement){this.flyToLocation(event.longitude,event.latitude);this.onEvent(event);}}});this.comparison.userMapping.set(this.userMapping.frame);this.comparison.onUserFeature=id=>this.onUserFeature(id);this.comparison.route.set(routeSegments(corridorPoints(this.mesh,this.analysisPath)));this.comparison.measurement.set(this.measurement.geo);this.comparison.tissot.line.visible=this.tissot.line.visible;this.comparison.comparedRoutes.forEach((o,i)=>o.set(this.comparedRoutes[i].geo));this.resize();}}
+  setProjectionComparison(id:ProjectionId|null){if(id!==null&&this.variantResearch)return;if(id===null){this.comparison?.dispose();this.comparison=null;if(this.compareLayout){this.compareLayout.before(this.container);this.compareLayout.remove();this.compareLayout=null;}this.diagnostics.comparisonDrawCalls=0;this.resize();return;}this.comparisonId=id;if(!this.comparison){const layout=document.createElement('div');layout.className='comparison-layout';this.container.before(layout);layout.append(this.container);this.compareLayout=layout;this.comparison=new ComparisonView(layout,this.display,this.surface.geometry.getAttribute('color') as BufferAttribute,l=>{this.onGeographicPick([l.longitude,l.latitude,l.height]);if(!this.captureMeasurement){this.flyToLocation(l.longitude,l.latitude);this.onLocation(l);}},l=>{const event=this.eventRecords.find(e=>e.id===l.id);if(event){this.onGeographicPick([event.longitude,event.latitude,event.height??0]);if(!this.captureMeasurement){this.flyToLocation(event.longitude,event.latitude);this.onEvent(event);}}});this.comparison.userMapping.set(this.userMapping.frame);this.comparison.onUserFeature=id=>this.onUserFeature(id);this.comparison.route.set(routeSegments(corridorPoints(this.mesh,this.analysisPath)));this.comparison.measurement.set(this.measurement.geo);this.comparison.tissot.line.visible=this.tissot.line.visible;this.comparison.comparedRoutes.forEach((o,i)=>o.set(this.comparedRoutes[i].geo));this.resize();}}
   private get aspect(){return Math.max(0.01,this.container.clientWidth/Math.max(1,this.container.clientHeight));}
   private fit(id=this.projectionId){return fitProjectionToViewport(projections[id].bounds(this.context),this.aspect);}
   private distance(id:ProjectionId){const fit=this.fit(id);return fit.halfHeight/Math.tan(this.perspective.fov*Math.PI/360)+(id==='globe'?0.45:0);}
@@ -312,6 +325,7 @@ export class GaiaViewer {
     this.locations.beginMorph(this.projectionId,id,this.context,!!this.morph);
     this.atlas.beginMorph(this.projectionId,id,this.context,!!this.morph);
     this.events.beginMorph(this.projectionId,id,this.context,!!this.morph);this.route.begin(this.projectionId,id,this.context,!!this.morph);
+    this.variantResearch?.begin(this.projectionId,id,this.context,this.relief);
     const oldCamera=this.camera;
     if(oldCamera===this.mapCamera) {
       const distance=(this.mapCamera.top-this.mapCamera.bottom)/(2*this.mapCamera.zoom*Math.tan(this.perspective.fov*Math.PI/360));
@@ -434,6 +448,13 @@ export class GaiaViewer {
     const rect=this.renderer.domElement.getBoundingClientRect(),ray=new Raycaster();
     this.camera.updateMatrixWorld();
     ray.setFromCamera(new Vector2((x-rect.left)/rect.width*2-1,-(y-rect.top)/rect.height*2+1),this.camera);
+    if(this.variantResearch){
+      let occluder=Infinity;const bary=new Vector3(),a=new Vector3(),b=new Vector3(),c=new Vector3();
+      for(const hit of ray.intersectObject(this.surface,false)){if(hit.faceIndex==null)continue;const vertex=hit.faceIndex*3;if(this.surface.geometry.getAttribute('gaiaVariantHidden').getX(vertex)>.5)continue;const base=vertex*3;a.fromArray(this.frame.positions,base);b.fromArray(this.frame.positions,base+3);c.fromArray(this.frame.positions,base+6);Triangle.getBarycoord(hit.point,a,b,c,bary);if(this.frame.mask[vertex]*bary.x+this.frame.mask[vertex+1]*bary.y+this.frame.mask[vertex+2]*bary.z<.01)continue;
+        if(this.originalTexture&&this.texturePack){const texture=this.mesh.attributes(this.display.renderToSource[vertex/3]).texture,uv=this.surface.geometry.getAttribute('gaiaUV');if(texture!==null&&textureAlpha(this.texturePack,texture,uv.getX(vertex)*bary.x+uv.getX(vertex+1)*bary.y+uv.getX(vertex+2)*bary.z,uv.getY(vertex)*bary.x+uv.getY(vertex+1)*bary.y+uv.getY(vertex+2)*bary.z,this.textured.texture?.magFilter===1006)<.005)continue;}occluder=hit.distance;break;
+      }
+      this.onVariantSelection(this.variantResearch.pick(ray,this.originalTexture,occluder));return;
+    }
     const hits=ray.intersectObject(this.surface,false);
     const bary=new Vector3(),a=new Vector3(),b=new Vector3(),c=new Vector3();
     for(const hit of orderSurfaceHits(hits)) {
@@ -528,17 +549,28 @@ export class GaiaViewer {
     this.diagnostics.tissotGenerationMs=this.tissot.generationMs;
     this.syncTexture();if(this.originalTexture||this.shading)this.sphereDepth.value=0;
     this.userMapping.update(this.projectionId,this.context,!this.captureExplorer&&!this.morph);
-    this.renderer.render(this.scene,this.camera);
+    this.variantResearch?.update(this.projectionId,this.context,this.relief,this.texturePack,this.textured.texture,this.originalTexture,this.shading,markerMorph?.ease,this.camera.position);
+    const gridVisible=this.triangleGrid.visible;if(this.variantResearch)this.triangleGrid.visible=false;
+    const renderStarted=performance.now();this.renderer.render(this.scene,this.camera);if(this.variantResearch)this.variantResearch.renderSubmissionMs=performance.now()-renderStarted;this.triangleGrid.visible=gridVisible;
     const view=this.viewState();this.onViewChange(view);
     if(this.comparison){this.locations.mirrorTo(this.comparison.locations);this.events.mirrorTo(this.comparison.events);this.comparison.setSurface(this.surface.geometry,this.textured.uniforms,this.relief,this.shading);this.comparison.update(this.comparisonId,this.context,view,this.gridMode,this.gridMinor,this.graticule.visible);this.diagnostics.comparisonDrawCalls=this.comparison.drawCalls;}
     if(this.comparison){this.comparison.events.setOpacity(this.opacities.events);this.comparison.route.line.material.opacity=this.opacities.routes;this.comparison.tissot.line.material.opacity=this.opacities.distortion;this.comparison.route.line.visible=this.analysisPath.length>1&&this.analysisVisibility.routes;}
     this.navigation.update(time,this.projectionId,this.context,this.camera,!!this.morph,this.graticule.visible,this.diagnostics.gridInterval,view.center);
     if(time-this.statsLast>600){this.statsLast=time;const fps=1000/(this.frameTimes.reduce((a,b)=>a+b,0)/Math.max(1,this.frameTimes.length));this.onStats({fps,renderTriangles:this.display.renderToSource.length,drawCalls:this.renderer.info.render.calls,morphing:!!this.morph,projection:this.projectionId});}
   }
+  setWorldVariants(data:WorldVariants|null,state=0){
+    if(data&&(!Number.isInteger(state)||state<0||state>4))throw Error('Variant cumulative state');
+    if(data&&(this.captureExplorer||this.morph||this.comparison))throw Error('Wait for overview / projection transition');
+    // Build a candidate before releasing the currently valid research drawing.
+    const next=data?new WorldVariantSurface(data,state):null;
+    this.variantResearch?.dispose();this.variantResearch=next;this.variantBaseVisibility.value=Number(!!next);
+    if(!next)return;
+    this.clearSelection();this.setProjectionComparison(null);this.scene.add(next.surface,next.boundary.line);
+  }
   private suspendedAt:number|null=null;
   setSuspended(value:boolean){
     if(value){if(this.suspendedAt===null)this.suspendedAt=performance.now();this.renderer.setAnimationLoop(null);this.comparison?.renderer.setAnimationLoop(null);}
     else {if(this.suspendedAt!==null){const now=performance.now(),elapsed=now-this.suspendedAt;if(this.morph)this.morph.start+=elapsed;if(this.flight)this.flight.start+=elapsed;this.previous=now;this.suspendedAt=null;}this.renderer.setAnimationLoop(t=>this.animate(t));}
   }
-  dispose(){this.userMapping.dispose();this.textured.dispose();this.texturePack?.image.close();this.renderer.setAnimationLoop(null);this.setProjectionComparison(null);this.locations.dispose();this.events.dispose();this.atlas.dispose();this.resizeObserver.disconnect();this.globeControls.dispose();this.mapControls.dispose();this.scene.traverse(object=>{if(object instanceof Mesh||object instanceof LineSegments){object.geometry.dispose();object.material.dispose();}});this.renderer.dispose();this.renderer.domElement.remove();}
+  dispose(){this.setWorldVariants(null);this.onVariantSelection=()=>{};this.userMapping.dispose();this.textured.dispose();this.texturePack?.image.close();this.renderer.setAnimationLoop(null);this.setProjectionComparison(null);this.locations.dispose();this.events.dispose();this.atlas.dispose();this.resizeObserver.disconnect();this.globeControls.dispose();this.mapControls.dispose();this.scene.traverse(object=>{if(object instanceof Mesh||object instanceof LineSegments){object.geometry.dispose();object.material.dispose();}});this.renderer.dispose();this.renderer.domElement.remove();}
 }

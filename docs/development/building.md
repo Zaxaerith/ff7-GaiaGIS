@@ -87,3 +87,7 @@ the new optional Field evidence product.
 ## Independent Native GIS export
 
 `python -m gaiagis native-gis export --source-map YOUR_WM_DIRECTORY/wm2.map --map WM2 --output output/exports/native/WM2-research.gpkg` uses installed GDAL >= 3.9. Windows may set `GAIAGIS_QGIS_ROOT` for automatic source-CLI delegation. Output must be new; no existing Workspace or GPKG is rebuilt. The portable Viewer excludes this optional GDAL exporter. [Native GIS](../reference/native-gis.md).
+
+## Explicit World Variant products
+
+Generate the optional research JSON with `gaiagis world-variants resource`; independently export the Raw GPKG with `gaiagis world-variants gis`. Both require new private target paths; neither rebuilds Workspace/V1 geometry or changes its Manifest. GIS requires installed GDAL >=3.9 and stays outside the portable runtime. [Commands and contracts](../reference/world-variants.md).

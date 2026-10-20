@@ -1,5 +1,13 @@
 # Changelog
 
+## 4.7.0 — World Map Variants & Spatial Change Analysis
+
+- Compare six alternative WM0 Sections and their six target bases by exact source geometry multiplicity, attributes, UV, raw normals and contribution statistics. Ambiguous buckets retain all candidates.
+- Explicit private research input and default-off Viewer mode offer cumulative reference states 0–4, atomic groups, source picking/Inspector, boundaries and shared Atlas rendering. Ordinary canonical geometry and gameplay data stay separate.
+- Export independent Raw Variant GeoPackage v1 with all original table identities, compressed/decoded provenance and all zero-area source faces. No source/old-output overwrite; full SQLite/OGR readback.
+- Static 0x349 source evidence and fixed threshold references do not infer executed story state. Source contribution differences are not actual changed footprint area.
+- Independent all-source integer/Fraction/WKB oracle, synthetic safety tests, five-language/mobile Browser coverage and legacy compatibility gates. [Format, CLI and limits](docs/reference/world-variants.md).
+
 ## 4.6.0 — Native Map GIS & Source TIN Diagnostics
 
 - Existing Native Viewer: raw X/Z corner distance, exact source-face area/gradient,

@@ -61,3 +61,7 @@ are excluded from geometric accuracy statistics. Residuals are measured in
 reference pixels, never metres. No fitting, Camera calibration, coordinate
 correction or writeback occurs. Formula agreement, manual correspondences,
 runtime images and verified original-game registration are distinct evidence.
+
+## WM0 source variant research
+
+Variant GIS retains original WM0 placement as `(raw X, raw Z, raw Y)` in Undefined Cartesian SRS -1, not V1 geographic coordinates or physical metres. The optional Viewer draws a derived source representation through the unchanged V1 mapping. Alternative original Section IDs remain separate from base placement and canonical ordinals. [Contract](world-variants.md).

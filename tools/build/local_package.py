@@ -76,7 +76,7 @@ def build(args, scratch):
     if not args.skip_web_build:run([npm,'--prefix','web','run','build:release'])
     run([npm,'--prefix','web','run','audit:release'])
     version=__version__
-    freeze=[sys.executable,'-B','-m','PyInstaller','--noconfirm','--clean','--onedir','--noupx','--name','GaiaGIS','--paths',str(ROOT/'src'),'--distpath',str(out/'build'),'--workpath',str(out/'work'),'--specpath',str(out),'--collect-data','gaiagis','--exclude-module','gaiagis.climate','--exclude-module','gaiagis.field_gis','--exclude-module','gaiagis.native_gis','--exclude-module','scripts','--exclude-module','osgeo','--hidden-import','tkinter','--hidden-import','tkinter.filedialog']
+    freeze=[sys.executable,'-B','-m','PyInstaller','--noconfirm','--clean','--onedir','--noupx','--name','GaiaGIS','--paths',str(ROOT/'src'),'--distpath',str(out/'build'),'--workpath',str(out/'work'),'--specpath',str(out),'--collect-data','gaiagis','--exclude-module','gaiagis.climate','--exclude-module','gaiagis.field_gis','--exclude-module','gaiagis.native_gis','--exclude-module','gaiagis.world_variant_gis','--exclude-module','scripts','--exclude-module','osgeo','--hidden-import','tkinter','--hidden-import','tkinter.filedialog']
     # The checkout adapter can hide package data from --collect-data discovery.
     for name in ('atlas_data/content.json','traversal_profiles.json','wm0_texture_catalog.tsv','native_texture_catalog.tsv'):
         source=ROOT/'src/gaiagis'/name

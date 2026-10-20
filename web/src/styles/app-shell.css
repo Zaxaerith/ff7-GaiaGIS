@@ -57,3 +57,11 @@ body.gaia-shell .route-endpoint{margin:8px 0;padding:8px;border:1px solid var(--
 @media(max-width:700px){:root{--shell-header:60px;--shell-footer:36px}body.gaia-shell .topbar{padding:8px 92px 8px 92px}body.gaia-shell .brand{justify-content:center}body.gaia-shell .brand-mark{display:none}body.gaia-shell .brand h1{font-size:18px}body.gaia-shell .map-breadcrumb{left:96px;max-width:calc(100vw - 192px);top:40px}body.gaia-shell .app-menu,body.gaia-shell .inspector-toggle{width:84px;max-width:84px;font-size:11px;padding:6px}body.gaia-shell :is(.integrated-panel,.integrated-inspector){top:auto;bottom:0;width:100%;height: min(72dvh,100%);max-height:100%;border-radius:6px}.gaia-shell .integrated-content{padding-top:8px}body.gaia-shell .mobile-only{display:none}body.gaia-shell :is(input:not([type=checkbox]):not([type=range]),select){font-size:16px}body.gaia-shell .integrated-panel button{min-height:40px}body.gaia-shell .view-caption p{display:none}}
 body.gaia-shell:has(.explorer-minimal){--dock-right:0px}
 body.gaia-shell:has(.explorer-minimal) .integrated-inspector{display:none}
+
+/* Explicit source research stays within the existing compact panel. */
+.world-variant-panel {min-width:0;max-width:100%;overflow-wrap:anywhere}
+.world-variant-panel input:not([type=checkbox]),.world-variant-panel select,.world-variant-panel button {max-width:100%;box-sizing:border-box}
+.world-variant-panel pre {white-space:pre-wrap;overflow-wrap:anywhere;max-height:22rem;overflow:auto;font-size:.75rem}
+.variant-table-scroll {max-width:100%;overflow-x:auto}
+.variant-table-scroll table {font-size:.72rem}
+#variant-active-note {color:var(--accent,#f2c879);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}

@@ -176,3 +176,7 @@ as a Workspace and do not publish the generated script-evidence file.
 ## Native map raw GIS
 
 WM2/WM3 need no new Workspace product. In Map select a Native map, then Analysis → Native TIN diagnostics; inspect ordinary faces or filter zero X/Z area, true 3D degeneracy, duplicates and edge incidence. All source faces restores normal layer colouring. Selected-corner X/Z measurement uses raw units and ignores display relief. Source vertex-table IDs and padding are available through the independent private [Native GeoPackage export](../reference/native-gis.md). QGIS may display Meter for undefined Cartesian data; this does not make FF7 raw units physical metres.
+
+## World source variants
+
+After opening the ordinary Workspace, use Analysis → World Variants to explicitly import the separately generated private JSON and enable research. Select only cumulative source reference states 0–4; these are not detected game/story states. Closing research or replacing maps/Workspace releases the resource. No Manifest change or full rebuild is required. [Generation, Raw GIS and limitations](../reference/world-variants.md).

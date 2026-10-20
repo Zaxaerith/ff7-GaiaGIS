@@ -1,3 +1,4 @@
+import {mountWorldVariants} from './ui/worldVariants';
 import {mountFieldContext} from './ui/fieldContext';
 import {mountSave} from './ui/save';
 import {saveSession} from './app/saveSession';
@@ -40,6 +41,7 @@ import {mountAnalysis} from './ui/analysis';
 
 const root=document.querySelector<HTMLElement>('#app')!;
 const element=<T extends HTMLElement=HTMLElement>(id:string)=>document.getElementById(id) as T;
+let variantControls:ReturnType<typeof mountWorldVariants>|undefined;
 let spatialEmptyOwner:{dispose():void}|undefined;
 let activeViewer:GaiaViewer|undefined,loaded:{mesh:GaiaMesh;meta:GaiaMeta}|undefined,operation=0;
 let applicationShell:ReturnType<typeof mountShell>|undefined;
@@ -77,7 +79,7 @@ function bindCommon(){
   });
 }
 async function start(provided?:{mesh:GaiaMesh;meta:GaiaMeta}){
-  fieldOwner?.dispose();fieldOwner=undefined;userMappingOwner?.dispose();userMappingOwner=undefined;spatialEmptyOwner?.dispose();spatialEmptyOwner=undefined;discoveryOwner?.dispose();discoveryOwner=undefined;atlasOwner?.dispose();atlasOwner=undefined;locationOwner?.dispose();applicationShell?.dispose();applicationShell=undefined;document.dispatchEvent(new Event('gaiagis-map-changing'));const request=++operation;projectionLocale?.();galleryControls?.dispose();analysisControls?.dispose();activeViewer?.dispose();activeViewer=undefined;mountLayout(root);galleryControls=mountProjectionGallery();bindCommon();setBusy(true);
+  variantControls?.dispose();variantControls=undefined;fieldOwner?.dispose();fieldOwner=undefined;userMappingOwner?.dispose();userMappingOwner=undefined;spatialEmptyOwner?.dispose();spatialEmptyOwner=undefined;discoveryOwner?.dispose();discoveryOwner=undefined;atlasOwner?.dispose();atlasOwner=undefined;locationOwner?.dispose();applicationShell?.dispose();applicationShell=undefined;document.dispatchEvent(new Event('gaiagis-map-changing'));const request=++operation;projectionLocale?.();galleryControls?.dispose();analysisControls?.dispose();activeViewer?.dispose();activeViewer=undefined;mountLayout(root);galleryControls=mountProjectionGallery();bindCommon();setBusy(true);
   try {
     if(!provided&&import.meta.env.VITE_GAIA_SOURCE_ONLY==='true')throw new MissingDatasetError();
     const {mesh,meta}=provided||await loadMesh(text=>{if(request===operation)element('loading-text').textContent=text;});
@@ -139,7 +141,7 @@ async function start(provided?:{mesh:GaiaMesh;meta:GaiaMeta}){
     };
     viewer.onProjection('globe',false);
     projectionLocale?.();projectionLocale=onLocaleChange(()=>{if(request===operation)viewer.onProjection?.(root.dataset.projection as ProjectionId,root.dataset.morphing==='true');});
-    viewer.onStats=stats=>{element('fps').textContent=`${formatNumber(stats.fps,0)} FPS`;root.dataset.fps=formatNumber(stats.fps,1);root.dataset.drawCalls=String(stats.drawCalls);root.dataset.renderTriangles=String(stats.renderTriangles);};
+    viewer.onStats=stats=>{element('fps').textContent=`${formatNumber(stats.fps,0)} FPS`;root.dataset.fps=formatNumber(stats.fps,1);root.dataset.drawCalls=String(stats.drawCalls);root.dataset.renderTriangles=String(stats.renderTriangles);root.dataset.variantDrawMs=String(viewer.variantResearch?.renderSubmissionMs??0);root.dataset.variantProjectionMs=String(viewer.variantResearch?.projectionMilliseconds??0);root.dataset.variantGeometryBytes=String(viewer.variantResearch?.heldBytes??0);};
     viewer.onSelection=source=>{
       locationControls.clear();
       eventControls.clear();
@@ -171,10 +173,10 @@ async function start(provided?:{mesh:GaiaMesh;meta:GaiaMeta}){
       if(!a.origin&&appStore.state.data.assets.encounters?.status==='loaded'){const zone=document.createElement('button');zone.id='select-encounter-context';zone.textContent=t('ui.encounters');zone.onclick=()=>appStore.dispatch({type:'select',selection:{kind:'encounter',id:String(source),mapId:'WM0',geographicPoint:[lon,lat,height]}});detail.querySelector('.gameplay-inspector')?.prepend(zone);}
     };
     const {mountAtlas}=await import('./ui/atlas');if(request!==operation)return;atlasOwner=mountAtlas(viewer,locationControls.dataset);
-    applicationShell=mountShell();const {mountDiscovery}=await import('./ui/discovery');if(request===operation)discoveryOwner=mountDiscovery(()=>activeViewer,()=>multimaps.viewer,id=>multimaps.switchMap(id));const {mountUserMapping}=await import('./ui/userMapping');if(request===operation)userMappingOwner=mountUserMapping(()=>activeViewer,id=>multimaps.switchMap(id));attachSave();fieldOwner=mountFieldContext(viewer,locationControls.dataset,()=>multimaps.viewer);
+    applicationShell=mountShell();const {mountDiscovery}=await import('./ui/discovery');if(request===operation)discoveryOwner=mountDiscovery(()=>activeViewer,()=>multimaps.viewer,id=>multimaps.switchMap(id));const {mountUserMapping}=await import('./ui/userMapping');if(request===operation)userMappingOwner=mountUserMapping(()=>activeViewer,id=>multimaps.switchMap(id));attachSave();fieldOwner=mountFieldContext(viewer,locationControls.dataset,()=>multimaps.viewer);variantControls=mountWorldVariants(viewer);
   } catch(error){if(request!==operation)return;activeViewer?.dispose();activeViewer=undefined;fail(error instanceof Error?error.message:String(error),error instanceof MissingDatasetError);const {mountAtlas}=await import('./ui/atlas');if(request!==operation)return;atlasOwner=mountAtlas();applicationShell=mountShell();spatialEmptyOwner=(await import('./ui/spatialAnalysis')).mountSpatialUnavailable();const {mountDiscovery}=await import('./ui/discovery');if(request===operation)discoveryOwner=mountDiscovery(()=>activeViewer,()=>multimaps.viewer,id=>multimaps.switchMap(id));const {mountUserMapping}=await import('./ui/userMapping');if(request===operation)userMappingOwner=mountUserMapping(()=>activeViewer,id=>multimaps.switchMap(id));attachSave();fieldOwner=mountFieldContext();}
 }
-window.addEventListener('pagehide',()=>{cancelWorkspaceImport();fieldOwner?.dispose();saveOwner?.dispose();saveSession.clear();operation++;workspaceLoader.cancel();userMappingOwner?.dispose();userMappingOwner=undefined;spatialEmptyOwner?.dispose();discoveryOwner?.dispose();atlasOwner?.dispose();locationOwner?.dispose();explorer?.dispose();applicationShell?.dispose();multimaps.dispose();projectionLocale?.();galleryControls?.dispose();analysisControls?.dispose();activeViewer?.dispose();stopTranslations();},{once:true});
+window.addEventListener('pagehide',()=>{variantControls?.dispose();variantControls=undefined;cancelWorkspaceImport();fieldOwner?.dispose();saveOwner?.dispose();saveSession.clear();operation++;workspaceLoader.cancel();userMappingOwner?.dispose();userMappingOwner=undefined;spatialEmptyOwner?.dispose();discoveryOwner?.dispose();atlasOwner?.dispose();locationOwner?.dispose();explorer?.dispose();applicationShell?.dispose();multimaps.dispose();projectionLocale?.();galleryControls?.dispose();analysisControls?.dispose();activeViewer?.dispose();stopTranslations();},{once:true});
 async function adoptGeometry(data:{mesh:GaiaMesh;meta:GaiaMeta}){await multimaps.resetData();explorer?.resetData();appStore.dispatch({type:'reset-data'});await start(data);if(!activeViewer)throw Error('Geometry adoption failed');}
 workspaceLoader.register('geometry',async files=>adoptGeometry(await readLocalDataset(files)));
 const multimaps=mountMultimap(root,()=>activeViewer);
