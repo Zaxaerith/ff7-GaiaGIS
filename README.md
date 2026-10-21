@@ -8,6 +8,8 @@ The **Web Viewer is the main interface**. Open the [public Viewer](https://zaxae
 
 For Windows players, an approved [Release](https://github.com/Zaxaerith/ff7-GaiaGIS/releases) ZIP supplies **GaiaGIS.exe** to create/connect the Workspace and open that browser interface. Extract the whole ZIP to a writable folder, select the original FF7 data and keep the launcher open. No Python or Node installation is needed by the portable runtime.
 
+**GaiaGIS v4.8.0 — Native Multi-Surface Query & Transect Analysis** adds all-source WM2/WM3 X/Z queries and source-linked SVG transects, retaining multiple heights, vertical intervals/bands and degenerate evidence. Raw units imply no unique ground or gameplay route. Existing Workspace, GIS and Native v1 contracts remain unchanged. [Native query guide](docs/reference/native-gis.md#multi-surface-position-query-and-transect-v48).
+
 **GaiaGIS v4.7.0 — World Map Variants & Spatial Change Analysis** adds explicit private WM0 source research with cumulative reference states 0–4, exact geometry/attribute/UV/normal differences and independent Raw Variant GeoPackage export. This is source-level comparison, not verified story state or actual changed surface area. V1 canonical geometry, Workspace Manifest, Native GIS and Field products remain compatible. Maintained targets are **Web + Windows x64**. [World Variants guide and CLI](docs/reference/world-variants.md) · [Native GIS](docs/reference/native-gis.md) · [Field evidence and lab](docs/user/navigation.md#field-script-evidence-and-registration-lab).
 
 For a source checkout:

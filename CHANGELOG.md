@@ -1,5 +1,16 @@
 # Changelog
 
+## 4.8.0 — Native Multi-Surface Query & Transect Analysis
+
+- Query all WM2/WM3 source faces at a raw X/Z position, by fraction/decimal input
+  or explicit top-down plane picking. Preserve shared edges, duplicate sources,
+  distinct ordinary heights, vertical intervals and degenerate diagnostics.
+- Source-linked SVG transects retain separate height segments, point contacts,
+  gaps, vertical crossing events and collinear height bands; no fitted ground
+  curve, physical units, collision or navigation inference.
+- Reuse current-map diagnostics, shared Inspector and Native v1; five-language
+  controls and map/Field/Workspace teardown. No Workspace/GIS contract changes.
+
 ## 4.7.0 — World Map Variants & Spatial Change Analysis
 
 - Compare six alternative WM0 Sections and their six target bases by exact source geometry multiplicity, attributes, UV, raw normals and contribution statistics. Ambiguous buckets retain all candidates.

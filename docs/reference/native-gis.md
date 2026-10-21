@@ -91,6 +91,37 @@ SELECT incidence, count(*) FROM edge_diagnostics GROUP BY incidence;
 
 ## Viewer
 
+### Multi-surface position query and transect (v4.8)
+
+In **Analysis → Native TIN diagnostics**, use Position query to enter X/Z as
+decimals or fractions, for example `20932` and `151699/3` on WM2. Query all
+sources lists each source identity and raw Y, preserving equal-height members.
+Vertical triangles return a height interval; true degenerates are separate
+geometry evidence, never a valid ground surface. Outside extent and uncovered
+positions are distinct. A list entry opens the existing source Inspector.
+
+Pick X/Z or endpoint A/B explicitly switches to top-down plane picking. This
+does not use the nearest rendered triangle or texture alpha. On small screens
+the controls close so the map can be tapped; reopen Analysis to review values.
+Enter or pick both endpoints, then calculate. The SVG has raw horizontal distance
+and raw Y axes. Cyan segments, orange vertical events/bands, magenta degenerate
+geometry and grey gaps retain their separate sources. Keyboard-focus a segment
+and press Enter, or use the paged source list, to inspect every member including
+overlapping sources. Exact t/Y values are available in SVG titles.
+
+Point contacts are not continuous segments; collinear vertical intersections are
+bands, not single heights. Grey gaps mean absence of ordinary height segments;
+vertical evidence may still exist there. Lines across different sources are never
+automatically joined. No preferred ground, metre scale, depth or route is inferred.
+
+The current-map cache adds only per-face bounds. Exact rational predicates run
+after a linear AABB broad phase, including fractional inputs and clipped t values.
+The floating broad phase conservatively accounts for conversion roundoff; it
+does not decide hits or snap coordinates. Relief/view transforms never enter the
+query. Clear, close diagnostics, change map/Workspace, enter Field or dispose the
+owner to release query rows, SVG and pending plane-pick callbacks. No new binary,
+Manifest resource, GeoPackage format, spatial library or global query cache exists.
+
 Choose WM2/WM3 under Map, then Analysis → Native TIN diagnostics. Diagnostic
 filters highlight matching faces in orange (texture display temporarily yields to
 diagnostic colouring); All source faces restores the selected thematic/texture

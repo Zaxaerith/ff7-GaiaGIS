@@ -105,3 +105,125 @@ def analyze_world(world):
     records = [(mesh, t) for mesh in world.base_meshes for t in mesh.triangles]
     return records, analyze([[mesh.position(i) for i in t.indices] for mesh, t in records],
                             [t.ff7_terrain_type for _, t in records])
+
+
+def _xz(position):
+    if len(position) != 2:
+        raise ValueError('Expected native X/Z')
+    q = tuple(Fraction(str(n)) for n in position)
+    if any(abs(n) > 1_000_000 for n in q):
+        raise ValueError('Native query range')
+    return q
+
+
+def _height_interval(points, position):
+    """Intersect a vertical line with one source triangle, including degenerates."""
+    values = []
+    for a, b in zip(points, points[1:] + points[:1]):
+        x, z = position
+        if ((b[0]-a[0])*(z-a[1]) != (b[1]-a[1])*(x-a[0]) or
+                not min(a[0], b[0]) <= x <= max(a[0], b[0]) or
+                not min(a[1], b[1]) <= z <= max(a[1], b[1])):
+            continue
+        axis = 0 if a[0] != b[0] else 1
+        if a[axis] == b[axis]:
+            values.extend((Fraction(a[2]), Fraction(b[2])))
+        else:
+            t = (position[axis]-a[axis])/(b[axis]-a[axis])
+            values.append(a[2]+t*(b[2]-a[2]))
+    return (min(values), max(values)) if values else None
+
+
+def query_surfaces(faces, position):
+    """Exact independent oracle. Face ordinal retains every input occurrence.
+
+    Callers retain their map/SHA/section/mesh/triangle identity alongside faces.
+    Fractions/decimal strings are accepted; no tolerance, visibility or welding.
+    """
+    x, z = _xz(position)
+    hits = []
+    for i, points in enumerate(faces):
+        p = tuple(map(_point, points))
+        if not (min(v[0] for v in p) <= x <= max(v[0] for v in p) and
+                min(v[1] for v in p) <= z <= max(v[1] for v in p)):
+            continue
+        m = triangle_metrics(p)
+        if m['determinant']:
+            # Solve the affine plane independently of the Web barycentric sum.
+            signs = [(b[0]-a[0])*(z-a[1])-(b[1]-a[1])*(x-a[0])
+                     for a, b in zip(p, p[1:]+p[:1])]
+            if min(signs) < 0 < max(signs):
+                continue
+            h = p[0][2] + m['a']*(x-p[0][0]) + m['b']*(z-p[0][1])
+            hits.append(dict(face=i, kind='surface', heights=(h, h)))
+        else:
+            h = _height_interval(p, (x, z))
+            if h is not None:
+                hits.append(dict(face=i, kind='degenerate' if m['degenerate_3d'] else 'vertical', heights=h))
+    return hits
+
+
+def transect_surfaces(faces, start, end):
+    """Per-source Fraction segments/events/bands; never a fitted ground curve."""
+    a, b = _xz(start), _xz(end)
+    v = tuple(b[j]-a[j] for j in (0, 1))
+    if v == (0, 0):
+        raise ValueError('Zero-length native transect')
+    cross = lambda u, w: u[0]*w[1]-u[1]*w[0]
+    traces = []
+
+    def clip(poly, bound, lower):
+        out = []
+        for p, q in zip(poly, poly[1:]+poly[:1]):
+            inside = lambda r: r[0] >= bound if lower else r[0] <= bound
+            pi, qi = inside(p), inside(q)
+            if pi:
+                out.append(p)
+            if pi != qi:
+                t = (bound-p[0])/(q[0]-p[0])
+                out.append((bound, p[1]+t*(q[1]-p[1])))
+        return out
+
+    for i, points in enumerate(faces):
+        p = tuple(map(_point, points))
+        if any(max(a[j], b[j]) < min(q[j] for q in p) or
+               min(a[j], b[j]) > max(q[j] for q in p) for j in (0, 1)):
+            continue
+        m = triangle_metrics(p)
+        if m['determinant']:
+            lo, hi = Fraction(0), Fraction(1)
+            sign = 1 if m['determinant'] > 0 else -1
+            for q, r in zip(p, p[1:]+p[:1]):
+                w = (r[0]-q[0], r[1]-q[1])
+                c = sign*cross(w, (a[0]-q[0], a[1]-q[1]))
+                slope = sign*cross(w, v)
+                if not slope:
+                    if c < 0:
+                        lo, hi = Fraction(1), Fraction(0)
+                        break
+                elif slope > 0:
+                    lo = max(lo, -c/slope)
+                else:
+                    hi = min(hi, -c/slope)
+            if lo <= hi:
+                plane = lambda t: p[0][2]+m['a']*(a[0]+t*v[0]-p[0][0])+m['b']*(a[1]+t*v[1]-p[0][1])
+                traces.append(dict(face=i, kind='touch' if lo == hi else 'surface', path=[(lo, plane(lo)), (hi, plane(hi))]))
+        else:
+            first, last = max(((q, r) for q in p for r in p),
+                              key=lambda pair: sum((pair[1][j]-pair[0][j])**2 for j in (0, 1)))
+            w = (last[0]-first[0], last[1]-first[1])
+            delta = (first[0]-a[0], first[1]-a[1])
+            den = cross(v, w)
+            if den:
+                t, s = cross(delta, w)/den, cross(delta, v)/den
+                if 0 <= t <= 1 and 0 <= s <= 1:
+                    h = _height_interval(p, tuple(a[j]+t*v[j] for j in (0, 1)))
+                    if h is not None:
+                        traces.append(dict(face=i, kind='degenerate_event' if m['degenerate_3d'] else 'vertical_event', path=[(t, h[0]), (t, h[1])]))
+            elif cross(delta, v) == 0:
+                axis = 0 if v[0] else 1
+                poly = [((q[axis]-a[axis])/v[axis], Fraction(q[2])) for q in p]
+                poly = clip(clip(poly, Fraction(0), True), Fraction(1), False)
+                if poly:
+                    traces.append(dict(face=i, kind='degenerate_band' if m['degenerate_3d'] else 'vertical_band', path=poly))
+    return traces

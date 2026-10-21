@@ -5,7 +5,7 @@ from pathlib import Path
 import tempfile
 import unittest
 from unittest.mock import patch
-from gaiagis.native_analysis import triangle_metrics, analyze, distance_xz, analyze_world
+from gaiagis.native_analysis import triangle_metrics, analyze, distance_xz, analyze_world, query_surfaces, transect_surfaces
 from gaiagis.native_gis import safe_target
 from gaiagis.safety import WORKSPACE_ROOT
 
@@ -81,6 +81,66 @@ class NativeAnalysisTests(unittest.TestCase):
         from types import SimpleNamespace
         for map_id in (0,1,4):
             with self.assertRaises(ValueError): analyze_world(SimpleNamespace(map_id=map_id))
+
+
+class NativeQueryTests(unittest.TestCase):
+    sloped = [(0,0,0),(4,0,4),(0,4,8)]
+    vertical = [(0,0,0),(4,0,0),(0,0,8)]
+
+    def test_multi_height_shared_edge_and_duplicate_occurrences(self):
+        higher = [(x,z,h+10) for x,z,h in self.sloped]
+        hits = query_surfaces([self.sloped, self.sloped[::-1], higher], ('1/3','1/3'))
+        self.assertEqual([r['heights'] for r in hits], [(1,1),(1,1),(11,11)])
+        edge = [(4,0,4),(4,4,12),(0,4,8)]
+        self.assertEqual(len(query_surfaces([self.sloped,edge], (2,2))), 2)
+
+    def test_exact_boundary_without_snapping(self):
+        self.assertEqual(query_surfaces([self.sloped], ('-0.000000000001',0)), [])
+        self.assertEqual(query_surfaces([self.sloped], (0,'4.000000000000000001')), [])
+        self.assertEqual(len(query_surfaces([self.sloped], (0,'3.999999999999999999'))), 1)
+
+    def test_vertical_and_true_degenerate(self):
+        d = [(1,0,0),(1,0,3),(1,0,9)]
+        hits = query_surfaces([self.vertical,d], (1,0))
+        self.assertEqual([(r['kind'],r['heights']) for r in hits], [('vertical',(0,6)),('degenerate',(0,9))])
+
+    def test_fraction_transect_and_unconnected_sources(self):
+        far = [(x+8,z,h) for x,z,h in self.sloped]
+        rows = transect_surfaces([self.sloped,far], (-1,1), (13,1))
+        self.assertEqual([r['path'] for r in rows], [[(Fraction(1,14),2),(Fraction(2,7),5)],[(Fraction(9,14),2),(Fraction(6,7),5)]])
+        reverse = transect_surfaces([self.sloped], (5,1), (-1,1))
+        self.assertEqual(reverse[0]['path'][0][1], 5)
+
+    def test_vertical_cross_band_and_touch(self):
+        cross = transect_surfaces([self.vertical], (1,-1), (1,1))
+        self.assertEqual(cross[0], dict(face=0,kind='vertical_event',path=[(Fraction(1,2),0),(Fraction(1,2),6)]))
+        along = transect_surfaces([self.vertical], (0,0), (4,0))
+        self.assertEqual(along[0]['kind'], 'vertical_band')
+        self.assertIn((0,8), along[0]['path'])
+        self.assertEqual(transect_surfaces([self.sloped], (-1,0), (0,0))[0]['kind'], 'touch')
+        with self.assertRaises(ValueError): transect_surfaces([self.sloped], (0,0), (0,0))
+
+    def test_real_native_query_samples(self):
+        import json, struct
+        root = WORKSPACE_ROOT/'output/local-workspace'
+        if not (root/'gaia-map-WM2.bin').exists(): self.skipTest('Optional private Native workspace absent')
+        for name in ('WM2','WM3'):
+            data = (root/f'gaia-map-{name}.bin').read_bytes()
+            n = struct.unpack_from('<I',data,12)[0]
+            header = json.loads(data[16:16+n]); raw = data[16+n:-32]
+            faces = [tuple(tuple(struct.unpack_from('<3i',raw,i*72+j*12)) for j in range(3)) for i in range(header['triangle_count'])]
+            if name == 'WM2':
+                rows = query_surfaces(faces, (20932,Fraction(151699,3)))
+                self.assertEqual([r['heights'][0] for r in rows], [Fraction(-10136,3),Fraction(-463279721,342423),0])
+                self.assertEqual(len(query_surfaces(faces,(4096,4096))),2)
+                self.assertEqual(sum(r['kind']=='vertical' for r in query_surfaces(faces,(Fraction(70139,3),32768))),4)
+                self.assertEqual(sum(r['kind']=='degenerate' for r in query_surfaces(faces,(48128,37888))),4)
+                for a,b,kind in (((Fraction(70139,3),32704),(Fraction(70139,3),32832),'vertical_event'),((Fraction(69947,3),32768),(Fraction(70331,3),32768),'vertical_band')):
+                    self.assertEqual(sum(r['kind']==kind for r in transect_surfaces(faces,a,b)),4)
+            else:
+                self.assertEqual(len(query_surfaces(faces,(512,512))),2)
+                self.assertEqual(sum(r['kind']=='surface' for r in transect_surfaces(faces,(0,512),(2048,512))),4)
+            self.assertEqual(query_surfaces(faces,(-1,-1)),[])
 
 
 if __name__=='__main__': unittest.main()
