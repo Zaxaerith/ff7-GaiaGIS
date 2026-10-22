@@ -1,5 +1,19 @@
 # Changelog
 
+## 4.9.0 — World Variant Comparative Spatial Analysis
+
+- Compare two independently selected cumulative WM0 source states using one raw
+  X/Z point or one straight transect, reusing the exact Native query mathematics.
+  Preserve all source identities, multiple heights, contacts, vertical bands and
+  degenerate diagnostics; never pair entities by triangle ordinal.
+- A simple right-minus-left height delta requires exactly one ordinary hit on
+  each side. Shared SVG distance/Y axes retain separate source paths and distinguish
+  resource absence from covered regions without ordinary surface segments.
+- Source-state Inspector and explicit display action leave the rendered state
+  unchanged during comparison. Five-language controls reuse current owners and
+  release results on resource/map/Workspace exit. Existing private JSON, Viewer,
+  Native APIs, Workspace/GIS formats and canonical WM0 remain compatible.
+
 ## 4.8.0 — Native Multi-Surface Query & Transect Analysis
 
 - Query all WM2/WM3 source faces at a raw X/Z position, by fraction/decimal input

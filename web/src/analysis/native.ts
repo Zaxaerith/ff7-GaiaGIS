@@ -67,28 +67,38 @@ function intersection(points:NativePoint[],p:readonly Ratio[],m:ReturnType<typeo
  return heights.length?{kind:m.degenerate3D?'degenerate':'vertical',y:[heights.reduce(minimum),heights.reduce(maximum)]}:null;
 }
 const lineage=(map:NativeMap,face:number)=>({mapId:map.header.mapId,sourceSHA:map.header.source_sha256,...map.attributes(face)});
-export interface NativeSurfaceHit{face:number;source:ReturnType<typeof lineage>;kind:SurfaceKind;heights:[number,number];exactHeights:[string,string];}
-export function queryNative(map:NativeMap,position:NativeXZ,analysis=analyzeNative(map)){
- const p=queryXZ(position),xy=p.map(value),hits:NativeSurfaceHit[]=[];const began=performance.now();
+/** Small source accessor shared by Native v1 and the existing Variant records. */
+export interface SurfaceSource<T>{count:number;corners:(i:number)=>NativePoint[];metrics:(i:number)=>ReturnType<typeof nativeTriangle>&{bounds:number[]};source:(i:number)=>T;}
+export interface SurfaceHit<T>{face:number;source:T;kind:SurfaceKind;heights:[number,number];exactHeights:[string,string];}
+export type NativeSurfaceHit=SurfaceHit<ReturnType<typeof lineage>>;
+export type RawRectangle=readonly [number,number,number,number];
+export function querySurfaces<T>(source:SurfaceSource<T>,position:NativeXZ){
+ const p=queryXZ(position),xy=p.map(value),hits:SurfaceHit<T>[]=[];const began=performance.now();
  // Two BigInt→Number conversions and one division: conservatively bound their
  // roundoff in the broad phase only. Exact predicates still decide every hit.
  const rounding=4*Number.EPSILON*Math.max(1,...xy.map(Math.abs));
- for(let i=0;i<analysis.faces.length;i++){const m=analysis.faces[i];if(xy[0]<m.bounds[0]-rounding||xy[0]>m.bounds[1]+rounding||xy[1]<m.bounds[2]-rounding||xy[1]>m.bounds[3]+rounding)continue;const h=intersection(nativeCorners(map,i),p,m);if(h)hits.push({face:i,source:lineage(map,i),kind:h.kind,heights:h.y.map(value) as [number,number],exactHeights:h.y.map(exact) as [string,string]});}
- const heights=new Set(hits.filter(h=>h.kind==='surface').map(h=>h.exactHeights[0])),outside=p.some((q,j)=>compare(q,zero)<0||compare(q,integer(map.header.extent[j]))>0);
- return {position:p.map(value),hits,heightCount:heights.size,status:outside?'outside':!hits.length?'empty':!heights.size?'diagnostics':heights.size===1?'single':'multiple',milliseconds:performance.now()-began} as const;
+ for(let i=0;i<source.count;i++){const m=source.metrics(i);if(xy[0]<m.bounds[0]-rounding||xy[0]>m.bounds[1]+rounding||xy[1]<m.bounds[2]-rounding||xy[1]>m.bounds[3]+rounding)continue;const h=intersection(source.corners(i),p,m);if(h)hits.push({face:i,source:source.source(i),kind:h.kind,heights:h.y.map(value) as [number,number],exactHeights:h.y.map(exact) as [string,string]});}
+ const heights=new Set(hits.filter(h=>h.kind==='surface').map(h=>h.exactHeights[0]));
+ return {position:p.map(value),hits,heightCount:heights.size,status:!hits.length?'empty':!heights.size?'diagnostics':heights.size===1?'single':'multiple',milliseconds:performance.now()-began} as const;
+}
+function nativeSource(map:NativeMap,analysis:NativeAnalysis):SurfaceSource<ReturnType<typeof lineage>>{return {count:analysis.faces.length,corners:i=>nativeCorners(map,i),metrics:i=>analysis.faces[i],source:i=>lineage(map,i)};}
+export function queryNative(map:NativeMap,position:NativeXZ,analysis=analyzeNative(map)){
+ const r=querySurfaces(nativeSource(map,analysis),position),p=queryXZ(position),outside=p.some((q,j)=>compare(q,zero)<0||compare(q,integer(map.header.extent[j]))>0);
+ return {...r,status:outside?'outside':r.status} as const;
 }
 
 export type NativeTraceKind='surface'|'touch'|'vertical_event'|'vertical_band'|'degenerate_event'|'degenerate_band';
-export interface NativeTrace{face:number;source:ReturnType<typeof lineage>;kind:NativeTraceKind;t:[number,number];exactT:[string,string];path:[number,number][];exactPath:[string,string][];}
+export interface SurfaceTrace<T>{face:number;source:T;kind:NativeTraceKind;t:[number,number];exactT:[string,string];path:[number,number][];exactPath:[string,string][];}
+export type NativeTrace=SurfaceTrace<ReturnType<typeof lineage>>;
 function clipBand(poly:Ratio[][],bound:Ratio,lower:boolean){const out:Ratio[][]=[];for(let j=0;j<poly.length;j++){const a=poly[j],b=poly[(j+1)%poly.length],inside=(v:Ratio[])=>lower?compare(v[0],bound)>=0:compare(v[0],bound)<=0,ai=inside(a),bi=inside(b);if(ai)out.push(a);if(ai!==bi){const t=div(sub(bound,a[0]),sub(b[0],a[0]));out.push([bound,add(a[1],mul(t,sub(b[1],a[1])))]);}}return out;}
-export function transectNative(map:NativeMap,start:NativeXZ,end:NativeXZ,analysis=analyzeNative(map)){
+export function transectSurfaces<T>(source:SurfaceSource<T>,start:NativeXZ,end:NativeXZ,rectangles?:readonly RawRectangle[]){
  const began=performance.now(),a=queryXZ(start),b=queryXZ(end),v=b.map((q,j)=>sub(q,a[j]));if(v.every(q=>!q.n))throw Error('Native zero-length transect');
- const traces:NativeTrace[]=[],intervals:[Ratio,Ratio][]=[];
+ const traces:SurfaceTrace<T>[]=[],intervals:[Ratio,Ratio][]=[];
  const at=(t:Ratio)=>a.map((q,j)=>add(q,mul(t,v[j])));
- const emit=(face:number,kind:NativeTraceKind,poly:Ratio[][])=>{const ts=poly.map(p=>p[0]),lo=ts.reduce(minimum),hi=ts.reduce(maximum);traces.push({face,source:lineage(map,face),kind,t:[value(lo),value(hi)],exactT:[exact(lo),exact(hi)],path:poly.map(p=>p.map(value) as [number,number]),exactPath:poly.map(p=>p.map(exact) as [string,string])});if(kind==='surface')intervals.push([lo,hi]);};
- for(let i=0;i<analysis.faces.length;i++){
-  const m=analysis.faces[i];if([0,1].some(j=>compare(maximum(a[j],b[j]),integer(m.bounds[j*2]))<0||compare(minimum(a[j],b[j]),integer(m.bounds[j*2+1]))>0))continue;
-  const p=nativeCorners(map,i);
+ const emit=(face:number,kind:NativeTraceKind,poly:Ratio[][])=>{const ts=poly.map(p=>p[0]),lo=ts.reduce(minimum),hi=ts.reduce(maximum);traces.push({face,source:source.source(face),kind,t:[value(lo),value(hi)],exactT:[exact(lo),exact(hi)],path:poly.map(p=>p.map(value) as [number,number]),exactPath:poly.map(p=>p.map(exact) as [string,string])});if(kind==='surface')intervals.push([lo,hi]);};
+ for(let i=0;i<source.count;i++){
+  const m=source.metrics(i);if([0,1].some(j=>compare(maximum(a[j],b[j]),integer(m.bounds[j*2]))<0||compare(minimum(a[j],b[j]),integer(m.bounds[j*2+1]))>0))continue;
+  const p=source.corners(i);
   if(m.determinant){let lo=zero,hi=one;for(let j=0;j<3;j++){const c=orient(p[j],p[(j+1)%3],a),e=orient(p[j],p[(j+1)%3],b),sign=integer(m.determinant>0?1:-1),c0=mul(c,sign),delta=mul(sub(e,c),sign);if(!delta.n){if(c0.n<0n){lo=one;hi=zero;break;}}else{const t=div(sub(zero,c0),delta);if(delta.n>0n)lo=maximum(lo,t);else hi=minimum(hi,t);}}
    if(compare(lo,hi)<=0){const height=(t:Ratio)=>{const q=at(t),weights=p.map((_,j)=>orient(p[(j+1)%3],p[(j+2)%3],q));return div(weights.reduce((s,w,j)=>add(s,mul(w,integer(p[j][2]))),zero),integer(m.determinant));};emit(i,compare(lo,hi)===0?'touch':'surface',[[lo,height(lo)],[hi,height(hi)]]);}
   }else{
@@ -101,5 +111,29 @@ export function transectNative(map:NativeMap,start:NativeXZ,end:NativeXZ,analysi
  }
  // Gaps concern ordinary height segments. Vertical bands remain separate evidence.
  intervals.sort((a,b)=>compare(a[0],b[0]));let cursor=zero;const gaps:[number,number][]=[];for(const [lo,hi]of intervals){if(compare(lo,cursor)>0)gaps.push([value(cursor),value(lo)]);cursor=maximum(cursor,hi);}if(compare(cursor,one)<0)gaps.push([value(cursor),1]);
- return {start:a.map(value),end:b.map(value),length:Math.hypot(...v.map(value)),traces,gaps,milliseconds:performance.now()-began};
+ const coverage=rectangles?transectCoverage(a,v,rectangles,intervals):null;
+ return {start:a.map(value),end:b.map(value),length:Math.hypot(...v.map(value)),traces,gaps,coverage,milliseconds:performance.now()-began};
+}
+export function transectNative(map:NativeMap,start:NativeXZ,end:NativeXZ,analysis=analyzeNative(map)){return transectSurfaces(nativeSource(map,analysis),start,end);}
+
+/** Coverage is the union of supplied source Section footprints, not surface hits. */
+export function resourceCoverage(rectangles:readonly RawRectangle[],position:NativeXZ){
+ const p=queryXZ(position),closed=rectangles.filter(r=>[0,1].every(j=>compare(p[j],integer(r[2*j]))>=0&&compare(p[j],integer(r[2*j+1]))<=0));
+ if(!closed.length)return 'outside';
+ // Four local quadrants distinguish an outer edge from a loaded internal seam.
+ const interior=[-1,1].every(dx=>[-1,1].every(dz=>closed.some(r=>[dx,dz].every((d,j)=>d<0?compare(p[j],integer(r[2*j]))>0:compare(p[j],integer(r[2*j+1]))<0))));
+ return interior?'inside':'boundary';
+}
+type Interval=[Ratio,Ratio];
+function mergeIntervals(rows:Interval[]){const out:Interval[]=[];for(const [lo,hi]of rows.slice().sort((a,b)=>compare(a[0],b[0]))){const last=out.at(-1);if(last&&compare(lo,last[1])<=0)last[1]=maximum(last[1],hi);else out.push([lo,hi]);}return out;}
+function subtractIntervals(domain:Interval[],removed:Interval[]){const out:Interval[]=[];for(const [lo,hi]of domain){let cursor=lo;for(const [a,b]of removed){if(compare(b,cursor)<0||compare(a,hi)>0)continue;if(compare(a,cursor)>0)out.push([cursor,minimum(a,hi)]);cursor=maximum(cursor,b);if(compare(cursor,hi)>=0)break;}if(compare(cursor,hi)<0)out.push([cursor,hi]);}return out;}
+function transectCoverage(a:Ratio[],v:Ratio[],rectangles:readonly RawRectangle[],surfaces:Interval[]){
+ const ranges:Interval[]=[];
+ for(const r of rectangles){let lo=zero,hi=one;for(let j=0;j<2;j++){const min=integer(r[2*j]),max=integer(r[2*j+1]);if(!v[j].n){if(compare(a[j],min)<0||compare(a[j],max)>0){lo=one;hi=zero;break;}}else{const p=div(sub(min,a[j]),v[j]),q=div(sub(max,a[j]),v[j]);lo=maximum(lo,minimum(p,q));hi=minimum(hi,maximum(p,q));}}if(compare(lo,hi)<=0)ranges.push([lo,hi]);}
+ const covered=mergeIntervals(ranges),ordinary=mergeIntervals(surfaces),serialize=(rows:Interval[])=>rows.map(p=>({t:p.map(value) as [number,number],exactT:p.map(exact) as [string,string]}));
+ return {covered:serialize(covered),uncovered:serialize(subtractIntervals([[zero,one]],covered)),noSurface:serialize(subtractIntervals(covered,ordinary))};
+}
+export function singleSurfaceDelta<A,B>(left:SurfaceHit<A>[],right:SurfaceHit<B>[]){
+ if(left.length!==1||right.length!==1||left[0].kind!=='surface'||right[0].kind!=='surface')return null;
+ const read=(s:string)=>{const [n,d='1']=s.split('/');return ratio(BigInt(n),BigInt(d));},q=sub(read(right[0].exactHeights[0]),read(left[0].exactHeights[0]));return {value:value(q),exact:exact(q)};
 }

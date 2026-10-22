@@ -58,6 +58,43 @@ picking; reimport explicitly for a new session. Map/Field/Workspace replacement
 and page disposal cancel pending reads and release the research owner. Atlas
 pixels are borrowed without closing/disposal by the research owner.
 
+## Dual-state spatial comparison (v4.9)
+
+After importing the existing private JSON and enabling research, expand
+**Compare source states**. Choose left/right cumulative states 0–4, then enter
+one placed raw X/Z point (integers, decimals or fractions such as
+`510089/3,547085/3`). Both result lists retain every original source identity,
+ordinary raw Y, vertical interval and degenerate diagnostic. Only exactly one
+ordinary hit on each side, with no other hits, permits **Δ = right − left**.
+Equal-height duplicate or shared-edge sources do not become a unique match.
+For reference, states 0/1 at that point return 1814/54 and Δ = −1760 raw Y.
+
+Enter A/B to compare one straight raw X/Z transect. The shared SVG uses the same
+distance axis and Y range for both colours, retaining each source's independent
+segment, point contact, vertical event/band or degenerate record. Paths and the
+paged result list open the existing Inspector. Overlapping paths remain separate
+records; use the list if one path covers another. No automatic joins, fitted
+ground, difference curve, changed area or volume are inferred.
+
+Comparison selectors do not change the existing **Source reference state**
+display. The Inspector records the query state and displayed state separately.
+**Display this source state and locate the face** explicitly changes the latter
+when a selected result belongs to another state. Raw queries are independent of
+projection, Relief and texture display; they do not use spherical mouse picking.
+
+The resource contains only placement Sections 41,42,47,48,50,60. Point status
+distinguishes outside, outer resource boundary (neighbour sources may be absent),
+inside without hits, and the actual hit types. Loaded internal seams are inside.
+Transect bottom bars distinguish grey **resource not provided** from gold
+**covered but no ordinary segment**; vertical/degenerate evidence stays separate.
+Interval endpoints may still contain contacts. For
+`(160000,180000) → (180000,180000)`, t in `[0,24/125)` is unprovided resource,
+not a terrain hole. This is not a query of the entire canonical WM0 surface.
+
+Clear removes results/endpoints; closing research, successful JSON replacement,
+Workspace/map/Field navigation or disposal releases the comparison owner.
+The existing JSON schema/generator, Manifest and GIS formats are unchanged.
+
 ## Independent viewer contract
 
 `gaiagis-world-variants` version 1, generator `world-variants-1`, is an explicit

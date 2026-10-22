@@ -178,4 +178,12 @@ skips and failures, not prior release numbers.
 
 ## World Variant gates
 
+Dual-state point/transect cases are maintained in `web/tests/variantComparison.test.ts`:
+the existing exact Native API regressions, strict delta, source ambiguity,
+resource boundaries/internal seams, covered no-hit and clipped coverage intervals.
+`GAIA_WORLD_VARIANT_RESOURCE` enables G1–G4 real-source checks without generating
+new resources. The existing Variant Browser owner also checks comparison state
+isolation, explicit Inspector display, shared SVG source selection, all locales
+and viewports, invalid inputs and resource/map/Workspace release.
+
 Use the maintained `tools/world_variant_audit.py` on original WM0, the explicit JSON and new Variant GPKG. Keep its all-source integer/Fraction/WKB oracle private; set `GAIA_WORLD_VARIANT_RESOURCE` and `GAIA_WORLD_VARIANT_ORACLE` for Web all-face checks. Browser uses the existing player-flow runner (`GAIA_BROWSER_SCOPE=variants` for focus), five languages/1440/390/320px, 13 projections, source Inspector, states 0–4, rejection, delayed import, map/Workspace replacement and natural resource release. No forced GC or original runtime equivalence claim. [Methods and GIS counts](../reference/world-variants.md).

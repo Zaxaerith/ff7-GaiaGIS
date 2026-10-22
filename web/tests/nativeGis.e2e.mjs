@@ -75,5 +75,5 @@ async function nativeQueryChecks(page,open,panel,width,samples){
  await page.locator('#native-transect-pick-a').click();const canvas=page.locator('.native-viewport canvas');if(width<700)await canvas.tap({position:{x:80,y:100}});else await canvas.click({position:{x:80,y:100}});await open();assert.notEqual(await page.locator('#native-a-x').inputValue(),'-64');
  await page.locator('#native-query-clear').click();assert.equal(await page.locator('#native-transect-chart svg').count(),0);assert.equal(await page.locator('#native-query-results button').count(),0);
  await query('4096','4096',2); // Exact corner keeps both source occurrences.
- await page.locator('#native-analysis > summary').click();assert.equal(await page.locator('#native-query-results button').count(),0);await open();
+ await page.locator('#native-analysis > summary').click();await page.waitForFunction(()=>!document.querySelector('#native-query-results button'));assert.equal(await page.locator('#native-query-results button').count(),0);await open();
 }
