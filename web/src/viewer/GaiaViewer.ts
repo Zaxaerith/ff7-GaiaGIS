@@ -5,7 +5,7 @@ import {WorldVariantSurface} from './WorldVariantSurface';
 import type {VariantFace,WorldVariants} from '../data/worldVariants';
 // SPDX-License-Identifier: GPL-3.0-only
 import {BufferAttribute,BufferGeometry,Color,DoubleSide,DynamicDrawUsage,LineBasicMaterial,LineSegments,
-  Mesh,MeshBasicMaterial,MOUSE,OrthographicCamera,PerspectiveCamera,Raycaster,Scene,Sphere,TOUCH,
+  Mesh,MeshBasicMaterial,MOUSE,OrthographicCamera,PerspectiveCamera,Plane,Raycaster,Scene,Sphere,TOUCH,
   Triangle,Vector2,Vector3,WebGLRenderer} from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import type {GaiaMesh,GaiaMeta} from '../data/mesh';
@@ -111,6 +111,8 @@ export class GaiaViewer {
   private corridor=new Set<number>();
   private analysisPath:number[]=[];
   onSelection:(source:number|null)=>void=()=>{};
+  /** One-shot V1 display position pick; no rendered source is selected as ground. */
+  onSourcePositionPick:((position:[number,number])=>void)|null=null;
   onStats:(stats:ViewerStats)=>void=()=>{};
   onProjection:(id:ProjectionId,morphing:boolean)=>void=()=>{};
   onError:(message:string)=>void=()=>{};
@@ -416,6 +418,14 @@ export class GaiaViewer {
     else {this.mapCamera.zoom=Math.max(0.5,Math.min(20,this.mapCamera.zoom/factor));this.mapCamera.updateProjectionMatrix();}
   }
   clearSelection(){this.selected=null;this.highlight.visible=false;this.onSelection(null);}
+  selectSource(source:number){
+    this.mesh.attributes(source);this.selected=source;this.highlightRefs=[];
+    for(let i=0;i<this.display.renderToSource.length;i++)if(this.display.renderToSource[i]===source)for(let j=0;j<3;j++)this.highlightRefs.push(i*3+j);
+    this.highlight.geometry.dispose();this.highlight.geometry=new BufferGeometry();
+    this.highlight.geometry.setAttribute('position',new BufferAttribute(new Float32Array(this.highlightRefs.length*3),3));
+    this.highlight.geometry.setAttribute('gaiaMask',new BufferAttribute(new Float32Array(this.highlightRefs.length),1));
+    this.highlight.visible=true;this.updateHighlight();this.onSelection(source);
+  }
   private colorSurface(){
     const colors=this.surface.geometry.getAttribute('color').array as Float32Array;
     const tint=this.surface.geometry.getAttribute('gaiaTint').array as Float32Array;
@@ -448,6 +458,12 @@ export class GaiaViewer {
     const rect=this.renderer.domElement.getBoundingClientRect(),ray=new Raycaster();
     this.camera.updateMatrixWorld();
     ray.setFromCamera(new Vector2((x-rect.left)/rect.width*2-1,-(y-rect.top)/rect.height*2+1),this.camera);
+    if(this.onSourcePositionPick){
+      const at=new Vector3();let geo:GeoPoint|null=null;
+      if(this.projectionId==='globe'){if(ray.ray.intersectSphere(new Sphere(new Vector3(),1),at)){const p=geographicViewCenter(at.x,at.y,at.z);geo=[p.lon??0,p.lat,0];}}
+      else if(ray.ray.intersectPlane(new Plane(new Vector3(0,0,1),0),at))geo=inverseDisplay(this.projectionId,at.x,at.y,this.context);
+      if(geo){const pick=this.onSourcePositionPick;this.onSourcePositionPick=null;pick(geographicSource(geo[0],geo[1]) as [number,number]);}return;
+    }
     if(this.variantResearch){
       let occluder=Infinity;const bary=new Vector3(),a=new Vector3(),b=new Vector3(),c=new Vector3();
       for(const hit of ray.intersectObject(this.surface,false)){if(hit.faceIndex==null)continue;const vertex=hit.faceIndex*3;if(this.surface.geometry.getAttribute('gaiaVariantHidden').getX(vertex)>.5)continue;const base=vertex*3;a.fromArray(this.frame.positions,base);b.fromArray(this.frame.positions,base+3);c.fromArray(this.frame.positions,base+6);Triangle.getBarycoord(hit.point,a,b,c,bary);if(this.frame.mask[vertex]*bary.x+this.frame.mask[vertex+1]*bary.y+this.frame.mask[vertex+2]*bary.z<.01)continue;
@@ -479,13 +495,7 @@ export class GaiaViewer {
         }return;
       }
       if(geographic){this.onGeographicPick(geographic);if(this.captureMeasurement)return;}
-      this.selected=this.display.renderToSource[face];
-      this.highlightRefs=[];
-      for(let i=0;i<this.display.renderToSource.length;i++) if(this.display.renderToSource[i]===this.selected) for(let j=0;j<3;j++) this.highlightRefs.push(i*3+j);
-      this.highlight.geometry.dispose();this.highlight.geometry=new BufferGeometry();
-      this.highlight.geometry.setAttribute('position',new BufferAttribute(new Float32Array(this.highlightRefs.length*3),3));
-      this.highlight.geometry.setAttribute('gaiaMask',new BufferAttribute(new Float32Array(this.highlightRefs.length),1));
-      this.highlight.visible=true;this.updateHighlight();this.onSelection(this.selected);return;
+      this.selectSource(this.display.renderToSource[face]);return;
     }
     this.clearSelection();
   }

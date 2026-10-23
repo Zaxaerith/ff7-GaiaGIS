@@ -1,5 +1,21 @@
 # Changelog
 
+## 5.0.0 — Global Source GIS & Integrated Spatial Analysis
+
+- Query all 142,586 WM0 base source faces with the existing exact Native point
+  and transect mathematics, recovering integer corners from the supported frozen
+  V1 transport. Synthetic polar caps never enter original-source queries.
+- Retain every shared-edge, duplicate, ordinary-height and vertical source.
+  Explicit unwrapped X endpoints determine the transect direction; both sides
+  of the horizontal periodic boundary keep their original identities.
+- Connect source selections and profile branches to existing terrain/region,
+  static encounters, events, entrances, locations, Atlas and Field context through
+  source keys and validated relations in the shared Inspector. Missing optional
+  data and absent direct relations stay distinct from runtime availability.
+- Reuse current Viewer/Analysis owners, five-language controls and old Workspaces;
+  no new mandatory resource or Workspace/GIS regeneration. Frozen V1, Native,
+  Explorer, Field and manual Variant research remain independent.
+
 ## 4.9.0 — World Variant Comparative Spatial Analysis
 
 - Compare two independently selected cumulative WM0 source states using one raw

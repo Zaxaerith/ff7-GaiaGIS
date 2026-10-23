@@ -64,6 +64,7 @@ export function capabilities(s:Readonly<AppState>):Record<Capability,boolean>{
 }
 export interface FeatureDefinition {id:string;labelKey:string;requiredCapabilities:Capability[];requiredData:AssetId[];supportedMaps:MapId[];defaultVisibility:boolean;panel:PanelId;opacityLayers?:LayerId[];defaultOpacity?:number;}
 export const features:FeatureDefinition[]=[
+ {id:'global-source',labelKey:'source.title',requiredCapabilities:['canMeasureSphere'],requiredData:['geometry'],supportedMaps:['WM0'],defaultVisibility:false,panel:'analysis'},
  {id:'slope',labelKey:'sp25.slope',requiredCapabilities:['canInspectSurface'],requiredData:['geometry'],supportedMaps:['WM0'],defaultVisibility:false,panel:'analysis',opacityLayers:['slope'],defaultOpacity:1},
  {id:'aspect',labelKey:'sp25.aspect',requiredCapabilities:['canInspectSurface'],requiredData:['geometry'],supportedMaps:['WM0'],defaultVisibility:false,panel:'analysis',opacityLayers:['aspect'],defaultOpacity:1},
  {id:'service-area',labelKey:'sp25.service',requiredCapabilities:['canRoute'],requiredData:['routing'],supportedMaps:['WM0'],defaultVisibility:false,panel:'analysis',opacityLayers:['service-area'],defaultOpacity:1},

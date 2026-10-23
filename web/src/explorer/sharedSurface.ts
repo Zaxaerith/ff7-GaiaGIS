@@ -5,13 +5,19 @@ import type {GaiaMesh,GaiaMeta} from '../data/mesh';
 import type {NativeMap} from '../data/nativeMaps';
 import {geographicSource} from './coordinates';
 
+/** Inverse of the supported frozen V1 transport, without Explorer adjacency. */
+export function recoverWM0Corners(mesh:GaiaMesh,i:number):SourcePoint[]{
+ if(i<0||i>=mesh.sourceTriangleCount||!Number.isInteger(i)||mesh.attributes(i).origin!==0)throw Error('WM0 source index');
+ return [0,1,2].map(j=>{const v=mesh.indices[i*3+j]*3,p=[...geographicSource(mesh.geographic[v],mesh.geographic[v+1]),mesh.geographic[v+2]];if(p.some(x=>!Number.isFinite(x)||Math.abs(Math.round(x)-x)>.125))throw Error('V1 source integer recovery is ambiguous');return p.map(Math.round) as SourcePoint;});
+}
+
 /** Only adjacency is retained. Position and lineage access borrow the map owner. */
 export class SharedSurface extends Surface {
  readonly adjacency:Int32Array;
  constructor(header:ExplorerSurface,private mesh:GaiaMesh|NativeMap){super({...header,offset:0,bytes:0},new ArrayBuffer(0));this.adjacency=new Int32Array(this.count*3).fill(-1);}
  override points(i:number):SourcePoint[]{if(i<0||i>=this.count||!Number.isInteger(i))throw Error('Source index');const mesh=this.mesh;
   if('positions' in mesh)return [0,1,2].map(j=>Array.from(mesh.positions.subarray(i*9+j*3,i*9+j*3+3)) as SourcePoint);
-  return [0,1,2].map(j=>{const v=mesh.indices[i*3+j]*3,p=[...geographicSource(mesh.geographic[v],mesh.geographic[v+1]),mesh.geographic[v+2]];if(p.some(x=>Math.abs(Math.round(x)-x)>.125))throw Error('V1 source integer recovery is ambiguous');return p.map(Math.round) as SourcePoint;});
+  return recoverWM0Corners(mesh,i);
  }
  override attrs(i:number){const a=this.mesh.attributes(i);if(a.origin||a.terrain===null||a.script===null||a.section===null||a.mesh===null||a.triangle===null)throw Error('Synthetic faces are not Explorer source');return {terrain:a.terrain,script:a.script,section:a.section,mesh:a.mesh,triangle:a.triangle};}
  override neighbors(i:number){return Array.from(this.adjacency.subarray(i*3,i*3+3));}

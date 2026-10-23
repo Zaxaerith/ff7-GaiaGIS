@@ -230,3 +230,15 @@ renderer; comparison overlays do not become game blending rules.
 ## Native GIS ownership
 
 `native_analysis.py` provides integer/Fraction source math; `native_gis.py` is a dynamically imported optional GDAL CLI. `analysis/native.ts` independently derives current-map metrics from unchanged Native v1. `ui/nativeAnalysis.ts` integrates with the existing shell/Inspector and NativeViewer colour buffers; its analysis and diagnostic mask are cleared on map/source replacement and dispose. No second renderer, graph cache for WM0 or Workspace product is added. [Contract](native-gis.md).
+
+## Global WM0 source analysis
+
+`analysis/wm0Source.ts` recovers supported V1 integer corners through the same
+helper as `SharedSurface.points`, without building Explorer adjacency. It adapts
+the current WM0 source to existing exact `SurfaceSource` queries. Explicit integer
+periodic translations preserve original identities and full-line transect t.
+`sourceEvidence.ts` indexes existing trigger memberships and validated optional
+pack relationships; it never derives associations from coordinates or names.
+The WM0 Analysis owner shares the existing Viewer/Inspector and releases results,
+picks and borrowed evidence on map/source/mode replacement. No new Workspace pack,
+database or coordinate authority exists. [Contract](global-source-gis.md).

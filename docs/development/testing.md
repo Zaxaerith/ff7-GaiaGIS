@@ -2,6 +2,16 @@
 
 Public Web regressions live in `web/tests/`. Run `npm --prefix web test`, ordinary build, `build:release` and `audit:release`. Tests cover coordinates/projections, routing/analysis, Atlas/navigation, user geometry and save parsing/privacy. Synthetic fixtures contain no private save bytes or complete derived game dataset.
 
+WM0 source regressions in `wm0Source.test.ts` cover explicit periodic direction,
+both stored seam identities, exact multivalue/vertical/contact evidence and the
+supported V1 integer recovery. With the existing private Workspace, a compact
+independent original-MAP digest checks all source identities and 427,758 ordered
+corners without distributing a coordinate fixture. `sourceEvidence.test.ts`
+checks source-key memberships, optional-pack fingerprints and retained Atlas/
+Field precision. The existing player Browser suite includes `wm0Source.e2e.mjs`
+for real queries, integrated Inspector actions, five locales, compact layouts,
+User Mapping/pick ownership and map/Field/Workspace release.
+
 Field regressions extend the existing Atlas tests with bounded identity codecs,
 direct entrance evidence, directed gateways/cycles, entry-rooted MAPJUMP and
 instruction boundaries, conflicting native targets, ambiguous or missing parents,

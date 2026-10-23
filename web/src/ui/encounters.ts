@@ -62,7 +62,7 @@ export function mountEncounters(viewer:GaiaViewer,meta:GaiaMeta,isCurrent:()=>bo
   }
   function adopt(data:EncounterDataset|null){
     if(data)loadedAsset("encounters");
-    dataset=data;viewer.setEncounters(data);
+    dataset=data;viewer.setEncounters(data);document.dispatchEvent(new Event('gaiagis:encounters'));
     status.textContent=data?t('load.encountersLoaded'):t('ui.encountersUnavailable');
     for(const id of ['encounter','encounter-rate'])select.querySelector<HTMLOptionElement>(`option[value="${id}"]`)!.disabled=!data;
     if(!data&&['encounter','encounter-rate'].includes(select.value)){select.value='terrain';select.dispatchEvent(new Event('change'));}
