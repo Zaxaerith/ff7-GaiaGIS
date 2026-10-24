@@ -2,6 +2,13 @@
 
 Public Web regressions live in `web/tests/`. Run `npm --prefix web test`, ordinary build, `build:release` and `audit:release`. Tests cover coordinates/projections, routing/analysis, Atlas/navigation, user geometry and save parsing/privacy. Synthetic fixtures contain no private save bytes or complete derived game dataset.
 
+Save spatial cases extend `save.test.ts` and `saveSpatial.test.ts`: valid-only
+scalar summaries, signed script progress, exact saved-Triangle/source validation,
+boundary/degenerate/outside rejection and EV fingerprint/threshold/bit gates.
+`saveSpatial.e2e.mjs` runs within the existing player suite; it exercises the
+same Field Canvas, five locales and stale slot/resource/Workspace cancellation.
+Real saves remain explicit private inputs, never public fixtures or attachments.
+
 WM0 source regressions in `wm0Source.test.ts` cover explicit periodic direction,
 both stored seam identities, exact multivalue/vertical/contact evidence and the
 supported V1 integer recovery. With the existing private Workspace, a compact

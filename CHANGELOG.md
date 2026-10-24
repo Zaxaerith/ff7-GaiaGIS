@@ -1,5 +1,23 @@
 # Changelog
 
+## 5.1.0 — Save Spatial Context & World State Evidence
+
+- Open Current Field validates the selected save, reviewed maplist identity,
+  matching Walkmesh sources and the original saved Triangle. Only inside or
+  boundary positions receive a marker in the existing Field Canvas; failures
+  retain raw values and reasons without snapping or changing Triangle ID.
+- Show source-interpolated local Z and raw direction, without claiming a saved
+  character height or an unverified angle. Clear, slot/import/resource changes
+  and Field/map/Workspace teardown cancel transient positions and late reads.
+- Predict WM0 initialization states 0–4 from signed progress and three saved
+  bits only for the verified English EV fingerprint. Show inputs, cumulative
+  groups and static evidence limits; opening existing research never changes
+  visible terrain or BASE routing automatically.
+- Keep the original unsigned progress API, session-only save summaries, five
+  languages and old Workspace/Manifest/GIS contracts. Real samples support
+  nine Field placements and one strict outside rejection; predicted sample
+  states cover 0, 1, 3 and 4, with no original-runtime verification.
+
 ## 5.0.0 — Global Source GIS & Integrated Spatial Analysis
 
 - Query all 142,586 WM0 base source faces with the existing exact Native point

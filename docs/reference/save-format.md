@@ -36,7 +36,9 @@ zero body with checksum `4D1D` is empty; a CRC collision alone is not emptiness.
 | Gil | `0B7C`, uint32 | Authoritative value rather than preview copy |
 | Play time | `0B80`, uint32 | Elapsed seconds; never used to infer story |
 | Module / location | `0B94` / `0B96`, uint16 | Field module 1, world module 3; unknown module unavailable |
+| Field local position | `0B9A` / `0B9C`, int16; `0B9E`, uint16; `0BA0`, byte | X/Y, original Triangle, raw direction; only valid Field slots retain this summary |
 | Progress counter | `0BA4`, uint16 | Raw counter, no inferred chapter or availability |
+| Static world-script inputs | `0BA4`, int16; `0C1F.bit0`, `0F2B.bit0`, `0F2A.bit4` | Separate signed interpretation and three booleans, only for valid slots |
 | Recorded visibility masks | `0C22` / `0C23`, byte | Chocobo / vehicle world visibility, **not ownership/unlock flags** |
 | Disc | `0EA4`, byte | Only 1–3 recognized |
 | World objects | `0F5C`, six eight-byte records | Packed positions; see spatial binding document |
@@ -154,8 +156,39 @@ ordering of datiao_2/datiao_3. IDs 88, 89, 90, 91, 404, 526, 593, 594 and 699 ar
 therefore deliberately unverified for save lookup. Their own archive topology may
 still be browsed. Missing/corrupt scenes also have no saveId. The compact pack
 serializes only a reviewed equal-ID binding or null, not a copied reference name
-table. No Field X/Y, local triangle, camera or world coordinate is derived here.
+table. Camera and world coordinates are not inferred from this identity binding.
 
 Only a valid/checksum-accepted field slot and an available exact saveId match can
 open Current Field. Field saves never reuse stale world packing for a marker.
 Unknown IDs remain raw. See [Field Context](atlas.md#field-context).
+
+### Field position validation (v5.1)
+
+The packed ff7tk `FF7XYT` members/accessors establish signed X/Y, unsigned Triangle
+and raw direction. FFNx's savemap independently supports the X/Y/Triangle layout.
+The existing `currentSaveField()` gate and a matching flevel/maplist Walkmesh
+source precede `localPoint()` on the exact saved Triangle. Only inside/boundary
+receives a local marker and source-interpolated Z. No alternative Triangle,
+tolerance expansion, global conversion or direction angle is inferred.
+
+Ten private valid Field slots match eight current scenes and valid Triangle IDs;
+nine are inside. The las0_5 slot is outside saved Triangle 206 and remains rejected,
+even though Triangle 191 contains its X/Y. All eight original Section 5 payloads
+match the existing private Walkmesh. These are specific 2013-save/current-resource
+observations, not a claim of all-version or runtime equivalence.
+
+### Fingerprint-bound WM0 prediction (v5.1)
+
+The reviewed English EV SHA-256 is
+`a020dace94f21b73094c204c54b01e13b3688002f65ffd9b1edf8ada5e372a64`.
+Validated Field Context/Events/POI source hashes already carry its identity;
+missing, conflicting or different sources give Unknown. The predictor reads P as
+signed16 while retaining the existing UInt16 API. P below 638/1000/1197 gives
+state 0/1/2; otherwise state 3, except P≥1199 with all three listed bits gives 4.
+States map to the existing cumulative G1–G4 research groups.
+
+This is original EV static control flow cross-checked against the historical PC
+VM's signed read/comparison semantics. Real save inputs give states 0:5, 1:1,
+2:0, 3:1, 4:3; state 2, mixed bits and signed extremes have synthetic/static
+coverage only. None is an observed original-game runtime state. The original
+writer's EV version and later script changes are not established by a save file.

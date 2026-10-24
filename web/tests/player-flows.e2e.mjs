@@ -1,6 +1,7 @@
 import {worldVariantChecks} from './worldVariants.e2e.mjs';
 import {nativeGisChecks} from './nativeGis.e2e.mjs';
 import {wm0SourceChecks} from './wm0Source.e2e.mjs';
+import {saveSpatialChecks} from './saveSpatial.e2e.mjs';
 // SPDX-License-Identifier: GPL-3.0-only
 // Run against a built local Viewer. No screenshots, save fixtures or profiles persist.
 import {chromium} from 'playwright-core';
@@ -21,7 +22,8 @@ const page=await context.newPage(),errors=[];
 page.on('pageerror',e=>errors.push(e.message));
 const requestFailures=[],consoleErrors=[];page.on('requestfailed',r=>{if(requestFailures.length<100)requestFailures.push({url:r.url(),error:r.failure()?.errorText});});page.on('console',m=>{if(m.type()==='error'&&consoleErrors.length<100)consoleErrors.push(m.text());});
 const checks=[];const pass=name=>{checks.push(name);console.log('PASS '+name);};
-async function remainingChecks(includeNative=true,includeVariants=true){if(includeNative)await nativeGisChecks({browser,url,pass,errors});if(includeVariants)await worldVariantChecks({browser,url,pass,errors});await wm0SourceChecks({browser,url,pass,errors});await interactionChecks();await backgroundChecks();await fieldLabChecks({browser,url,pass,errors});await manualImportChecks();await automaticImportChecks();await ownerLifecycleChecks();}
+async function tailChecks(){await interactionChecks();await backgroundChecks();await fieldLabChecks({browser,url,pass,errors});await manualImportChecks();await automaticImportChecks();await ownerLifecycleChecks();}
+async function remainingChecks(includeNative=true,includeVariants=true){if(includeNative)await nativeGisChecks({browser,url,pass,errors});if(includeVariants)await worldVariantChecks({browser,url,pass,errors});await wm0SourceChecks({browser,url,pass,errors});await saveSpatialChecks({browser,url,pass,errors});await tailChecks();}
 const qaPath=name=>fileURLToPath(new URL('../../output/dev/current/stability-tests/'+name,import.meta.url));
 const click=async id=>{await page.locator(id).click();};
 const panel=async id=>{if(!await page.locator('#app-tab-'+id).isVisible())await click('#app-menu');await click('#app-tab-'+id);};
@@ -248,6 +250,8 @@ async function ownerLifecycleChecks(){
  console.log('Owner lifecycle (3 contexts / 8 replacements / 4 warm cycles / owner & document disposal)',JSON.stringify(runs));pass('reimport releases old Shell/Viewer/Field Canvas / persistent Explorer identity / bounded warm cache / full document release');
 }
 try{
+ if(process.env.GAIA_BROWSER_SCOPE==='save-remaining'){if(process.env.GAIA_SAVE_BROWSER_PHASE!=='resources')await worldVariantChecks({browser,url,pass,errors});await saveSpatialChecks({browser,url,pass,errors});await tailChecks();assert.deepEqual(errors,[]);pass('no browser errors');console.log('Browser checks: '+checks.length+' / '+checks.length);}else
+ if(process.env.GAIA_BROWSER_SCOPE==='save-spatial'){await saveSpatialChecks({browser,url,pass,errors});assert.deepEqual(errors,[]);pass('no browser errors');console.log('Browser checks: '+checks.length+' / '+checks.length);}else
  if(process.env.GAIA_BROWSER_SCOPE==='post-variants'){await remainingChecks(false,false);assert.deepEqual(errors,[]);pass('no browser errors');console.log('Browser checks: '+checks.length+' / '+checks.length);}else
  if(['owners','interaction','background','lab','native','variants','remaining','post-native'].includes(process.env.GAIA_BROWSER_SCOPE)){if(process.env.GAIA_BROWSER_SCOPE==='post-native')await remainingChecks(false);else if(process.env.GAIA_BROWSER_SCOPE==='remaining')await remainingChecks();else if(process.env.GAIA_BROWSER_SCOPE==='variants')await worldVariantChecks({browser,url,pass,errors});else if(process.env.GAIA_BROWSER_SCOPE==='native')await nativeGisChecks({browser,url,pass,errors});else if(process.env.GAIA_BROWSER_SCOPE==='lab')await fieldLabChecks({browser,url,pass,errors});else if(process.env.GAIA_BROWSER_SCOPE==='owners')await ownerLifecycleChecks();else if(process.env.GAIA_BROWSER_SCOPE==='background')await backgroundChecks();else await interactionChecks();assert.deepEqual(errors,[]);pass('no browser errors');console.log('Browser checks: '+checks.length+' / '+checks.length);}else{
  if(process.env.GAIA_STABILITY_MEASURE==='1')await stabilityMeasure();

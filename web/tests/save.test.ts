@@ -22,6 +22,22 @@ describe('read-only PC multi-slot save',()=>{
  it('out-of-bounds party identifiers never read another record',()=>{const b=change(fixture(),(_,a)=>a[0x4f8]=254);expect(parsePCSave(b.buffer).slots[0].status).toBe('invalid');});
  it('invalid stats do not become valid save state',()=>{const b=change(fixture(),v=>v.setUint16(0x80,65535,true));expect(parsePCSave(b.buffer).slots[0].status).toBe('invalid');});
  it('Western text only; unknown glyphs explicit',()=>{expect(saveText(new Uint8Array([0x21,255]))).toBe('A');expect(saveText(new Uint8Array([0xfa,255]))).toBeNull();expect(saveText(new Uint8Array([0x21]))).toBeNull();});
+ it('retains Field position and script inputs only as independent scalar summaries',()=>{
+  const b=change(fixture(1),(v,a)=>{v.setInt16(0xb9a,-32768,true);v.setInt16(0xb9c,32767,true);v.setUint16(0xb9e,65535,true);a[0xba0]=255;v.setUint16(0xba4,65535,true);a[0xc1f]=1;a[0xf2b]=1;a[0xf2a]=16;});
+  const s=parsePCSave(b.buffer).slots[0];expect(s.fieldPosition).toEqual({x:-32768,y:32767,triangle:65535,direction:255});expect(s.progress).toBe(65535);expect(s.worldStateInputs).toEqual({progressSigned:-1,c1f0:true,f2b0:true,f2a4:true});
+  b.fill(0);expect(s.fieldPosition).toEqual({x:-32768,y:32767,triangle:65535,direction:255});expect(s.worldStateInputs?.progressSigned).toBe(-1);
+ });
+ it('reads the exact flag bits and signed16 extremes without changing UInt16 progress',()=>{
+  for(const p of [-32768,-1,0,32767]){
+   const b=change(fixture(1),(v,a)=>{v.setInt16(0xba4,p,true);v.setInt16(0xb9a,32767,true);v.setInt16(0xb9c,-32768,true);a[0xc1e]=a[0xc20]=a[0xf29]=a[0xf2c]=255;a[0xc1f]=254;a[0xf2b]=254;a[0xf2a]=239;});
+   const s=parsePCSave(b.buffer).slots[0];expect(s.progress).toBe(p&65535);expect(s.worldStateInputs).toEqual({progressSigned:p,c1f0:false,f2b0:false,f2a4:false});expect(s.fieldPosition).toEqual({x:32767,y:-32768,triangle:0,direction:0});
+  }
+ });
+ it('world slots retain script inputs but never expose stale Field positions',()=>{const s=parsePCSave(fixture().buffer).slots[0];expect(s.fieldPosition).toBeNull();expect(s.worldStateInputs).toEqual({progressSigned:100,c1f0:false,f2b0:false,f2a4:false});});
+ it('empty, checksum and invalid slots expose neither new summary',()=>{
+  const badChecksum=fixture(1);badChecksum[200]^=1;const invalid=change(fixture(1),v=>v.setUint16(2,1,true));
+  for(const s of [parsePCSave(fixture(1).buffer).slots[1],parsePCSave(badChecksum.buffer).slots[0],parsePCSave(invalid.buffer).slots[0]]){expect(s.status).not.toBe('valid');expect(s.fieldPosition).toBeNull();expect(s.worldStateInputs).toBeNull();}
+ });
 });
 describe('evidence-constrained coordinate binding',()=>{
  for(const model of [0,3,5,6])it('matches current object record '+model,()=>{const b=parsePCSave(fixture(3,0,model).buffer).slots[0].binding!;expect(b.raw.model).toBe(model);expect(b.game_east).toBe(123456);expect(b.game_north).toBe(229376-123456);expect(b.geographic).toEqual(sourceGeographic(123456,123456,0));});
