@@ -1,8 +1,8 @@
 # Building and development
 
-All project writes, caches and outputs belong in the checkout. Original installations and saves are read-only. Start PowerShell sessions with `. tools/build/environment.ps1` to set workspace-local temporary/npm/Playwright paths.
+All project writes, caches and outputs belong in the checkout. Original installations and saves are read-only. Source `tools/build/environment.ps1` only for a local packaging or QGIS task that needs its workspace-local temporary paths.
 
-The maintained targets are **Web and Windows x64**. The retained POSIX environment helper and Mac-specific packaging/audit paths are historical compatibility code; current CI/Release do not build them.
+The **Web Viewer is the primary product**. Windows x64 is the supported optional portable delivery. The retained POSIX environment helper and Mac-specific packaging/audit paths are historical compatibility code; current CI/Release do not build them.
 
 ## Python
 
@@ -35,11 +35,32 @@ The optional `--audit` target must be `.json` under `output/dev/current`; existi
 
 This writes explicit Visual v2 (`field-visual-4`) and its Manifest entry after candidate/source validation. It preserves world/GIS products, Walkmesh, Interaction, GeoPackages and research projects. Exception rollback and `.build/visual-recovery` protect the old matching pair; later backups use a manifest-SHA256 subdirectory so earlier recovery pairs survive. Interrupted two-file replacement is recoverable rather than crash-atomic. Re-import the folder into the current locally built Viewer. Visual v1 and v2 generator-3 remain readable without this upgrade. See [format and limits](../reference/workspace-format.md#optional-field-visual-transport).
 
-## Web
+## Daily development — Web first
 
-Node 24: `npm --prefix web ci`, `npm --prefix web test`, `npm --prefix web run build`. Source-only public builds use `build:release` followed by `audit:release`; they never copy private packs. Vite reads the Python version authority through `web/scripts/version.mjs`.
+Use Node 24 and the existing Web commands from the repository root:
+`npm --prefix web test`, `npm --prefix web run build`, and
+`npm --prefix web run test:browser` when Browser acceptance is needed. Set
+`GAIA_BROWSER_URL` to the local Viewer URL and `GAIA_BROWSER_WORKSPACE` to the
+existing private Workspace; `GAIA_CHROME_PATH` optionally selects installed
+Chrome. See [testing](testing.md) for the acceptance scope. Install or refresh
+`web/node_modules` only for a new checkout or dependency change. Reuse
+`output/dev/current/stability-tests/` rather than making a directory for each
+version.
+Source-only Pages builds use `build:release` followed by `audit:release`; they
+never copy private packs. Vite reads the Python version authority through
+`web/scripts/version.mjs`.
 
-## Local Windows x64 recipe verification
+Generate private Workspace data only when a task needs it. Start from the
+existing `output/local-workspace/` and use the relevant incremental generator;
+ordinary Viewer development does not require a full Workspace or GIS rebuild.
+
+## Local Windows x64 packaging exception
+
+Local PyInstaller packaging and smoke are reserved for a launcher/packaging
+investigation or an explicit user request. GitHub CI performs ordinary Windows
+build and smoke checks; the Release Workflow produces the official Windows ZIP
+from an approved tag. Pages is a separate Web publishing operation. Keep the
+packaging tools available for their dedicated use.
 
 Use pinned CPython 3.14.7, create `.cache/packaging-venv`, install `tools/build/requirements.txt`, and run its Python on `tools/build/local_package.py`. The recipe automatically performs portable launch smoke and removes the local ZIP/build on success. Add `--keep-artifacts` only when intentionally retaining a temporary candidate. A separately invoked `portable_smoke.py` accepts a read-only `--source` for cold workspace verification; it always removes its extracted tree on success, and removes input distribution artifacts unless `--keep-artifacts` is supplied.
 
@@ -79,10 +100,10 @@ python tools/build/local_package.py --skip-web-build --keep-artifacts --output-d
 ```
 
 Build after the final local commit to embed its actual SHA. A local ZIP is
-`development-validation-only`, not a tagged release. Preserve its smoke/audit
-results and final ZIP; remove only explicitly reviewed task-created intermediate
-build directories. Do not run a cold full Workspace reconstruction just to test
-the new optional Field evidence product.
+`development-validation-only`, not a tagged release. Remove its candidate ZIP
+and extracted package after the corresponding formal release; retain unique
+source evidence and research reports. Do not run a cold full Workspace
+reconstruction just to test the new optional Field evidence product.
 
 ## Independent Native GIS export
 

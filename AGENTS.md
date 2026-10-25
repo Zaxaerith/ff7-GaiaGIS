@@ -24,3 +24,27 @@ is code-only unless the user separately changes the distribution policy.
 V1 reconstruction mathematics and climate research remain frozen unless
 the user explicitly requests a new scope. Do not start an unsolicited
 next version, climate simulation or reconstruction change.
+
+## Permanent Web-first development workflow
+
+GaiaGIS's primary product is the Web Viewer. Routine feature work and acceptance
+start in `web/`: use Vite, the Web test suite and Browser E2E. Reuse
+`output/dev/current/stability-tests/` for Browser acceptance output. Do not add
+version-named local release directories; use the shared QA paths documented in
+`docs/development/workspace-hygiene.md`.
+
+Generate or update the private Workspace only when a task needs it, and prefer
+the relevant incremental command over rebuilding all data. Preserve the
+Workspace, recovery pairs and research results.
+
+Do not build a local PyInstaller executable or Windows RC ZIP by default. GitHub
+CI owns ordinary Windows build and smoke checks. The GitHub Release Workflow
+builds the official Windows ZIP from its approved tag. Pages is a separate Web
+publishing target. Use local packaging only to diagnose a launcher or packaging
+failure, or when the user specifically requests a local package. After a formal
+release, remove obsolete local candidate ZIPs and extracted package copies while
+keeping unique source evidence and research reports.
+
+Development and local commits do not authorize publication. Push, tag, Release,
+Pages deployment and repository metadata changes still require the user's
+explicit authorization.
