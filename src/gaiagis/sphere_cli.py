@@ -2,6 +2,7 @@ import argparse
 from dataclasses import asdict
 from datetime import datetime,timezone
 from pathlib import Path
+from .constants import GAME_DATA_LANGUAGES
 import platform
 from .safety import WORKSPACE_ROOT,output_path
 from .dataset import discover,fingerprint
@@ -21,13 +22,14 @@ def main(argv=None):
     parser.add_argument("--antimeridian-game-east",type=float)
     parser.add_argument("--flip-latitude",action="store_true",default=None)
     parser.add_argument("--flatten",action="store_true")
+    parser.add_argument('--game-language',choices=GAME_DATA_LANGUAGES,default='en',help='FF7 data language; independent of UI language')
     args = parser.parse_args(argv)
     output = output_path(args.output)
     output.mkdir(parents=True,exist_ok=True)
     config = read_config(args.config,radius_m=args.radius,vertical_scale_m_per_raw_unit=args.vertical_scale,
                          ring_count=args.ring_count,antimeridian_game_east=args.antimeridian_game_east,
                          flip_latitude=args.flip_latitude,flatten=args.flatten)
-    dataset = discover(args.source)
+    dataset = discover(args.source,args.game_language)
     before = fingerprint(dataset)
     snapshot = output/"reconstruction"/"source_before.json"
     if snapshot.exists():

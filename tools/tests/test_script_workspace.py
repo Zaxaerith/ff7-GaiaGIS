@@ -5,7 +5,7 @@ import json
 import os
 from pathlib import Path
 import tempfile
-from types import SimpleNamespace
+from gaiagis.dataset import SourceDataset
 import unittest
 from unittest.mock import patch
 
@@ -21,7 +21,7 @@ class ScriptEvidenceWorkspaceTests(unittest.TestCase):
         folder.mkdir(parents=True, exist_ok=True)
         self.temp = tempfile.TemporaryDirectory(dir=folder)
         self.root = Path(self.temp.name)
-        self.sources = {'wm0.map': 'a'*64, 'world_us.lgp': 'b'*64, 'flevel.lgp': 'c'*64, 'maplist': 'd'*64}
+        self.sources = {'wm0.map': 'a'*64, 'wm2.map': 'a'*64, 'wm3.map': 'a'*64, 'world_us.lgp': 'b'*64, 'flevel.lgp': 'c'*64, 'maplist': 'd'*64}
         self.names = ['gaia-meta.json', 'gaia-mesh.bin', 'gaia-poi.json', 'gaia-field-context.json', 'gaia-field-walkmesh.bin', 'gaia-field-visual.bin', 'gaia-field-interaction.bin', FILENAME]
         for name in self.names:
             (self.root/name).write_bytes(('synthetic '+name).encode('ascii'))
@@ -40,7 +40,7 @@ class ScriptEvidenceWorkspaceTests(unittest.TestCase):
     def test_manifest_has_independent_type_generator_hash_and_exact_context_dependency(self):
         self.assertEqual(len(workspace.ASSETS), 20)
         self.assertEqual(workspace.ASSETS[FILENAME], ('field-script-evidence', 'shared', ['gaia-field-context.json']))
-        self.assertEqual(workspace.SOURCE_DEPENDENCIES[FILENAME], ['flevel.lgp'])
+        self.assertEqual(workspace.SOURCE_DEPENDENCIES[FILENAME], ['@field'])
         record = next(r for r in self.manifest['assets'] if r['filename'] == FILENAME)
         self.assertEqual(record, dict(filename=FILENAME, type='field-script-evidence', mapId='shared', sha256=workspace.sha256(self.root/FILENAME), bytes=(self.root/FILENAME).stat().st_size, dependencies=['gaia-field-context.json'], generator_version=GENERATOR_VERSION))
         self.assertEqual(server_manifest(self.root), self.manifest)
@@ -131,12 +131,12 @@ class ScriptEvidenceWorkspaceTests(unittest.TestCase):
         fingerprint = {'files': [{'filename': k, 'sha256': v} for k, v in sources.items()]}
         calls = []
         def export_index(source_path, destination):
-            self.assertEqual(source_path, source)
+            self.assertEqual(source_path.selected_path, source)
             self.assertEqual(destination, self.root)
             self.assertEqual((destination/'gaia-field-context.json').read_bytes(), before['gaia-field-context.json'])
             calls.append(FILENAME)
             (destination/FILENAME).write_bytes(b'new synthetic script evidence')
-        with patch.object(workspace, 'discover', return_value=SimpleNamespace(wm_directory=source)), patch.object(workspace, 'child_ci', return_value=None), patch.object(workspace, 'fingerprint', return_value=fingerprint), patch.object(workspace, 'curated_hash', return_value='e'*64), patch.object(workspace, 'build_field_script_evidence', side_effect=export_index):
+        with patch.object(workspace, 'discover', return_value=SourceDataset(source,source,{},'synthetic')), patch.object(workspace, 'child_ci', return_value=None), patch.object(workspace, 'fingerprint', return_value=fingerprint), patch.object(workspace, 'curated_hash', return_value='e'*64), patch.object(workspace, 'build_field_script_evidence', side_effect=export_index):
             result = workspace.build_workspace(source, self.root)
         self.assertEqual(calls, [FILENAME])
         self.assertEqual(result['assets'], 20)

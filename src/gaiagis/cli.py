@@ -6,6 +6,7 @@ import platform
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
+from .constants import GAME_DATA_LANGUAGES
 from .analysis import geometry_summary, topology, geography
 from .dataset import discover, fingerprint
 from .map_reader import parse_map
@@ -94,12 +95,13 @@ def _main(argv=None, default_output=None):
     parser.add_argument("source",type=Path)
     parser.add_argument("--output",type=Path,default=default_output)
     parser.add_argument("--keep-artifacts",action="store_true",help="Explicitly retain this disposable validation run")
+    parser.add_argument('--game-language',choices=GAME_DATA_LANGUAGES,default='en',help='FF7 data language; independent of UI language')
     args=parser.parse_args(argv)
     out=output_path(args.output)
     if not out.is_relative_to(WORKSPACE_ROOT/'output/dev/current'):
         raise ValueError('Validation output must use disposable output/dev/current')
     out.mkdir(parents=True,exist_ok=True)
-    dataset=discover(args.source)
+    dataset=discover(args.source,args.game_language)
     before=fingerprint(dataset)
     write_json(out/"run_before.json",before)
     try:
@@ -123,9 +125,9 @@ def _main(argv=None, default_output=None):
         write_csv(out/"wm0_terrain.csv",terrains)
         write_csv(out/"wm0_region_centroids.csv",regions)
         write_csv(out/"mesh_grid.csv",grid)
-        archive=inventory(dataset.files["world_us.lgp"])
-        write_json(out/"world_us_inventory.json",archive)
-        write_json(out/"world_us_preflight.json",preflight_lgp(dataset.files["world_us.lgp"],archive))
+        archive=inventory(dataset.world_archive)
+        write_json(out/(dataset.world_name+"_inventory.json"),archive)
+        write_json(out/(dataset.world_name+"_preflight.json"),preflight_lgp(dataset.world_archive,archive))
         validation_svg(out/"wm0_validation.svg",grid,regions)
         write_json(out/"run_environment.json",dict(python=platform.python_version(),platform=platform.platform(),
                    utc=datetime.now(timezone.utc).isoformat(),workspace=str(WORKSPACE_ROOT),

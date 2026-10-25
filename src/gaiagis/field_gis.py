@@ -11,6 +11,7 @@ import json
 import math
 import os
 from pathlib import Path
+from .dataset import archive_key, same_dependencies
 import re
 import shutil
 import sqlite3
@@ -81,7 +82,7 @@ def interaction_rows(scene, interaction, network):
 def metadata_values(scene,network,version,interaction=None):
     identity=dict(field_id=scene['id'],field_name=scene['name']);n=scene['stats']['triangles'];reach=network['reach'];path=network['path']
     start=None if reach is None else reach['start'];end=None if path is None else path['end']
-    values=dict(identity,schema=SCHEMA,version=version,coordinate_space='FieldLocal',source_file='flevel.lgp',source_sha256=scene['context']['sources']['flevel.lgp'],maplist_sha256=scene['context']['sources']['maplist'],context_version=3,walkmesh_version=1,exporter_version=__version__,section5_sha256=hashlib.sha256(scene['raw']).hexdigest(),triangle_count=n,access_count=n*3,coordinate_semantics='Original XYZ; no axis swap, transform, geography or scale',raw4_semantics='Original fourth S16; neither M nor verified collision/height',network_semantics=LABEL,component_labels='0-based, sorted by minimum Triangle ID; BFS Access slot 0/1/2',runtime_passability='UNKNOWN',units='Raw Unit / Raw Unit^2; no metres or geographic reference',start_triangle=start,end_triangle=end,path_status='not_requested' if path is None else path['reason'] or 'found')
+    values=dict(identity,schema=SCHEMA,version=version,coordinate_space='FieldLocal',source_file=scene['context']['archive'],source_sha256=scene['context']['sources'][scene['context']['archive']],maplist_sha256=scene['context']['sources']['maplist'],context_version=scene['context']['version'],walkmesh_version=1,exporter_version=__version__,section5_sha256=hashlib.sha256(scene['raw']).hexdigest(),triangle_count=n,access_count=n*3,coordinate_semantics='Original XYZ; no axis swap, transform, geography or scale',raw4_semantics='Original fourth S16; neither M nor verified collision/height',network_semantics=LABEL,component_labels='0-based, sorted by minimum Triangle ID; BFS Access slot 0/1/2',runtime_passability='UNKNOWN',units='Raw Unit / Raw Unit^2; no metres or geographic reference',start_triangle=start,end_triangle=end,path_status='not_requested' if path is None else path['reason'] or 'found')
     if version==2:
         values.update(interaction_version=1,interaction_sha256=scene['hashes']['gaia-field-interaction.bin'],section1_sha256=interaction['section1SHA256'],section8_sha256=interaction['section8SHA256'],section1_bytes=interaction['section1Bytes'],section8_bytes=interaction['section8Bytes'],interaction_semantics=INTERACTION_LABEL)
     return values
@@ -142,9 +143,10 @@ def _vector(value, size, lo=-32768, hi=32767):
     return [_integer(v,lo,hi) for v in value]
 
 
-def _sources(value, required=('flevel.lgp','maplist')):
+def _sources(value, required=None):
     if not isinstance(value,dict) or not 2<=len(value)<=32 or any(not re.fullmatch(r'[A-Za-z0-9_.-]{1,128}',k) or not isinstance(v,str) or not re.fullmatch('[a-f0-9]{64}',v) for k,v in value.items()):
         raise ValueError('Invalid source hashes')
+    required = required or (archive_key(value,'field'),'maplist')
     for name in required:
         if name not in value:raise ValueError('Missing Field source identity')
 
@@ -155,7 +157,7 @@ def load_field(workspace, field):
     manifest_path=root/'gaia-workspace.json';reject_links(manifest_path)
     manifest_raw=_metadata_bytes(manifest_path,100_000);manifest=_decode_json(manifest_raw);manifest_hash=hashlib.sha256(manifest_raw).hexdigest()
     if manifest.get('schema')!='gaiagis-workspace' or type(manifest.get('version')) is not int or manifest['version']!=1 or manifest.get('timestamp_policy')!='omitted' or not re.fullmatch(r'\d+\.\d+\.\d+',str(manifest.get('tool_version',''))):raise ValueError('Workspace manifest/version')
-    _sources(manifest.get('sources'),('flevel.lgp',))
+    _sources(manifest.get('sources'),(archive_key(manifest.get('sources',{}),'field'),))
     assets=manifest.get('assets');records={}
     if not isinstance(assets,list) or len(assets)>32:raise ValueError('Workspace inventory limit')
     for record in assets:
@@ -172,14 +174,17 @@ def load_field(workspace, field):
     hashes={}
     for name,kind,budget in (('gaia-field-context.json','field-context',8_000_000),('gaia-field-walkmesh.bin','field-walkmesh',32_000_000)):
         record=records.get(name);path=root/name;reject_links(path)
-        if path.resolve().parent!=root or not record or record.get('type')!=kind or record.get('generator_version')!=GENERATOR_VERSION or record.get('mapId')!=('WM0' if kind=='field-context' else 'shared') or record.get('dependencies')!=(['gaia-poi.json'] if kind=='field-context' else ['gaia-field-context.json']) or type(record.get('bytes')) is not int or not 0<record['bytes']<=budget or path.stat().st_size!=record['bytes']:raise ValueError('Field asset size/identity')
+        if path.resolve().parent!=root or not record or record.get('type')!=kind or record.get('generator_version') not in ('field-context-6',GENERATOR_VERSION) or record.get('mapId')!=('WM0' if kind=='field-context' else 'shared') or record.get('dependencies')!=(['gaia-poi.json'] if kind=='field-context' else ['gaia-field-context.json']) or type(record.get('bytes')) is not int or not 0<record['bytes']<=budget or path.stat().st_size!=record['bytes']:raise ValueError('Field asset size/identity')
         hashes[name]=sha256(path)
         if hashes[name]!=record.get('sha256'):raise ValueError('Field asset checksum mismatch')
     context_raw=_metadata_bytes(root/'gaia-field-context.json',8_000_000)
     if hashlib.sha256(context_raw).hexdigest()!=hashes['gaia-field-context.json']:raise ValueError('Context changed while reading')
     context=_decode_json(context_raw)
-    if context.get('schema')!='gaiagis-field-context' or context.get('version')!=3 or context.get('coordinateSpace')!='FieldLocalIdentity' or context.get('archive')!='flevel.lgp':raise ValueError('Requires Field Context schema 3')
+    if context.get('schema')!='gaiagis-field-context' or context.get('version') not in (3,4) or context.get('coordinateSpace')!='FieldLocalIdentity' or context.get('archive')!=archive_key(context.get('sources',{}),'field'):raise ValueError('Requires Field Context schema 3 or 4')
+    if context['version']==3 and context['archive']!='flevel.lgp':raise ValueError('Legacy Field Context requires English archive')
+    archive_key(context.get('sources',{}),'world',required=context['version']==4)
     _sources(context.get('sources'))
+    if not same_dependencies(manifest['sources'], context['sources'], ['@field']):raise ValueError('Context/manifest archive identity mismatch')
     if any(manifest['sources'][k]!=v for k,v in context['sources'].items() if k in manifest['sources']):raise ValueError('Context/manifest source mismatch')
     nodes=context.get('nodes');identities={};names={}
     if not isinstance(nodes,list) or len(nodes)>2000:raise ValueError('Field identity limit')
@@ -276,9 +281,9 @@ def export_field(workspace, field, output, start=None, end=None, format_version=
                     mismatch=not blocked and not any({a,b}=={scene['points'][to][k],scene['points'][to][(k+1)%3]} for k in range(3))
                     asymmetric=not blocked and i not in scene['access'][to];self_link=not blocked and to==i
                     diagnostics.append((asymmetric,mismatch,self_link))
-                    row(edges,dict(identity,from_triangle=i,edge_slot=slot,to_triangle=None if blocked else to,raw_access=to,blocked=int(blocked),asymmetric=int(asymmetric),edge_mismatch=int(mismatch),self_link=int(self_link),access_offset=4+n*24+(i*3+slot)*2,source_file='flevel.lgp',section=5,**dict(zip(('ax','ay','az','bx','by','bz'),(*a,*b)))),geom(ogr.wkbLineString25D,[a,b]))
+                    row(edges,dict(identity,from_triangle=i,edge_slot=slot,to_triangle=None if blocked else to,raw_access=to,blocked=int(blocked),asymmetric=int(asymmetric),edge_mismatch=int(mismatch),self_link=int(self_link),access_offset=4+n*24+(i*3+slot)*2,source_file=scene['context']['archive'],section=5,**dict(zip(('ax','ay','az','bx','by','bz'),(*a,*b)))),geom(ogr.wkbLineString25D,[a,b]))
                 w,s=network['wcc']['labels'][i],network['scc']['labels'][i];reach=network['reach'];normal=_normal(p)
-                attributes=dict(identity,triangle_id=i,**{f'v{k}_{axis}':v[k*4+j] for k in range(3) for j,axis in enumerate(('x','y','z','raw4'))},**{f'access_{k}':links[k] for k in range(3)},source_file='flevel.lgp',section=5,source_offset=4+i*24,original_order=i,wcc_id=w,scc_id=s,wcc_size=len(network['wcc']['groups'][w]),scc_size=len(network['scc']['groups'][s]),isolated=int(i in isolated),degenerate_3d=int(normal==(0,0,0)),degenerate_xy=int(normal[2]==0),asymmetric_count=sum(d[0] for d in diagnostics),edge_mismatch_count=sum(d[1] for d in diagnostics),self_link_count=sum(d[2] for d in diagnostics),padding_variants=sum(v[k]!=v[2] for k in (3,7,11)),start_triangle=start,reachable=None if reach is None else int(reach['distance'][i]>=0),hop_distance=None if reach is None else reach['distance'][i],parent_triangle=None if reach is None or reach['parent'][i]<0 else reach['parent'][i],parent_access_slot=None if reach is None or reach['slot'][i]<0 else reach['slot'][i])
+                attributes=dict(identity,triangle_id=i,**{f'v{k}_{axis}':v[k*4+j] for k in range(3) for j,axis in enumerate(('x','y','z','raw4'))},**{f'access_{k}':links[k] for k in range(3)},source_file=scene['context']['archive'],section=5,source_offset=4+i*24,original_order=i,wcc_id=w,scc_id=s,wcc_size=len(network['wcc']['groups'][w]),scc_size=len(network['scc']['groups'][s]),isolated=int(i in isolated),degenerate_3d=int(normal==(0,0,0)),degenerate_xy=int(normal[2]==0),asymmetric_count=sum(d[0] for d in diagnostics),edge_mismatch_count=sum(d[1] for d in diagnostics),self_link_count=sum(d[2] for d in diagnostics),padding_variants=sum(v[k]!=v[2] for k in (3,7,11)),start_triangle=start,reachable=None if reach is None else int(reach['distance'][i]>=0),hop_distance=None if reach is None else reach['distance'][i],parent_triangle=None if reach is None or reach['parent'][i]<0 else reach['parent'][i],parent_access_slot=None if reach is None or reach['slot'][i]<0 else reach['slot'][i])
                 row(triangles,attributes,polygon_geometry(p))
                 for k in range(3):row(raw_vertices,dict(identity,triangle_id=i,vertex_slot=k,x=v[k*4],y=v[k*4+1],z=v[k*4+2],raw4=v[k*4+3],source_offset=4+i*24+k*8))
             entrances=layer('field_entrances',ogr.wkbPoint25D)
@@ -296,7 +301,7 @@ def export_field(workspace, field, output, start=None, end=None, format_version=
                 result=_point(e,e['field_triangle'],[e['field_x'],e['field_y']],scene)
                 row(records,dict(kind='entrance',target_field=scene['id'],record_id=record,triangle_id=e['field_triangle'],raw_xy=json.dumps([e['field_x'],e['field_y']]),source_offset=record*12,validation=result['status']))
                 if result['status'] not in ('inside','boundary'):continue
-                row(entrances,dict(identity,entry_id=entry,scenario=scenario,variant='Default' if scenario==0 else 'Alternative',triangle_id=e['field_triangle'],raw_x=e['field_x'],raw_y=e['field_y'],derived_raw_z=result['derivedZ'],direction=_integer(e['field_direction'],0,255),record_index=record,source_file='world_us.lgp/field.tbl',source_offset=record*12,validation=result['status'],z_semantics='Derived triangle-plane Raw Z; no independent FIELD.TBL Z'),geom(ogr.wkbPoint25D,[(e['field_x'],e['field_y'],result['derivedZ'])]))
+                row(entrances,dict(identity,entry_id=entry,scenario=scenario,variant='Default' if scenario==0 else 'Alternative',triangle_id=e['field_triangle'],raw_x=e['field_x'],raw_y=e['field_y'],derived_raw_z=result['derivedZ'],direction=_integer(e['field_direction'],0,255),record_index=record,source_file=(archive_key(scene['context']['sources'],'world',required=scene['context']['version']==4) or 'world_us.lgp')+'/field.tbl',source_offset=record*12,validation=result['status'],z_semantics='Derived triangle-plane Raw Z; no independent FIELD.TBL Z'),geom(ogr.wkbPoint25D,[(e['field_x'],e['field_y'],result['derivedZ'])]))
             gateways=layer('gateway_segments',ogr.wkbLineString25D)
             candidates=layer('gateway_candidates')
             seen=set();evidence={};world=set()
@@ -317,12 +322,12 @@ def export_field(workspace, field, output, start=None, end=None, format_version=
                 if source==scene['id']:
                     contacts=[];relation=validate_gateway_segment(scene['points'],a,b,candidates=contacts)
                     if relation!=g['sourceRelation']:raise ValueError('Gateway source geometry mismatch')
-                    row(gateways,dict(identity,gateway_id=gid,target_field=to,target_name=scene['nodes'].get(to,{}).get('name'),world_target=int(g['destination']['status']=='world'),target_triangle=triangle,target_x=xy[0],target_y=xy[1],source_file='flevel.lgp',section=8,source_offset=offset,direction_bytes=json.dumps(direction),record_hex=struct.pack('<6h2hHH4B',*a,*b,*xy,triangle,to,*direction).hex(),validation=relation,runtime_passability='UNKNOWN',**dict(zip(('ax','ay','az','bx','by','bz'),(*a,*b)))),geom(ogr.wkbLineString25D,[a,b]))
+                    row(gateways,dict(identity,gateway_id=gid,target_field=to,target_name=scene['nodes'].get(to,{}).get('name'),world_target=int(g['destination']['status']=='world'),target_triangle=triangle,target_x=xy[0],target_y=xy[1],source_file=scene['context']['archive'],section=8,source_offset=offset,direction_bytes=json.dumps(direction),record_hex=struct.pack('<6h2hHH4B',*a,*b,*xy,triangle,to,*direction).hex(),validation=relation,runtime_passability='UNKNOWN',**dict(zip(('ax','ay','az','bx','by','bz'),(*a,*b)))),geom(ogr.wkbLineString25D,[a,b]))
                     for candidate in contacts:row(candidates,dict(field_id=scene['id'],gateway_id=gid,triangle_id=candidate,reachable=None if network['reach'] is None else int(network['reach']['distance'][candidate]>=0),validation='surface; topology association only'))
                 if to==scene['id']:
                     result=_point(g['destination'],triangle,xy,scene)
                     row(records,dict(kind='arrival',source_field=source,target_field=to,record_id=gid,triangle_id=triangle,raw_xy=json.dumps(xy),source_offset=offset,validation=result['status']))
-                    if result['status'] in ('inside','boundary'):row(arrivals,dict(identity,source_field=source,source_name=scene['nodes'][source]['name'],gateway_id=gid,triangle_id=triangle,raw_x=xy[0],raw_y=xy[1],derived_raw_z=result['derivedZ'],source_file='flevel.lgp',source_offset=offset,validation=result['status'],z_semantics='Derived target triangle-plane Raw Z; target record has XY only'),geom(ogr.wkbPoint25D,[(*xy,result['derivedZ'])]))
+                    if result['status'] in ('inside','boundary'):row(arrivals,dict(identity,source_field=source,source_name=scene['nodes'][source]['name'],gateway_id=gid,triangle_id=triangle,raw_x=xy[0],raw_y=xy[1],derived_raw_z=result['derivedZ'],source_file=scene['context']['archive'],source_offset=offset,validation=result['status'],z_semantics='Derived target triangle-plane Raw Z; target record has XY only'),geom(ogr.wkbPoint25D,[(*xy,result['derivedZ'])]))
             components=layer('network_components')
             for kind in ('wcc','scc'):
                 for id,group in enumerate(network[kind]['groups']):row(components,dict(kind=kind.upper(),component_id=id,triangle_count=len(group),minimum_triangle=group[0],triangles_json=json.dumps(group),semantics=LABEL))

@@ -1,3 +1,4 @@
+import {archiveKey} from './sourceRoles';
 // SPDX-License-Identifier: GPL-3.0-only
 import type {MapId} from './nativeMaps';
 export interface BlobRef {offset:number;bytes:number;}
@@ -18,7 +19,7 @@ export async function decodeExplorer(buffer:ArrayBuffer):Promise<ExplorerPack>{
  if(h.schema!=='gaiagis-explorer'||![1,2].includes(h.version)||h.version!==view.getUint32(8,true)||h.runtimeClaim!==false||h.reconstruction!=='v1-geometric-gaia'||!Array.isArray(h.models)||!h.models.length||h.models.length>32||!Array.isArray(h.surfaces)||h.surfaces.length!==(h.version===1?3:0)||!Array.isArray(h.textures)||h.textures.length>256)reject();
  const spans:[number,number][]=[];
  const blob=(r:BlobRef)=>{if(!int(r.offset,0,payload.byteLength)||r.offset%4||!int(r.bytes,1,payload.byteLength)||r.offset+r.bytes>payload.byteLength)reject();spans.push([r.offset,r.offset+r.bytes]);};
- for(const k of ['wm0.map','wm2.map','wm3.map','world_us.lgp'])if(!/^[0-9a-f]{64}$/.test(h.sources?.[k]??''))reject();
+ for(const k of ['wm0.map','wm2.map','wm3.map',archiveKey(h.sources??{},'world')!])if(!/^[0-9a-f]{64}$/.test(h.sources?.[k]??''))reject();
  const textureNames=new Set<string>();for(const r of h.textures){blob(r);if(!/^[a-z0-9_.]+\.tex$/.test(r.name)||textureNames.has(r.name)||!int(r.width,1,4096)||!int(r.height,1,4096)||r.bytes!==r.width*r.height*4)reject();textureNames.add(r.name);}
  const ids=new Set<string>();for(const m of h.models){if(!/^[a-z0-9-]+$/.test(m.id)||ids.has(m.id)||!(m.model_id===null&&m.sourceKind==='extended_field'||typeof m.model_id==='number'&&int(m.model_id,0,63))||!Number.isFinite(m.source_scale)||m.source_scale<=0||m.source_scale>1000||!int(m.bone_count,0,1024)||m.bones.length!==(m.bone_count||1)||!m.parts.length||m.parts.length>1024||!m.clips.length||m.clips.length>100)reject();ids.add(m.id);if(m.sourceKind!==undefined&&!['world_map','extended_field'].includes(m.sourceKind))reject();if(m.sourceKind==='extended_field'&&(!['barret','aerith','red-xiii','yuffie','cait-sith','vincent'].includes(m.id)||m.characterId!==m.id||!m.field_binding||!int(m.field_binding.byte_offset,6,100000)||!/^[a-z0-9]+$/.test(m.field_binding.source_field)))reject();
   m.bones.forEach((b,i)=>{if(!int(b.parent,-1,i-1)||!Number.isFinite(b.length)||b.length<0||b.length>100000)reject();});

@@ -1,7 +1,7 @@
 # SPDX-License-Identifier: GPL-3.0-only
 """Shared native workspace exporter; source and frozen runtimes use the same code."""
 import hashlib,json
-from gaiagis.dataset import discover,child_ci
+from gaiagis.dataset import discover
 from gaiagis.map_reader import parse_map
 from gaiagis.native_export import export_native
 from gaiagis.texture_pack import build_texture_pack,catalog
@@ -13,22 +13,21 @@ def build_native_component(source,destination,label):
     from pathlib import Path
     from types import SimpleNamespace
     from .safety import output_path
-    args=SimpleNamespace(source=str(source),only=label)
+    args=SimpleNamespace(source=source,only=label)
     out=output_path(Path(destination));out.mkdir(parents=True,exist_ok=True)
-    ds=discover(Path(source));lgp=ds.files['world_us.lgp']
+    ds=discover(source);lgp=ds.world_archive
     entries={e['filename'].casefold():e for e in inventory(lgp)['entries']}
     want_transitions=args.only in (None,'transitions')
     report={};sources={};records=[]
     if want_transitions:
         # Field destinations remain exact internal IDs.
-        field_dir=child_ci(ds.wm_directory.parent,'field')
-        field_archive=child_ci(field_dir,'flevel.lgp') if field_dir else None
+        field_archive=ds.field_archive()
         if not field_archive:raise ValueError('Field archive/maplist required for exact field identity')
         field_entry=next(e for e in inventory(field_archive)['entries'] if e['filename'].casefold()=='maplist')
         maplist=read_entry(field_archive,field_entry)
         table_data=read_entry(lgp,entries['field.tbl'])
         table=parse_field_table(table_data,parse_maplist(maplist))
-        records=engine_links();sources={'field.tbl':hashlib.sha256(table_data).hexdigest(),'maplist':hashlib.sha256(maplist).hexdigest()}
+        records=engine_links();sources={ds.field_name:hashlib.sha256(field_archive.read_bytes()).hexdigest(),'field.tbl':hashlib.sha256(table_data).hexdigest(),'maplist':hashlib.sha256(maplist).hexdigest()}
     for map_id in (0,2,3):
         identity=f'WM{map_id}'
         if not want_transitions and args.only not in (identity,'textures-'+identity):continue
@@ -54,7 +53,7 @@ def build_native_component(source,destination,label):
             textures=build_texture_pack(args.source,meta_path,out/f'gaia-textures-{identity}.bin',identity)
             report.setdefault(identity,dict(map=meta))['textures']=textures
     if want_transitions:
-        sources['world_us.lgp']=hashlib.sha256(lgp.read_bytes()).hexdigest()
+        sources[ds.world_name]=hashlib.sha256(lgp.read_bytes()).hexdigest()
         transitions=dict(schema='gaiagis-map-transitions',version=1,sources=sources,transitions=sorted(records,key=lambda r:r['id']),
                          global_mapping={'WM2':None,'WM3':None},runtime_equivalence='NOT VERIFIED')
         (out/'gaia-transitions.json').write_text(json.dumps(transitions,sort_keys=True,indent=2),encoding='utf8')

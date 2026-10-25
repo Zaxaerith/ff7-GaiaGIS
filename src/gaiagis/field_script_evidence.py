@@ -11,6 +11,8 @@ from collections import Counter, defaultdict
 import hashlib
 import json
 from pathlib import Path
+from .constants import GAME_DATA_LANGUAGES
+from .dataset import field_source_keys, same_dependencies
 import re
 import struct
 import time
@@ -411,7 +413,7 @@ def validate_evidence(payload, sources, *, context_sha256=None, context=None, fi
     meta = _shape(_decode(payload[16:16+length]), 'schema version generator_revision sources contextSHA256 scenes')
     if meta['schema'] != SCHEMA or type(meta['version']) is not int or meta['version'] != 1 or meta['generator_revision'] != GENERATOR_VERSION:
         raise ValueError('Script evidence schema/generator')
-    _shape(meta['sources'], 'flevel.lgp maplist'); _hash(meta['contextSHA256'])
+    _shape(meta['sources'], ' '.join(field_source_keys(meta['sources']))); _hash(meta['contextSHA256'])
     if any(_hash(v) != sources.get(k) for k, v in meta['sources'].items()) or context_sha256 is not None and meta['contextSHA256'] != context_sha256:
         raise ValueError('Script evidence Context/source mismatch')
     nodes = {n['id']: n for n in context['nodes'] if n['status'] == 'available'} if context is not None else None
@@ -466,11 +468,10 @@ def encode_evidence(source, directory, *, audit_path=None, progress=None):
     from .poi import parse_maplist
     from .safety import output_path, protect_input
     from .web_export import sha256
-    began = time.perf_counter(); source = Path(source).resolve(); directory = output_path(Path(directory))
+    began = time.perf_counter(); ds=discover(source); source=ds.selected_path; directory = output_path(Path(directory))
     audit_path = audit_output(audit_path) if audit_path is not None else None
     protect_input(source)
-    ds = discover(source); field = child_ci(ds.wm_directory.parent, 'field')
-    archive = child_ci(field, 'flevel.lgp') if field else None
+    archive = ds.field_archive()
     if not archive:
         raise FormatError('Field archive unavailable')
     for root in (source, ds.wm_directory.resolve(), archive.resolve().parent):
@@ -486,12 +487,12 @@ def encode_evidence(source, directory, *, audit_path=None, progress=None):
     if 'maplist' not in entries:
         raise FormatError('Field maplist unavailable')
     maplist = read_entry(archive, entries['maplist']); names = parse_maplist(maplist)
-    sources = {'flevel.lgp': archive_hash, 'maplist': digest(maplist)}
+    sources = {ds.field_name: archive_hash, 'maplist': digest(maplist)}
     context_path = directory/'gaia-field-context.json'
     if not context_path.is_file() or context_path.stat().st_size > 8_000_000:
         raise ValueError('Script evidence requires existing Field Context')
     context_bytes = context_path.read_bytes(); context = _decode(context_bytes)
-    if not isinstance(context, dict) or context.get('schema') != 'gaiagis-field-context' or context.get('version') != 3 or not isinstance(context.get('sources'), dict) or any(context['sources'].get(k) != v for k, v in sources.items()):
+    if not isinstance(context, dict) or context.get('schema') != 'gaiagis-field-context' or context.get('version') not in (3,4) or not isinstance(context.get('sources'), dict) or any(context['sources'].get(k) != v for k, v in sources.items()):
         raise ValueError('Script evidence Field Context source mismatch')
     spans = []; pool = bytearray(); audits = []; counts = Counter(); opcodes = Counter(); max_scene = max_records = max_entries = max_owners = 0
     for node in _list(context.get('nodes'), 2000):
@@ -572,7 +573,7 @@ def _update_workspace(source, directory, *, audit_path, staging):
         raise RuntimeError('Script evidence Context changed during generation')
     context = _decode(context_bytes)
     validate_evidence(payload, report['sources'], context_sha256=report['contextSHA256'], context=context)
-    if manifest.get('sources', {}).get('flevel.lgp') != report['sources']['flevel.lgp']:
+    if not same_dependencies(manifest.get('sources', {}),report['sources'],['@field']):
         raise ValueError('Script evidence Workspace source mismatch')
     kind, map_id, dependencies = ASSETS[FILENAME]
     entry = dict(filename=FILENAME, type=kind, mapId=map_id, sha256=digest(payload), bytes=len(payload), dependencies=dependencies, generator_version=GENERATOR_VERSION)
@@ -619,7 +620,10 @@ def main(argv=None):
     parser.add_argument('--workspace', type=Path, required=True)
     parser.add_argument('--audit', type=Path, help='Private audit JSON in the workspace')
     parser.add_argument('--audit-only', action='store_true', help='Verify a candidate without updating Workspace files')
+    parser.add_argument('--game-language',choices=GAME_DATA_LANGUAGES,default='en',help='FF7 data language; independent of UI language')
     args = parser.parse_args(argv)
+    from .dataset import discover
+    args.source=discover(args.source,args.game_language)
     try:
         if args.audit_only:
             payload, report = encode_evidence(args.source, args.workspace, audit_path=args.audit)

@@ -1,3 +1,4 @@
+import {archiveKey} from './sourceRoles';
 // SPDX-License-Identifier: GPL-3.0-only
 import type {FieldPack,FieldWalkmesh,WalkmeshReach} from './fieldContext';
 import {inflateVisual} from './fieldCamera';
@@ -41,7 +42,7 @@ export function parseInteractionHeader(buffer:ArrayBuffer,total:number,fields:Fi
  const length=v.getUint32(12,true),base=16+length;if(length>512_000||base>total||v.byteLength!==base)throw Error('Interaction metadata bounds');
  const meta=shape(JSON.parse(new TextDecoder('utf8',{fatal:true}).decode(buffer.slice(16))),['schema','version','coordinateSpace','generator_revision','sources','scenes']);
  if(meta.schema!=='gaiagis-field-interaction'||meta.version!==1||meta.coordinateSpace!=='FieldLocal'||meta.generator_revision!=='field-interaction-1')throw Error('Interaction schema');
- const sources=shape(meta.sources,['flevel.lgp','maplist']);if(Object.entries(sources).some(([k,h])=>!fingerprint(h)||h!==fields.sources[k]))throw Error('Interaction source identity mismatch');
+ const sources=shape(meta.sources,[archiveKey(fields.sources,'field')!,'maplist']);if(Object.entries(sources).some(([k,h])=>!fingerprint(h)||h!==fields.sources[k]))throw Error('Interaction source identity mismatch');
  const scenes=new Map<number,SceneSpan>();let end=0;
  for(const value of list(meta.scenes,2000)){
   const r=shape(value,['fieldId','name','triangles','section5SHA256','offset','bytes','rawBytes','sha256']);

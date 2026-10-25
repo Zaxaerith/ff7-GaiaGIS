@@ -1,5 +1,13 @@
 # Changelog
 
+## 5.2.0 — Multilingual Source GIS
+
+- Add explicit EN/FR/DE/ES game-data selection in the native launcher and CLI, independent of UI locale; retain EN defaults and paired World/Field archives.
+- Carry one resolved SourceDataset through Workspace generation, POI/Events, Native textures/transitions, Explorer and all Field packs. Preserve actual archive names, member hashes and selected-language script offsets.
+- Compare cache and browser asset sources by archive role, basename and hash; reject mixed pairs and missing-role cache matches. Shared MAP-only products remain reusable.
+- Write Field Context v4 with actual archive identity, retaining old EN v1–v3 readers. Field GIS exports identify their actual sources.
+- Keep Save Field source/Triangle containment and the EN-only complete-EV world-state prediction gate. No runtime equivalence or full multilingual L3 claim.
+
 ## 5.1.0 — Save Spatial Context & World State Evidence
 
 - Open Current Field validates the selected save, reviewed maplist identity,

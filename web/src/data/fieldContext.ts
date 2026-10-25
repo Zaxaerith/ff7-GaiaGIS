@@ -1,3 +1,5 @@
+import {archiveKey,assertSourceAgreement} from './sourceRoles';
+import type {FieldArchive} from './sourceRoles';
 // SPDX-License-Identifier: GPL-3.0-only
 import type {Entrance,PoiDataset} from './poi';
 import type {AtlasEntity,AtlasBinding,Precision} from './atlas';
@@ -13,7 +15,7 @@ export type PointStatus='inside'|'boundary'|'outside'|'invalid_triangle'|'degene
 export interface FieldEntrance extends Pick<import('./poi').Entrance,'field_id'|'field_name'|'field_x'|'field_y'|'field_triangle'|'field_direction'|'field_table_record'|'field_table_byte_offset'>{entry:number;scenario:0|1;status:PointStatus;derivedZ:number|null;}
 export interface FieldGateway extends FieldEdge {sourceA:[number,number,number];sourceB:[number,number,number];targetXY:[number,number];targetTriangle:number;direction:[number,number,number,number];sourceRelation:'surface'|'xy_only'|'disjoint'|'unknown';destination:{status:PointStatus;derivedZ:number|null};}
 export interface FieldPack {
- schema:'gaiagis-field-context';version:1|2|3;coordinateSpace:'FieldLocalIdentity';archive:'flevel.lgp';sources:Record<string,string>;
+ schema:'gaiagis-field-context';version:1|2|3|4;coordinateSpace:'FieldLocalIdentity';archive:FieldArchive;sources:Record<string,string>;
  nodes:FieldNode[];edges:FieldEdge[];exits:(FieldEdge&{name:string})[];
  unresolved:{fromField:number;to:number|null;gateway:number|null;reason:'invalid_section'|'missing_destination'}[];
  bindings:FieldBinding[];scriptTransitions:'unverified'|'bounded_mapjump';
@@ -33,11 +35,12 @@ const text=(v:unknown)=>typeof v==='string'&&/^[a-zA-Z0-9_-]{1,100}$/.test(v);
 const saveMaplist='d6ac24b79403a77feeb338450b7cb2169cdbcfa5d071a6cee4884e93b700bc29';
 const saveConflicts=new Set([88,89,90,91,404,526,593,594,699]);
 export function parseFieldPack(value:unknown):FieldPack {
- const version=(value as {version?:unknown})?.version,v2=version===2||version===3,v3=version===3;
+ const version=(value as {version?:unknown})?.version,v2=version===2||version===3||version===4,v3=version===3||version===4;
  const d=shape(value,['schema','version','coordinateSpace','archive','sources','nodes','edges','exits','unresolved','bindings','scriptTransitions',...(v2?['scriptEdges','scriptExits','scriptUnresolved','nativeRelations']:[]),...(v3?['entrances','gateways']:[])]);
- if(d.schema!=='gaiagis-field-context'||![1,2,3].includes(Number(d.version))||d.coordinateSpace!=='FieldLocalIdentity'||d.archive!=='flevel.lgp'||d.scriptTransitions!==(v2?'bounded_mapjump':'unverified'))fail();
+ if(d.schema!=='gaiagis-field-context'||![1,2,3,4].includes(Number(d.version))||d.coordinateSpace!=='FieldLocalIdentity'||(version===4?d.archive!==archiveKey(d.sources as Record<string,unknown>,'field'):d.archive!=='flevel.lgp')||d.scriptTransitions!==(v2?'bounded_mapjump':'unverified'))fail();
  if(!d.sources||typeof d.sources!=='object'||Array.isArray(d.sources))fail();const sources=d.sources as Record<string,unknown>;
- if(Object.keys(sources).length>32||!['flevel.lgp','maplist','field.tbl','wm0.ev','wm0.map'].every(k=>Object.hasOwn(sources,k))||!Object.entries(sources).every(([k,v])=>/^[a-z0-9_.-]{1,80}$/.test(k)&&typeof v==='string'&&/^[a-f0-9]{64}$/.test(v)))fail();
+ if(Object.keys(sources).length>32||![String(d.archive),'maplist','field.tbl','wm0.ev','wm0.map'].every(k=>Object.hasOwn(sources,k))||!Object.entries(sources).every(([k,v])=>/^[a-z0-9_.-]{1,80}$/.test(k)&&typeof v==='string'&&/^[a-f0-9]{64}$/.test(v)))fail();
+ archiveKey(sources,'world',version===4);if(archiveKey(sources,'field')!==d.archive)fail();
  const ids=new Map<number,FieldNode>(),names=new Set<string>();
  for(const value of list(d.nodes,2000)){const n=shape(value,['id','name','status','saveId',...(v2?['scriptName']:[])]);if(!integer(n.id)||!text(n.name)||String(n.name).length>32||(n.name==='dummy'||/^wm\d+$/.test(String(n.name)))||!['available','missing','corrupt'].includes(String(n.status))||ids.has(Number(n.id))||names.has(String(n.name).toLowerCase()))fail();if(v2&&n.scriptName!==null&&(!text(n.scriptName)||String(n.scriptName).length>8))fail();const alias=({88:['qa','q_1'],89:['qb','q_2'],90:['qc','q_3'],91:['qd','q_4']} as Record<number,string[]>)[Number(n.id)];const reviewedAlias=v2&&alias?.[0]===n.name&&alias?.[1]===n.scriptName;
  if(n.saveId!==null&&(n.saveId!==n.id||n.status!=='available'||sources.maplist!==saveMaplist||saveConflicts.has(Number(n.id))&&!reviewedAlias))fail();ids.set(Number(n.id),n as unknown as FieldNode);names.add(String(n.name).toLowerCase());}
@@ -82,6 +85,7 @@ export function parseFieldPack(value:unknown):FieldPack {
  return d as unknown as FieldPack;
 }
 export function validateFieldPoi(pack:FieldPack,poi:PoiDataset){
+ assertSourceAgreement(pack.sources,poi.sources);
  if(Object.entries(poi.sources).some(([key,hash])=>pack.sources[key]!==hash)||pack.bindings.length!==poi.entrances.length)throw Error('Field/POI source identity mismatch');
  for(const e of poi.entrances){const b=pack.bindings.find(b=>b.entranceId===e.id),n=pack.nodes.find(n=>n.id===e.field_id),verified=n?.status==='available'&&n.name===e.field_name&&e.source_kind==='derived_from_entry_trigger'&&e.script_calls.length>0&&e.world_map===0;
   if(!b||b.locationId!==e.location_id||b.fieldId!==e.field_id||b.status!==(verified?'verified_direct':'unresolved'))throw Error('Field entrance identity mismatch');
@@ -108,10 +112,11 @@ export function validateWorldEntrance(pack:FieldPack|null,poi:PoiDataset|null,en
  if(sourceFields.some(key=>entrance[key]!==e[key])||!triggersAgree||!callsAgree||e.source_kind!=='derived_from_entry_trigger'||e.source_file!=='wm0.map'||e.confidence!=='verified_trigger_derived_position'||e.source_record!==e.triangle_id||!e.trigger_triangle_ids.includes(e.triangle_id)||!e.script_calls.length||!e.script_calls.every(c=>integer(c.call_table_record,255)&&c.call_table_record>0&&integer(c.instruction_word_offset,13823)&&c.instruction_word_offset>0))return reject('world_evidence_missing');
  const hash=(v:unknown):v is string=>typeof v==='string'&&/^[a-f0-9]{64}$/i.test(v);
  const same=(a:unknown,b:unknown)=>hash(a)&&hash(b)&&a.toLowerCase()===b.toLowerCase();
- if(['wm0.map','wm0.ev','field.tbl','maplist'].some(k=>!same(pack.sources[k],poi.sources[k]))||!hash(pack.sources['flevel.lgp'])||Object.entries(poi.sources).some(([key,value])=>Object.hasOwn(pack.sources,key)&&!same(value,pack.sources[key])))return reject('source_mismatch');
+ try{assertSourceAgreement(pack.sources,poi.sources);}catch{return reject('source_mismatch');}
+ if(['wm0.map','wm0.ev','field.tbl','maplist'].some(k=>!same(pack.sources[k],poi.sources[k]))||!hash(pack.sources[pack.archive])||Object.entries(poi.sources).some(([key,value])=>Object.hasOwn(pack.sources,key)&&!same(value,pack.sources[key])))return reject('source_mismatch');
  const binding=pack.bindings.find(b=>b.entranceId===e.id);
  if(!result.field||result.field.status!=='available'||result.field.name!==e.field_name||!binding||binding.fieldId!==e.field_id||binding.locationId!==e.location_id||binding.status!=='verified_direct')return reject('field_unavailable');
- if(pack.version!==3||!pack.entrances)return reject('legacy_context');
+ if(pack.version<3||!pack.entrances)return reject('legacy_context');
  result.record=pack.entrances.find(r=>r.field_table_record===e.field_table_record)??null;const r=result.record;
  const fields=['location_id','field_id','field_name','field_x','field_y','field_triangle','field_direction','field_table_record','field_table_byte_offset','entrance_table_id','scenario'] as const;
  if(!r||fields.some(key=>entrance[key]!==e[key])||r.entry!==e.entrance_table_id||r.scenario!==e.scenario||r.field_table_record!==(r.entry-1)*2+r.scenario||r.field_table_byte_offset!==r.field_table_record*12||(['field_id','field_name','field_x','field_y','field_triangle','field_direction','field_table_record','field_table_byte_offset'] as const).some(key=>r[key]!==e[key])||!['inside','boundary'].includes(r.status))return reject('table_mismatch');
@@ -120,7 +125,7 @@ export function validateWorldEntrance(pack:FieldPack|null,poi:PoiDataset|null,en
  result.relations=related.filter(n=>n.opcode===0x318&&n.entry===r.entry&&n.scenario===r.scenario&&n.fieldId===r.field_id);
  if(related.length!==result.relations.length||[...calls].some(offset=>!result.relations.some(n=>n.offset===offset)))return reject('transition_mismatch');
  if(!mesh)return reject('mesh_unavailable');
- if(!walkmeshSources||['flevel.lgp','maplist'].some(k=>!same(walkmeshSources[k],pack.sources[k])))return reject('source_mismatch');
+ if(!walkmeshSources||[pack.archive,'maplist'].some(k=>!same(walkmeshSources[k],pack.sources[k])))return reject('source_mismatch');
  const p=localPoint(mesh,r.field_triangle,[r.field_x,r.field_y]);
  if(!['inside','boundary'].includes(p.status)||p.status!==r.status||p.derivedZ===null||r.derivedZ===null||Math.abs(p.derivedZ-r.derivedZ)>1e-8)return reject('point_invalid');
  result.ok=true;result.anchor={key:'entrance:'+r.field_table_record,kind:'entrance',record:r,x:r.field_x,y:r.field_y};return result;
@@ -170,7 +175,7 @@ export interface EvidenceStep {sourceType:string;sourceIdentity:string;precision
  * inferred association, never geographic containment or a Field position. */
 export function fieldEvidence(index:FieldIndex,id:number):EvidenceStep[]{
  const n=index.nodes.get(id);if(!n)return [{sourceType:'maplist',sourceIdentity:String(id),precision:'unresolved',relation:'unresolved',reason:'missing_destination'}];
- const result:EvidenceStep[]=[{sourceType:'maplist',sourceIdentity:`flevel.lgp / maplist[${id}] / ${n.name}`,precision:n.status==='available'?'field_only':'unresolved',relation:n.status==='available'?'known':'unresolved'}];
+ const result:EvidenceStep[]=[{sourceType:'maplist',sourceIdentity:`${index.pack.archive} / maplist[${id}] / ${n.name}`,precision:n.status==='available'?'field_only':'unresolved',relation:n.status==='available'?'known':'unresolved'}];
  if(n.scriptName)result.push({sourceType:'script_header',sourceIdentity:`${n.name} / section 1 / ${n.scriptName}`,precision:'field_only',relation:'known'});
  const incoming=new Map<number,SceneEdge|null>([[id,null]]),queue=[id];let native:NativeFieldRelation|undefined;
  for(let i=0;i<queue.length&&!native;i++){const at=queue[i];native=index.pack.nativeRelations?.find(e=>e.fieldId===at);if(native)break;for(const e of index.incoming.get(at)??[])if(!incoming.has(e.fromField)){incoming.set(e.fromField,e);queue.push(e.fromField);}}
@@ -319,7 +324,7 @@ export function parseWalkmeshHeader(buffer:ArrayBuffer,total:number,fields:Field
  const length=v.getUint32(12,true),base=16+length;if(length>512_000||base>total||v.byteLength!==base)throw Error('Walkmesh metadata bounds');
  const m=shape(JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(buffer.slice(16))),['schema','version','coordinateSpace','generator_revision','sources','scenes']);
  if(m.schema!=='gaiagis-field-walkmesh'||m.version!==1||m.coordinateSpace!=='FieldLocal'||m.generator_revision!=='field-walkmesh-1')throw Error('Walkmesh schema/revision');
- const sources=shape(m.sources,['flevel.lgp','maplist']);if(Object.entries(sources).some(([k,h])=>h!==fields.sources[k]))throw Error('Walkmesh Field source identity mismatch');
+ const sources=shape(m.sources,[fields.archive,'maplist']);if(Object.entries(sources).some(([k,h])=>h!==fields.sources[k]))throw Error('Walkmesh Field source identity mismatch');
  const scenes=new Map<number,WalkmeshScene>();let end=0;const statsKeys=Object.keys({blocked:0,accessible:0,asymmetric:0,edgeMismatch:0,selfLinks:0,degenerate:0,degenerateXY:0,paddingVariants:0});
  for(const value of list(m.scenes,2000)){const r=value as WalkmeshScene,o=shape(value,['fieldId','status',...(r.status==='available'?['offset','bytes','triangles',...statsKeys]:[])]);
   if(!integer(o.fieldId)||scenes.has(r.fieldId)||!fields.nodes.some(n=>n.id===r.fieldId&&n.status==='available')||!['available','corrupt'].includes(r.status))throw Error('Walkmesh scene identity');

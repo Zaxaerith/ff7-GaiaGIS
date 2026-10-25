@@ -1,3 +1,4 @@
+import {archiveKey} from './sourceRoles';
 // SPDX-License-Identifier: GPL-3.0-only
 import type {GaiaMeta,GaiaMesh} from './mesh';
 import type {Location} from './poi';
@@ -23,7 +24,7 @@ const nullable=(v:unknown,lo:number,hi:number)=>v===null||int(v,lo,hi);
 export function parseEvents(input:unknown,meta?:GaiaMeta):EventsDataset{
   const d=object(input),m=object(d.mapping),s=object(d.sources);
   if(d.schema!=='gaiagis-events'||d.version!==1||d.reconstruction!=='v1-geometric-gaia'||JSON.stringify(d.world_extent)!=='[294912,229376]'||m.method!=='inverse_mercator'||m.radius_m!==6371008.8||m.flip_latitude!==false||m.antimeridian_game_east!==0||m.vertical_scale_m_per_raw_unit!==1)fail();
-  for(const key of ['wm0.map','world_us.lgp','wm0.ev','field.tbl','maplist'])if(typeof s[key]!=='string'||!/^[a-f0-9]{64}$/i.test(s[key] as string))fail();
+  for(const key of ['wm0.map',archiveKey(s,'world')!,'wm0.ev','field.tbl','maplist'])if(typeof s[key]!=='string'||!/^[a-f0-9]{64}$/i.test(s[key] as string))fail();
   const source=(meta as GaiaMeta&{stage1?:{source_wm0_sha256?:string}})?.stage1?.source_wm0_sha256;
   if(source&&source.toLowerCase()!==(s['wm0.map'] as string).toLowerCase())throw new Error('Events were generated from a different WM0 source.');
   if(!Array.isArray(d.events)||d.events.length>5000||!Array.isArray(d.unresolved)||d.unresolved.length>10000)fail();object(d.extraction);

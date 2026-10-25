@@ -67,7 +67,7 @@ def build_texture_pack(source_root,meta_path,output_path,map_id='WM0'):
     workspace=Path(__file__).resolve().parents[2]
     output_path=Path(output_path).resolve()
     if not output_path.is_relative_to(workspace):raise ValueError('Output must remain in GaiaGIS workspace')
-    ds=discover(Path(source_root));lgp=ds.files['world_us.lgp'];entries={e['filename'].casefold():e for e in inventory(lgp)['entries']}
+    ds=discover(source_root);lgp=ds.world_archive;entries={e['filename'].casefold():e for e in inventory(lgp)['entries']}
     if map_id not in ('WM0','WM2','WM3'):raise ValueError('Unsupported map identity')
     source_map=map_id.lower()+'.map'
     world=parse_map(ds.files[source_map],int(map_id[2]))
@@ -92,7 +92,7 @@ def build_texture_pack(source_root,meta_path,output_path,map_id='WM0'):
             uv.extend(UV_RECORD.pack(mesh.section_id,mesh.mesh_id,tri.triangle_id,tri.texture,*[n for pair in tri.uv for n in pair]))
     image=png_rgba(side,side,pixels);meta=json.loads(Path(meta_path).read_text(encoding='utf8'))
     header=dict(schema='gaiagis-textures',version=1,mapId=map_id,reconstruction='V1 Geometric Gaia' if map_id=='WM0' else map_id+'Native',
-        mesh_sha256=meta['sha256'],sources={name:hashlib.sha256(ds.files[name].read_bytes()).hexdigest() for name in (source_map,'world_us.lgp')},
+        mesh_sha256=meta['sha256'],sources={name:hashlib.sha256(ds.files[name].read_bytes()).hexdigest() for name in (source_map,ds.world_name)},
         atlas=dict(width=side,height=side,padding=GUTTER,encoding='png',color_space='srgb',mipmaps=False),
         textures=table,missing=missing,triangle_count=len(uv)//UV_RECORD.size,uv_record_bytes=UV_RECORD.size,
         uv_byte_length=len(uv),image_byte_length=len(image),payload_sha256=hashlib.sha256(uv+image).hexdigest(),

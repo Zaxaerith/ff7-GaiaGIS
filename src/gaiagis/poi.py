@@ -10,7 +10,7 @@ import math
 from pathlib import Path
 import struct
 
-from .dataset import discover, child_ci
+from .dataset import discover
 from .lgp import inventory, read_entry
 from .lzss import FormatError
 from .map_reader import parse_map
@@ -211,19 +211,16 @@ def group_locations(entrances):
 
 def build_poi(source: Path, destination: Path, field_archive: Path|None=None) -> dict:
     destination=output_path(destination)
-    ds=discover(source);lgp=ds.files['world_us.lgp'];entries=inventory(lgp)['entries']
+    ds=discover(source);lgp=ds.world_archive;entries=inventory(lgp)['entries']
     if destination.is_relative_to(ds.wm_directory):
         raise ValueError('Output cannot be inside the selected source WM directory')
     def payload(name):
         matches=[e for e in entries if e['filename'].casefold()==name]
         if len(matches)!=1:raise FormatError(f'Expected one LGP entry: {name}')
         return read_entry(lgp,matches[0])
-    if field_archive is None:
-        # sibling data/field resolves classic and 2026 layout without AppID assumptions.
-        field_dir=child_ci(ds.wm_directory.parent,'field')
-        field_archive=child_ci(field_dir,'flevel.lgp') if field_dir else None
+    field_archive=ds.field_archive(field_archive)
     if field_archive is None or not field_archive.is_file():
-        raise FormatError('English flevel.lgp/maplist required; pass --field-archive for extracted data')
+        raise FormatError('Selected Field archive/maplist required; pass --field-archive for extracted data')
     if destination.is_relative_to(field_archive.resolve().parent):
         raise ValueError('Output cannot be inside the selected source field directory')
     ftoc=inventory(field_archive)['entries'];maps=[e for e in ftoc if e['filename'].casefold()=='maplist']
@@ -266,7 +263,7 @@ def build_poi(source: Path, destination: Path, field_archive: Path|None=None) ->
         mapping=dict(method='inverse_mercator',radius_m=mapping.config.radius_m,flip_latitude=False,antimeridian_game_east=0,
                      vertical_scale_m_per_raw_unit=1),
         sources={name:hashlib.sha256(data).hexdigest() for name,data in [('wm0.map',ds.files['wm0.map'].read_bytes()),
-                 ('wm0.ev',ev),('field.tbl',table_data),('maplist',maplist)]},
+                 ('wm0.ev',ev),('field.tbl',table_data),('maplist',maplist),(ds.world_name,lgp.read_bytes()),(ds.field_name,field_archive.read_bytes())]},
         locations=locations,entrances=entrances,unresolved=unresolved,extraction=stats)
     destination.parent.mkdir(parents=True,exist_ok=True)
     destination.write_text(json.dumps(asset,ensure_ascii=False,separators=(',',':'))+'\n',encoding='utf-8')

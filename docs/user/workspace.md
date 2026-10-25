@@ -8,6 +8,14 @@ Historical, unmaintained macOS behaviour (not a current distribution target): `o
 
 Run `python -m gaiagis local --source "YOUR_FF7_INSTALLATION"` (or the portable EXE). The launcher generates missing components, reuses compatible components, serves only allowlisted workspace payloads and supplies local status. The Viewer connects automatically. The source installation is strictly read-only.
 
+For EN/FR/DE/ES data, choose **Game data language** in the launcher or pass
+`--game-language fr` (for example) to `local`/`build-workspace`. This is separate
+from UI language. English remains the default. Use `--workspace output/workspace-fr`
+with `local`, or `--output output/workspace-fr` with `build-workspace`, to retain
+separate language Workspaces. The Data panel shows the active archive pair.
+New Field Context v4 and old English v1–v3 are supported; source and Save evidence
+limits still apply. [Compatibility details](../reference/multilingual-sources.md).
+
 The Data status card distinguishes auto-local, manually selected folder and public source-only mode. Local mode can display the workspace path; paths are never put in public share links.
 
 ## Manual selection

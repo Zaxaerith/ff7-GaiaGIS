@@ -1,3 +1,4 @@
+import {archiveKey} from './sourceRoles';
 // SPDX-License-Identifier: GPL-3.0-only
 import type {GaiaMeta,TriangleAttributes} from './mesh';
 export const encounterKinds=['normal','back_attack','side_attack','both_sides','chocobo'] as const;
@@ -24,7 +25,7 @@ const integer=(v:unknown,min:number,max:number)=>typeof v==='number'&&Number.isS
 export function parseEncounters(input:unknown,meta?:GaiaMeta):EncounterDataset {
   const d=object(input),sources=object(d.sources),record=object(d.source_record);
   if(d.schema!=='gaiagis-encounters'||d.version!==1||d.reconstruction!=='v1-geometric-gaia'||d.lookup_profile!=='classic-pc-reference'||d.runtime_equivalence!=='not-verified-steam2026')fail();
-  for(const key of ['wm0.map','world_us.lgp','enc_w.bin'])if(typeof sources[key]!=='string'||!/^[a-f0-9]{64}$/i.test(sources[key] as string))fail();
+  for(const key of ['wm0.map',archiveKey(sources,'world')!,'enc_w.bin'])if(typeof sources[key]!=='string'||!/^[a-f0-9]{64}$/i.test(sources[key] as string))fail();
   if(meta){const source=(meta as GaiaMeta&{stage1?:{source_wm0_sha256?:string}}).stage1?.source_wm0_sha256;
     if(!source||source.toLowerCase()!==(sources['wm0.map'] as string).toLowerCase())throw new Error('Encounters were generated from a different or unverified WM0 source.');}
   if(record.filename!=='enc_w.bin'||record.size!==2208||!integer(record.toc_index,0,100000)||!integer(record.archive_data_offset,0,2**32-1))fail();

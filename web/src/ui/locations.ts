@@ -34,7 +34,7 @@ export function mountLocations(viewer:GaiaViewer,meta:GaiaMeta,isCurrent:()=>boo
       [t('inspect.entrance'),`${e.entrance_table_id} / ${e.scenario}`],[t('inspect.region'),meta.region_names[e.region_id]??String(e.region_id)],
       [t('ui.source'),t('message.triggerSource',{file:e.source_file,section:e.section_id,mesh:e.mesh_id,triangle:e.triangle_id})],
       [t('inspect.scriptProvenance'),`wm0.ev · function ${e.source_script} · ${e.script_calls.map(c=>t('message.scriptCall',{call:c.call_table_record,word:c.instruction_word_offset})).join('; ')}`],
-      [t('inspect.identity'),`field.tbl record ${e.field_table_record} · flevel.lgp / maplist`],[t('inspect.confidence'),t('inspect.verifiedTrigger')],
+      [t('inspect.identity'),`field.tbl record ${e.field_table_record} · maplist`],[t('inspect.confidence'),t('inspect.verifiedTrigger')],
       [t('inspect.positionProvenance'),t('inspect.navPoint')],[t('inspect.nameProvenance'),location.name_source==='manual_verified_field_identity'?t('inspect.englishName'):t('inspect.maplist')],[t('inspect.availability'),t('inspect.notEvaluated')],[t('inspect.entranceCount'),String(location.entrance_ids.length)]];
     const technical=document.createElement('details'),technicalTitle=document.createElement('summary');technical.className='location-technical';technicalTitle.textContent=t('atlas.technical');technical.append(technicalTitle,list);detail.append(technical);
     for(const [key,value]of rows){const row=document.createElement('div'),dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=key;dd.textContent=value;row.append(dt,dd);list.append(row);}

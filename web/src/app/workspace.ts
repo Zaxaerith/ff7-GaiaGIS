@@ -1,3 +1,4 @@
+import {archiveKey,assertSourceAgreement,gameArchives} from '../data/sourceRoles';
 // SPDX-License-Identifier: GPL-3.0-only
 import type {AssetId,AssetState} from './state';
 import {SCRIPT_EVIDENCE_FILE,SCRIPT_EVIDENCE_GENERATOR,SCRIPT_EVIDENCE_LIMITS} from '../data/fieldScriptEvidence';
@@ -12,6 +13,7 @@ const hash=(v:unknown)=>typeof v==='string'&&/^[a-f0-9]{64}$/.test(v);
 export function parseManifest(value:unknown):WorkspaceManifest{
  if(!value||typeof value!=='object')throw Error('Workspace schema');const m=value as WorkspaceManifest;
  if(m.schema!=='gaiagis-workspace'||m.version!==1||m.timestamp_policy!=='omitted'||typeof m.tool_version!=='string'||!safeName(m.tool_version)||!m.sources||Array.isArray(m.sources)||!Object.entries(m.sources).every(([name,value])=>safeName(name)&&hash(value))||!Array.isArray(m.assets)||m.assets.length>32)throw Error('Unsupported workspace manifest');
+ archiveKey(m.sources,'world',false);
  const names=new Set<string>();for(const a of m.assets){
  const type=a.type==='metadata'?'geometry':a.type;
  if(!a||!Object.hasOwn(assetFiles,type)||!assetFiles[type].includes(a.filename)||!safeName(a.filename)||names.has(a.filename)||!hash(a.sha256)||!Number.isSafeInteger(a.bytes)||a.bytes<=0||a.bytes>160_000_000||!['WM0','WM2','WM3','shared'].includes(a.mapId)||!Array.isArray(a.dependencies)||!a.dependencies.every(safeName))throw Error('Invalid workspace asset');
@@ -48,6 +50,12 @@ export function workspaceOrder(manifest:WorkspaceManifest|null):AssetId[]{
  return result;
 }
 export type AssetLoader=(files:File[])=>Promise<void>;
+function requireForeignProvenance(id:AssetId,expected:Record<string,string>,actual:Record<string,string>){
+ // Legacy EN POI/Atlas can carry member-only hashes. A foreign Workspace
+ // cannot relabel those assets through its Manifest's archive names.
+ if(id!=='locations'&&id!=='atlas')return;
+ for(const [role,index] of [['world',0],['field',1]] as const){const key=archiveKey(expected,role,false);if(key&&key!==gameArchives.en[index]&&!actual[key])throw Error('Foreign archive source identity missing');}
+}
 export async function assetSources(file:File):Promise<Record<string,string>>{
  let value:Record<string,unknown>={};
  if(file.name.endsWith('.json')){if(file.size>8_000_000)throw Error('JSON asset size');value=JSON.parse(await file.text());}
@@ -59,7 +67,7 @@ export async function assetSources(file:File):Promise<Record<string,string>>{
  if(stage?.source_wm0_sha256)sources['wm0.map']=stage.source_wm0_sha256;
  if(typeof value.source_sha256==='string'&&typeof value.mapId==='string')sources[value.mapId.toLowerCase()+'.map']=value.source_sha256;
  if(!Object.entries(sources).every(([name,value])=>safeName(name)&&!['__proto__','constructor','prototype'].includes(name)&&typeof value==='string'&&/^[a-fA-F0-9]{64}$/.test(value)))throw Error('Invalid asset source fingerprint');
- return sources;
+ archiveKey(sources,'world',false);return sources;
 }
 /** Parsed assets remain owned by existing feature owners; only File handles are retained. */
 export class WorkspaceLoader {
@@ -73,7 +81,7 @@ export class WorkspaceLoader {
   const order=workspaceOrder(plan.manifest),sources={...plan.manifest?.sources};
   if(plan.issues.geometry){this.report('geometry',plan.issues.geometry);return plan;}
   for(const id of order){if(epoch!==this.epoch)return;const issue=plan.issues[id];if(issue){this.report(id,issue);continue;}const selected=assetFiles[id].map(n=>plan.files.get(n)!);const bytes=selected.reduce((sum,f)=>sum+f.size,0),loader=this.loaders.get(id);if(!loader){this.report(id,{status:'unsupported',bytes});continue;}
-   this.report(id,{status:'loading',bytes});try{const bindings:Record<string,string>={};for(const f of selected)for(const [key,hash]of Object.entries(await assetSources(f))){if(sources[key]&&sources[key].toLowerCase()!==hash.toLowerCase())throw Error('Workspace cross-asset source fingerprint mismatch');bindings[key]=hash.toLowerCase();}if(epoch!==this.epoch)return;await loader(selected);Object.assign(sources,bindings);if(epoch!==this.epoch)return;this.report(id,{status:plan.manifest?'loaded':'legacy',bytes,sourceHashes:bindings});}catch(e){if(epoch!==this.epoch)return;const text=e instanceof Error?e.message:String(e);this.report(id,{status:/mismatch|fingerprint|incompat|identity/i.test(text)?'incompatible':'corrupt',bytes,reason:'workspace.assetRejected'});if(id==='geometry')return plan;}
+   this.report(id,{status:'loading',bytes});try{const bindings:Record<string,string>={};for(const f of selected){const next=await assetSources(f);assertSourceAgreement({...sources,...bindings},next);for(const [key,hash]of Object.entries(next))bindings[key]=hash.toLowerCase();}requireForeignProvenance(id,sources,bindings);if(epoch!==this.epoch)return;await loader(selected);Object.assign(sources,bindings);if(epoch!==this.epoch)return;this.report(id,{status:plan.manifest?'loaded':'legacy',bytes,sourceHashes:bindings});}catch(e){if(epoch!==this.epoch)return;const text=e instanceof Error?e.message:String(e);this.report(id,{status:/mismatch|fingerprint|incompat|identity/i.test(text)?'incompatible':'corrupt',bytes,reason:'workspace.assetRejected'});if(id==='geometry')return plan;}
    await new Promise(resolve=>setTimeout(resolve,0));
   }return plan;
  }

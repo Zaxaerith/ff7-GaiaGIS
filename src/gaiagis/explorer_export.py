@@ -56,7 +56,7 @@ def source_surface(world):
 
 def build_explorer(source:Path,destination:Path,report_path:Path|None=None,*,version:int=1):
     if version not in (1,2):raise ValueError("Unsupported Explorer version")
-    destination=output_path(destination);ds=discover(source);archive=ds.files['world_us.lgp']
+    destination=output_path(destination);ds=discover(source);archive=ds.world_archive
     entries={e['filename'].lower():e for e in inventory(archive)['entries']};hashes={};cache={}
     def read(name):
         if name not in entries:raise ValueError(f'Missing required Explorer resource: {name}')
@@ -87,10 +87,10 @@ def build_explorer(source:Path,destination:Path,report_path:Path|None=None,*,ver
     if version==2:
         field=child_ci(ds.wm_directory.parent,'field')
         char=child_ci(field,'char.lgp') if field else None
-        flevel=child_ci(field,'flevel.lgp') if field else None
+        flevel=ds.field_archive()
         if char and flevel:
             hashes['char.lgp']=hashlib.sha256(char.read_bytes()).hexdigest()
-            hashes['flevel.lgp']=hashlib.sha256(flevel.read_bytes()).hexdigest()
+            hashes[ds.field_name]=hashlib.sha256(flevel.read_bytes()).hexdigest()
             ce={e['filename'].lower():e for e in inventory(char)['entries']}
             fe={e['filename'].lower():e for e in inventory(flevel)['entries']}
             ec={}
@@ -116,7 +116,7 @@ def build_explorer(source:Path,destination:Path,report_path:Path|None=None,*,ver
                     specs.append((identity,None,stem,512))
                 except (KeyError,StopIteration,ValueError) as error:
                     unavailable.append(dict(id=identity,reason=str(error)))
-        else:unavailable=[dict(id=id,reason='Optional char.lgp/flevel.lgp unavailable') for id,_,_ in EXTENDED]
+        else:unavailable=[dict(id=id,reason='Optional char.lgp/selected Field archive unavailable') for id,_,_ in EXTENDED]
     world_read=read
     for identity,model_id,stem,scale in specs:
         read=extended_read if identity in extended_rows else world_read
@@ -150,7 +150,7 @@ def build_explorer(source:Path,destination:Path,report_path:Path|None=None,*,ver
             if f.model is not None:model_references[f.model].append(dict(mapId=f'WM{mid}',source_file=name,call_table_record=f.table,function=f.id,instruction_start=f.start))
     model_inventory=[dict(model_id=mid,resources=[r+'.hrc' for r in MODEL_RESOURCES.get(mid,[])],resource_evidence='classic_pc_registry' if mid in MODEL_RESOURCES else 'unresolved_resource',known_script_references=model_references[mid],observed_map_usage=sorted({r['mapId'] for r in model_references[mid]}),identity='chocobo_related_resource_unresolved' if mid in (41,42) else 'unknown' if mid not in MODEL_RESOURCES else next(r['skeleton_name'] for r in inventory_rows if r['resource']==MODEL_RESOURCES[mid][0]+'.hrc')) for mid in range(43)]
     for row in inventory_rows:row['known_script_references']=[r for mid in row['model_ids'] for r in model_references[mid]]
-    hashes['world_us.lgp']=hashlib.sha256(archive.read_bytes()).hexdigest()
+    hashes[ds.world_name]=hashlib.sha256(archive.read_bytes()).hexdigest()
     metadata=dict(schema='gaiagis-explorer',version=version,reconstruction='v1-geometric-gaia',runtimeClaim=False,sources=dict(sorted(hashes.items())),models=models,textures=[texture_refs[n] for n in sorted(texture_refs)],surfaces=surfaces,preview_timing_fps=30)
     if version==2:metadata.update(registry_version=2,unavailable_models=unavailable)
     if version==2:

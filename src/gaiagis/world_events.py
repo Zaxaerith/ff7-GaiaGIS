@@ -12,7 +12,7 @@ from pathlib import Path
 
 from .ev import decode_ev, basic_blocks, PUSH_CONSTANT, ENTER_FIELD, RETURN, JUMP, BRANCH_FALSE
 from .poi import parse_maplist, parse_field_table, trigger_components, representative, NAME_GROUPS
-from .dataset import discover, child_ci
+from .dataset import discover
 from .lgp import inventory, read_entry
 from .map_reader import parse_map
 from .reconstruction import Mapping, SphereConfig
@@ -306,7 +306,7 @@ def make_event(mapping,a,o,table):
         notes='Script-defined placement, not current runtime position.' if kind=='world_object' else 'Static potential event; runtime conditions and scheduled execution are not simulated.')
 
 def build_events(source:Path,destination:Path,field_archive:Path|None=None):
-    destination=output_path(destination);ds=discover(source);lgp=ds.files['world_us.lgp']
+    destination=output_path(destination);ds=discover(source);lgp=ds.world_archive
     if destination.is_relative_to(ds.wm_directory.resolve()):
         raise ValueError('Output cannot be inside the selected read-only source WM directory')
     entries=inventory(lgp)['entries']
@@ -315,10 +315,8 @@ def build_events(source:Path,destination:Path,field_archive:Path|None=None):
         if len(found)!=1: raise FormatError(f'Expected one archive entry: {name}')
         return read_entry(lgp,found[0])
     ev=payload('wm0.ev');field=payload('field.tbl')
-    if field_archive is None:
-        field_dir=child_ci(ds.wm_directory.parent,'field')
-        field_archive=child_ci(field_dir,'flevel.lgp') if field_dir else None
-    if field_archive is None: raise FormatError('English flevel.lgp/maplist required')
+    field_archive=ds.field_archive(field_archive)
+    if field_archive is None: raise FormatError('Selected Field archive/maplist required')
     if destination.is_relative_to(field_archive.resolve().parent):
         raise ValueError('Output cannot be inside the selected read-only source field directory')
     toc=inventory(field_archive)['entries'];found=[e for e in toc if e['filename'].casefold()=='maplist']
@@ -328,7 +326,7 @@ def build_events(source:Path,destination:Path,field_archive:Path|None=None):
     if world.failures: raise FormatError('Cannot extract events from partial WM0')
     analysis=analyze_ev(ev);events,unresolved=extract_events(analysis,world,table)
     hashes={name:hashlib.sha256(data).hexdigest() for name,data in [('wm0.map',ds.files['wm0.map'].read_bytes()),
-        ('world_us.lgp',lgp.read_bytes()),('wm0.ev',ev),('field.tbl',field),('maplist',names)]}
+        (ds.world_name,lgp.read_bytes()),('wm0.ev',ev),('field.tbl',field),('maplist',names),(ds.field_name,field_archive.read_bytes())]}
     extraction={key:value for key,value in analysis.items() if key not in ('observations','unresolved')}
     extraction.update(event_counts=dict(sorted(Counter(e['event_type'] for e in events).items())),
         unresolved_reasons=dict(sorted(Counter(e['reason'] for e in unresolved).items())))

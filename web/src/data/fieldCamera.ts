@@ -1,3 +1,4 @@
+import {archiveKey} from './sourceRoles';
 // SPDX-License-Identifier: GPL-3.0-only
 import type {FieldPack} from './fieldContext';
 import {blendChannel,sourceSpan} from './fieldCompositing';
@@ -26,7 +27,7 @@ export function parseVisualHeader(buffer:ArrayBuffer,total:number,fields:FieldPa
  const v=new DataView(buffer);if(v.byteLength>=16&&v.getUint32(8,true)===2)return parseVisualHeader2(buffer,total,fields);if(total>64_000_000||v.byteLength<16||new TextDecoder().decode(buffer.slice(0,8))!=='GAIACAM\0'||v.getUint32(8,true)!==1)throw Error('Visual header');
  const length=v.getUint32(12,true),base=16+length;if(length>8_000_000||base>total||buffer.byteLength!==base)throw Error('Visual metadata bounds');
  const meta=shape(JSON.parse(new TextDecoder('utf8',{fatal:true}).decode(buffer.slice(16))),['schema','version','generator_revision','sources','scenes']);
- if(meta.schema!=='gaiagis-field-visual'||meta.version!==1||!['field-visual-1','field-visual-2'].includes(meta.generator_revision))throw Error('Visual schema');const sources=shape(meta.sources,['flevel.lgp','maplist']);
+ if(meta.schema!=='gaiagis-field-visual'||meta.version!==1||!['field-visual-1','field-visual-2'].includes(meta.generator_revision))throw Error('Visual schema');const sources=shape(meta.sources,[archiveKey(fields.sources,'field')!,'maplist']);
  if(Object.entries(sources).some(([k,h])=>typeof h!=='string'||!/^[a-f0-9]{64}$/.test(h)||h!==fields.sources[k]))throw Error('Visual source identity');
  if(!Array.isArray(meta.scenes)||meta.scenes.length>2000)throw Error('Visual scene count');const scenes=new Map<number,FieldVisualScene>();let end=0;
  for(const value of meta.scenes){const r=shape(value,['fieldId','cameras','background'],['reason']);if(r.reason!==undefined&&(typeof r.reason!=='string'||r.reason.length>256))throw Error('Visual reason');if(!int(r.fieldId,0,65535)||scenes.has(r.fieldId)||!fields.nodes.some(n=>n.id===r.fieldId&&n.status==='available')||!Array.isArray(r.cameras)||r.cameras.length>32)throw Error('Visual scene identity');
@@ -49,16 +50,19 @@ function parseVisualHeader2(buffer:ArrayBuffer,total:number,fields:FieldPack){
  const length=v.getUint32(12,true),base=16+length;if(length>8_000_000||base>total||buffer.byteLength!==base)throw Error('Visual metadata bounds');
  const meta=shape(JSON.parse(new TextDecoder('utf8',{fatal:true}).decode(buffer.slice(16))),['schema','version','generator_revision','sources','scenes']);
  if(total>(meta.generator_revision==='field-visual-4'?100_000_000:96_000_000))throw Error('Visual header profile budget');
- if(meta.schema!=='gaiagis-field-visual'||meta.version!==2||!['field-visual-3','field-visual-4'].includes(meta.generator_revision))throw Error('Visual schema');const sources=shape(meta.sources,['flevel.lgp','maplist']);
+ if(meta.schema!=='gaiagis-field-visual'||meta.version!==2||!['field-visual-3','field-visual-4'].includes(meta.generator_revision))throw Error('Visual schema');const sources=shape(meta.sources,[archiveKey(fields.sources,'field')!,'maplist']);
  const hash=(s:unknown)=>typeof s==='string'&&/^[a-f0-9]{64}$/.test(s);
  if(Object.entries(sources).some(([k,h])=>!hash(h)||h!==fields.sources[k]))throw Error('Visual source identity');
  if(!Array.isArray(meta.scenes)||meta.scenes.length>2000)throw Error('Visual scene count');const scenes=new Map<number,FieldVisualScene>();let end=0;
  for(const value of meta.scenes){
   const r=shape(value,['fieldId','cameras','background'],['reason']);if(r.reason!==undefined&&(typeof r.reason!=='string'||r.reason.length>256))throw Error('Visual reason');
-  if(!int(r.fieldId,0,65535)||scenes.has(r.fieldId)||!fields.nodes.some(n=>n.id===r.fieldId&&n.status==='available')||!Array.isArray(r.cameras)||r.cameras.length>32)throw Error('Visual scene identity');
+  if(!int(r.fieldId,0,65535)||scenes.has(r.fieldId)||!fields.nodes.some(n=>n.id===r.fieldId)||!Array.isArray(r.cameras)||r.cameras.length>32)throw Error('Visual scene identity');
   for(const [id,value]of r.cameras.entries()){const c=shape(value,['id','offset','matrix','translation','repeatedRzz','extra','zoom']);if(c.id!==id||c.offset!==id*38||!numbers(c.matrix,9,-32768,32767)||!numbers(c.translation,3,-2147483648,2147483647)||!numbers(c.extra,4,0,255)||!int(c.repeatedRzz,-32768,32767)||!int(c.zoom,1,65535))throw Error('Camera record');}
   const payload=['bounds','layers','tileCount','supportedTileCount','baseTileCount','conditionalTileCount','omitted','pixelBytes','paletteRefs','pages','offset','bytes','rawBytes','sha256'];
   const b=shape(r.background,['status'],['reason','section4SHA256','section9SHA256',...payload,...(meta.generator_revision==='field-visual-4'?['section9Bytes']:[])]),hasHashes=Object.hasOwn(b,'section4SHA256')||Object.hasOwn(b,'section9SHA256');
+  // A v4 Context can reject a member's strict section bounds. Its empty,
+  // explicitly unknown record must not disable other verified scene previews.
+  if(!fields.nodes.some(n=>n.id===r.fieldId&&n.status==='available')&&!(fields.version===4&&fields.nodes.some(n=>n.id===r.fieldId&&n.status==='corrupt')&&b.status==='unknown'&&r.cameras.length===0&&typeof r.reason==='string'&&!Object.hasOwn(b,'bounds')&&!hasHashes))throw Error('Visual scene identity');
   if(!['static_complete','static_partial','unsupported','invalid_source','unknown'].includes(b.status)||hasHashes&&(!hash(b.section4SHA256)||!hash(b.section9SHA256))||!hasHashes&&(b.status!=='unknown'||Object.hasOwn(b,'bounds'))||b.reason!==undefined&&(typeof b.reason!=='string'||b.reason.length>256))throw Error('Background status/source');
   if(!Object.hasOwn(b,'bounds')){if(['static_complete','static_partial'].includes(b.status)||payload.some(k=>Object.hasOwn(b,k)))throw Error('Background missing payload');}
   else{

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-only
 import {projectField} from './fieldCamera';
 import type {BackgroundSelection,FieldCamera} from './fieldCamera';
+import type {FieldArchive} from './sourceRoles';
 
 /** All positions are either original FieldLocal XYZ or named pixel spaces. */
 export interface RegistrationSource {kind:'vertex'|'anchor'|'visual';id:string;xyz?:readonly number[];fieldId:number;sourceSHA256?:string;}
@@ -10,7 +11,7 @@ export interface RegistrationMetadata {
  gameVersion:string;ffNx:string;renderer:string;resolution:string;frameCondition:string;
  crop:string;scaling:string;filters:string;colorSpace:string;hdr:string;notes:string;
 }
-export interface RegistrationProvenance {contextSHA256:string;flevelSHA256:string;maplistSHA256:string;}
+export interface RegistrationProvenance {contextSHA256:string;flevelSHA256:string;maplistSHA256:string;archive?:FieldArchive;}
 export interface RegistrationPreviewEvidence {generatorRevision?:string;section4SHA256?:string;section9SHA256?:string;selection:BackgroundSelection;}
 export const unknownRegistrationMetadata=():RegistrationMetadata=>({gameVersion:'',ffNx:'',renderer:'',resolution:'',frameCondition:'',crop:'',scaling:'',filters:'',colorSpace:'',hdr:'',notes:''});
 export const REFERENCE_LIMITS=Object.freeze({bytes:8_000_000,pixels:4_000_000,dimension:4096,points:256});
@@ -104,8 +105,10 @@ export async function loadReferencePNG(file:File,signal?:AbortSignal):Promise<{b
 export function registrationRecord(frame:ReferenceFrame,mapping:RegistrationMapping|null,points:readonly RegistrationPoint[],summary:ResidualSummary,options:{camera?:FieldCamera|null;provenance?:RegistrationProvenance;sourceSHA256?:string;previewEvidence?:RegistrationPreviewEvidence|null}={}) {
  const metadata=Object.fromEntries(Object.entries(frame.metadata).map(([key,value])=>[key,value.trim().slice(0,512)||'UNKNOWN']));
  const c=options.camera,preview=options.previewEvidence;
+ // Keep the existing EN research export; foreign evidence uses its real basename.
+ const archive=options.provenance?.archive,fieldSource=archive&&archive!=='flevel.lgp'?{[archive]:options.provenance!.flevelSHA256}:{flevelSHA256:options.provenance?.flevelSHA256??'UNKNOWN'};
  return {schema:'gaiagis-registration-research',version:1,evidence:'manual research; original runtime registration NOT VERIFIED',coordinateSpace:'original FieldLocal XYZ; camera screen Y down; reference pixels',frame:{id:frame.id,sha256:frame.sha256,width:frame.width,height:frame.height,fieldId:frame.fieldId,cameraId:frame.cameraId,metadata},
-  sources:{contextSHA256:options.provenance?.contextSHA256??'UNKNOWN',flevelSHA256:options.provenance?.flevelSHA256??'UNKNOWN',maplistSHA256:options.provenance?.maplistSHA256??'UNKNOWN',walkmeshSectionSHA256:options.sourceSHA256??'UNKNOWN'},
+  sources:{contextSHA256:options.provenance?.contextSHA256??'UNKNOWN',...fieldSource,maplistSHA256:options.provenance?.maplistSHA256??'UNKNOWN',walkmeshSectionSHA256:options.sourceSHA256??'UNKNOWN'},
   camera:c?{evidence:'original Section 2 source values; no calibration',id:c.id,offset:c.offset,matrix:[...c.matrix],translation:[...c.translation],zoom:c.zoom,repeatedRzz:c.repeatedRzz,extra:[...c.extra]}:null,
   preview:preview?{evidence:'GaiaGIS research preview; runtime state UNKNOWN',generatorRevision:preview.generatorRevision??'UNKNOWN',section4SHA256:preview.section4SHA256??'UNKNOWN',section9SHA256:preview.section9SHA256??'UNKNOWN',selection:{...preview.selection,layers:preview.selection.layers?[...preview.selection.layers]:undefined}}:null,
   mapping:mapping?{screen:{...mapping.screen},reference:{...mapping.reference}}:null,points:points.map(p=>({...p,observed:[...p.observed],source:p.source?{...p.source,xyz:p.source.xyz?[...p.source.xyz]:undefined}:null})),residuals:summary};

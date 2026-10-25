@@ -48,6 +48,7 @@ def launch_window():
         'title':('Start GaiaGIS','启动 GaiaGIS','啟動 GaiaGIS','GaiaGIS を起動','GaiaGIS 시작'),
         'hint':('Select your original FF7 PC data folder. Game files are only read.','选择原版 FF7 PC 数据目录。游戏文件只读。','選擇原版 FF7 PC 資料目錄。遊戲檔案唯讀。','オリジナル版 FF7 PC データを選択。ゲームは読み取り専用です。','원본 FF7 PC 데이터 폴더를 선택하세요. 게임 파일은 읽기 전용입니다.'),
         'workspace':('GaiaGIS workspace','GaiaGIS 工作区','GaiaGIS 工作區','GaiaGIS ワークスペース','GaiaGIS 작업 공간'),
+        'data_language':('Game data language (separate from UI)','游戏数据语言（独立于界面）','遊戲資料語言（獨立於介面）','ゲームデータ言語（UI とは別）','게임 데이터 언어 (UI와 별도)'),
         'choose':('Choose FF7 folder','选择 FF7 目录','選擇 FF7 目錄','FF7 フォルダーを選択','FF7 폴더 선택'),
         'start':('Start / Retry','启动／重试','啟動／重試','起動 / 再試行','시작 / 다시 시도'),
         'checking':('Checking installation…','正在检查安装目录…','正在檢查安裝目錄…','インストールを確認中…','설치 확인 중…'),
@@ -57,12 +58,14 @@ def launch_window():
         'stop':('Close / Stop','关闭／停止','關閉／停止','閉じる / 停止','닫기 / 중지'),
         'cancel':('Cancel after current resource','当前资源完成后取消','目前資源完成後取消','現在のリソース完了後に中止','현재 리소스 완료 후 취소'),
     }
-    window=tk.Tk();window.title('GaiaGIS '+__version__);window.geometry('600x440');window.minsize(420,390)
+    window=tk.Tk();window.title('GaiaGIS '+__version__);window.geometry('600x500');window.minsize(420,450)
     language=ttk.Combobox(window,values=['English','简体中文','繁體中文','日本語','한국어'],state='readonly',width=18);language.current(0);language.pack(anchor='e',padx=16,pady=8)
     frame=ttk.Frame(window,padding=16);frame.pack(fill='both',expand=True)
     hint=ttk.Label(frame,wraplength=550);hint.pack(fill='x')
     workspace_label=ttk.Label(frame,wraplength=550);workspace_label.pack(fill='x',pady=(8,0))
     source=tk.StringVar();ttk.Entry(frame,textvariable=source).pack(fill='x',pady=12)
+    data_label=ttk.Label(frame);data_label.pack(anchor='w')
+    data_language=ttk.Combobox(frame,values=['en — English','fr — Français','de — Deutsch','es — Español'],state='readonly',width=24);data_language.current(0);data_language.pack(anchor='w',pady=(4,10))
     buttons=ttk.Frame(frame);buttons.pack(fill='x')
     status=tk.StringVar();status_label=ttk.Label(frame,textvariable=status,wraplength=550);status_label.pack(fill='x',pady=12)
     bar=ttk.Progressbar(frame,maximum=15);bar.pack(fill='x')
@@ -70,6 +73,7 @@ def launch_window():
     events=queue.Queue();cancel=threading.Event();worker=None;server=None;last_state='checking';last_detail='';close_pending=False
     def text(key):return messages[key][language.current()]
     def refresh():
+        data_label.configure(text=text('data_language'))
         workspace_label.configure(text=text('workspace')+': '+str(WORKSPACE_ROOT))
         hint.configure(text=text('hint'));choose.configure(text=text('choose'));start.configure(text=text('start'));stop.configure(text=text('cancel') if worker and worker.is_alive() and not server else text('stop'));status.set(text(last_state)+(f' · {int(bar["value"])}/{int(bar["maximum"])}' if last_state=='building' else ''));
     def choose_folder():
@@ -79,16 +83,16 @@ def launch_window():
         if cancel.is_set() and not label.startswith('error:'):raise KeyboardInterrupt()
         events.put(('progress',(label,done,total)))
     def ready(value,url):events.put(('ready',(value,url)))
-    def run(selected_source):
+    def run(selected_source, selected_language):
         try:
             from .safety import protect_input
             from .local import validate_source
             selected=Path(selected_source).resolve()
             if WORKSPACE_ROOT.is_relative_to(selected):raise ValueError('GaiaGIS workspace cannot be inside the selected game source')
-            validate_source(selected)
+            validate_source(selected,selected_language)
             protect_input(selected_source)
             launch_preflight()
-            code=local_main(['--source',selected_source,'--remember-source'],progress=progress,ready=ready)
+            code=local_main(['--source',selected_source,'--game-language',selected_language,'--remember-source'],progress=progress,ready=ready)
             events.put(('done',code))
         except KeyboardInterrupt:events.put(('done',0))
         except Exception as error:events.put(('error',str(error)))
@@ -99,8 +103,8 @@ def launch_window():
         if not source.get():return
         cancel.clear();last_state='checking';last_detail='';bar['value']=0
         details.configure(state='normal');details.delete('1.0','end');details.configure(state='disabled')
-        choose.configure(state='disabled');start.configure(state='disabled');refresh()
-        worker=threading.Thread(target=run,args=(source.get(),),daemon=True);worker.start()
+        choose.configure(state='disabled');start.configure(state='disabled');data_language.configure(state='disabled');refresh()
+        worker=threading.Thread(target=run,args=(source.get(),('en','fr','de','es')[data_language.current()]),daemon=True);worker.start()
     def close():
         nonlocal close_pending
         close_pending=True;cancel.set()
@@ -121,14 +125,15 @@ def launch_window():
                 if close_pending:window.destroy();return
                 last_state='failed' if kind=='error' or value else 'checking'
                 if kind=='error':last_detail=value
-                choose.configure(state='normal');start.configure(state='normal');server=None
+                choose.configure(state='normal');start.configure(state='normal');data_language.configure(state='readonly');server=None
             details.configure(state='normal');details.delete('1.0','end');details.insert('end',last_detail);details.configure(state='disabled');refresh()
         window.after(100,poll)
     language.bind('<<ComboboxSelected>>',lambda _:refresh());window.protocol('WM_DELETE_WINDOW',close)
     window.bind('<Configure>',lambda e:(hint.configure(wraplength=max(280,e.width-32)),workspace_label.configure(wraplength=max(280,e.width-32)),status_label.configure(wraplength=max(280,e.width-32))) if e.widget is window else None)
     try:
-        value=json.loads(CONFIG.read_text(encoding='utf8')).get('source')
+        config=json.loads(CONFIG.read_text(encoding='utf8'));value=config.get('source')
         if isinstance(value,str):source.set(value)
+        if config.get('game_language') in ('en','fr','de','es'):data_language.current(('en','fr','de','es').index(config['game_language']))
     except (OSError,ValueError,AttributeError):pass
     refresh();poll()
     if source.get():window.after(200,begin)

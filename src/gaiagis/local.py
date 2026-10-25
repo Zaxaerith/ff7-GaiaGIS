@@ -20,6 +20,7 @@ import webbrowser
 
 from .build_workspace import ASSETS, build_workspace
 from .dataset import child_ci, discover, fingerprint
+from .constants import GAME_DATA_LANGUAGES
 from .safety import WORKSPACE_ROOT, output_path, resource_path, protect_input
 from .web_export import sha256
 
@@ -45,17 +46,17 @@ def runtime_environment(scratch=None):
     return env
 
 
-def validate_source(source):
+def validate_source(source, game_language='en'):
     try:
-        dataset = discover(Path(source))
+        dataset = discover(source, game_language)
         missing = [name for name in ('wm0.bot','wm2.bot','wm3.bot') if name not in dataset.files]
         if missing:raise ValueError('Missing ' + ', '.join(missing))
         report = fingerprint(dataset)
         field = child_ci(dataset.wm_directory.parent, 'field')
-        archive = child_ci(field, 'flevel.lgp') if field else None
-        if not archive or not archive.is_file():raise ValueError('Missing data/field/flevel.lgp')
+        archive = dataset.field_archive()
+        if not archive or not archive.is_file():raise ValueError('Missing paired data/field/'+dataset.field_name)
         protect_input(archive)
-        report['files'].append(dict(filename='flevel.lgp',size=archive.stat().st_size,sha256=sha256(archive),known_match=None))
+        report['files'].append(dict(filename=dataset.field_name,path=str(archive),size=archive.stat().st_size,sha256=sha256(archive),known_match=None))
         # These optional files are read by Explorer and the original menu audio owner.
         for directory, names in ((field, ('char.lgp',)), (child_ci(dataset.wm_directory.parent, 'sound'), ('audio.fmt', 'audio.dat'))):
             for name in names:
@@ -68,7 +69,7 @@ def validate_source(source):
     except (OSError, ValueError) as error:
         raise ValueError('FF7 installation not recognized or unreadable. Expected '
                          'ff7/workingdir/data/wm/wm0.map (or data/wm/wm0.map), '
-                         'WM0/WM2/WM3 MAP/BOT, world_us.lgp and data/field/flevel.lgp. '
+                         'WM0/WM2/WM3 MAP/BOT and the selected language World/Field archive pair. '
                          + str(error)) from error
 
 
@@ -85,18 +86,22 @@ def workspace_path(path, source):
     return root
 
 
-def choose_source(value, remember=False):
+def choose_source(value, remember=False, game_language=None):
     if value is None and CONFIG.is_file():
-        try:value = json.loads(CONFIG.read_text(encoding='utf8'))['source']
+        try:
+            config = json.loads(CONFIG.read_text(encoding='utf8'))
+            value = config['source']
+            game_language = game_language or config.get('game_language', 'en')
         except (OSError, ValueError, KeyError):raise ValueError('Local config invalid; provide --source to replace it')
     if value is None:
         if not sys.stdin.isatty():raise ValueError('Provide --source YOUR_FF7_INSTALLATION (or --remember-source once)')
         value = input('FF7 installation root: ').strip().strip('"')
     source = Path(value).resolve()
     protect_input(source)
-    report = validate_source(source)
+    game_language = game_language or 'en'
+    report = validate_source(source, game_language)
     if remember:
-        runtime_path(CONFIG).write_text(json.dumps({'source':str(source)},indent=2)+'\n',encoding='utf8')
+        runtime_path(CONFIG).write_text(json.dumps({'source':str(source),'game_language':game_language},indent=2)+'\n',encoding='utf8')
     return source, report
 
 
@@ -231,6 +236,7 @@ def make_server(root, dist, host='127.0.0.1', port=5173):
 def parser():
     cli=argparse.ArgumentParser(description=__doc__)
     cli.add_argument('--source',type=Path)
+    cli.add_argument('--game-language',choices=GAME_DATA_LANGUAGES,help='FF7 data language, independent of UI language (default: remembered selection or en)')
     cli.add_argument('--workspace',type=Path,default=WORKSPACE_ROOT/'output/local-workspace',help='Generated GaiaGIS workspace folder; default: output/local-workspace (not the raw FF7 wm directory)')
     cli.add_argument('--host',default='127.0.0.1')
     cli.add_argument('--port',type=int,default=5173)
@@ -247,12 +253,13 @@ def _main(argv=None, scratch=None, progress=None, ready=None):
     try:
         print('Detecting FF7 installation / checking source fingerprints',flush=True)
         if progress:progress('checking',0,15)
-        source,before=choose_source(args.source,args.remember_source)
+        source,before=choose_source(args.source,args.remember_source,args.game_language)
+        game_language=before['game_data_language']
         print(before['compatibility'],flush=True)
         out=workspace_path(args.workspace,source)
         print('Checking workspace',flush=True)
         try:
-            report=build_workspace(source,out,rebuild=args.rebuild,clean_invalid=args.clean_invalid,allow_optional_failure=True,progress=progress)
+            report=build_workspace(source,out,game_language=game_language,rebuild=args.rebuild,clean_invalid=args.clean_invalid,allow_optional_failure=True,progress=progress)
         except ModuleNotFoundError as error:
             if error.name!='osgeo' or args.build_only:raise
             if str(WORKSPACE_ROOT) not in sys.path:sys.path.insert(0,str(WORKSPACE_ROOT))
@@ -260,12 +267,12 @@ def _main(argv=None, scratch=None, progress=None, ready=None):
             qgis=Path(os.environ.get('GAIAGIS_QGIS_ROOT',''))
             runtime=qgis/'bin/python.exe'
             if not runtime.is_file():raise RuntimeError('QGIS/GDAL environment unavailable. Set GAIAGIS_QGIS_ROOT to your QGIS installation.') from error
-            command=[str(runtime),'-B','-m','gaiagis.local','--source',str(source),'--workspace',str(out),'--build-only']
+            command=[str(runtime),'-B','-m','gaiagis.local','--source',str(source),'--workspace',str(out),'--game-language',game_language,'--build-only']
             if args.rebuild:command.append('--rebuild')
             if args.clean_invalid:command.append('--clean-invalid')
             subprocess.run(command,cwd=WORKSPACE_ROOT,env=qgis_environment(qgis),check=True)
             report=json.loads((out/'local-launch.json').read_text(encoding='utf8'))['build']
-        after=validate_source(source)
+        after=validate_source(source,game_language)
         if [(r['filename'],r['size'],r['sha256'].lower()) for r in before['files']]!=[(r['filename'],r['size'],r['sha256'].lower()) for r in after['files']]:
             raise RuntimeError('FF7 source fingerprint changed')
         build_seconds=time.perf_counter()-began

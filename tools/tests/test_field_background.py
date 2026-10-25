@@ -282,13 +282,13 @@ class BackgroundV2WorkspaceTests(unittest.TestCase):
             background.validate_visual(Oversized(),self.sources)
 
     def test_encoder_counts_metadata_in_total_budget_before_any_workspace_write(self):
-        from types import SimpleNamespace
+        from gaiagis.dataset import SourceDataset
         from unittest.mock import patch
         from gaiagis import field_background as background
         # No real archive or Field data: an empty synthetic maplist isolates
         # the total-file guard, including its 16-byte header and metadata.
         archive=self.source/'data/field/flevel.lgp'
-        dataset=SimpleNamespace(wm_directory=self.source/'data/wm')
+        dataset=SourceDataset(self.source,self.source/'data/wm',{},'synthetic')
         with patch('gaiagis.dataset.discover',return_value=dataset), \
              patch('gaiagis.dataset.child_ci',side_effect=[archive.parent,archive]), \
              patch('gaiagis.web_export.sha256',return_value='a'*64), \
@@ -408,11 +408,11 @@ class BackgroundV2AuditOutputTests(unittest.TestCase):
             audit_output(directory)
 
     def encode_empty_audit(self,target):
-        from types import SimpleNamespace
+        from gaiagis.dataset import SourceDataset
         from unittest.mock import patch
         from gaiagis.field_background import encode_visual
         archive=self.source/'data/field/flevel.lgp'
-        dataset=SimpleNamespace(wm_directory=self.source/'data/wm')
+        dataset=SourceDataset(self.source,self.source/'data/wm',{},'synthetic')
         with patch('gaiagis.dataset.discover',return_value=dataset), \
              patch('gaiagis.dataset.child_ci',side_effect=[archive.parent,archive]), \
              patch('gaiagis.web_export.sha256',return_value='a'*64), \

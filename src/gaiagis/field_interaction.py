@@ -11,6 +11,8 @@ import json
 import os
 import re
 from pathlib import Path
+from .constants import GAME_DATA_LANGUAGES
+from .dataset import field_source_keys, same_dependencies
 import struct
 import tempfile
 import time
@@ -104,9 +106,9 @@ def scene_interactions(payload, field_id, name):
 
 def encode_interactions(source, directory):
     """Read inputs only, build a bounded candidate entirely before publication."""
-    began=time.perf_counter();source=Path(source).resolve();directory=output_path(Path(directory));protect_input(source)
+    began=time.perf_counter();ds=discover(source);source=ds.selected_path;directory=output_path(Path(directory));protect_input(source)
     if directory.is_relative_to(source) or source.is_relative_to(directory):raise ValueError('Interaction output/input overlap')
-    ds=discover(source);field=child_ci(ds.wm_directory.parent,'field');archive=child_ci(field,'flevel.lgp') if field else None
+    archive=ds.field_archive()
     if not archive:raise FormatError('Field archive unavailable')
     # A selected wm directory also reads the sibling field directory. Neither
     # may become a writable output, even when legal inputs live in the checkout.
@@ -119,11 +121,11 @@ def encode_interactions(source, directory):
         if key in entries:raise FormatError('Ambiguous Field archive entry')
         entries[key]=entry
     if 'maplist' not in entries:raise FormatError('Field maplist unavailable')
-    maplist=read_entry(archive,entries['maplist']);names=parse_maplist(maplist);sources={'flevel.lgp':source_hash,'maplist':digest(maplist)}
+    maplist=read_entry(archive,entries['maplist']);names=parse_maplist(maplist);sources={ds.field_name:source_hash,'maplist':digest(maplist)}
     context_path=directory/'gaia-field-context.json'
     if not context_path.is_file() or context_path.stat().st_size>8_000_000:raise ValueError('Interaction requires existing Field Context')
     context=json.loads(context_path.read_text(encoding='utf8'))
-    if not isinstance(context,dict) or context.get('schema')!='gaiagis-field-context' or context.get('version') not in (1,2,3) or not isinstance(context.get('sources'),dict) or any(context['sources'].get(k)!=v for k,v in sources.items()):raise ValueError('Interaction Field source identity mismatch')
+    if not isinstance(context,dict) or context.get('schema')!='gaiagis-field-context' or context.get('version') not in (1,2,3,4) or not isinstance(context.get('sources'),dict) or any(context['sources'].get(k)!=v for k,v in sources.items()):raise ValueError('Interaction Field source identity mismatch')
     nodes=context.get('nodes')
     if not isinstance(nodes,list) or len(nodes)>2000 or any(not isinstance(n,dict) for n in nodes):raise ValueError('Interaction Field identities')
     scenes=[];pool=bytearray();counts=dict(fields=0,slots=0,triggers=0,unused=0,line=0,linon=0,sline=0,staticSline=0,dynamicSline=0,stops=0,backgroundMatched=0,backgroundUnknown=0)
@@ -288,7 +290,7 @@ def read_interaction(scene):
         encoded=stream.read(length);checksum=hashlib.sha256(prefix+encoded)
         meta=_shape(_decode(encoded),'schema version coordinateSpace generator_revision sources scenes')
         if meta['schema']!='gaiagis-field-interaction' or type(meta['version']) is not int or meta['version']!=1 or meta['coordinateSpace']!='FieldLocal' or meta['generator_revision']!=GENERATOR_VERSION:raise ValueError('Interaction schema')
-        _shape(meta['sources'],'flevel.lgp maplist')
+        _shape(meta['sources'],' '.join(field_source_keys(meta['sources'])))
         if any(_fingerprint(h)!=scene['context']['sources'][k] for k,h in meta['sources'].items()):raise ValueError('Interaction source mismatch')
         end=0;seen=set();chosen=None
         for span in _list(meta['scenes'],2000):
@@ -347,7 +349,7 @@ def update_workspace(source, directory):
     manifest_path=output_path(directory/'gaia-workspace.json');pack_path=output_path(directory/FILENAME)
     old_manifest=manifest_path.read_bytes();old_pack=pack_path.read_bytes() if pack_path.is_file() else None
     payload,report=encode_interactions(source,directory)
-    if manifest.get('sources',{}).get('flevel.lgp')!=report['sources']['flevel.lgp']:raise ValueError('Interaction Workspace source mismatch')
+    if not same_dependencies(manifest.get('sources',{}),report['sources'],['@field']):raise ValueError('Interaction Workspace source mismatch')
     kind,map_id,dependencies=ASSETS[FILENAME]
     record=dict(filename=FILENAME,type=kind,mapId=map_id,sha256=digest(payload),bytes=len(payload),dependencies=dependencies,generator_version=GENERATOR_VERSION)
     manifest['assets']=[r for r in manifest['assets'] if r['filename']!=FILENAME]+[record];manifest['tool_version']=__version__
@@ -363,7 +365,10 @@ def update_workspace(source, directory):
 
 def main(argv=None):
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--source',type=Path,required=True);parser.add_argument('--workspace',type=Path,required=True)
+    parser.add_argument('--game-language',choices=GAME_DATA_LANGUAGES,default='en',help='FF7 data language; independent of UI language')
     args=parser.parse_args(argv)
+    from .dataset import discover
+    args.source=discover(args.source,args.game_language)
     try:print(json.dumps(update_workspace(args.source,args.workspace),ensure_ascii=False,indent=2));return 0
     except (ValueError,OSError,FormatError,KeyError,TypeError,struct.error) as error:parser.exit(1,f'Field interaction generation rejected: {error}\n')
 

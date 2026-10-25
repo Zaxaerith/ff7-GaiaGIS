@@ -11,6 +11,8 @@ import hashlib
 import json
 import os
 from pathlib import Path
+from .constants import GAME_DATA_LANGUAGES
+from .dataset import field_source_keys, same_dependencies
 import stat
 import struct
 import time
@@ -294,7 +296,7 @@ def validate_visual(payload, sources=None):
         raise ValueError('Visual candidate profile budget')
     if sources is not None and meta.get('sources') != sources:
         raise ValueError('Visual candidate sources')
-    shape(meta['sources'], ('flevel.lgp','maplist'))
+    shape(meta['sources'], field_source_keys(meta['sources']))
     if not all(hash_value(v) for v in meta['sources'].values()) or not isinstance(meta['scenes'],list) or len(meta['scenes'])>2000:
         raise ValueError('Visual candidate sources/scenes')
     end = 0; seen = set()
@@ -404,11 +406,10 @@ def encode_visual(source, directory, *, audit_path=None, progress=None, audit_on
     from .lgp import inventory, read_entry
     from .poi import parse_maplist
     from .web_export import sha256
-    began = time.perf_counter(); source = Path(source).resolve(); directory = visual_path(directory)
+    began = time.perf_counter(); ds=discover(source); source=ds.selected_path; directory = visual_path(directory)
     audit_path = audit_output(audit_path) if audit_path else None
     protect_input(source)
-    ds = discover(source); field = child_ci(ds.wm_directory.parent, 'field')
-    archive = child_ci(field, 'flevel.lgp') if field else None
+    archive = ds.field_archive()
     if not archive:
         raise FormatError('Field archive unavailable')
     for input_root in (source, ds.wm_directory.resolve(), archive.resolve().parent):
@@ -472,7 +473,7 @@ def encode_visual(source, directory, *, audit_path=None, progress=None, audit_on
         if pool_size > MAX_COMPOSITING_PACK and not audit_only:
             raise FormatError('Visual pack budget exceeded')
     metadata = dict(schema='gaiagis-field-visual', version=2, generator_revision=GENERATOR_VERSION,
-        sources={'flevel.lgp':archive_hash, 'maplist':digest(maplist)}, scenes=scenes)
+        sources={ds.field_name:archive_hash, 'maplist':digest(maplist)}, scenes=scenes)
     encoded = json.dumps(metadata, separators=(',', ':'), sort_keys=True).encode()
     if len(encoded) > 8_000_000 or 16+len(encoded)+pool_size > MAX_COMPOSITING_PACK and not audit_only:
         raise FormatError('Visual pack metadata/size budget')
@@ -521,7 +522,7 @@ def update_workspace(source, directory, *, audit_path=None):
     if metadata['generator_revision'] != GENERATOR_VERSION:
         raise ValueError('Visual generator publication mismatch')
     context = json.loads((directory/'gaia-field-context.json').read_text(encoding='utf8'))
-    if any(context.get('sources',{}).get(k) != v for k,v in report['sources'].items()) or manifest['sources'].get('flevel.lgp') != report['sources']['flevel.lgp']:
+    if any(context.get('sources',{}).get(k) != v for k,v in report['sources'].items()) or not same_dependencies(manifest['sources'], report['sources'], ['@field']):
         raise ValueError('Visual Workspace source mismatch')
     kind, map_id, dependencies = ASSETS[FILENAME]
     entry = dict(filename=FILENAME, type=kind, mapId=map_id, sha256=digest(payload), bytes=len(payload),
@@ -564,7 +565,10 @@ def main(argv=None):
     parser.add_argument('--source', type=Path, required=True)
     parser.add_argument('--workspace', type=Path, required=True)
     parser.add_argument('--audit', type=Path, help='Private audit JSON inside the workspace')
+    parser.add_argument('--game-language',choices=GAME_DATA_LANGUAGES,default='en',help='FF7 data language; independent of UI language')
     args = parser.parse_args(argv)
+    from .dataset import discover
+    args.source=discover(args.source,args.game_language)
     try:
         print(json.dumps(update_workspace(args.source, args.workspace, audit_path=args.audit), indent=2))
         return 0

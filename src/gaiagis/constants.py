@@ -22,6 +22,13 @@ REGION_NAMES = dict(enumerate((
     "Woodlands Area", "Icicle Area", "Mideel Area", "North Corel Area", "Cactus Island",
     "Goblin Island", "Round Island", "Sea", "Bottom of the Sea", "Glacier")))
 OCEAN_TYPES = frozenset((3, 6, 26))  # Probe classification, not GIS land cover.
+GAME_DATA_LANGUAGES = {
+    'en': ('world_us.lgp', 'flevel.lgp'),
+    'fr': ('world_fr.lgp', 'fflevel.lgp'),
+    'de': ('world_gm.lgp', 'gflevel.lgp'),
+    'es': ('world_sp.lgp', 'sflevel.lgp'),
+}
+
 KNOWN = {
     "wm0.map": (3250176, "43E72295212311FCEC3A513051A96CA4475185A72211EBC3A5E4F89A50ECA78C"),
     "wm2.map": (565248, "404FF95D3E9A5F0D740C4E672B215012FF47FE9F0A6646B4BA8159C425BFAB02"),

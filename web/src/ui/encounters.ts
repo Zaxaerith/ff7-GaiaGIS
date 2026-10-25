@@ -1,3 +1,4 @@
+import {archiveKey} from '../data/sourceRoles';
 import {legendRow} from './legend';
 import {workspaceLoader,loadedAsset} from '../app/assets';
 import {t,formatNumber} from '../i18n';
@@ -42,7 +43,7 @@ export function renderEncounterInspector(parent:HTMLElement,a:TriangleAttributes
     const mystery=document.createElement('details');mystery.className='encounter-group';const summary=document.createElement('summary');summary.textContent=t('inspect.ninjaMapping');mystery.append(summary);
     const list=document.createElement('ul');for(const e of data.yuffie){const li=document.createElement('li');li.textContent=t('message.level',{level:e.level_max,scene:e.scene_id})+(a.terrain===25?' '+t('message.jungleExtra'):'');list.append(li);}mystery.append(list);section.append(mystery);
     const provenance=document.createElement('details');provenance.className='encounter-group';const source=document.createElement('summary');source.textContent=t('inspect.encProvenance');provenance.append(source);
-    const p=document.createElement('p');p.textContent=t('message.encSource',{region:s.region_id,slot:s.slot,byte:s.byte_offset,offset:data.source_record.archive_data_offset});provenance.append(p);section.append(provenance);
+    const p=document.createElement('p');p.textContent=t('message.encSource',{archive:archiveKey(data.sources,'world')!,region:s.region_id,slot:s.slot,byte:s.byte_offset,offset:data.source_record.archive_data_offset});provenance.append(p);section.append(provenance);
     note.textContent=t('inspect.weightsNote');
   }
   const dl=document.createElement('dl');dl.className='property-list';for(const [key,value]of rows){const row=document.createElement('div'),dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=key;dd.textContent=value;row.append(dt,dd);dl.append(row);}section.insertBefore(dl,section.children[1]??null);section.append(note);parent.append(section);

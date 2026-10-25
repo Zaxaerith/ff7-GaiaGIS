@@ -4,6 +4,7 @@ import type {SaveBinding,SaveSlot,SaveFieldPosition} from './save';
 import {currentSaveField,localPoint} from './fieldContext';
 import type {FieldIndex,FieldNode,FieldWalkmesh} from './fieldContext';
 import {barycentric} from '../explorer/walker';
+import {archiveKey} from './sourceRoles';
 /** Exact source triangle containment. Never nearest-centroid snapping. */
 export function saveSurfacePoint(surface:Surface,binding:SaveBinding){
  if(surface.header.mapId!=='WM0'||surface.header.extent[0]!==294912||surface.header.extent[1]!==229376)return null;
@@ -27,8 +28,9 @@ export function saveFieldPoint(slot:SaveSlot|null,index:FieldIndex|null,mesh:Fie
  result.field=currentSaveField(slot,index);if(!result.field)return reject('field_unavailable');
  if(!result.raw)return reject('position_missing');
  if(!mesh)return reject('mesh_unavailable');
- const keys=['flevel.lgp','maplist'];
+ const keys=[index.pack.archive,'maplist'];
  if(!sources||keys.some(k=>!sources[k]||!index.pack.sources[k]))return reject('source_missing');
+ try{if(archiveKey(sources,'field')!==index.pack.archive)return reject('source_mismatch');}catch{return reject('source_mismatch');}
  if(keys.some(k=>!/^[a-f0-9]{64}$/.test(sources[k])||sources[k]!==index.pack.sources[k]))return reject('source_mismatch');
  const point=localPoint(mesh,result.raw.triangle,[result.raw.x,result.raw.y]);
  return {...result,status:point.status as SaveFieldPointStatus,derivedZ:point.derivedZ};

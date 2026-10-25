@@ -1,3 +1,4 @@
+import {archiveKey} from './sourceRoles';
 // SPDX-License-Identifier: GPL-3.0-only
 import type {GaiaMesh,GaiaMeta} from './mesh';
 import type {DisplayMesh} from './display';
@@ -13,7 +14,7 @@ export function parseTextureTransport(buffer:ArrayBuffer,mesh:TextureMesh,meta:P
  if(new TextDecoder().decode(new Uint8Array(buffer,0,8))!=='GAIATEX\0'||v.getUint32(8,true)!==1)throw new Error('Unsupported texture pack');
  const n=v.getUint32(12,true);if(n>500_000||16+n>buffer.byteLength)throw new Error('Invalid texture metadata length');
  const m=JSON.parse(new TextDecoder().decode(new Uint8Array(buffer,16,n))) as TexturePack;
- if(m.schema!=='gaiagis-textures'||m.version!==1||m.mapId!==binding.mapId||m.reconstruction!==(binding.mapId==='WM0'?'V1 Geometric Gaia':binding.mapId+'Native')||m.mesh_sha256!==meta.sha256||m.sources?.[binding.mapId.toLowerCase()+'.map']!==binding.sourceHash||! /^[a-f0-9]{64}$/.test(m.sources?.['world_us.lgp']??''))throw new Error('Texture source/map fingerprint mismatch');
+ if(m.schema!=='gaiagis-textures'||m.version!==1||m.mapId!==binding.mapId||m.reconstruction!==(binding.mapId==='WM0'?'V1 Geometric Gaia':binding.mapId+'Native')||m.mesh_sha256!==meta.sha256||m.sources?.[binding.mapId.toLowerCase()+'.map']!==binding.sourceHash||! /^[a-f0-9]{64}$/.test(m.sources?.[archiveKey(m.sources??{},'world')!]??''))throw new Error('Texture source/map fingerprint mismatch');
  if(m.triangle_count!==mesh.sourceTriangleCount||m.uv_record_bytes!==14||m.uv_byte_length!==m.triangle_count*14||!Number.isSafeInteger(m.image_byte_length)||m.image_byte_length<50||16+n+m.uv_byte_length+m.image_byte_length+32!==buffer.byteLength||!/^[a-f0-9]{64}$/.test(m.payload_sha256))throw new Error('Invalid texture payload layout');
  const a=m.atlas;if(!a||![a.width,a.height].every(x=>Number.isSafeInteger(x)&&x>=256&&x<=4096&&(x&(x-1))===0)||a.padding!==4||!Array.isArray(m.textures)||m.textures.length>512)throw new Error('Invalid texture atlas');
  const resources=new Map<number,TextureResource>();

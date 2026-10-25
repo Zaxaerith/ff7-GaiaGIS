@@ -11,14 +11,14 @@ import json
 from pathlib import Path
 import struct
 
-from .dataset import discover, child_ci
+from .dataset import discover, archive_key
 from .lgp import inventory, read_entry
 from .lzss import decompress, FormatError
 from .poi import parse_maplist, parse_field_table
 from .safety import output_path
 from .web_export import sha256
 
-GENERATOR_VERSION = 'field-context-6'
+GENERATOR_VERSION = 'field-context-7'
 WALKMESH_REVISION = 'field-walkmesh-1'
 MAX_WALKMESH_TRIANGLES = 65535  # 0xffff is reserved for a blocked edge.
 
@@ -510,6 +510,7 @@ def native_relations(transitions: dict, available: set[int], sources: dict) -> l
     Reject such input; the optional Field payload may remain unavailable while
     the rest of the workspace retains its existing graceful fallback.
     """
+    archive_key({**sources, **transitions['sources']}, 'world', required=False)
     if any(sources[k] != h for k, h in transitions['sources'].items() if k in sources):
         raise FormatError('Field/transition source mismatch')
     records = {}
@@ -529,8 +530,7 @@ def native_relations(transitions: dict, available: set[int], sources: dict) -> l
 def build_field_context(source: Path, directory: Path) -> dict:
     directory = output_path(directory)
     ds = discover(source)
-    field = child_ci(ds.wm_directory.parent, 'field')
-    archive = child_ci(field, 'flevel.lgp') if field else None
+    archive = ds.field_archive()
     if not archive or not archive.is_file():
         raise FormatError('Field archive unavailable')
     archive_hash = sha256(archive)
@@ -620,8 +620,17 @@ def build_field_context(source: Path, directory: Path) -> dict:
         raise FormatError('Field/POI maplist identity mismatch')
     # FIELD.TBL is read independently of WM trigger coverage: preserve all 128
     # paired records, including placeholders and alternative identities.
-    world_archive = ds.files['world_us.lgp']
+    world_archive = ds.world_archive
     world_hash = sha256(world_archive)
+    for role, expected, digest in (('world', ds.world_name, world_hash), ('field', ds.field_name, archive_hash)):
+        key = archive_key(poi['sources'], role, required=False)
+        if key is not None and (key != expected or poi['sources'][key] != digest):
+            raise FormatError('Field/POI archive source identity mismatch')
+        if key is None and ds.language != 'en':
+            raise FormatError('Multilingual POI requires actual archive identity')
+    ev_entries = [e for e in inventory(world_archive)['entries'] if e['filename'].casefold() == 'wm0.ev']
+    if len(ev_entries) != 1 or hashlib.sha256(read_entry(world_archive, ev_entries[0])).hexdigest() != poi['sources'].get('wm0.ev'):
+        raise FormatError('Field/POI EV source mismatch')
     table_entries = [e for e in inventory(world_archive)['entries'] if e['filename'].casefold() == 'field.tbl']
     if len(table_entries) != 1:
         raise FormatError('Expected one FIELD.TBL')
@@ -642,13 +651,13 @@ def build_field_context(source: Path, directory: Path) -> dict:
                               if row['to'] in available else dict(status='missing', derivedZ=None))
     native = []
     transitions_path = directory / 'gaia-transitions.json'
-    sources = {**poi['sources'], 'flevel.lgp': archive_hash}
+    sources = {**poi['sources'], ds.field_name: archive_hash}
     if transitions_path.is_file():
         transitions = json.loads(transitions_path.read_text(encoding='utf8'))
         native = native_relations(transitions, available, sources)
         sources.update(transitions['sources'])
-    result = dict(schema='gaiagis-field-context', version=3, coordinateSpace='FieldLocalIdentity',
-                  archive='flevel.lgp', sources=sources,
+    result = dict(schema='gaiagis-field-context', version=4, coordinateSpace='FieldLocalIdentity',
+                  archive=ds.field_name, sources=sources,
                   nodes=nodes, edges=verified, exits=exits, unresolved=unresolved,
                   bindings=entrance_bindings(poi, nodes), scriptTransitions='bounded_mapjump',
                   scriptEdges=verified_scripts, scriptExits=script_exits, scriptUnresolved=script_unknown,
@@ -657,7 +666,7 @@ def build_field_context(source: Path, directory: Path) -> dict:
         raise RuntimeError('Field source changed during generation')
     metadata = dict(schema='gaiagis-field-walkmesh', version=1, coordinateSpace='FieldLocal',
                     generator_revision=WALKMESH_REVISION,
-                    sources={'flevel.lgp': archive_hash, 'maplist': hashlib.sha256(maplist).hexdigest()}, scenes=scenes)
+                    sources={ds.field_name: archive_hash, 'maplist': hashlib.sha256(maplist).hexdigest()}, scenes=scenes)
     encoded = json.dumps(metadata, separators=(',', ':'), sort_keys=True).encode('utf8')
     if len(encoded) > 512_000 or 16 + len(encoded) + len(walkmesh_data) > 32_000_000:
         raise FormatError('Field walkmesh metadata/pack limit')

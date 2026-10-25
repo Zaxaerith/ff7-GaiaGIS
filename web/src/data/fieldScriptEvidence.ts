@@ -1,3 +1,4 @@
+import {archiveKey} from './sourceRoles';
 // SPDX-License-Identifier: GPL-3.0-only
 import type {FieldPack} from './fieldContext';
 import {inflateVisual} from './fieldCamera';
@@ -65,7 +66,7 @@ export function parseScriptEvidenceHeader(buffer:ArrayBuffer,total:number,fields
  if(!length||length>SCRIPT_EVIDENCE_LIMITS.metadata||base>total||v.byteLength!==base)throw Error('Script evidence metadata bounds');
  const meta=shape(evidenceJSON(buffer.slice(16)),['schema','version','generator_revision','sources','contextSHA256','scenes']);
  if(meta.schema!=='gaiagis-field-script-evidence'||meta.version!==1||meta.generator_revision!==SCRIPT_EVIDENCE_GENERATOR)throw Error('Script evidence schema');
- const sources=shape(meta.sources,['flevel.lgp','maplist']);if(Object.entries(sources).some(([key,h])=>!fingerprint(h)||h!==fields.sources[key])||!fingerprint(contextSHA256)||meta.contextSHA256!==contextSHA256)throw Error('Script evidence Context/source identity mismatch');
+ const sources=shape(meta.sources,[archiveKey(fields.sources,'field')!,'maplist']);if(Object.entries(sources).some(([key,h])=>!fingerprint(h)||h!==fields.sources[key])||!fingerprint(contextSHA256)||meta.contextSHA256!==contextSHA256)throw Error('Script evidence Context/source identity mismatch');
  const scenes=new Map<number,ScriptSceneSpan>();let end=0;
  for(const value of list(meta.scenes,2000)){
   const s=shape(value,['fieldId','name','section1SHA256','section8SHA256','offset','bytes','rawBytes','sha256']);

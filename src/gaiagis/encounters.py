@@ -100,15 +100,15 @@ def build_encounters(source: Path, destination: Path) -> dict:
     ds = discover(source)
     if destination.is_relative_to(ds.wm_directory):
         raise ValueError('Output cannot be in the selected WM source directory')
-    archive = ds.files['world_us.lgp']
+    archive = ds.world_archive
     matches = [e for e in inventory(archive)['entries'] if e['filename'].casefold()=='enc_w.bin']
     if len(matches)!=1:
-        raise FormatError('Expected exactly one enc_w.bin in world_us.lgp')
+        raise FormatError('Expected exactly one enc_w.bin in selected World archive')
     entry = matches[0]; payload = read_entry(archive,entry)
     asset = dict(schema='gaiagis-encounters',version=1,reconstruction='v1-geometric-gaia',
         lookup_profile='classic-pc-reference',runtime_equivalence='not-verified-steam2026',
         sources={'wm0.map':hashlib.sha256(ds.files['wm0.map'].read_bytes()).hexdigest(),
-                 'world_us.lgp':hashlib.sha256(archive.read_bytes()).hexdigest(),
+                 ds.world_name:hashlib.sha256(archive.read_bytes()).hexdigest(),
                  'enc_w.bin':hashlib.sha256(payload).hexdigest()},
         source_record=dict(filename='enc_w.bin',size=len(payload),toc_index=entry['toc_index'],
                            archive_data_offset=entry['data_offset']),

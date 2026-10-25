@@ -5,6 +5,18 @@ is the unified CLI. With an editable project installation the equivalent entry
 point is `gaiagis-build-workspace`. See [user guide](../user/getting-started.md) for environment
 setup, GDAL/QGIS and optional `--stage1` cache reuse.
 
+## v5.2 source identity extension
+
+Use `--game-language en|fr|de|es` for the selected game archive pair. Manifest
+v1 keeps actual archive basenames and hashes, plus hashes of selected members;
+cache/browser checks resolve World and Field roles across those names. MAP/BOT
+sources remain shared. Field Context **v4 / field-context-7** keeps the v3 shape
+but `archive` is the actual paired Field basename; v4 requires its World/Field
+source keys. Subpack sources use that Field basename and `maplist`, retaining
+their existing binary transports. EN Context v1–v3 remains readable. Field GIS
+metadata records the actual archive and Context version. Historical English
+examples below describe the older contracts. [Pairs and limits](multilingual-sources.md).
+
 ## Manifest
 
 `gaia-workspace.json` uses schema `gaiagis-workspace`, version **1**. Application

@@ -9,7 +9,7 @@ from pathlib import Path
 import struct
 import sys
 import tempfile
-from types import SimpleNamespace
+from gaiagis.dataset import SourceDataset
 import unittest
 from unittest.mock import patch
 
@@ -64,7 +64,7 @@ class VisualWorkspaceFailureTests(unittest.TestCase):
                 return self.real_reusable(manifest,sources,directory,names,visited,**kwargs)
             return True
         with contextlib.ExitStack() as stack:
-            stack.enter_context(patch.object(workspace,'discover',return_value=SimpleNamespace(wm_directory=self.wm)))
+            stack.enter_context(patch.object(workspace,'discover',return_value=SourceDataset(self.source,self.wm,{},'synthetic')))
             stack.enter_context(patch.object(workspace,'fingerprint',side_effect=fingerprints or [self.fingerprint,self.fingerprint]))
             stack.enter_context(patch.object(workspace,'curated_hash',return_value='d'*64))
             stack.enter_context(patch.object(workspace,'reusable',side_effect=reuse))

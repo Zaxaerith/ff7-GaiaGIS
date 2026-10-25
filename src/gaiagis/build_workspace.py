@@ -8,7 +8,7 @@ from pathlib import Path
 import subprocess
 import sys
 
-from .dataset import discover, fingerprint, child_ci
+from .dataset import discover, fingerprint, child_ci, same_dependencies, archive_key
 from .safety import WORKSPACE_ROOT, RESOURCE_ROOT, output_path
 from .web_export import build_web_assets, sha256
 from .atlas import GENERATOR_VERSION as ATLAS_VERSION, curated_hash, build_atlas
@@ -44,29 +44,30 @@ ASSETS = {
     'gaia-field-script-evidence.bin': ('field-script-evidence', 'shared', ['gaia-field-context.json']),
 }
 
-# Source dependencies, not a Steam-version switch. Generator/transport versions
-# stay unchanged because the produced geometry and schemas have not changed.
+# Archive roles resolve to actual basename + hash, never missing EN aliases.
+# Geometry transports stay unchanged; Field contracts have their own revisions.
 SOURCE_DEPENDENCIES = {
-    'gaia-field-context.json': ['wm0.map', 'world_us.lgp', 'flevel.lgp', 'field-poi.json', 'field-transitions.json'],
-    'gaia-field-walkmesh.bin': ['flevel.lgp', 'field-poi.json', 'field-transitions.json'],
-    'gaia-field-visual.bin': ['flevel.lgp'],
-    'gaia-field-interaction.bin': ['flevel.lgp'],
-    'gaia-field-script-evidence.bin': ['flevel.lgp'],
+    'gaia-field-context.json': ['wm0.map', '@world', '@field', 'field-poi.json', 'field-transitions.json'],
+    'gaia-field-walkmesh.bin': ['@field', 'field-poi.json', 'field-transitions.json'],
+    'gaia-field-visual.bin': ['@field'],
+    'gaia-field-interaction.bin': ['@field'],
+    'gaia-field-script-evidence.bin': ['@field'],
     'gaia-meta.json': ['wm0.map'], 'gaia-mesh.bin': ['wm0.map'],
-    'gaia-poi.json': ['wm0.map', 'world_us.lgp', 'flevel.lgp'],
-    'gaia-encounters.json': ['wm0.map', 'world_us.lgp'],
-    'gaia-events.json': ['wm0.map', 'world_us.lgp', 'flevel.lgp'],
-    'gaia-routing.bin': ['wm0.map'], 'gaia-textures.bin': ['world_us.lgp'],
+    'gaia-poi.json': ['wm0.map', '@world', '@field'],
+    'gaia-encounters.json': ['wm0.map', '@world'],
+    'gaia-events.json': ['wm0.map', '@world', '@field'],
+    'gaia-routing.bin': ['wm0.map'], 'gaia-textures.bin': ['@world'],
     'gaia-map-WM2.bin': ['wm2.map'], 'gaia-map-WM3.bin': ['wm3.map'],
-    'gaia-textures-WM2.bin': ['world_us.lgp'], 'gaia-textures-WM3.bin': ['world_us.lgp'],
-    'gaia-transitions.json': ['wm0.map', 'wm2.map', 'wm3.map', 'world_us.lgp', 'flevel.lgp'],
-    'gaia-explorer.bin': ['world_us.lgp','char.lgp','flevel.lgp'],
+    'gaia-textures-WM2.bin': ['@world'], 'gaia-textures-WM3.bin': ['@world'],
+    'gaia-transitions.json': ['wm0.map', 'wm2.map', 'wm3.map', '@world', '@field'],
+    'gaia-explorer.bin': ['@world','char.lgp','@field'],
     'gaia-presentation.json': ['audio.dat','audio.fmt'],
-    'gaia-atlas.json': ['wm0.map', 'world_us.lgp', 'flevel.lgp', 'atlas-content.json', 'atlas-transitions.json'],
+    'gaia-atlas.json': ['wm0.map', '@world', '@field', 'atlas-content.json', 'atlas-transitions.json'],
 }
 
 def write_manifest(directory, sources, *, retained_visual=None):
     """No wall-clock timestamp, absolute input path or machine identity."""
+    archive_key(sources, 'world', required=False)
     assets = []
     for filename, (kind, map_id, dependencies) in ASSETS.items():
         path = directory / filename
@@ -97,7 +98,7 @@ def reusable(manifest, sources, directory, names, _visited=None, *, visual_revis
     for name in names:
         if name not in ASSETS or name in visited:return False
         previous = manifest.get('sources', {})
-        if any(previous.get(k) != sources.get(k) for k in SOURCE_DEPENDENCIES[name]):return False
+        if not same_dependencies(previous, sources, SOURCE_DEPENDENCIES[name]):return False
         record = next((a for a in manifest.get('assets', []) if a.get('filename') == name), None)
         path = directory / name
         if not record or not path.is_file() or record.get('bytes') != path.stat().st_size or record.get('sha256') != sha256(path):
@@ -139,7 +140,7 @@ def _retained_visual(manifest, sources, directory):
         context = json.loads((directory/'gaia-field-context.json').read_text(encoding='utf8'))
         if meta.get('schema') != 'gaiagis-field-visual' or meta.get('version') != version or meta.get('generator_revision') != revision:
             return None
-        if not isinstance(meta.get('sources'), dict) or any(meta['sources'].get(k) != context.get('sources', {}).get(k) for k in ('flevel.lgp', 'maplist')) or meta['sources'].get('flevel.lgp') != sources.get('flevel.lgp'):
+        if not isinstance(meta.get('sources'), dict) or not same_dependencies(meta['sources'], context.get('sources', {}), ['@field','maplist']) or not same_dependencies(meta['sources'], sources, ['@field']):
             return None
     except (OSError, ValueError, KeyError, TypeError, AttributeError):
         return None
@@ -200,9 +201,9 @@ def ensure_stage1(source, stage1, cache):
     target.write_text(json.dumps(build, sort_keys=True, indent=2), encoding='utf8')
     return cache
 
-def build_workspace(source, destination, stage1=None, *, rebuild=False, allow_optional_failure=False, clean_invalid=False, progress=None):
-    source = Path(source).resolve(); out = output_path(Path(destination))
-    if out.is_relative_to(source):
+def build_workspace(source, destination, stage1=None, *, game_language=None, rebuild=False, allow_optional_failure=False, clean_invalid=False, progress=None):
+    source = discover(source, game_language); out = output_path(Path(destination))
+    if out.is_relative_to(source.selected_path):
         raise ValueError('Workspace output must not be inside the selected source dataset')
     saved = _visual_snapshot(out)
     try:
@@ -214,8 +215,8 @@ def build_workspace(source, destination, stage1=None, *, rebuild=False, allow_op
 
 
 def _build_workspace(source, destination, stage1=None, *, rebuild=False, allow_optional_failure=False, clean_invalid=False, progress=None, visual_snapshot=None):
-    source = Path(source).resolve();out = output_path(Path(destination))
-    if out.is_relative_to(source):raise ValueError('Workspace output must not be inside the selected source dataset')
+    dataset = discover(source);source = dataset;out = output_path(Path(destination))
+    if out.is_relative_to(dataset.selected_path):raise ValueError('Workspace output must not be inside the selected source dataset')
     # Existing filesystem links must not redirect an exporter into another tree.
     for name in [*ASSETS,'gaia-workspace.json','gaia-map-WM2.json','gaia-map-WM3.json','build-report.json','local-launch.json','.build']:
         if not output_path(out/name).is_relative_to(out):raise ValueError('Workspace asset link escapes output root')
@@ -225,8 +226,8 @@ def _build_workspace(source, destination, stage1=None, *, rebuild=False, allow_o
     sources = {r['filename']: r['sha256'].lower() for r in fingerprint(dataset)['files']}
     sources['atlas-content.json'] = curated_hash()
     field = child_ci(dataset.wm_directory.parent, 'field')
-    field_archive = child_ci(field, 'flevel.lgp') if field else None
-    if field_archive:sources['flevel.lgp'] = sha256(field_archive)
+    field_archive = dataset.field_archive()
+    if field_archive:sources[dataset.field_name] = sha256(field_archive)
     char=child_ci(field,'char.lgp') if field else None
     if char:sources['char.lgp']=sha256(char)
     sound=child_ci(dataset.wm_directory.parent,'sound')
@@ -304,7 +305,7 @@ def _build_workspace(source, destination, stage1=None, *, rebuild=False, allow_o
     step('field-script-evidence', ['gaia-field-script-evidence.bin'], lambda: build_field_script_evidence(source,out))
     after = {r['filename']:r['sha256'].lower() for r in fingerprint(dataset)['files']}
     if any(after[k] != v for k,v in sources.items() if k in after):raise RuntimeError('Source fingerprint changed during workspace build')
-    if field_archive and sha256(field_archive)!=sources['flevel.lgp']:raise RuntimeError('Field source fingerprint changed during workspace build')
+    if field_archive and sha256(field_archive)!=sources[dataset.field_name]:raise RuntimeError('Field source fingerprint changed during workspace build')
     for asset,name in [(char,'char.lgp')]+[(child_ci(sound,n) if sound else None,n) for n in ('audio.dat','audio.fmt')]:
         if asset and sha256(asset)!=sources[name]:raise RuntimeError('Optional source fingerprint changed during build')
     manifest = write_manifest(out, sources, retained_visual=retained_visual)
@@ -314,11 +315,13 @@ def _build_workspace(source, destination, stage1=None, *, rebuild=False, allow_o
 def main(argv=None):
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--source',required=True,type=Path)
+    from .constants import GAME_DATA_LANGUAGES
+    parser.add_argument('--game-language', choices=GAME_DATA_LANGUAGES, default='en', help='FF7 data language (separate from UI language; default: en)')
     parser.add_argument('--output',required=True,type=Path)
     parser.add_argument('--stage1',type=Path,help='Optional compatible existing Stage 1 cache')
     args=parser.parse_args(argv)
     try:
-        report=build_workspace(args.source,args.output,args.stage1)
+        report=build_workspace(args.source,args.output,args.stage1,game_language=args.game_language)
     except ModuleNotFoundError as error:
         if error.name!='osgeo':raise
         # Reuse the installed QGIS environment helper; never install a framework.
@@ -328,7 +331,7 @@ def main(argv=None):
         qgis=Path(os.environ.get('GAIAGIS_QGIS_ROOT',''))
         runtime=qgis/'bin/python.exe'
         if not runtime.is_file():raise RuntimeError('Fresh geometry generation needs GDAL/QGIS; set GAIAGIS_QGIS_ROOT or provide --stage1') from error
-        resolved=['--source',str(args.source.resolve()),'--output',str(args.output.resolve())]
+        resolved=['--source',str(args.source.resolve()),'--output',str(args.output.resolve()),'--game-language',args.game_language]
         if args.stage1:resolved+=['--stage1',str(args.stage1.resolve())]
         result=subprocess.run([str(runtime),'-B','-m','gaiagis.build_workspace',*resolved],cwd=WORKSPACE_ROOT,env=qgis_environment(qgis))
         if result.returncode:raise SystemExit(result.returncode)
