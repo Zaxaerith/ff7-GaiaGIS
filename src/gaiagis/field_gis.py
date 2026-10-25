@@ -174,15 +174,15 @@ def load_field(workspace, field):
     hashes={}
     for name,kind,budget in (('gaia-field-context.json','field-context',8_000_000),('gaia-field-walkmesh.bin','field-walkmesh',32_000_000)):
         record=records.get(name);path=root/name;reject_links(path)
-        if path.resolve().parent!=root or not record or record.get('type')!=kind or record.get('generator_version') not in ('field-context-6',GENERATOR_VERSION) or record.get('mapId')!=('WM0' if kind=='field-context' else 'shared') or record.get('dependencies')!=(['gaia-poi.json'] if kind=='field-context' else ['gaia-field-context.json']) or type(record.get('bytes')) is not int or not 0<record['bytes']<=budget or path.stat().st_size!=record['bytes']:raise ValueError('Field asset size/identity')
+        if path.resolve().parent!=root or not record or record.get('type')!=kind or record.get('generator_version') not in ('field-context-6','field-context-7',GENERATOR_VERSION) or record.get('mapId')!=('WM0' if kind=='field-context' else 'shared') or record.get('dependencies')!=(['gaia-poi.json'] if kind=='field-context' else ['gaia-field-context.json']) or type(record.get('bytes')) is not int or not 0<record['bytes']<=budget or path.stat().st_size!=record['bytes']:raise ValueError('Field asset size/identity')
         hashes[name]=sha256(path)
         if hashes[name]!=record.get('sha256'):raise ValueError('Field asset checksum mismatch')
     context_raw=_metadata_bytes(root/'gaia-field-context.json',8_000_000)
     if hashlib.sha256(context_raw).hexdigest()!=hashes['gaia-field-context.json']:raise ValueError('Context changed while reading')
     context=_decode_json(context_raw)
-    if context.get('schema')!='gaiagis-field-context' or context.get('version') not in (3,4) or context.get('coordinateSpace')!='FieldLocalIdentity' or context.get('archive')!=archive_key(context.get('sources',{}),'field'):raise ValueError('Requires Field Context schema 3 or 4')
+    if context.get('schema')!='gaiagis-field-context' or context.get('version') not in (3,4,5) or context.get('coordinateSpace')!='FieldLocalIdentity' or context.get('archive')!=archive_key(context.get('sources',{}),'field'):raise ValueError('Requires Field Context schema 3–5')
     if context['version']==3 and context['archive']!='flevel.lgp':raise ValueError('Legacy Field Context requires English archive')
-    archive_key(context.get('sources',{}),'world',required=context['version']==4)
+    archive_key(context.get('sources',{}),'world',required=context['version']>=4)
     _sources(context.get('sources'))
     if not same_dependencies(manifest['sources'], context['sources'], ['@field']):raise ValueError('Context/manifest archive identity mismatch')
     if any(manifest['sources'][k]!=v for k,v in context['sources'].items() if k in manifest['sources']):raise ValueError('Context/manifest source mismatch')
@@ -301,7 +301,7 @@ def export_field(workspace, field, output, start=None, end=None, format_version=
                 result=_point(e,e['field_triangle'],[e['field_x'],e['field_y']],scene)
                 row(records,dict(kind='entrance',target_field=scene['id'],record_id=record,triangle_id=e['field_triangle'],raw_xy=json.dumps([e['field_x'],e['field_y']]),source_offset=record*12,validation=result['status']))
                 if result['status'] not in ('inside','boundary'):continue
-                row(entrances,dict(identity,entry_id=entry,scenario=scenario,variant='Default' if scenario==0 else 'Alternative',triangle_id=e['field_triangle'],raw_x=e['field_x'],raw_y=e['field_y'],derived_raw_z=result['derivedZ'],direction=_integer(e['field_direction'],0,255),record_index=record,source_file=(archive_key(scene['context']['sources'],'world',required=scene['context']['version']==4) or 'world_us.lgp')+'/field.tbl',source_offset=record*12,validation=result['status'],z_semantics='Derived triangle-plane Raw Z; no independent FIELD.TBL Z'),geom(ogr.wkbPoint25D,[(e['field_x'],e['field_y'],result['derivedZ'])]))
+                row(entrances,dict(identity,entry_id=entry,scenario=scenario,variant='Default' if scenario==0 else 'Alternative',triangle_id=e['field_triangle'],raw_x=e['field_x'],raw_y=e['field_y'],derived_raw_z=result['derivedZ'],direction=_integer(e['field_direction'],0,255),record_index=record,source_file=(archive_key(scene['context']['sources'],'world',required=scene['context']['version']>=4) or 'world_us.lgp')+'/field.tbl',source_offset=record*12,validation=result['status'],z_semantics='Derived triangle-plane Raw Z; no independent FIELD.TBL Z'),geom(ogr.wkbPoint25D,[(e['field_x'],e['field_y'],result['derivedZ'])]))
             gateways=layer('gateway_segments',ogr.wkbLineString25D)
             candidates=layer('gateway_candidates')
             seen=set();evidence={};world=set()

@@ -908,6 +908,22 @@ local static asset endpoint transports it; no API, per-scene files or cache
 database is added. Manual folder import uses the same manifest/hash checks.
 No binary is included in public builds or release packages.
 
+### Field Context recovery diagnostics (v5)
+
+Context v5 / `field-context-8` retains the v4 archive roles, sources, graph and
+anchor shapes and adds a required root `section1Recoveries` array (empty for
+ordinary sources). Each record has `fieldId`, original compressed
+`memberSHA256`, `declaredBytes` and `usedBytes`. Only six reviewed exact
+archive/member/hash identities may use the adjacent-offset Section-1 span;
+scripts, text/AKAO and all section pointers must validate. The Inspector shows
+these diagnostics separately from spatial/runtime evidence.
+
+Context v1–v4 remains readable. Walkmesh, Visual, Interaction and Script Evidence
+binary codecs are unchanged. The Context generator revision invalidates their
+dependent build caches; existing world geometry and unrelated products remain
+reusable. A reader upgrade alone does not change an old unavailable pack:
+refresh the dependent Field assets from the same selected source to recover it.
+
 ### Field Context spatial anchors (v3)
 
 Context v3 adds `entrances` (all 128 paired FIELD.TBL records) and `gateways`

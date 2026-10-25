@@ -46,12 +46,14 @@ continue to use the established verified Player Position policy.
 ## WM0 static initialization prediction
 
 The Save Inspector displays a predicted research state and cumulative groups
-only when a loaded, validated source identifies the reviewed English `wm0.ev`.
+only when a loaded, validated source identifies one of the four reviewed
+complete EN/FR/DE/ES `wm0.ev` fingerprints.
 It uses a separate signed progress interpretation and three precise bits; the
 original unsigned progress display remains available. Missing/mismatched sources
-produce Unknown. Inputs and the EV fingerprint can be inspected alongside the result.
+produce Unknown, including conflicts between two reviewed EVs. Inputs and the
+EV fingerprint can be inspected alongside the result.
 
-This is the verified English script's static result for the selected save inputs,
+This is the verified script source's static result for the selected save inputs,
 not an observed runtime state, a story chapter or a guarantee about later scripts.
 **Open World Variants research** opens the existing research controls. Importing
 its optional data and enabling/selecting a research state remain explicit actions;

@@ -41,9 +41,18 @@ describe('bounded game source roles',()=>{
    expect(adopted).toBe(language==='en');if(language==='fr')expect(outcomes).toContain('locations:incompatible');
   }
  });
- it('foreign complete EV fingerprints remain Unknown for static prediction',()=>{
+ it('reviewed foreign complete EV fingerprints authorize static initialization only',()=>{
   const slot={status:'valid',worldStateInputs:{progressSigned:1620,c1f0:true,f2b0:true,f2a4:true}} as SaveSlot;
-  for(const ev of ['7664bf39da3f7f46474bcce29aa39f9ffd044e88b587e1c251a4acd23bd506bd','c11d93aff555088368f432ed0c0f08d6fb0b5d0d40123d5681f83c3d0083be7f','b92798f1b5fb9adbfd495a23d44655822e256023251f267ca43fff14ceb912db'])expect(predictSaveWorldState(slot,{'wm0.ev':ev})).toMatchObject({state:null,reason:'source_mismatch'});
+  for(const ev of ['7664bf39da3f7f46474bcce29aa39f9ffd044e88b587e1c251a4acd23bd506bd','c11d93aff555088368f432ed0c0f08d6fb0b5d0d40123d5681f83c3d0083be7f','b92798f1b5fb9adbfd495a23d44655822e256023251f267ca43fff14ceb912db'])expect(predictSaveWorldState(slot,{'wm0.ev':ev})).toMatchObject({state:4,reason:null,sourceHash:ev});
+  expect(predictSaveWorldState(slot,{'wm0.ev':'f'.repeat(64)})).toMatchObject({state:null,reason:'source_mismatch'});
+ });
+ it('reads legacy EN Context v1-v4 and v5 recovery diagnostics without changing source roles',()=>{
+  for(const version of [1,2,3,4]){const c:any=context('en');c.version=version;if(version===1){c.scriptTransitions='unverified';for(const k of ['scriptEdges','scriptExits','scriptUnresolved','nativeRelations'])delete c[k];}if(version<3){delete c.entrances;delete c.gateways;}expect(parseFieldPack(c).version).toBe(version);}
+  const c:any={...context('fr'),version:5,nodes:[{id:177,name:'losin3',status:'available',saveId:177,scriptName:'losin3'}],section1Recoveries:[{fieldId:177,memberSHA256:'5e965cebb9fdb79afa905898c57f14178b0f59ddd13289785fae4c3ceefbec11',declaredBytes:13889,usedBytes:13893}]};
+  expect(parseFieldPack(c).section1Recoveries).toEqual(c.section1Recoveries);
+  for(const change of [(r:any)=>r.memberSHA256='bad',(r:any)=>r.usedBytes=r.declaredBytes,(r:any)=>r.fieldId=999,(r:any)=>r.usedBytes=-1]){const bad=structuredClone(c);change(bad.section1Recoveries[0]);expect(()=>parseFieldPack(bad)).toThrow();}
+  const duplicate=structuredClone(c);duplicate.section1Recoveries.push(duplicate.section1Recoveries[0]);expect(()=>parseFieldPack(duplicate)).toThrow();
+  const old=structuredClone(c);old.version=4;expect(()=>parseFieldPack(old)).toThrow();
  });
  it('Save Field points require the actual selected Field archive, not an EN alias',()=>{
   const raw=new ArrayBuffer(34),v=new DataView(raw);v.setUint32(0,1,true);[[0,0,10],[8,0,18],[0,8,26]].forEach((p,k)=>p.forEach((n,j)=>v.setInt16(4+k*8+j*2,n,true)));for(let i=28;i<34;i+=2)v.setUint16(i,65535,true);const mesh=decodeWalkmesh(raw);

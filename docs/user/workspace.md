@@ -13,8 +13,13 @@ For EN/FR/DE/ES data, choose **Game data language** in the launcher or pass
 from UI language. English remains the default. Use `--workspace output/workspace-fr`
 with `local`, or `--output output/workspace-fr` with `build-workspace`, to retain
 separate language Workspaces. The Data panel shows the active archive pair.
-New Field Context v4 and old English v1–v3 are supported; source and Save evidence
+Field Context v5 and previous v1–v4 are supported; source and Save evidence
 limits still apply. [Compatibility details](../reference/multilingual-sources.md).
+
+V5.3 records six exact-source Section-1 recoveries in the existing Inspector.
+An old Workspace remains readable but retains its old unavailable scenes until
+its dependent Field assets are incrementally refreshed from the same source.
+Unchanged world geometry can be reused.
 
 The Data status card distinguishes auto-local, manually selected folder and public source-only mode. Local mode can display the workspace path; paths are never put in public share links.
 

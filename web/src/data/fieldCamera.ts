@@ -62,7 +62,7 @@ function parseVisualHeader2(buffer:ArrayBuffer,total:number,fields:FieldPack){
   const b=shape(r.background,['status'],['reason','section4SHA256','section9SHA256',...payload,...(meta.generator_revision==='field-visual-4'?['section9Bytes']:[])]),hasHashes=Object.hasOwn(b,'section4SHA256')||Object.hasOwn(b,'section9SHA256');
   // A v4 Context can reject a member's strict section bounds. Its empty,
   // explicitly unknown record must not disable other verified scene previews.
-  if(!fields.nodes.some(n=>n.id===r.fieldId&&n.status==='available')&&!(fields.version===4&&fields.nodes.some(n=>n.id===r.fieldId&&n.status==='corrupt')&&b.status==='unknown'&&r.cameras.length===0&&typeof r.reason==='string'&&!Object.hasOwn(b,'bounds')&&!hasHashes))throw Error('Visual scene identity');
+  if(!fields.nodes.some(n=>n.id===r.fieldId&&n.status==='available')&&!(fields.version>=4&&fields.nodes.some(n=>n.id===r.fieldId&&n.status==='corrupt')&&b.status==='unknown'&&r.cameras.length===0&&typeof r.reason==='string'&&!Object.hasOwn(b,'bounds')&&!hasHashes))throw Error('Visual scene identity');
   if(!['static_complete','static_partial','unsupported','invalid_source','unknown'].includes(b.status)||hasHashes&&(!hash(b.section4SHA256)||!hash(b.section9SHA256))||!hasHashes&&(b.status!=='unknown'||Object.hasOwn(b,'bounds'))||b.reason!==undefined&&(typeof b.reason!=='string'||b.reason.length>256))throw Error('Background status/source');
   if(!Object.hasOwn(b,'bounds')){if(['static_complete','static_partial'].includes(b.status)||payload.some(k=>Object.hasOwn(b,k)))throw Error('Background missing payload');}
   else{

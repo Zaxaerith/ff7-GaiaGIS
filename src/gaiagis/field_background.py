@@ -429,7 +429,8 @@ def encode_visual(source, directory, *, audit_path=None, progress=None, audit_on
         record = dict(fieldId=field_id, cameras=[], background=dict(status='unknown', reason='Visual sections unavailable'))
         row = dict(fieldId=field_id, name=name)
         try:
-            camera, palette, background = field_sections(read_entry(archive, entries[name.casefold()]), visual=True)
+            camera, palette, background = field_sections(read_entry(archive, entries[name.casefold()]), visual=True,
+                archive=ds.field_name, member=name)
             try:
                 record['cameras'] = parse_cameras(camera)
             except FormatError as error:

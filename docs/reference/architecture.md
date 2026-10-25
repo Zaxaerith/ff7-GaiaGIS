@@ -248,6 +248,7 @@ database or coordinate authority exists. [Contract](global-source-gis.md).
 `SourceDataset` resolves one bounded EN/FR/DE/ES World/Field pair and is passed
 through the existing generators. Cache dependencies use archive roles resolved
 to actual basenames and hashes; shared MAP-only products retain independent
-reuse. Browser imports compare roles across assets. Field Context v4 preserves
-actual archive identity, with old EN v1–v3 readers retained. UI locale and game
+reuse. Browser imports compare roles across assets. Field Context v5 preserves
+actual archive identity and records exact-member Section-1 recovery lengths/hashes,
+with v1–v4 readers retained. UI locale and game
 data language remain separate. [Compatibility and evidence](multilingual-sources.md).

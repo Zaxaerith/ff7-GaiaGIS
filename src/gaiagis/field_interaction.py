@@ -77,8 +77,8 @@ def parse_triggers(section):
     return records,unused
 
 
-def scene_interactions(payload, field_id, name):
-    script,section,local=field_sections(payload,walkmesh=True)
+def scene_interactions(payload, field_id, name, *, archive=None):
+    script,section,local=field_sections(payload,walkmesh=True,archive=archive,member=name)
     triggers,unused=parse_triggers(section)
     points=None;triangles=0;mesh_reason=None
     try:
@@ -92,7 +92,7 @@ def scene_interactions(payload, field_id, name):
     if triggers:
         groups=[];reason=None
         try:
-            _,palette,background=field_sections(payload,visual=True)
+            _,palette,background=field_sections(payload,visual=True,archive=archive,member=name)
             parse_background(palette,background,groups=groups)
         except FormatError as error:reason=str(error)[:256]
         for row in triggers:
@@ -125,7 +125,7 @@ def encode_interactions(source, directory):
     context_path=directory/'gaia-field-context.json'
     if not context_path.is_file() or context_path.stat().st_size>8_000_000:raise ValueError('Interaction requires existing Field Context')
     context=json.loads(context_path.read_text(encoding='utf8'))
-    if not isinstance(context,dict) or context.get('schema')!='gaiagis-field-context' or context.get('version') not in (1,2,3,4) or not isinstance(context.get('sources'),dict) or any(context['sources'].get(k)!=v for k,v in sources.items()):raise ValueError('Interaction Field source identity mismatch')
+    if not isinstance(context,dict) or context.get('schema')!='gaiagis-field-context' or context.get('version') not in (1,2,3,4,5) or not isinstance(context.get('sources'),dict) or any(context['sources'].get(k)!=v for k,v in sources.items()):raise ValueError('Interaction Field source identity mismatch')
     nodes=context.get('nodes')
     if not isinstance(nodes,list) or len(nodes)>2000 or any(not isinstance(n,dict) for n in nodes):raise ValueError('Interaction Field identities')
     scenes=[];pool=bytearray();counts=dict(fields=0,slots=0,triggers=0,unused=0,line=0,linon=0,sline=0,staticSline=0,dynamicSline=0,stops=0,backgroundMatched=0,backgroundUnknown=0)
@@ -133,7 +133,7 @@ def encode_interactions(source, directory):
         if node.get('status')!='available':continue
         fid=node['id'];name=node['name']
         if type(fid) is not int or not 0<=fid<len(names) or name!=names[fid] or name.casefold() not in entries or any(s['fieldId']==fid for s in scenes):raise ValueError('Interaction maplist/Field identity mismatch')
-        value=scene_interactions(read_entry(archive,entries[name.casefold()]),fid,name)
+        value=scene_interactions(read_entry(archive,entries[name.casefold()]),fid,name,archive=ds.field_name)
         decoded=json.dumps(value,separators=(',',':'),sort_keys=True).encode();compressed=zlib.compress(decoded,9)
         if len(decoded)>MAX_SCENE or len(compressed)>MAX_SCENE:raise FormatError('Interaction scene budget')
         scenes.append(dict(fieldId=fid,name=name,triangles=value['triangles'],section5SHA256=value['section5SHA256'],offset=len(pool),bytes=len(compressed),rawBytes=len(decoded),sha256=digest(decoded)))

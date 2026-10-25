@@ -177,12 +177,13 @@ even though Triangle 191 contains its X/Y. All eight original Section 5 payloads
 match the existing private Walkmesh. These are specific 2013-save/current-resource
 observations, not a claim of all-version or runtime equivalence.
 
-### Fingerprint-bound WM0 prediction (v5.1)
+### Fingerprint-bound WM0 prediction (v5.1, expanded in v5.3)
 
-The reviewed English EV SHA-256 is
-`a020dace94f21b73094c204c54b01e13b3688002f65ffd9b1edf8ada5e372a64`.
-Validated Field Context/Events/POI source hashes already carry its identity;
-missing, conflicting or different sources give Unknown. The predictor reads P as
+V5.3 accepts four independently reviewed complete EN/FR/DE/ES EV fingerprints
+listed in [multilingual sources](multilingual-sources.md). Validated Field
+Context/Events/POI source hashes carry the actual member identity; missing,
+conflicting or unlisted sources give Unknown. Equal initializer fragments do
+not authorize a modified full EV. The predictor reads P as
 signed16 while retaining the existing UInt16 API. P below 638/1000/1197 gives
 state 0/1/2; otherwise state 3, except P≥1199 with all three listed bits gives 4.
 States map to the existing cumulative G1–G4 research groups.

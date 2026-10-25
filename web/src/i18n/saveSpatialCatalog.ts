@@ -4,7 +4,7 @@ export const saveSpatialCatalog=[
  ['save51.predicted','Predicted research state: {state}','预测研究状态：{state}','預測研究狀態：{state}','予測研究状態：{state}','예측 연구 상태: {state}'],
  ['save51.groups','Research replacement groups','研究替代组','研究替代組','研究用置換グループ','연구용 대체 그룹'],
  ['save51.noGroups','No replacement groups','无替代组','無替代組','置換グループなし','대체 그룹 없음'],
- ['save51.staticDisclaimer','Static initialization prediction from the selected save inputs and verified English world script; not the actual game runtime state.','这是根据已验证英文世界脚本，对所选存档输入进行的静态初始化预测，不是实际游戏运行时状态。','這是根據已驗證英文世界腳本，對所選存檔輸入進行的靜態初始化預測，不是實際遊戲執行時狀態。','検証済み英語版ワールドスクリプトに保存入力を与えた静的初期化予測です。実際のゲーム実行時状態ではありません。','검증된 영어 월드 스크립트에 선택한 저장 입력을 적용한 정적 초기화 예측이며, 실제 게임 실행 상태가 아닙니다.'],
+ ['save51.staticDisclaimer','Static initialization prediction from the selected save inputs and a verified world script source; not the actual game runtime state.','这是根据经过验证的世界脚本来源，对所选存档输入进行的静态初始化预测，不是实际游戏运行时状态。','這是根據經過驗證的世界腳本來源，對所選存檔輸入進行的靜態初始化預測，不是實際遊戲執行時狀態。','検証済みワールドスクリプト出典に保存入力を与えた静的初期化予測です。実際のゲーム実行時状態ではありません。','검증된 월드 스크립트 출처에 선택한 저장 입력을 적용한 정적 초기화 예측이며, 실제 게임 실행 상태가 아닙니다.'],
  ['save51.inputsOnly','Later scripts may change these inputs. This does not identify the save writer version or predict a story chapter.','后续脚本可能改变这些输入；此结果不能识别存档写入版本，也不推断剧情章节。','後續腳本可能改變這些輸入；此結果不能識別存檔寫入版本，也不推斷劇情章節。','後のスクリプトで入力が変わる場合があります。保存元の版や物語の章を特定しません。','이후 스크립트가 입력을 바꿀 수 있습니다. 저장한 게임 버전이나 스토리 장을 판정하지 않습니다.'],
  ['save51.source','Verified script source','已核对的脚本来源','已核對的腳本來源','照合済みスクリプト出典','대조한 스크립트 출처'],
  ['save51.research','Open World Variants research…','打开世界变体研究…','開啟世界變體研究…','ワールド差分研究を開く…','월드 변형 연구 열기…'],

@@ -492,7 +492,7 @@ def encode_evidence(source, directory, *, audit_path=None, progress=None):
     if not context_path.is_file() or context_path.stat().st_size > 8_000_000:
         raise ValueError('Script evidence requires existing Field Context')
     context_bytes = context_path.read_bytes(); context = _decode(context_bytes)
-    if not isinstance(context, dict) or context.get('schema') != 'gaiagis-field-context' or context.get('version') not in (3,4) or not isinstance(context.get('sources'), dict) or any(context['sources'].get(k) != v for k, v in sources.items()):
+    if not isinstance(context, dict) or context.get('schema') != 'gaiagis-field-context' or context.get('version') not in (3,4,5) or not isinstance(context.get('sources'), dict) or any(context['sources'].get(k) != v for k, v in sources.items()):
         raise ValueError('Script evidence Field Context source mismatch')
     spans = []; pool = bytearray(); audits = []; counts = Counter(); opcodes = Counter(); max_scene = max_records = max_entries = max_owners = 0
     for node in _list(context.get('nodes'), 2000):
@@ -503,7 +503,7 @@ def encode_evidence(source, directory, *, audit_path=None, progress=None):
         fid = _int(node['id']); name = node['name']
         if fid >= len(names) or name != names[fid] or name.casefold() not in entries or any(s['fieldId'] == fid for s in spans):
             raise ValueError('Script evidence maplist identity mismatch')
-        script, section8 = field_sections(read_entry(archive, entries[name.casefold()]))
+        script, section8 = field_sections(read_entry(archive, entries[name.casefold()]), archive=ds.field_name, member=name)
         value = scene_evidence(script, section8, fid, name)
         raw = encode_json(value); compressed = zlib.compress(raw, 9)
         if len(raw) > MAX_SCENE or len(compressed) > MAX_SCENE:

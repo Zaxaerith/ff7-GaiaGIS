@@ -217,6 +217,7 @@ export function mountFieldContext(viewer?:GaiaViewer,getPoi?:()=>PoiDataset|null
   for(const e of index.pack.exits.filter(e=>e.fromField===n.id))make('p',relations,`${t('field.worldExit')}: ${e.name} / ${e.to} · ${'gateway' in e?t('nav39.gateway')+' '+e.gateway:t('nav39.mapjump')} @ ${e.offset} · ${t('nav39.worldUnknown')}`);
   for(const e of index.pack.unresolved.filter(e=>e.fromField===n.id))make('p',relations,`${t('field.unresolved')}: ${e.to??'—'} · gateway ${e.gateway??'—'}`);
   const records=disclosure(card,'field-original-records','stable.evidence');renderSpatialEvidence(records,fieldEvidence(index,n.id),index.pack.sources);
+  for(const r of index.pack.section1Recoveries??[]){if(r.fieldId===n.id){make('p',records,t('field.section1Recovered',{declared:r.declaredBytes,used:r.usedBytes}));make('pre',records,`${index.pack.archive} / ${n.name}\nSHA-256 ${r.memberSHA256}`);}}
   for(const e of index.pack.nativeRelations??[]){if(e.fieldId===n.id)make('p',records,`${t('evidence.known')}: ${e.map} → ${n.name} / ${e.map.toLowerCase()}.ev function ${e.function} @ ${e.offset} / ENTER_FIELD 0x318 → field.tbl[${(e.entry-1)*2+e.scenario}]`);}
   for(const e of index.pack.scriptExits??[]){if(e.fromField===n.id)make('p',records,`${t('field.worldExit')}: ${e.name} / MAPJUMP @ ${e.offset}`);}
   for(const e of index.pack.scriptUnresolved??[]){if(e.fromField===n.id)make('p',records,`${t('evidence.unresolved')}: ${t('field.'+e.reason)} @ ${e.offset??'—'}`);}
@@ -292,7 +293,7 @@ export function mountFieldContext(viewer?:GaiaViewer,getPoi?:()=>PoiDataset|null
  function cameraDetails(){
   let detail=document.getElementById('field-camera-evidence');if(!detail){if(!active||appStore.state.view.spatial!=='field-walkmesh'||card.hidden)return;detail=make('section',card);detail.id='field-camera-evidence';detail.className='field-triangle-details';}
   rememberDisclosures();detail.replaceChildren();make('h3',detail,t('camera.title'));const scene=selected===null?null:visuals?.scenes.get(selected);if(!scene){make('p',detail,t('camera.unavailable'));return;}
-  const raw=disclosure(detail,'field-camera-record','stable.evidence');const c=scene.cameras[cameraId];if(c){make('pre',raw,`${index!.pack.archive} / ${index!.nodes.get(selected!)!.name} / section 2 / Camera ${c.id} @ ${c.offset}
+  const raw=disclosure(detail,'field-camera-record','stable.evidence');if(scene.reason)make('pre',raw,scene.reason);const c=scene.cameras[cameraId];if(c){make('pre',raw,`${index!.pack.archive} / ${index!.nodes.get(selected!)!.name} / section 2 / Camera ${c.id} @ ${c.offset}
 raw R (Q12 / 4096) = [${c.matrix.join(', ')}]
 t = [${c.translation.join(', ')}]
 Rzz copy = ${c.repeatedRzz} · extra = [${c.extra.join(', ')}]

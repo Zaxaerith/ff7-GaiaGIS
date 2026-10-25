@@ -3,7 +3,7 @@ import {describe,it,expect} from 'vitest';
 import type {SaveSlot,SaveWorldStateInputs} from '../src/data/save';
 import {FieldIndex,decodeWalkmesh,parseFieldPack,localPoint} from '../src/data/fieldContext';
 import type {FieldPack} from '../src/data/fieldContext';
-import {saveFieldPoint,predictSaveWorldState,SAVE_WORLD_STATE_EV_SHA256} from '../src/data/saveSpatial';
+import {saveFieldPoint,predictSaveWorldState,saveWorldStateSources,SAVE_WORLD_STATE_EV_SHA256,SAVE_WORLD_STATE_EV_SOURCES} from '../src/data/saveSpatial';
 
 // Generated integer geometry and fabricated scalar slots, never private saves.
 const sources={'flevel.lgp':'a'.repeat(64),maplist:'d6ac24b79403a77feeb338450b7cb2169cdbcfa5d071a6cee4884e93b700bc29','wm0.ev':SAVE_WORLD_STATE_EV_SHA256,'wm0.map':'b'.repeat(64),'field.tbl':'c'.repeat(64)};
@@ -43,6 +43,18 @@ describe('save Field position source composition',()=>{
 });
 
 describe('source-bound static WM0 initialization',()=>{
+ for(const [language,hash] of Object.entries(SAVE_WORLD_STATE_EV_SOURCES))it(`${language}: complete EV pin, signed thresholds and all flag combinations`,()=>{
+  for(const [p,expected] of [[-32768,0],[-1,0],[637,0],[638,1],[999,1],[1000,2],[1196,2],[1197,3],[1198,3],[1199,3],[1620,3],[32767,3]])for(let bits=0;bits<8;bits++)expect(predictSaveWorldState(slot(p,bits),{'wm0.ev':hash})).toMatchObject({state:p>=1199&&bits===7?4:expected,sourceHash:hash,reason:null});
+  // A changed complete hash remains Unknown even if its initializer is equal.
+  const changed=hash.slice(0,-1)+(hash.endsWith('0')?'1':'0');expect(predictSaveWorldState(slot(1620,7),{'wm0.ev':changed}).state).toBeNull();
+ });
+ it('conflicting loaded EV sources remain Unknown, including two reviewed EVs',()=>{
+  expect(saveWorldStateSources([undefined])).toBeNull();
+  for(const hash of Object.values(SAVE_WORLD_STATE_EV_SOURCES)){
+   expect(predictSaveWorldState(slot(1620,7),saveWorldStateSources([hash,undefined,hash])).state).toBe(4);
+   for(const other of Object.values(SAVE_WORLD_STATE_EV_SOURCES))if(hash!==other)expect(predictSaveWorldState(slot(1620,7),saveWorldStateSources([hash,other]))).toMatchObject({state:null,reason:'source_mismatch'});
+  }
+ });
  for(const [p,expected] of [[-32768,0],[-1,0],[0,0],[637,0],[638,1],[639,1],[999,1],[1000,2],[1001,2],[1196,2],[1197,3],[1198,3],[1199,3],[1200,3],[32767,3]])it(`threshold P=${p}, all 8 flag combinations`,()=>{
   for(let bits=0;bits<8;bits++){const state=p>=1199&&bits===7?4:expected,r=predictSaveWorldState(slot(p,bits),sources);expect(r).toEqual({state,groups:Array.from({length:state},(_,i)=>i+1),reason:null,sourceHash:SAVE_WORLD_STATE_EV_SHA256});}
  });

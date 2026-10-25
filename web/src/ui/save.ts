@@ -8,7 +8,7 @@ import {notifyUISound} from '../app/presentation';
 import {saveSession} from '../app/saveSession';
 import {ResourceScope} from '../app/resources';
 import {SaveError} from '../data/save';
-import {saveSurfacePoint,predictSaveWorldState} from '../data/saveSpatial';
+import {saveSurfacePoint,predictSaveWorldState,saveWorldStateSources} from '../data/saveSpatial';
 import {sharedSurface} from '../explorer/sharedSurface';
 import type {ExplorerController} from '../explorer/controller';
 import type {GaiaViewer} from '../viewer/GaiaViewer';
@@ -31,7 +31,7 @@ export function mountSave(getViewer:()=>GaiaViewer|undefined,switchMap:(id:MapId
  const binding=()=>valid()?.binding;
  function show(){if(!saveSession.slot)return;appStore.dispatch({type:'select',selection:{kind:'save',id:'session-slot-'+saveSession.slot.index,mapId:appStore.state.map.id}});refresh();}
  const rows=(parent:HTMLElement,values:[string,string][])=>{const dl=make('dl',parent);dl.className='property-list';for(const [key,value]of values){const row=make('div',dl);make('dt',row,t('save27.'+key));make('dd',row,value);}};
- function worldSources(){let ev:string|undefined;for(const id of ['field-context','events','locations'] as const){const asset=appStore.state.data.assets[id];if(!asset||!['loaded','legacy'].includes(asset.status))continue;const hash=asset.sourceHashes?.['wm0.ev']??(id==='field-context'?fields?.pack.sources['wm0.ev']:undefined);if(!hash)continue;if(ev&&ev.toLowerCase()!==hash.toLowerCase())return {'wm0.ev':'conflicting-source-identities'};ev=hash;}return ev?{'wm0.ev':ev}:null;}
+ function worldSources(){return saveWorldStateSources((['field-context','events','locations'] as const).map(id=>{const asset=appStore.state.data.assets[id];return asset&&['loaded','legacy'].includes(asset.status)?asset.sourceHashes?.['wm0.ev']??(id==='field-context'?fields?.pack.sources['wm0.ev']:undefined):undefined;}));}
  function worldState(parent:HTMLElement,compact:boolean){const result=predictSaveWorldState(valid(),worldSources()),section=make('section',parent);section.className='save-world-state';if(!compact)section.id='save-world-state';section.dataset.state=result.state===null?'unknown':String(result.state);section.dataset.reason=result.reason??'';section.dataset.sourceHash=result.sourceHash??'';
   make('h3',section,t('save51.worldTitle'));make('p',section,result.state===null?t('save27.unknown')+' · '+t('save51.'+result.reason):t('save51.predicted',{state:result.state}));const groups=make('p',section,t('save51.groups')+': '+(result.groups.length?result.groups.map(g=>'G'+g).join(' + '):result.state===0?t('save51.noGroups'):t('save27.unknown')));groups.className='save-world-groups';const disclaimer=make('p',section,t('save51.staticDisclaimer'));disclaimer.className='save-world-disclaimer';
   if(compact)return;const input=valid()?.worldStateInputs;if(input){const raw=make('p',section,`P (signed16) = ${input.progressSigned}; C1F.bit0 = ${Number(input.c1f0)}; F2B.bit0 = ${Number(input.f2b0)}; F2A.bit4 = ${Number(input.f2a4)}`);raw.className='save-world-inputs';}if(result.sourceHash&&/^[a-f0-9]{64}$/i.test(result.sourceHash)){const source=make('details',section);make('summary',source,t('save51.source'));const hash=make('p',source,'wm0.ev · SHA-256 '+result.sourceHash);hash.style.overflowWrap='anywhere';}make('p',section,t('save51.inputsOnly'));

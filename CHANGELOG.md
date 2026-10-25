@@ -1,5 +1,13 @@
 # Changelog
 
+## 5.3.0 — Verified Script Evidence & Field Recovery
+
+- Extend the existing signed WM0 static initializer to four reviewed complete EN/FR/DE/ES EV fingerprints. Missing, modified or conflicting sources remain Unknown; manual World Variants, visible terrain and BASE routing stay independent.
+- Recover Section 1 only for six exact archive/member/SHA-256 identities: FR `losin3`, `trnad_2`, `itown_w/i/m`, and DE `cosmin7`. Validate offset, script, text and AKAO boundaries; preserve original scripts, Triangle IDs and source offsets.
+- Restore their Script/Walkmesh/Interaction/evidence generation. Strict Visual succeeds for FR `losin3`, `trnad_2` (partial static background), and DE `cosmin7`; FR `itown_w/i/m` remain unavailable in Visual because of unsupported trailing bytes.
+- Field Context v5 / `field-context-8` records declared/used Section-1 lengths and original member hashes in the existing Inspector. Keep Context v1–v4 and binary codecs readable; invalidate dependent Field caches while reusing unchanged world geometry.
+- Keep cross-language WM2 variable-bank differences as research evidence. No script execution or original-runtime equivalence claim.
+
 ## 5.2.0 — Multilingual Source GIS
 
 - Add explicit EN/FR/DE/ES game-data selection in the native launcher and CLI, independent of UI locale; retain EN defaults and paired World/Field archives.

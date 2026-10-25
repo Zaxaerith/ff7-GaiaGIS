@@ -37,8 +37,20 @@ export function saveFieldPoint(slot:SaveSlot|null,index:FieldIndex|null,mesh:Fie
 }
 
 export const SAVE_WORLD_STATE_EV_SHA256='a020dace94f21b73094c204c54b01e13b3688002f65ffd9b1edf8ada5e372a64';
+export const SAVE_WORLD_STATE_EV_SOURCES=Object.freeze({
+ en:SAVE_WORLD_STATE_EV_SHA256,
+ fr:'7664bf39da3f7f46474bcce29aa39f9ffd044e88b587e1c251a4acd23bd506bd',
+ de:'c11d93aff555088368f432ed0c0f08d6fb0b5d0d40123d5681f83c3d0083be7f',
+ es:'b92798f1b5fb9adbfd495a23d44655822e256023251f267ca43fff14ceb912db',
+});
 export interface SaveWorldStatePrediction {state:0|1|2|3|4|null;groups:number[];reason:'invalid_slot'|'source_missing'|'source_mismatch'|null;sourceHash:string|null;}
-/** Static initialization only, pinned to the independently reviewed English EV.
+/** Loaded Context/Events/POI must agree, even if both EVs are reviewed. */
+export function saveWorldStateSources(hashes:(string|undefined)[]):Record<string,string>|null {
+ let ev:string|undefined;
+ for(const hash of hashes){if(!hash)continue;if(ev&&ev.toLowerCase()!==hash.toLowerCase())return {'wm0.ev':'conflicting-source-identities'};ev=hash;}
+ return ev?{'wm0.ev':ev}:null;
+}
+/** Static initialization only, pinned to four independently reviewed full EVs.
  * Neither the save container nor this prediction proves actual runtime state.
  */
 export function predictSaveWorldState(slot:SaveSlot|null,sources:Record<string,string>|null):SaveWorldStatePrediction {
@@ -46,7 +58,7 @@ export function predictSaveWorldState(slot:SaveSlot|null,sources:Record<string,s
  const unknown=(reason:SaveWorldStatePrediction['reason']):SaveWorldStatePrediction=>({state:null,groups:[],reason,sourceHash});
  if(!slot||slot.status!=='valid'||!slot.worldStateInputs)return unknown('invalid_slot');
  if(!sourceHash)return unknown('source_missing');
- if(sourceHash!==SAVE_WORLD_STATE_EV_SHA256)return unknown('source_mismatch');
+ if(!Object.values(SAVE_WORLD_STATE_EV_SOURCES).some(hash=>hash===sourceHash))return unknown('source_mismatch');
  const {progressSigned:p,c1f0,f2b0,f2a4}=slot.worldStateInputs;
  const state=p<638?0:p<1000?1:p<1197?2:p>=1199&&c1f0&&f2b0&&f2a4?4:3;
  return {state,groups:Array.from({length:state},(_,i)=>i+1),reason:null,sourceHash};

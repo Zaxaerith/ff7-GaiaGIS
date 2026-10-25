@@ -9,6 +9,16 @@ boundary/degenerate/outside rejection and EV fingerprint/threshold/bit gates.
 same Field Canvas, five locales and stale slot/resource/Workspace cancellation.
 Real saves remain explicit private inputs, never public fixtures or attachments.
 
+For v5.3, focus Web checks on `saveSpatial.test.ts`, `sourceLanguages.test.ts`
+and `atlas.test.ts`: four complete EV pins, signed thresholds/flags, mixed or
+unlisted source rejection, Context v5 diagnostics and old Context compatibility.
+`tools/tests/test_source_languages.py` adds synthetic bounded-section failures
+and Field cache revision checks. With explicit `GAIAGIS_SOURCE_ROOT`, its two
+optional cases read only the six reviewed FR/DE members and generate disposable
+component fixtures; no World geometry or complete Workspace is generated.
+Private bytes and installation paths never become fixtures. V5.3 acceptance is
+manual via Vite; no Browser E2E or Windows packaging is part of this scope.
+
 WM0 source regressions in `wm0Source.test.ts` cover explicit periodic direction,
 both stored seam identities, exact multivalue/vertical/contact evidence and the
 supported V1 integer recovery. With the existing private Workspace, a compact

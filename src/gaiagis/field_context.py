@@ -18,9 +18,20 @@ from .poi import parse_maplist, parse_field_table
 from .safety import output_path
 from .web_export import sha256
 
-GENERATOR_VERSION = 'field-context-7'
+GENERATOR_VERSION = 'field-context-8'
 WALKMESH_REVISION = 'field-walkmesh-1'
 MAX_WALKMESH_TRIANGLES = 65535  # 0xffff is reserved for a blocked edge.
+
+# Original compressed LGP members independently checked in v5.3 research.
+# Exact archive/member/hash AND observed lengths; never a general tolerance.
+SECTION1_RECOVERIES = {
+    ('fflevel.lgp', 'losin3', '5e965cebb9fdb79afa905898c57f14178b0f59ddd13289785fae4c3ceefbec11'): (13889, 13893),
+    ('fflevel.lgp', 'trnad_2', 'ebd9a7e9ca3eb24d2648067418e60bd08d215fa76f088fedf8ba0c4460d99ffe'): (11135, 11139),
+    ('fflevel.lgp', 'itown_w', 'db738dc5041dee793690f7fb2309354d16b2c15f40b05970a4e77d7b9144209f'): (13419, 13417),
+    ('fflevel.lgp', 'itown_i', 'bf4a45090511b5f0bf7793eb3d1ce704476087d48e5a1fe590ad6cd88407ba4d'): (9120, 9118),
+    ('fflevel.lgp', 'itown_m', 'f59e467a3c9da58f63a5900e40ab90dee2f864ddc4ee100fb89d558ecd4bb3d5'): (9029, 9027),
+    ('gflevel.lgp', 'cosmin7', '4b630c46156bb944f1817b72721a5425ac23bf8d7b2c2407794fa2999717a940'): (4557, 4565),
+}
 
 
 def parse_walkmesh(section: bytes, *, geometry=False) -> dict | tuple:
@@ -277,7 +288,37 @@ def save_identity(field_id: int, maplist_hash: str) -> int | None:
     return field_id if maplist_hash == PC_MAPLIST_SHA256 and field_id not in SAVE_ID_CONFLICTS else None
 
 
-def field_sections(payload: bytes, *, walkmesh=False, visual=False) -> tuple:
+def _validate_recovered_script(script: bytes):
+    """Validate the complete bounded candidate, including its non-code tail."""
+    try:
+        _, _, stops, _ = parse_script(script, evidence=True)
+    except UnicodeError as error:
+        raise FormatError('Recovered Field script name') from error
+    if stops:
+        raise FormatError('Recovered Field script has unverified boundaries')
+    _, actors, _, text_at, sounds = struct.unpack_from('<HBBHH', script)
+    akao = struct.unpack_from(f'<{sounds}I', script, 32 + actors * 8)
+    if any(not text_at + 2 <= at <= len(script) - 4 for at in akao) or any(a >= b for a, b in zip(akao, akao[1:])):
+        raise FormatError('Recovered Field AKAO bounds')
+    if any(script[at:at+4] != b'AKAO' for at in akao):
+        raise FormatError('Recovered Field AKAO identity')
+    text_end = akao[0] if akao else len(script)
+    if text_at + 2 > text_end:
+        raise FormatError('Recovered Field text bounds')
+    count = struct.unpack_from('<H', script, text_at)[0]
+    table_end = 2 + count * 2
+    if text_at + table_end > text_end:
+        raise FormatError('Recovered Field text table bounds')
+    offsets = struct.unpack_from(f'<{count}H', script, text_at + 2)
+    if any(not table_end <= at < text_end - text_at for at in offsets) or any(a > b for a, b in zip(offsets, offsets[1:])):
+        raise FormatError('Recovered Field text offsets')
+    for start, end in zip(offsets, (*offsets[1:], text_end - text_at)):
+        if b'\xff' not in script[text_at+start:text_at+end]:
+            raise FormatError('Recovered Field text terminator')
+
+
+def field_sections(payload: bytes, *, walkmesh=False, visual=False,
+                   archive=None, member=None, recoveries=None) -> tuple:
     if len(payload) < 4 or struct.unpack_from('<I', payload)[0] != len(payload) - 4:
         raise FormatError('Field compressed length')
     data = decompress(payload[4:], max_output=8_000_000)
@@ -295,8 +336,17 @@ def field_sections(payload: bytes, *, walkmesh=False, visual=False) -> tuple:
         raise FormatError('Field gateway section size')
     script_start = offsets[0]
     script_size = struct.unpack_from('<I', data, script_start)[0]
+    recovery = None
     if script_start + 4 + script_size != offsets[1]:
-        raise FormatError('Field script section size')
+        member_hash = hashlib.sha256(payload).hexdigest()
+        span = offsets[1] - script_start - 4
+        if SECTION1_RECOVERIES.get((archive, member, member_hash)) != (script_size, span):
+            raise FormatError('Field script section size (unverified source)')
+        if any(a + 4 > b for a, b in zip(offsets, offsets[1:])) or offsets[-1] + 4 > len(data):
+            raise FormatError('Recovered Field section bounds')
+        _validate_recovered_script(data[script_start+4:offsets[1]])
+        recovery = dict(memberSHA256=member_hash, declaredBytes=script_size, usedBytes=span)
+        script_size = span
     result = (data[script_start+4:script_start+4+script_size], data[start + 4:start + 4 + size])
     if visual:
         parts = []
@@ -305,10 +355,12 @@ def field_sections(payload: bytes, *, walkmesh=False, visual=False) -> tuple:
             length = struct.unpack_from('<I', data, at)[0]
             end = offsets[i+1] if i < 8 else len(data)
             section_end = at + 4 + length
-            if section_end != end and not (i == 8 and data[section_end:end] == b'FINAL FANTASY7'):
-                raise FormatError('Field visual section size')
+            if section_end > end or section_end != end and not (i == 8 and data[section_end:end] == b'FINAL FANTASY7'):
+                raise FormatError('Field visual section size / unsupported trailing bytes' if i == 8 else 'Field visual section size')
             parts.append(data[at+4:section_end])
         return tuple(parts)
+    if recovery is not None and recoveries is not None:
+        recoveries.append(recovery)
     if not walkmesh:
         return result
     # A damaged Section 5 is isolated from identity/script/gateway evidence.
@@ -550,7 +602,7 @@ def build_field_context(source: Path, directory: Path) -> dict:
     # World entry pseudo-fields are identities, not native WM2/WM3 maps.
     world = {i: name for i, name in enumerate(names) if name.startswith('wm') and name[2:].isdigit()}
     nodes, edges, exits, unresolved, script_edges, script_exits, script_unknown = [], [], [], [], [], [], []
-    scenes, walkmesh_data, meshes, spatial_gateways = [], bytearray(), {}, []
+    scenes, walkmesh_data, meshes, spatial_gateways, section1_recoveries = [], bytearray(), {}, [], []
     for field_id, name in enumerate(names):
         if not name or name == 'dummy' or field_id in world:
             continue
@@ -560,13 +612,16 @@ def build_field_context(source: Path, directory: Path) -> dict:
         if not entry:
             continue
         try:
-            script, gateway, local = field_sections(read_entry(archive, entry), walkmesh=True)
+            recovery = []
+            script, gateway, local = field_sections(read_entry(archive, entry), walkmesh=True,
+                archive=ds.field_name, member=name, recoveries=recovery)
             gateways = parse_gateways(gateway)
         except FormatError:
             node['status'] = 'corrupt'
             unresolved.append(dict(fromField=field_id, to=None, gateway=None, reason='invalid_section'))
             continue
         node['status'] = 'available'
+        section1_recoveries.extend(dict(fieldId=field_id, **r) for r in recovery)
         try:
             if local is None:
                 raise FormatError('Invalid Section 5 bounds')
@@ -656,12 +711,13 @@ def build_field_context(source: Path, directory: Path) -> dict:
         transitions = json.loads(transitions_path.read_text(encoding='utf8'))
         native = native_relations(transitions, available, sources)
         sources.update(transitions['sources'])
-    result = dict(schema='gaiagis-field-context', version=4, coordinateSpace='FieldLocalIdentity',
+    result = dict(schema='gaiagis-field-context', version=5, coordinateSpace='FieldLocalIdentity',
                   archive=ds.field_name, sources=sources,
                   nodes=nodes, edges=verified, exits=exits, unresolved=unresolved,
                   bindings=entrance_bindings(poi, nodes), scriptTransitions='bounded_mapjump',
                   scriptEdges=verified_scripts, scriptExits=script_exits, scriptUnresolved=script_unknown,
-                  nativeRelations=native, entrances=entrances, gateways=spatial_gateways)
+                  nativeRelations=native, entrances=entrances, gateways=spatial_gateways,
+                  section1Recoveries=section1_recoveries)
     if sha256(archive) != archive_hash or sha256(world_archive) != world_hash:
         raise RuntimeError('Field source changed during generation')
     metadata = dict(schema='gaiagis-field-walkmesh', version=1, coordinateSpace='FieldLocal',
