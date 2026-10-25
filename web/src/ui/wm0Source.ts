@@ -10,9 +10,11 @@ import type {GaiaMeta} from '../data/mesh';
 import type {GaiaViewer} from '../viewer/GaiaViewer';
 import {t,locale,onLocaleChange,formatNumber} from '../i18n';
 import {surfaceCoordinate,sourceResultPager,drawSurfacePlot} from './surfaceQueries';
+import {mountWM0Topology} from './wm0Topology';
+import type {RoutingData} from '../data/routing';
 
 /** The WM0 data owner supplies existing optional evidence; no second resource loader. */
-export function mountWM0Source(viewer:GaiaViewer,meta:GaiaMeta,getResources:()=>SourceEvidenceResources){
+export function mountWM0Source(viewer:GaiaViewer,meta:GaiaMeta,getResources:()=>SourceEvidenceResources,getRouting:()=>RoutingData|null=()=>null){
  const scope=new ResourceScope(),box=document.createElement('details');box.id='wm0-source-queries';box.className='analysis-group surface-query-panel';
  const title=document.createElement('summary'),note=document.createElement('p'),periodic=document.createElement('p'),display=document.createElement('p'),summary=document.createElement('p');for(const p of [note,periodic,display,summary])p.className='control-note';summary.id='wm0-source-summary';
  const inputs=new Map<string,HTMLInputElement>();
@@ -62,7 +64,7 @@ export function mountWM0Source(viewer:GaiaViewer,meta:GaiaMeta,getResources:()=>
   const locations=group('ui.locations',e.locations.status,e.locations.rows.length);for(const r of e.locations.rows)link(locations,'location',r.id,r.display_name,findNavigation({kind:'location',id:r.id,mapId:'WM0'})?.navigate);
   const atlasRows=e.atlas.rows.map(r=>({row:r,target:findNavigation({kind:'atlas',id:r.entity.id,mapId:'WM0'})})).filter(r=>r.target);const atlas=group('atlas.title',e.atlas.status,atlasRows.length);for(const {row:r,target}of atlasRows)link(atlas,'atlas',r.entity.id,r.entity.localizedNames[locale()]+' · '+t('atlas.'+r.binding.precision),target!.navigate);if(atlasRows.length<e.atlas.rows.length){const hidden=document.createElement('p');hidden.className='control-note';hidden.textContent=t('source.filtered');atlas.append(hidden);}
   const fields=group('inspect.field',e.field.status,e.field.rows.length);for(const r of e.field.rows)link(fields,'field',String(r.node.id),`${r.node.name} · ${r.binding.entranceId} · ${t(r.tableStatus==='mesh_unavailable'?'anchors.mesh_unavailable':r.tableStatus?'nav39.unavailable':'field.verified_direct')}`,()=>document.dispatchEvent(new CustomEvent('gaiagis:field-open',{detail:r.node.id})));
-  host.append(section);
+  host.append(section);topology.inspect(face,section);
  }
  function inspect(face:number,host:HTMLElement){selected=!unavailable&&face<viewer.mesh.sourceTriangleCount?{face,host,context:pendingContext}:undefined;if(selected)renderInspector();}
  function render(){title.textContent=t('source.title');note.textContent=t('source.note');periodic.textContent=t('source.periodic');display.textContent=t('source.displayScope');positionTitle.textContent=t('native.position');transectTitle.textContent=t('native.transect');for(const [b,key]of [[query,'native.queryRun'],[pick,'source.pick'],[pickA,'native.pickA'],[pickB,'native.pickB'],[run,'native.transectRun'],[clearButton,'native.queryClear']] as const)b.textContent=t(key);
@@ -75,5 +77,6 @@ export function mountWM0Source(viewer:GaiaViewer,meta:GaiaMeta,getResources:()=>
  let available=usable();scope.own(appStore.subscribe(()=>{const next=usable();box.hidden=appStore.state.map.id!=='WM0'||appStore.state.view.spatial!=='world';if(available&&!next){clear();selected=undefined;}available=next;if(!['triangle','encounter'].includes(appStore.state.selection?.kind??''))selected=undefined;for(const b of [query,pick,pickA,pickB,run])b.disabled=!next||unavailable;}));
  scope.listen(document,'gaiagis:mapping-tool',cancelPick);scope.listen(box,'toggle',()=>{if(!box.open&&armed){cancelPick();status.textContent='';}});scope.listen(document,'click',e=>{const target=(e.target as Element)?.closest('button');if(target?.id==='measure-start')cancelPick();});scope.listen(viewer.renderer.domElement,'keydown',((e:KeyboardEvent)=>{if(e.key==='Escape'&&armed){cancelPick();status.textContent='';}}) as EventListener);
  scope.own(onLocaleChange(()=>{render();refreshEvidence();}));try{source();}catch(e){unavailable=true;summary.title=String(e);}render();for(const b of [query,pick,pickA,pickB,run])b.disabled=!usable()||unavailable;
- return {inspect,clear,dispose(){cancelPick();selected=undefined;evidence=undefined;resourceRefs=[];scope.dispose();pager.dispose();box.remove();}};
+ const topology=mountWM0Topology(viewer,source,()=>usable()&&!unavailable,getRouting,face=>{cancelPick();viewer.selectSource(face);});
+ return {inspect,clear,dispose(){topology.dispose();cancelPick();selected=undefined;evidence=undefined;resourceRefs=[];scope.dispose();pager.dispose();box.remove();}};
 }

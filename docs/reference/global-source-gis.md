@@ -75,3 +75,71 @@ results and pending picks. Source-only startup has no original spatial resource.
 
 Frozen V1 geometry and thirteen projections, routing, Native WM2/WM3, Field,
 Explorer, Manifest and existing private formats remain unchanged.
+
+## WM0 Topology Evidence (v5.4)
+
+Open **Analysis → WM0 Topology Evidence** or select an original BASE face.
+The current `createWM0Source()` owner supplies ordered integer `(X,Z,raw Y)`
+corners and Section/Mesh/Triangle identities. The index is built once on demand;
+filter changes reuse it. Select a paged result to highlight/locate its face and
+open the existing Source Inspector. Each edge retains its original endpoint
+order and all face/edge-slot references, also in bounded paged lists.
+
+### Three separate relationships
+
+1. **Raw geometry:** an undirected key sorts two exact 3D endpoint positions.
+   Every original edge record contributes before any deduplication. Incidence
+   1 is boundary; 2 is two occurrences, not necessarily two different faces;
+   >2 is a non-manifold candidate. Collapsed endpoints, repeated slots within
+   one face and duplicate face groups are retained. A conservative unique raw
+   association requires two distinct faces with no collapsed/repeated/duplicate
+   ambiguity. Positions at equal X/Z and different Y never merge.
+2. **X periodic evidence:** only edges wholly at X=0 or X=294912 are candidates.
+   Compare unordered endpoint Z/Y pairs exactly. Opposite keys remain visible
+   even if ambiguous; confirmation requires one unambiguous original occurrence
+   on each side and different source faces. Raw incidence and raw endpoints do
+   not change. Z=0 and Z=229376 never become periodic. This differs deliberately
+   from the historical Python diagnostic that modulo-welds both axes.
+3. **Routing:** the existing Analysis owner supplies its actually loaded CSR.
+   MAP hash, count and source/node lineage must agree. The Inspector separately
+   lists raw co-references, confirmed X counterparts, actual CSR neighbors and
+   geometry-only/CSR-only differences. Unconfirmed X candidates do not enter
+   the confirmed geometric comparison. Raw ambiguous co-references remain
+   candidates, not asserted traversable edges. Missing/mismatched CSR gives an
+   explicit unavailable reason, never a guessed graph.
+
+The **Duplicate** filter means faces in actual duplicate geometry groups;
+related edges can also reference other faces. **Periodic seam** includes all
+X-side candidate faces. **Ambiguous** is the union of raw ambiguity
+(collapsed, repeated, >2 incidence or duplicate-related keys) and unresolved
+X candidates. Ordinary non-seam boundary edges are not automatically ambiguous.
+Global raw ambiguity and unresolved X counts are displayed separately.
+
+### Counts and limits
+
+For the currently supported original source, the read-only Web calculation gives:
+
+| Measure | Count |
+|---|---:|
+| BASE faces / ordered corner records | 142,586 / 427,758 |
+| Exact 3D position keys / raw edge keys | 71,765 / 214,270 |
+| Incidence 1 / 2 / 4 edge keys | 1,030 / 213,116 / 124 |
+| Collapsed keys / same-face repeated keys | 0 / 0 |
+| Duplicate groups / member faces / excess | 84 / 168 / 84 |
+| Duplicate-related / raw ambiguous edge keys | 161 / 163 |
+| X candidate keys / confirmed pairs / unresolved keys | 448 / 224 / 0 |
+
+Corner records mean three ordered occurrences per source face; they are not the
+original MAP's vertex-pool count or storage vertex IDs. Exact position and edge
+keys, duplicate membership and conservative relations are derived calculations.
+The 448 paired side keys still each contribute their original incidence of 1.
+No Euler invariant or component/traversability claim is made in this tool.
+
+No epsilon welding, repair, nearest-neighbor search or runtime collision model
+is used. CSR differences do not imply route-generation bugs, sea/land connectivity
+or player access. Filtering changes neither routing overlays nor manual Variant,
+Save, Field or projection state. Inactive map/Field/Variant/Explorer transitions
+release this feature's results and pending work; a new active query can rebuild
+the index. **Release topology results** also drops its cache without clearing
+other analysis tools. All lists page at 50 entries; no coordinate database or
+new Workspace/GeoPackage resource is created.

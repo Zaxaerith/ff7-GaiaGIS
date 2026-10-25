@@ -1,5 +1,13 @@
 # Changelog
 
+## 5.4.0 — WM0 Topology Evidence Explorer
+
+- Add lazy, session-local topology evidence for 142,586 original WM0 BASE faces. Count every ordered edge occurrence using exact integer (X,Z,Y) endpoints; exclude synthetic caps and preserve repeated/duplicate references.
+- Show raw incidence, boundary/non-manifold/collapsed/duplicate diagnostics and separate exact X-seam candidates. Confirm a periodic pair only for one unambiguous occurrence on each side; never wrap Z or alter raw counts.
+- Add paged All/Boundary/Non-manifold/Collapsed/Duplicate/Periodic/Ambiguous face filters, source selection and three-edge evidence in the existing Inspector. Retain all candidate references instead of choosing a neighbor.
+- Compare raw references and confirmed X pairs against the existing loaded, source-matched Routing CSR. Missing or incompatible routing stays unavailable; weights, movement rules and Dijkstra are unchanged.
+- Release the index, filter and pending work on owner/map/Field/Variant/Explorer transitions. Keep V1/projections, Source queries/transects, Native maps and private formats unchanged; no data regeneration required.
+
 ## 5.3.0 — Verified Script Evidence & Field Recovery
 
 - Extend the existing signed WM0 static initializer to four reviewed complete EN/FR/DE/ES EV fingerprints. Missing, modified or conflicting sources remain Unknown; manual World Variants, visible terrain and BASE routing stay independent.

@@ -57,5 +57,5 @@ export function mountAnalysis(viewer:GaiaViewer,meta:GaiaMeta,isCurrent:()=>bool
   for(const id of ['route-from','route-to'])el(id).addEventListener('input',clear);
   workspaceLoader.register("routing",async files=>adopt(await files[0].arrayBuffer(),++loadRevision));
   spatial=mountSpatialAnalysis(viewer,meta,panel,rpc,()=>{const start=choose('route-from');return graph&&poi&&start?{mode:modes.value,conditional:el<HTMLInputElement>('route-conditional').checked,starts:endpoints(start)}:null;});
-  return {dispose(){stopSave();document.removeEventListener('gaiagis:save-route',acceptPlayer);disposed=true;ticket++;spatial?.dispose();cartography.dispose();unsubscribe();worker?.terminate();pending.forEach(p=>p.reject(new Error(t('error.cancelled'))));pending.clear();document.removeEventListener('gaiagis:poi',acceptPoi);panel.remove();open.remove();}};
+  return {routing:()=>!disposed&&isCurrent()&&['loaded','legacy'].includes(appStore.state.data.assets.routing?.status??'')?graph:null,dispose(){stopSave();document.removeEventListener('gaiagis:save-route',acceptPlayer);disposed=true;graph=null;ticket++;spatial?.dispose();cartography.dispose();unsubscribe();worker?.terminate();pending.forEach(p=>p.reject(new Error(t('error.cancelled'))));pending.clear();document.removeEventListener('gaiagis:poi',acceptPoi);panel.remove();open.remove();}};
 }

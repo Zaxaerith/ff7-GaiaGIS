@@ -1,5 +1,11 @@
 # Route elevation profile
 
+For the separate v5.4 WM0 edge evidence tool, see
+[Topology Evidence](global-source-gis.md#wm0-topology-evidence-v54). Original edge
+occurrences, confirmed X relations and loaded CSR comparisons are distinct from
+the route corridor/profile and traffic-mode connectivity below. This tool does
+not change the solver or infer a route from geometric contact.
+
 Input is the already solved source-triangle corridor. No second graph, raster,
 nearest-height search or guessed coordinates are introduced. Each adjacent face
 pair must share exactly two verified raw corners, matching E/W periodic endpoints.
