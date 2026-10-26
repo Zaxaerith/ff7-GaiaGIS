@@ -1,5 +1,13 @@
 # Changelog
 
+## 5.5.0 — Regional Terrain Statistics
+
+- Add lazy Global / By Region / By Terrain statistics from the current WM0 BASE source, preserving original Region/Terrain IDs, Unknown categories, zero-area faces and duplicate contributions.
+- Show bidirectional Region × Terrain face/area shares with explicit group denominators, zero-denominator handling and global marginal conservation checks. Area is summed raw² source contribution, not unique coverage or km².
+- Reuse existing raw TIN slope/aspect functions for area-weighted slope means, seven slope bins, eight-direction distributions and valid-aspect coverage. Raw Y extrema include all source corners, including zero-area faces.
+- Link composition cells to bounded, 50-face pages and the existing source selection/Inspector. Reuse cached aggregation for selection, sorting and paging without a new overlay, database or mandatory asset.
+- Release transient statistics on source/map/owner changes. Keep spherical Region navigation centers, V1/projections, Topology, Routing, Field, Save, Native and Workspace/GIS formats unchanged. Public source-only mode explicitly reports statistics unavailable.
+
 ## 5.4.0 — WM0 Topology Evidence Explorer
 
 - Add lazy, session-local topology evidence for 142,586 original WM0 BASE faces. Count every ordered edge occurrence using exact integer (X,Z,Y) endpoints; exclude synthetic caps and preserve repeated/duplicate references.

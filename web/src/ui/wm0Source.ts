@@ -11,6 +11,7 @@ import type {GaiaViewer} from '../viewer/GaiaViewer';
 import {t,locale,onLocaleChange,formatNumber} from '../i18n';
 import {surfaceCoordinate,sourceResultPager,drawSurfacePlot} from './surfaceQueries';
 import {mountWM0Topology} from './wm0Topology';
+import {mountRegionalTerrain} from './regionalTerrain';
 import type {RoutingData} from '../data/routing';
 
 /** The WM0 data owner supplies existing optional evidence; no second resource loader. */
@@ -78,5 +79,6 @@ export function mountWM0Source(viewer:GaiaViewer,meta:GaiaMeta,getResources:()=>
  scope.listen(document,'gaiagis:mapping-tool',cancelPick);scope.listen(box,'toggle',()=>{if(!box.open&&armed){cancelPick();status.textContent='';}});scope.listen(document,'click',e=>{const target=(e.target as Element)?.closest('button');if(target?.id==='measure-start')cancelPick();});scope.listen(viewer.renderer.domElement,'keydown',((e:KeyboardEvent)=>{if(e.key==='Escape'&&armed){cancelPick();status.textContent='';}}) as EventListener);
  scope.own(onLocaleChange(()=>{render();refreshEvidence();}));try{source();}catch(e){unavailable=true;summary.title=String(e);}render();for(const b of [query,pick,pickA,pickB,run])b.disabled=!usable()||unavailable;
  const topology=mountWM0Topology(viewer,source,()=>usable()&&!unavailable,getRouting,face=>{cancelPick();viewer.selectSource(face);});
- return {inspect,clear,dispose(){topology.dispose();cancelPick();selected=undefined;evidence=undefined;resourceRefs=[];scope.dispose();pager.dispose();box.remove();}};
+ const regional=mountRegionalTerrain(viewer,meta,source,()=>usable()&&!unavailable,face=>{cancelPick();viewer.selectSource(face);});
+ return {inspect,clear,dispose(){regional.dispose();topology.dispose();cancelPick();selected=undefined;evidence=undefined;resourceRefs=[];scope.dispose();pager.dispose();box.remove();}};
 }

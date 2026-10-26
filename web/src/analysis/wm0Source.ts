@@ -13,6 +13,7 @@ export interface WM0SourceLineage extends TriangleAttributes{
 export type WM0Metric=ReturnType<typeof nativeTriangle>&{bounds:number[];duplicateCount:number};
 export interface WM0Source extends SurfaceSource<WM0SourceLineage>{
  sourceSHA:string;
+ metrics(i:number):WM0Metric;
  summary:{faces:number;corners:number;zeroXZ:number;degenerate3D:number;duplicateExcess:number;milliseconds:number};
 }
 const cache=new WeakMap<GaiaMesh,WM0Source>();

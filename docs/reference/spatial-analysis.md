@@ -133,3 +133,64 @@ disconnection, conditional rules and multiple profiles have synthetic coverage.
 ## Native source TIN analysis
 
 WM2/WM3 use independent raw X/Z/h spaces. Exact determinant, projected area, nullable a/b gradients, duplicate membership, edge occurrence incidence and conservative components are separate from all WM0 algorithms. Terrain totals sum source-face contributions, not union areas. No modulo, snapping, real slope angle or game reachability is inferred. [Native method and export](native-gis.md).
+
+## Regional Terrain Statistics (v5.5)
+
+In WM0 BASE world view, open **Analysis → Regional Terrain Statistics**. The
+current `WM0Source` supplies ordered integer X/Z/Y corners, source IDs and raw
+horizontal area. Compute once on demand, then choose Global, By Region or By
+Terrain. No new Workspace resource or regeneration is needed. Source-only mode
+without original geometry reports unavailable; research tables are not runtime
+fallback data.
+
+Grouping uses **original** Region/Terrain attributes, not encounter lookup:
+Region 16/17 remain distinct, Terrain 16/24/26 keep their IDs and Terrain 21 is
+retained even when its display name is Unknown. Sea/Water are original source
+labels, not inferred environmental classes. Each BASE face contributes once;
+synthetic caps and periodic display copies never enter the aggregation.
+
+For each source face, A = abs(det(raw X, raw Z))/2 in **raw²**. This is an additive
+horizontal projection contribution, including duplicate records, not polygon
+union, deduplicated ground coverage, spherical area or km². Zero-area faces
+contribute to counts and raw Y min/max, with zero area weight.
+
+- **By Region:** each Terrain count share uses the selected Region's face count;
+  each area share uses that Region's summed A.
+- **By Terrain:** each Region share uses the selected Terrain's corresponding
+  count or area denominator. Sort either table by face count, area or raw ID.
+- **Global:** totals include all BASE records. The marginal check shows global,
+  summed Regions, summed Terrains and summed cells for both count and A.
+- A zero denominator is **Not applicable**, never an invented percentage.
+
+Height extrema cover all three original corners, including zero-horizontal-area
+faces, in **raw Y**. They are not actor height, physical elevation or a vertical
+datum. Slope/aspect reuse `tinGradient()` and `aspectCategory()` with the existing
+raw horizontal/vertical scales of 1. Slope means and bins are weighted by
+valid-slope area, including flat slope 0; undefined faces are listed separately.
+Bins are [0,5), [5,15), [15,30), [30,45), [45,60), [60,75), [75,90) degrees.
+
+Aspect runs clockwise from north=0° and uses N/NE/E/SE/S/SW/W/NW. Eight-direction
+shares divide by **defined-aspect area**. Coverage separately divides that area
+by all positive source-area contributions. Flat/near-zero gradient (g<1e-8),
+vertical and degenerate faces have undefined aspect. Both flat area and total
+undefined-aspect area are shown. No arithmetic mean of angles is computed.
+These are raw-source indicators, not measured physical terrain slopes.
+
+Select a composition row to page through its source face IDs (50 per page).
+Click a face to locate/highlight it through the existing Viewer and Source
+Inspector. This changes no thematic layer, routing weight, manual Variant state
+or other analysis filter. No whole-region highlight geometry is generated.
+
+The supported real source has 18 Regions, 29 Terrains, 161 populated cells,
+142,586 BASE faces and 67,692,515,599 raw² summed contribution. There are 246
+zero-horizontal-area faces and 168 duplicate-group members. Whole-source raw Y
+is -738…4086; the area-weighted slope mean is about 5.036422°, and defined-aspect
+area covers about 21.8968%. These are source-specific checks, not code constants.
+
+Aggregation retains only categorical summaries and one source-face ID list per
+cell. Selecting/sorting/paging does not rescan geometry. Current Source/Viewer
+ownership clears the cache and selections on Workspace/map/Field/Variant/Explorer
+transitions or disposal. Existing spherical Region navigation centers keep their
+own weights and are not reinterpreted as raw² centers. X periodic display does
+not duplicate records; Z is not periodic. No Region components, polygons,
+hydrology, coverage union or original-runtime verification is included.
