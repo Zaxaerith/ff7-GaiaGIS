@@ -37,7 +37,7 @@ export function renderEncounterInspector(parent:HTMLElement,a:TriangleAttributes
       summary.textContent=t('message.recordGroup',{kind:t(`kind.${kind}`),weighted:records.filter(e=>e.weight>0).length,count:records.length});details.append(summary);
       const list=document.createElement('ul');
       for(const e of records){const li=document.createElement('li'),rating=kind==='chocobo'?chocoboRating(data,e.scene_id):null;
-        li.textContent=t('message.record',{scene:e.scene_id,weight:e.weight,packed:e.packed})+(rating===null?'':' · '+t('message.rating',{rating}));list.append(li);}
+        li.textContent=t('message.record',{scene:e.scene_id,weight:e.weight,packed:e.packed})+(rating===null?'':' · '+t('message.rating',{rating}));list.append(li);if(e.weight>0)document.dispatchEvent(new CustomEvent('gaiagis:gameplay-encounter',{detail:{host:li,setId:s.id,byteOffset:e.byte_offset,battleId:e.scene_id,sources:data.sources}}));}
       details.append(list);section.append(details);
     }
     const mystery=document.createElement('details');mystery.className='encounter-group';const summary=document.createElement('summary');summary.textContent=t('inspect.ninjaMapping');mystery.append(summary);

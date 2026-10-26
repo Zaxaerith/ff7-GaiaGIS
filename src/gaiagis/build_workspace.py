@@ -18,6 +18,7 @@ from .presentation import GENERATOR_VERSION as PRESENTATION_VERSION
 from .field_camera import GENERATOR_VERSION as VISUAL_VERSION, build_field_visual
 from .field_interaction import GENERATOR_VERSION as INTERACTION_VERSION, build_field_interaction
 from .field_script_evidence import GENERATOR_VERSION as SCRIPT_EVIDENCE_VERSION, build_field_script_evidence
+from .gameplay import GENERATOR_VERSION as GAMEPLAY_VERSION, build_gameplay, input_profile as gameplay_input_profile
 from ._version import __version__
 TOOL_VERSION = __version__
 GENERATOR_VERSION = 'workspace-1'
@@ -42,6 +43,7 @@ ASSETS = {
     'gaia-field-visual.bin': ('field-visual', 'shared', ['gaia-field-context.json']),
     'gaia-field-interaction.bin': ('field-interaction', 'shared', ['gaia-field-context.json','gaia-field-walkmesh.bin']),
     'gaia-field-script-evidence.bin': ('field-script-evidence', 'shared', ['gaia-field-context.json']),
+    'gaia-gameplay.json': ('gameplay', 'shared', ['gaia-field-context.json']),
 }
 
 # Archive roles resolve to actual basename + hash, never missing EN aliases.
@@ -52,6 +54,7 @@ SOURCE_DEPENDENCIES = {
     'gaia-field-visual.bin': ['@field'],
     'gaia-field-interaction.bin': ['@field'],
     'gaia-field-script-evidence.bin': ['@field'],
+    'gaia-gameplay.json': ['@world', '@field', 'gameplay-inputs.json'],
     'gaia-meta.json': ['wm0.map'], 'gaia-mesh.bin': ['wm0.map'],
     'gaia-poi.json': ['wm0.map', '@world', '@field'],
     'gaia-encounters.json': ['wm0.map', '@world'],
@@ -79,7 +82,7 @@ def write_manifest(directory, sources, *, retained_visual=None):
                 continue
             assets.append(dict(filename=filename, type=kind, mapId=map_id,
                                sha256=sha256(path), bytes=path.stat().st_size,
-                               dependencies=dependencies, generator_version='explorer-party-1' if kind=='explorer' else PRESENTATION_VERSION if kind=='presentation' else ATLAS_VERSION if kind=='atlas' else VISUAL_VERSION if kind=='field-visual' else INTERACTION_VERSION if kind=='field-interaction' else SCRIPT_EVIDENCE_VERSION if kind=='field-script-evidence' else FIELD_VERSION if kind in ('field-context','field-walkmesh') else GENERATOR_VERSION))
+                               dependencies=dependencies, generator_version='explorer-party-1' if kind=='explorer' else PRESENTATION_VERSION if kind=='presentation' else ATLAS_VERSION if kind=='atlas' else VISUAL_VERSION if kind=='field-visual' else INTERACTION_VERSION if kind=='field-interaction' else SCRIPT_EVIDENCE_VERSION if kind=='field-script-evidence' else GAMEPLAY_VERSION if kind=='gameplay' else FIELD_VERSION if kind in ('field-context','field-walkmesh') else GENERATOR_VERSION))
     names = {a['filename'] for a in assets}
     if any(set(a['dependencies']) - names for a in assets):
         raise ValueError('Workspace dependency missing; manifest was not written')
@@ -98,6 +101,7 @@ def reusable(manifest, sources, directory, names, _visited=None, *, visual_revis
     for name in names:
         if name not in ASSETS or name in visited:return False
         previous = manifest.get('sources', {})
+        if name=='gaia-gameplay.json' and (not previous.get('gameplay-inputs.json') or not sources.get('gameplay-inputs.json')):return False
         if not same_dependencies(previous, sources, SOURCE_DEPENDENCIES[name]):return False
         record = next((a for a in manifest.get('assets', []) if a.get('filename') == name), None)
         path = directory / name
@@ -110,6 +114,7 @@ def reusable(manifest, sources, directory, names, _visited=None, *, visual_revis
         if name=='gaia-field-visual.bin' and record.get('generator_version')!=(visual_revision or VISUAL_VERSION):return False
         if name=='gaia-field-interaction.bin' and record.get('generator_version')!=INTERACTION_VERSION:return False
         if name=='gaia-field-script-evidence.bin' and record.get('generator_version')!=SCRIPT_EVIDENCE_VERSION:return False
+        if name=='gaia-gameplay.json' and record.get('generator_version')!=GAMEPLAY_VERSION:return False
         dependencies = ASSETS[name][2]
         if record.get('dependencies') != dependencies:return False
         if dependencies and not reusable(manifest, sources, directory, dependencies, visited | {name}, visual_revision=visual_revision):return False
@@ -240,7 +245,7 @@ def _build_workspace(source, destination, stage1=None, *, rebuild=False, allow_o
     results = []; retained_visual = None
     def step(label, names, action):
         nonlocal retained_visual
-        if progress:progress(label,len(results),18)
+        if progress:progress(label,len(results),19)
         if not rebuild and reusable(old, sources, out, names):
             print(f'Reuse {label}', flush=True);results.append(dict(step=label, reused=True));return
         print(f'Build {label}', flush=True)
@@ -252,7 +257,7 @@ def _build_workspace(source, destination, stage1=None, *, rebuild=False, allow_o
         try:
             action();results.append(dict(step=label, reused=False))
         except Exception as error:
-            if label=='geometry' or not allow_optional_failure and label!='presentation':raise
+            if label=='geometry' or not allow_optional_failure and label not in ('presentation','gameplay'):raise
             if previous_visual is not None:
                 _restore_visual(out, visual_snapshot, manifest=False)
                 retained_visual = previous_visual
@@ -303,13 +308,23 @@ def _build_workspace(source, destination, stage1=None, *, rebuild=False, allow_o
     step('field-visual', ['gaia-field-visual.bin'], lambda: build_field_visual(source,out))
     step('field-interaction', ['gaia-field-interaction.bin'], lambda: build_field_interaction(source,out))
     step('field-script-evidence', ['gaia-field-script-evidence.bin'], lambda: build_field_script_evidence(source,out))
+    # Only this optional evidence product depends on Battle/Kernel inputs. It
+    # neither changes map geometry nor makes missing gameplay input fatal.
+    if (out/'gaia-field-context.json').is_file():
+        try:
+            profile, extra = gameplay_input_profile(dataset, out, sources)
+            sources.update({name:sha for name,sha in extra.items() if name in ('scene.bin','kernel.bin','kernel2.bin')})
+            sources['gameplay-inputs.json'] = profile
+        except (OSError, ValueError):
+            sources.pop('gameplay-inputs.json', None)
+    step('gameplay', ['gaia-gameplay.json'], lambda: build_gameplay(source,out))
     after = {r['filename']:r['sha256'].lower() for r in fingerprint(dataset)['files']}
     if any(after[k] != v for k,v in sources.items() if k in after):raise RuntimeError('Source fingerprint changed during workspace build')
     if field_archive and sha256(field_archive)!=sources[dataset.field_name]:raise RuntimeError('Field source fingerprint changed during workspace build')
     for asset,name in [(char,'char.lgp')]+[(child_ci(sound,n) if sound else None,n) for n in ('audio.dat','audio.fmt')]:
         if asset and sha256(asset)!=sources[name]:raise RuntimeError('Optional source fingerprint changed during build')
     manifest = write_manifest(out, sources, retained_visual=retained_visual)
-    if progress:progress('ready',18,18)
+    if progress:progress('ready',19,19)
     return dict(assets=len(manifest['assets']), steps=results, manifest_sha256=sha256(old_path), ff7_source_modified='NO')
 
 def main(argv=None):

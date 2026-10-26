@@ -116,7 +116,7 @@ export function mountFieldContext(viewer?:GaiaViewer,getPoi?:()=>PoiDataset|null
  const disclosures=new Map<string,boolean>();
  function rememberDisclosures(){for(const root of [workspace,card])for(const d of root.querySelectorAll<HTMLDetailsElement>('details[data-field-disclosure]'))disclosures.set(d.id,d.open);}
  function disclosure(host:HTMLElement,id:string,key:string,expanded=false){const d=make('details',host) as HTMLDetailsElement;d.id=id;d.dataset.fieldDisclosure='';d.open=disclosures.get(id)??expanded;make('summary',d,t(key));d.ontoggle=()=>{if(d.isConnected)disclosures.set(id,d.open);};return d;}
- const emit=()=>{document.dispatchEvent(new CustomEvent('gaiagis:fields',{detail:index}));document.dispatchEvent(new Event('gaiagis:field-ready'));refreshEntranceActions();};
+ const emit=()=>{document.dispatchEvent(new CustomEvent('gaiagis:fields',{detail:index}));document.dispatchEvent(new CustomEvent('gaiagis:field-source',{detail:{index,sha256:fieldContextHash}}));document.dispatchEvent(new Event('gaiagis:field-ready'));refreshEntranceActions();};
  function reject(){feedback.textContent=t('field.conflict');notifyUISound('invalid');return false;}
  function revealSelection(){const inspector=document.getElementById('integrated-inspector');if(inspector)inspector.scrollTop=0;}
  function canEnter(){return appStore.state.explorer.phase==='idle'&&!viewport.classList.contains('user-drawing-active')&&!viewer?.captureMeasurement&&!document.querySelector('#discovery-tours[data-phase=playing],#discovery-route[data-phase=playing]');}
@@ -202,6 +202,7 @@ export function mountFieldContext(viewer?:GaiaViewer,getPoi?:()=>PoiDataset|null
   make('p',section,t('field.partial'));if(names.length&&fields.length)button(section,t('field.graph'),()=>{open(fields[0].id);sceneScope=[...new Set(fields.flatMap(n=>[n.id,...index!.connected(n.id)]))];filter='context';enter('field-graph');});if(locationId&&fields.length)button(section,t('field.graph'),()=>{open(fields[0].id);filter=locationId;enter('field-graph');});
  }
  scope.listen(document,'gaiagis:field-context',((e:CustomEvent<{host:HTMLElement;locationId:string|null;names:string[]}>)=>context(e.detail.host,e.detail.locationId,e.detail.names)) as EventListener);
+ scope.listen(document,'gaiagis:gameplay-ready',()=>{if(selected!==null&&appStore.state.selection?.kind==='field')inspect();});
  function inspect(){rememberDisclosures();card.hidden=appStore.state.selection?.kind!=='field';card.replaceChildren();if(card.hidden||selected===null||!index)return;
   const n=index.nodes.get(selected);if(!n)return;card.dataset.fieldId=String(n.id);make('h2',card,`${t('field.scene')} · ${n.name} / ${n.id}`);make('p',card,t('field.nonGlobal'));make('p',card,t('field.'+n.status));if(n.saveId===null)make('p',card,t('field.unverified'));
   const openWorkspace=button(card,t('field.openWorkspace'),()=>enter('field-graph'));openWorkspace.id='field-open-workspace';openWorkspace.hidden=active;
@@ -217,6 +218,7 @@ export function mountFieldContext(viewer?:GaiaViewer,getPoi?:()=>PoiDataset|null
   for(const e of index.pack.exits.filter(e=>e.fromField===n.id))make('p',relations,`${t('field.worldExit')}: ${e.name} / ${e.to} · ${'gateway' in e?t('nav39.gateway')+' '+e.gateway:t('nav39.mapjump')} @ ${e.offset} · ${t('nav39.worldUnknown')}`);
   for(const e of index.pack.unresolved.filter(e=>e.fromField===n.id))make('p',relations,`${t('field.unresolved')}: ${e.to??'—'} · gateway ${e.gateway??'—'}`);
   const records=disclosure(card,'field-original-records','stable.evidence');renderSpatialEvidence(records,fieldEvidence(index,n.id),index.pack.sources);
+  document.dispatchEvent(new CustomEvent('gaiagis:gameplay-context',{detail:{host:card,fieldIds:[n.id]}}));
   for(const r of index.pack.section1Recoveries??[]){if(r.fieldId===n.id){make('p',records,t('field.section1Recovered',{declared:r.declaredBytes,used:r.usedBytes}));make('pre',records,`${index.pack.archive} / ${n.name}\nSHA-256 ${r.memberSHA256}`);}}
   for(const e of index.pack.nativeRelations??[]){if(e.fieldId===n.id)make('p',records,`${t('evidence.known')}: ${e.map} → ${n.name} / ${e.map.toLowerCase()}.ev function ${e.function} @ ${e.offset} / ENTER_FIELD 0x318 → field.tbl[${(e.entry-1)*2+e.scenario}]`);}
   for(const e of index.pack.scriptExits??[]){if(e.fromField===n.id)make('p',records,`${t('field.worldExit')}: ${e.name} / MAPJUMP @ ${e.offset}`);}

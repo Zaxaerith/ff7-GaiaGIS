@@ -1,0 +1,32 @@
+[
+  {
+    "entityId": "wutai-pagoda",
+    "fieldId": 586,
+    "fieldName": "tower5",
+    "recordId": "586:10302",
+    "formationId": 628,
+    "sceneId": 157,
+    "enemyId": 182,
+    "enemyName": "Godo",
+    "memberSHA256": "b0b9f57a5dc00f8bc5c8262a02a62114f6c8b1d3530f2217bc8e41e3f5d21b9a",
+    "section1SHA256": "80c6f47904d934f6db7719aa8b4ea73519287cf206493e46c2e09f3506b6bc6b",
+    "sceneSHA256": "6420460c430caeb0d901782344088a90dddc9d595a01bef3cddae1d6f74e4119",
+    "owner": {"actor": 21, "name": "godoh", "slot": 1, "entry": 9878, "kind": "table"},
+    "sources": ["pagoda-guide", "wutai"]
+  },
+  {
+    "entityId": "glacier-materia",
+    "fieldId": 684,
+    "fieldName": "hyou13_2",
+    "recordId": "684:1554",
+    "formationId": 679,
+    "sceneId": 169,
+    "enemyId": 210,
+    "enemyName": "Snow",
+    "memberSHA256": "740f685e0cef25e1290b2eea08a7d2bc302ac525f58098ff8aa53beb72e44ad2",
+    "section1SHA256": "04c3609660cfcf3d20f97995f7e00cc7242cf741fbba038289e88a35de388210",
+    "sceneSHA256": "374fef37d6d740e6e1e65d9082f1790279a362aa961114d1f016f1d72d27aeb0",
+    "owner": {"actor": 13, "name": "snoww", "slot": 1, "entry": 1475, "kind": "table"},
+    "sources": ["wiki-glacier"]
+  }
+]

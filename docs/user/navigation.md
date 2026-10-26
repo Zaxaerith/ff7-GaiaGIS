@@ -40,6 +40,10 @@ Quick Start offers **Find a Materia** (Knights of the Round), **Find a hidden pl
 
 Data formats, actual retained Workspace file sizes and the absence of a Web SQL backend are described in [data formats and scale](../reference/data-formats-and-scale.md).
 
+With the optional Gameplay asset imported, expand **Original game evidence** below Game Guide to browse item/Materia instructions, formations or enemy records. It reuses the same search field, with 25-row pages and the shared Inspector. Original names retain their game-data language. These raw records have no spoiler grading; collapsing the section removes them from search. Related guides still obey Atlas spoiler settings. Field cards show grant/battle counts and original Actor/Entry evidence, not chest or collection totals. In an active Field view, formation/enemy detail expands inside the same Field Inspector without replacing the Canvas.
+
+The existing Godo/Snow guide cards can display the reviewed original battle chain. **View source formation** links to its original enemy records; related guides link back. **Locate parent place** remains only a parent entrance action. A four-instruction Materia sequence is not four pickups. Missing Gameplay data leaves the public text intact; changed Context/archive/profile fingerprints cannot reuse prior evidence. Original encounter records can link to formations when the precise table source and record match, without changing encounter gates or Routing.
+
 ## Personal browser state
 
 Personal browser state is independent of `GaiaWorkspace` and project schemas.

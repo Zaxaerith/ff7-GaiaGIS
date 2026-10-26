@@ -2,6 +2,12 @@
 
 ## 5.5.1 — Game Guide & Exploration UX
 
+- Add optional private Gameplay Evidence: source-pinned Field item/Materia/battle/flag instructions, Scene/Formation/Enemy identities and kernel names, without executing scripts or inferring chests, claim flags or reward coordinates.
+- Join verified static Field/World battle operands and positive-weight world encounter records to original formations. Keep byte/code-word offsets, conditions and missing/partial decoding explicit; preserve duplicate identities.
+- Add two exact reviewed EN Godo/Snow source profiles linking existing guides to Field BATTLE/Actor/Formation evidence. Modified fingerprints do not inherit Boss semantics. Retain 58 Atlas entries and 19 rewards.
+- Browse private rewards, formations and enemies through the shared Explore search and Inspector. Related Field evidence, world events and static encounters reuse existing panels; raw data has separate, explicit spoiler scope.
+- Increment only `gaia-gameplay.json` and its Manifest entry; retain the other 20 local assets. Current measured inventory is 133,755,441 bytes (127.559 MiB), not the earlier pre-integration total.
+
 - Put a paged Game Guide in Explore with Places, Treasures & Rewards, Materia, Secrets and Boss clues. Reuse 58 authored Atlas entries, 19 rewards, multilingual search and spoiler controls; tag only existing sourced knowledge.
 - Add three game-focused Quick Start paths and present descriptions, obtaining/challenge instructions, rewards, entrance/parent/Field precision and related scenes before expandable source details.
 - Keep Godo/Snow challenge guides separate from raw `scripted_battle` evidence. Never infer a boss from a battle ID, create a reward marker from a parent place or claim runtime availability.

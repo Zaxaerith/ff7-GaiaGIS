@@ -2,7 +2,7 @@ import {archiveKey,assertSourceAgreement,gameArchives} from '../data/sourceRoles
 // SPDX-License-Identifier: GPL-3.0-only
 import type {AssetId,AssetState} from './state';
 import {SCRIPT_EVIDENCE_FILE,SCRIPT_EVIDENCE_GENERATOR,SCRIPT_EVIDENCE_LIMITS} from '../data/fieldScriptEvidence';
-export const assetFiles:Record<AssetId,string[]>={geometry:['gaia-meta.json','gaia-mesh.bin'],locations:['gaia-poi.json'],encounters:['gaia-encounters.json'],events:['gaia-events.json'],routing:['gaia-routing.bin'],textures:['gaia-textures.bin'],WM2:['gaia-map-WM2.bin'],WM3:['gaia-map-WM3.bin'],'textures-WM2':['gaia-textures-WM2.bin'],'textures-WM3':['gaia-textures-WM3.bin'],transitions:['gaia-transitions.json'],explorer:['gaia-explorer.bin'],presentation:['gaia-presentation.json'],atlas:['gaia-atlas.json'],'field-context':['gaia-field-context.json'],'field-walkmesh':['gaia-field-walkmesh.bin'],'field-visual':['gaia-field-visual.bin'],'field-interaction':['gaia-field-interaction.bin'],'field-script-evidence':[SCRIPT_EVIDENCE_FILE]};
+export const assetFiles:Record<AssetId,string[]>={geometry:['gaia-meta.json','gaia-mesh.bin'],locations:['gaia-poi.json'],encounters:['gaia-encounters.json'],events:['gaia-events.json'],routing:['gaia-routing.bin'],textures:['gaia-textures.bin'],WM2:['gaia-map-WM2.bin'],WM3:['gaia-map-WM3.bin'],'textures-WM2':['gaia-textures-WM2.bin'],'textures-WM3':['gaia-textures-WM3.bin'],transitions:['gaia-transitions.json'],explorer:['gaia-explorer.bin'],presentation:['gaia-presentation.json'],atlas:['gaia-atlas.json'],'field-context':['gaia-field-context.json'],'field-walkmesh':['gaia-field-walkmesh.bin'],'field-visual':['gaia-field-visual.bin'],'field-interaction':['gaia-field-interaction.bin'],'field-script-evidence':[SCRIPT_EVIDENCE_FILE],gameplay:['gaia-gameplay.json']};
 export interface ManifestAsset {filename:string;type:AssetId|'metadata';mapId:'WM0'|'WM2'|'WM3'|'shared';sha256:string;bytes:number;dependencies:string[];generator_version?:string;}
 export interface WorkspaceManifest {schema:'gaiagis-workspace';version:1;tool_version:string;sources:Record<string,string>;assets:ManifestAsset[];timestamp_policy:'omitted';}
 export interface WorkspacePlan {files:Map<string,File>;manifest:WorkspaceManifest|null;issues:Partial<Record<AssetId,AssetState>>;}
@@ -19,9 +19,10 @@ export function parseManifest(value:unknown):WorkspaceManifest{
  if(!a||!Object.hasOwn(assetFiles,type)||!assetFiles[type].includes(a.filename)||!safeName(a.filename)||names.has(a.filename)||!hash(a.sha256)||!Number.isSafeInteger(a.bytes)||a.bytes<=0||a.bytes>160_000_000||!['WM0','WM2','WM3','shared'].includes(a.mapId)||!Array.isArray(a.dependencies)||!a.dependencies.every(safeName))throw Error('Invalid workspace asset');
  if(type==='field-visual'&&a.bytes>(a.generator_version==='field-visual-4'?100_000_000:a.generator_version==='field-visual-3'?96_000_000:64_000_000))throw Error('Visual asset budget');
  if(type==='field-interaction'&&a.bytes>8_000_000)throw Error('Interaction asset budget');
+ if(type==='gameplay'&&(a.filename!=='gaia-gameplay.json'||a.bytes>20_000_000||a.generator_version!=='gameplay-1'||a.dependencies.length!==1||a.dependencies[0]!=='gaia-field-context.json'))throw Error('Gameplay asset dependency/budget');
  if(type==='field-script-evidence'&&(a.bytes>SCRIPT_EVIDENCE_LIMITS.pack||a.generator_version!==SCRIPT_EVIDENCE_GENERATOR))throw Error('Script evidence asset budget/generator');
  if(type==='field-script-evidence'&&(a.dependencies.length!==1||a.dependencies[0]!=='gaia-field-context.json'))throw Error('Script evidence Context dependency');
- const expected=type==='WM2'||type==='textures-WM2'?'WM2':type==='WM3'||type==='textures-WM3'?'WM3':type==='explorer'||type==='transitions'||type==='presentation'||type==='field-walkmesh'||type==='field-visual'||type==='field-interaction'||type==='field-script-evidence'?'shared':'WM0';
+ const expected=type==='WM2'||type==='textures-WM2'?'WM2':type==='WM3'||type==='textures-WM3'?'WM3':type==='explorer'||type==='transitions'||type==='presentation'||type==='field-walkmesh'||type==='field-visual'||type==='field-interaction'||type==='field-script-evidence'||type==='gameplay'?'shared':'WM0';
  if(a.mapId!==expected||a.type==='metadata'&&a.filename!=='gaia-meta.json')throw Error('Workspace map identity mismatch');names.add(a.filename);
  }
  for(const a of m.assets)if(a.dependencies.some(d=>d===a.filename||!names.has(d)))throw Error('Invalid workspace dependency');
@@ -58,7 +59,7 @@ function requireForeignProvenance(id:AssetId,expected:Record<string,string>,actu
 }
 export async function assetSources(file:File):Promise<Record<string,string>>{
  let value:Record<string,unknown>={};
- if(file.name.endsWith('.json')){if(file.size>8_000_000)throw Error('JSON asset size');value=JSON.parse(await file.text());}
+ if(file.name.endsWith('.json')){if(file.size>(file.name==='gaia-gameplay.json'?20_000_000:8_000_000))throw Error('JSON asset size');value=JSON.parse(await file.text());}
  else {const buffer=await file.slice(0,16).arrayBuffer();if(buffer.byteLength<16)throw Error('Truncated asset');const magic=new TextDecoder().decode(buffer.slice(0,8));
   if(magic==='GAIARTG\0'){const bytes=await file.slice(64,96).arrayBuffer();return {'wm0.map':hex(bytes)};}
   if(['GAIATEX\0','GAIAMAP\0','GAIAEXP\0','GAIAFLD\0','GAIACAM\0','GAIAINT\0','GAIASCR\0'].includes(magic)){const length=new DataView(buffer).getUint32(12,true);if(length>(magic==='GAIACAM\0'?8_000_000:magic==='GAIAINT\0'?512_000:magic==='GAIASCR\0'?SCRIPT_EVIDENCE_LIMITS.metadata:2_000_000)||16+length>file.size)throw Error('Asset metadata size');value=JSON.parse(new TextDecoder('utf-8',{fatal:true}).decode(await file.slice(16,16+length).arrayBuffer()));}

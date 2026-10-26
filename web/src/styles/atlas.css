@@ -21,6 +21,11 @@
 .guide-map {border:1px solid var(--rim);padding:8px;margin-top:10px;border-radius:4px;}
 .guide-map h4 {margin:0;}
 #atlas-card [data-atlas-section=technical] {margin-top:12px;}
+#gameplay-explorer {margin:12px 0;min-width:0;}
+#gameplay-explorer button,.gameplay-evidence button {display:block;text-align:left;width:100%;margin:5px 0;}
+#gameplay-explorer .guide-pages button {width:auto;}
+#gameplay-explorer pre,.gameplay-evidence pre,#selection-details[data-gameplay] pre {white-space:pre-wrap;overflow-wrap:anywhere;max-height:20rem;overflow:auto;font-size:.75rem;}
+#selection-details[data-gameplay] button {display:block;text-align:left;max-width:100%;margin:6px 0;}
 #atlas-filters select {width:100%;margin:4px 0 7px;}
 #atlas-filters label {display:block;}
 #atlas-layers label {display:flex;align-items:center;gap:6px;margin:7px 0;}

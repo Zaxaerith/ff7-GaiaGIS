@@ -18,6 +18,7 @@ export function renderEventInspector(parent:HTMLElement,e:WorldEvent){
   if(e.location_id!==null)rows.push([t('inspect.locationIdentity'),e.location_id]);
   const dl=document.createElement('dl');dl.className='property-list';for(const [key,value]of rows){const row=document.createElement('div'),dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=key;dd.textContent=value;row.append(dt,dd);dl.append(row);}parent.append(dl);
   const note=document.createElement('p');note.className='control-note';note.textContent=e.notes;parent.append(note);
+  if(e.event_type==='scripted_battle'&&e.battle_id!==null)document.dispatchEvent(new CustomEvent('gaiagis:gameplay-battle',{detail:{host:parent,battleId:e.battle_id,eventId:e.id}}));
   const detail=document.createElement('details');detail.className='event-advanced';const summary=document.createElement('summary');summary.textContent=t('inspect.advanced');const text=document.createElement('p');text.className='control-note';text.textContent=t('message.eventProvenance',{call:e.call_table_record,word:e.instruction_offset,block:e.basic_block,anchor:`0x${e.anchor_function.toString(16)}`,args:JSON.stringify(e.raw_arguments),triangles:e.trigger_triangle_ids.length})+'. '+t('message.markerBaseline')+' '+t('inspect.classic');detail.append(summary,text);parent.append(detail);
 }
 export function mountEvents(viewer:GaiaViewer,meta:GaiaMeta,isCurrent:()=>boolean){

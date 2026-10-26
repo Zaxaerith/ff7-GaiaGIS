@@ -153,6 +153,9 @@ def server_manifest(root):
         if name=='gaia-field-script-evidence.bin':
             from .field_script_evidence import MAX_PACK, GENERATOR_VERSION
             if asset['bytes']>MAX_PACK or asset.get('generator_version')!=GENERATOR_VERSION:raise ValueError('Script evidence asset profile/budget')
+        if name=='gaia-gameplay.json':
+            from .gameplay import MAX_BYTES, GENERATOR_VERSION
+            if asset['bytes']>MAX_BYTES or asset.get('generator_version')!=GENERATOR_VERSION:raise ValueError('Gameplay evidence asset profile/budget')
         if asset.get('dependencies')!=ASSETS[name][2]:raise ValueError('Invalid asset dependencies')
         path=(root/name).resolve()
         if not path.is_relative_to(root) or not path.is_file() or sha256(path)!=asset['sha256'] or path.stat().st_size!=asset['bytes']:
