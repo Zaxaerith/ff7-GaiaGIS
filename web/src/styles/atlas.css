@@ -6,6 +6,21 @@
 .atlas-card p {margin:7px 0;line-height:1.45;overflow-wrap:anywhere;}
 .atlas-card button,.atlas-card a {display:block;margin:6px 0;max-width:100%;text-align:left;overflow-wrap:anywhere;}
 .atlas-card a {color:#bbdcff;}
+.guide-heading h2 {margin:0 0 8px;}
+.guide-heading .control-note {margin-bottom:10px;}
+.guide-categories {display:flex;flex-wrap:wrap;gap:6px;}
+.guide-categories button {flex:1 1 42%;text-align:left;}
+#guide-count {font-size:.8rem;margin:8px 0;}
+#guide-results {display:grid;gap:6px;}
+.guide-result {width:100%;text-align:left;display:grid;gap:4px;}
+.guide-result span {font-size:.75rem;color:var(--subtle);}
+.guide-pages {display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;font-size:.8rem;}
+.guide-pages span {text-align:center;}
+#game-guide,.guide-map-options {margin:10px 0 14px;min-width:0;}
+.guide-map-options>summary {cursor:pointer;margin-bottom:10px;}
+.guide-map {border:1px solid var(--rim);padding:8px;margin-top:10px;border-radius:4px;}
+.guide-map h4 {margin:0;}
+#atlas-card [data-atlas-section=technical] {margin-top:12px;}
 #atlas-filters select {width:100%;margin:4px 0 7px;}
 #atlas-filters label {display:block;}
 #atlas-layers label {display:flex;align-items:center;gap:6px;margin:7px 0;}

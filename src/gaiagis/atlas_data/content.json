@@ -3302,7 +3302,8 @@
       },
       "region": "eastern",
       "tags": [
-        "collectible"
+        "collectible",
+        "materia"
       ],
       "spoilerLevel": "minor",
       "spatialBinding": {
@@ -3362,7 +3363,8 @@
       },
       "region": "eastern",
       "tags": [
-        "collectible"
+        "collectible",
+        "materia"
       ],
       "spoilerLevel": "minor",
       "spatialBinding": {
@@ -3541,7 +3543,8 @@
       },
       "region": "western",
       "tags": [
-        "collectible"
+        "collectible",
+        "materia"
       ],
       "spoilerLevel": "minor",
       "spatialBinding": {
@@ -3600,7 +3603,9 @@
       },
       "region": "wutai",
       "tags": [
-        "collectible"
+        "collectible",
+        "materia",
+        "battle-guide"
       ],
       "spoilerLevel": "minor",
       "spatialBinding": {
@@ -3674,7 +3679,9 @@
       },
       "region": "northern",
       "tags": [
-        "collectible"
+        "collectible",
+        "materia",
+        "battle-guide"
       ],
       "spoilerLevel": "minor",
       "spatialBinding": {
@@ -3928,7 +3935,8 @@
       },
       "region": "northern",
       "tags": [
-        "collectible"
+        "collectible",
+        "materia"
       ],
       "spoilerLevel": "minor",
       "spatialBinding": {
@@ -3991,7 +3999,8 @@
       },
       "region": "islands",
       "tags": [
-        "collectible"
+        "collectible",
+        "materia"
       ],
       "spoilerLevel": "major",
       "spatialBinding": {
@@ -4385,7 +4394,8 @@
       },
       "region": "western",
       "tags": [
-        "collectible"
+        "collectible",
+        "materia"
       ],
       "spoilerLevel": "minor",
       "spatialBinding": {
@@ -4452,7 +4462,8 @@
       },
       "region": "underwater",
       "tags": [
-        "collectible"
+        "collectible",
+        "materia"
       ],
       "spoilerLevel": "minor",
       "spatialBinding": {

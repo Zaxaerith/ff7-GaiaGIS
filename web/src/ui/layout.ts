@@ -20,10 +20,12 @@ export function mountLayout(root:HTMLElement) {
           <label class="field-label" for="location-search">${t('ui.search')}</label>
           <input id="location-search" type="search" placeholder="${t('ui.searchPlaceholder')}" autocomplete="off" role="combobox" aria-autocomplete="list" aria-controls="location-results" aria-expanded="false"/>
           <div id="location-results" role="listbox" aria-label="${t('ui.searchResults')}"></div>
-          <label class="field-label" for="location-filter">${t('ui.category')}</label><select id="location-filter"><option value="all">${t('ui.allLocations')}</option><option value="settlements">${t('ui.settlements')}</option><option value="dungeons">${t('ui.dungeons')}</option><option value="landmarks">${t('ui.landmarks')}</option></select>
+            <details class="guide-map-options"><summary>${t('guide.mapOptions')}</summary>
+            <label class="field-label" for="location-filter">${t('ui.category')}</label><select id="location-filter"><option value="all">${t('ui.allLocations')}</option><option value="settlements">${t('ui.settlements')}</option><option value="dungeons">${t('ui.dungeons')}</option><option value="landmarks">${t('ui.landmarks')}</option></select>
           <label class="switch-row"><span>${t('ui.locations')}</span><input id="locations-toggle" type="checkbox" checked/></label>
           <label class="switch-row"><span>${t('ui.labels')} <small>${t('ui.major')}</small></span><input id="location-labels" type="checkbox" checked/></label>
-          <button id="load-locations">${t('ui.loadLocations')}</button><p id="location-status" class="control-note" role="status">${t('ui.locationsUnavailable')}</p>
+            <button id="load-locations">${t('ui.loadLocations')}</button><p id="location-status" class="control-note" role="status">${t('ui.locationsUnavailable')}</p>
+            </details>
         </section>
         <section class="event-controls" aria-label="${t('ui.events')}">
           <label class="switch-row"><span>${t('ui.events')}</span><input id="events-toggle" type="checkbox" disabled/></label>

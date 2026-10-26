@@ -98,14 +98,21 @@ export function mountShell(){
  let seen=false;try{seen=localStorage.getItem('gaiagis.seenIntro')==='true';}catch{}
  const intro=document.createElement('details');intro.id='gaia-intro';intro.className='app-card';intro.open=!seen;
  const introTitle=document.createElement('summary'),introNote=document.createElement('p'),shortcuts=document.createElement('div');introNote.className='control-note';shortcuts.className='analysis-actions';intro.append(introTitle,introNote,shortcuts);get('explore').prepend(intro);
- const quick=(key:string,id:string,action:()=>void)=>{const b=document.createElement('button');b.id=id;b.dataset.key=key;b.onclick=action;shortcuts.append(b);return b;};
+ let shortcutHost=shortcuts;
+ const quick=(key:string,id:string,action:()=>void)=>{const b=document.createElement('button');b.id=id;b.dataset.key=key;b.onclick=action;shortcutHost.append(b);return b;};
+ const guideQuick=(key:string,id:string,category:string,query='',entity?:string)=>quick(key,id,()=>{activate('explore');document.dispatchEvent(new CustomEvent('gaiagis:guide',{detail:{category,query,entity}}));});
+ guideQuick('guide.quickMateria','quick-materia','materia','Knights of the Round');
+ guideQuick('guide.quickSecret','quick-secret','secrets');
+ guideQuick('guide.quickTreasure','quick-treasure','treasures','','kalm-treasure');
+ const moreTools=document.createElement('details'),moreToolsTitle=document.createElement('summary'),moreActions=document.createElement('div');moreActions.className='analysis-actions';moreTools.append(moreToolsTitle,moreActions);intro.append(moreTools);shortcutHost=moreActions;
  quick('shell.findPlace','quick-find',()=>{activate('explore');const search=document.getElementById('location-search') as HTMLInputElement|null;search?.scrollIntoView({block:'nearest'});search?.focus();});
  quick('save27.title','quick-save',()=>{activate('data');const panel=document.getElementById('my-save') as HTMLDetailsElement|null;if(panel){panel.open=true;panel.scrollIntoView({block:'nearest'});}document.getElementById('save-import')?.focus();});
  quick('shell.draw','quick-draw',()=>{activate('explore');const panel=document.getElementById('user-drawing') as HTMLDetailsElement|null;if(panel){panel.open=true;panel.scrollIntoView({block:'nearest'});}document.getElementById('draw-Point')?.focus();});
  quick('routing.title','quick-route',()=>{activate('analysis');const routing=document.getElementById('analysis-routing') as HTMLDetailsElement|null;if(routing)routing.open=true;document.getElementById('route-from')?.focus();});
  quick('shell.connect','quick-workspace',()=>{activate('data');document.getElementById('workspace-connection')?.scrollIntoView({block:'nearest'});const help=document.getElementById('workspace-help') as HTMLDetailsElement|null;if(help)help.open=true;});
- const introRefresh=()=>{const connected=capabilities(appStore.state).canInspectSurface;introTitle.textContent=t('shell.quickStart');introNote.textContent=t(connected?'shell.readyHint':'shell.publicHint');for(const button of shortcuts.querySelectorAll<HTMLButtonElement>('button'))button.textContent=t(button.dataset.key!);intro.hidden=appStore.state.explorer.phase!=='idle';};
+ const introRefresh=()=>{const connected=capabilities(appStore.state).canInspectSurface;introTitle.textContent=t('shell.quickStart');moreToolsTitle.textContent=t('guide.tools');introNote.textContent=t(connected?'shell.readyHint':'guide.intro');for(const button of intro.querySelectorAll<HTMLButtonElement>('button'))button.textContent=t(button.dataset.key!);intro.hidden=appStore.state.explorer.phase!=='idle';};
  intro.addEventListener('toggle',()=>{if(!intro.open)try{localStorage.setItem('gaiagis.seenIntro','true');}catch{}});scope.own(appStore.subscribe(introRefresh));scope.own(onLocaleChange(introRefresh));introRefresh();scope.own(()=>intro.remove());
+ scope.listen(document,'gaiagis:guide-battles',()=>{activate('layers');const filter=document.getElementById('event-filter') as HTMLSelectElement|null;if(filter&&!filter.disabled){filter.value='battles';filter.dispatchEvent(new Event('change'));}document.querySelector('.event-controls')?.scrollIntoView({block:'nearest'});filter?.focus();});
  return {activate,dispose(){if(scope.disposed)return;
   // Explorer is a session owner and may be created after this shell's moved list.
   // Rehome its panel before removing docks, otherwise the controller retains

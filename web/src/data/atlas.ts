@@ -68,3 +68,15 @@ export function searchAtlas(content:AtlasContent,query:string,lang:Locale,mode:'
  const rank=(e:AtlasEntity)=>{const local=normalizeAtlas(e.localizedNames[lang]),canonical=normalizeAtlas(e.canonicalName);const names=Object.values(e.localizedNames).map(normalizeAtlas),aliases=e.aliases.map(normalizeAtlas);const rewards=e.collectibles.map(id=>byId.get(id)).filter(Boolean).flatMap(e=>[e!.canonicalName,...Object.values(e!.localizedNames),...e!.aliases]).map(normalizeAtlas),facets=[e.kind,e.region,...e.tags].map(normalizeAtlas),facts=atlasFactTerms(e,mode).map(normalizeAtlas);return !q?0:local===q?0:canonical===q?1:local.startsWith(q)?2:names.some(n=>n.startsWith(q))?3:names.some(n=>n.includes(q))?4:aliases.some(a=>a.includes(q))?5:rewards.some(r=>r.includes(q))?6:facets.some(f=>f.includes(q))?7:facts.some(f=>f.includes(q))?8:[...names,...aliases,...rewards].some(n=>nearName(q,n))?9:Infinity;};
  return visible.filter(e=>atlasCategory(e,category)&&(region==='all'||e.region===region)&&(kind==='all'||e.kind===kind)).map(e=>({entity:e,rank:rank(e)})).filter(r=>Number.isFinite(r.rank)).sort((a,b)=>a.rank-b.rank||a.entity.localizedNames[lang].localeCompare(b.entity.localizedNames[lang],lang)||a.entity.id.localeCompare(b.entity.id)).map(r=>r.entity);
 }
+
+/** Player-facing facets of the same authored Atlas; no additional search index. */
+export const guideCategories=['all','places','treasures','materia','secrets','battles'] as const;
+export type GuideCategory=typeof guideCategories[number];
+export function guideCategory(e:AtlasEntity,category:GuideCategory):boolean{
+ return category==='all'||category==='places'&&e.tags.includes('place')||category==='treasures'&&e.tags.includes('collectible')||category==='materia'&&(e.tags.includes('materia')||e.kind==='materia_cave')||category==='secrets'&&e.tags.includes('secret')||category==='battles'&&e.tags.includes('battle-guide');
+}
+/** Textual association is distinct from a validated, coordinate-bearing anchor. */
+export function guidePrecision(e:AtlasEntity,binding:AtlasBinding):'entrance'|'parent'|'field'|'unresolved'{
+ if(binding.marker&&binding.precision==='entrance_level')return 'entrance';
+ return e.spatialBinding.kind==='parent_location'?'parent':['field_identity','field_parent'].includes(e.spatialBinding.kind)?'field':'unresolved';
+}

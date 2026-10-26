@@ -6,7 +6,7 @@ import type {FieldCamera} from '../src/data/fieldCamera';
 import {discoverWorkspace,parseManifest} from '../src/app/workspace';
 import {describe,it,expect} from 'vitest';
 import curated from '../../src/gaiagis/atlas_data/content.json';
-import {parseAtlasContent,parseAtlasPack,searchAtlas,resolveBinding,atlasAnchor,spoilerVisible,validateAtlasPoi,atlasFactTerms} from '../src/data/atlas';
+import {parseAtlasContent,parseAtlasPack,searchAtlas,resolveBinding,atlasAnchor,spoilerVisible,validateAtlasPoi,atlasFactTerms,guideCategories,guideCategory,guidePrecision} from '../src/data/atlas';
 import type {AtlasPack,AtlasEntity} from '../src/data/atlas';
 import type {PoiDataset} from '../src/data/poi';
 
@@ -14,6 +14,53 @@ const content=parseAtlasContent(curated);
 const entity=content.entities.find(e=>e.id==='midgar')!;
 const poi={sources:{'wm0.map':'a'.repeat(64)},locations:[{id:'midgar',primary_entrance:'entry-1',entrance_ids:['entry-1'],field_names:['synthetic']}],entrances:[{id:'entry-1',location_id:'midgar',source_kind:'derived_from_entry_trigger',longitude:1,latitude:2,height:0}]} as unknown as PoiDataset;
 const clone=()=>structuredClone(curated);
+
+describe('Game Guide facets of the authored Atlas',()=>{
+ const get=(id:string)=>content.entities.find(e=>e.id===id)!;
+ const ids=(category:typeof guideCategories[number])=>content.entities.filter(e=>guideCategory(e,category)).map(e=>e.id);
+ it('reuses all 58 entries and 19 reward entries without creating another content set',()=>{
+  expect(ids('all')).toHaveLength(58);expect(ids('treasures')).toHaveLength(19);
+  expect(ids('places')).toContain('ancient-forest');expect(ids('secrets')).toContain('sunken-gelnika');
+  expect(ids('materia')).toEqual(expect.arrayContaining(['round-island-cave','round-island-cave-reward','mine-materia','glacier-materia']));
+  expect(ids('materia')).not.toContain('kalm-treasure');
+  expect(ids('battles')).toEqual(['wutai-pagoda','glacier-materia']);
+ });
+ it('keeps battle guide rewards separate from coordinates and raw scripted-battle records',()=>{
+  for(const id of ids('battles')){
+   const e=get(id);expect(e.spatialBinding.kind).toBe('parent_location');
+   expect(e.facts.every(f=>f.sources.length>0)).toBe(true);
+   expect(resolveBinding(e,null)).toMatchObject({marker:false,precision:'unresolved'});
+   expect(atlasAnchor(resolveBinding(e,null),null)).toBeNull();
+  }
+  expect(get('wutai-pagoda').spatialBinding.locationId).toBe('wutai');
+  expect(get('glacier-materia').spatialBinding.locationId).toBe('great-glacier');
+ });
+ it('finds Godo and Snow through existing visible facts in all five languages',()=>{
+  for(const lang of ['en','zh-CN','zh-TW','ja','ko'] as const){
+   expect(searchAtlas(content,'Godo',lang).filter(e=>guideCategory(e,'battles')).map(e=>e.id)).toContain('wutai-pagoda');
+   expect(searchAtlas(content,'Snow',lang).filter(e=>guideCategory(e,'battles')).map(e=>e.id)).toContain('glacier-materia');
+   for(const id of ids('battles'))expect(searchAtlas(content,get(id).facts[0].text[lang],lang)).toContain(get(id));
+  }
+ });
+ it('applies facets after the existing spoiler-safe search, including hidden major Materia',()=>{
+  expect(searchAtlas(content,'','en','hide-all').filter(e=>guideCategory(e,'battles'))).toEqual([]);
+  expect(searchAtlas(content,'','en').filter(e=>guideCategory(e,'materia')).map(e=>e.id)).not.toContain('temple-black-materia');
+  expect(searchAtlas(content,'','en','show-all').filter(e=>guideCategory(e,'materia')).map(e=>e.id)).toContain('temple-black-materia');
+  for(const category of guideCategories)expect(searchAtlas(content,'','en','hide-all').filter(e=>guideCategory(e,category)).every(e=>e.spoilerLevel==='none')).toBe(true);
+ });
+});
+
+describe('Game Guide location precision',()=>{
+ it('requires an actual entrance binding, while offline cards retain authored parent/scene associations',()=>{
+  expect(guidePrecision(entity,resolveBinding(entity,null))).toBe('unresolved');
+  expect(guidePrecision(entity,resolveBinding(entity,poi))).toBe('entrance');
+  for(const [id,precision] of [['kalm-treasure','parent'],['round-island-cave-reward','field'],['ancient-forest','field'],['sunken-gelnika','field']] as const){const e=content.entities.find(e=>e.id===id)!,b=resolveBinding(e,null);expect(guidePrecision(e,b)).toBe(precision);expect(atlasAnchor(b,null,true)).toBeNull();expect(b.marker).toBe(false);}
+ });
+ it('keeps a parent-place navigation action distinct from an exact reward marker',()=>{
+  const e={...entity,spatialBinding:{kind:'parent_location' as const,locationId:'midgar'}},b=resolveBinding(e,poi);
+  expect(guidePrecision(e,b)).toBe('parent');expect(atlasAnchor(b,poi)).toBeNull();expect(atlasAnchor(b,poi,true)?.entrance.id).toBe('entry-1');
+ });
+});
 describe('Optional Field Interaction evidence contract',()=>{
  const fp={sources:{'flevel.lgp':'a'.repeat(64),maplist:'b'.repeat(64)},nodes:[{id:1,name:'fixture',status:'available'}]} as unknown as FieldPack;
  const rawMesh=()=>{const out=new Uint8Array(34),v=new DataView(out.buffer);v.setUint32(0,1,true);[0,0,0,9,4,0,0,17,0,4,0,-1].forEach((n,i)=>v.setInt16(4+i*2,n,true));[0,1,2].forEach(i=>v.setUint16(28+i*2,65535,true));return out;};

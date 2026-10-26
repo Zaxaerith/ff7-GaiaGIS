@@ -1,5 +1,13 @@
 # Changelog
 
+## 5.5.1 — Game Guide & Exploration UX
+
+- Put a paged Game Guide in Explore with Places, Treasures & Rewards, Materia, Secrets and Boss clues. Reuse 58 authored Atlas entries, 19 rewards, multilingual search and spoiler controls; tag only existing sourced knowledge.
+- Add three game-focused Quick Start paths and present descriptions, obtaining/challenge instructions, rewards, entrance/parent/Field precision and related scenes before expandable source details.
+- Keep Godo/Snow challenge guides separate from raw `scripted_battle` evidence. Never infer a boss from a battle ID, create a reward marker from a parent place or claim runtime availability.
+- Retain source-only text browsing, the six-panel Shell and existing GIS tools. Use bounded guide pages and the shared Inspector; narrow-screen map actions close the Inspector to reveal the map.
+- Document resource formats, conversion, Manifest/source checks, existing loading limits and a measured 20-asset, 118.144 MiB historical Workspace inventory. No Web SQL backend or data/schema regeneration is introduced.
+
 ## 5.5.0 — Regional Terrain Statistics
 
 - Add lazy Global / By Region / By Terrain statistics from the current WM0 BASE source, preserving original Region/Terrain IDs, Unknown categories, zero-area faces and duplicate contributions.

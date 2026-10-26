@@ -1,5 +1,13 @@
 # Atlas schema v1
 
+## Game Guide presentation (v5.5.1)
+
+Explore shows Places, Treasures & Rewards, Materia, Secrets and Boss clues above a ten-entry paged guide list. These facets filter the existing `searchAtlas()` results, preserving five-locale names/aliases, fact search and spoiler rules. They do not create a second registry or search index. `materia` tags describe existing sourced rewards; `battle-guide` identifies the existing Wutai Pagoda/Godo and Great Glacier/Snow knowledge, not decoded world battle IDs. The total remains 58 entities and 19 rewards.
+
+Cards put game descriptions, access/challenges, rewards, map precision and related scenes before collapsed source/technical details. Offline authored parent/scene associations remain readable, while only a validated entrance binding enables a marker. A parent-place action navigates to its entrance, not a chest or exact reward point. Field-only entities supply no world marker. Existing private Atlas packs remain readable: the authored facet labels change no spatial bindings or codecs and require no Workspace regeneration.
+
+## Authored registry and binding contract
+
 `src/gaiagis/atlas_data/content.json` is the public authored registry. Python `atlas.validate_content` and browser `parseAtlasContent` reject malformed shapes, duplicate IDs, invalid kinds/regions/spoilers, missing five-locale text, missing source references, unsafe URLs, broken/self relations, incompatible binding shapes, public coordinate fields and duplicate named coverage. The current data has 58 entities and 290 translated summaries. The source registry and structured fact inventory live in the authored JSON, not a second documentation database.
 
 An entity has `id`, `kind`, `canonicalName`, `localizedNames`, `aliases`, `summary`, `region`, `tags`, `spoilerLevel`, `spatialBinding`, `relatedLocations`, `relatedEntities`, `collectibles`, `secrets`, `sources`, `facts`, `notes`. Names/summaries and fact text require en, zh-CN, zh-TW, ja and ko. Localized place labels use established names where available. Uncertain Materia, weapon and item names retain their original label with translated context; these labels are not claimed to be official translations. Canonical names remain searchable aliases. UI labels, authored summaries and every structured fact are translated. `facts` have typed access/gameplay/reward/category/secret text, their own spoiler class and source references. Source records contain `id`, `provider`, `title`, HTTPS `url`, ISO `reviewed` date, `type` and `notes`; types are game_identity, reverse_engineering, wiki and reference. No article content is embedded.

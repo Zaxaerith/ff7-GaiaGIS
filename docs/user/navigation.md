@@ -30,6 +30,16 @@ v3.9/v4.0/v4.1 have completed browser human acceptance. This does not establish
 original-game runtime behavior. Public source-only mode has authored identity
 browsing and local user tools, with explicit unavailability for private geometry.
 
+## Game Guide (v5.5.1)
+
+Open **Explore → FF7 Game Guide**. The visible Places, Treasures & Rewards, Materia, Secrets and Boss clues buttons browse the same Atlas used by search. Each page has at most ten guides. Type an item, localized name or alias in the existing search box; **More filters & spoilers** retains the original spoiler controls. The default hides major spoilers; **Show all** exposes all 58 authored entries. A category click clears other advanced filters while retaining the spoiler choice.
+
+Quick Start offers **Find a Materia** (Knights of the Round), **Find a hidden place**, and **How to obtain a treasure** (Kalm). Read descriptions and obtaining/challenge instructions without importing data. An entrance, parent place and Field scene have different precision labels. **Locate parent place** never means an exact chest location. Matching private POI data enables appropriate map buttons; Field-only Ancient Forest and Sunken Gelnika have no world marker. Related scenes use the existing Field Workspace when its resources are present.
+
+**Boss clues & battle evidence** contains the already sourced Godo and Snow challenge knowledge. Its separate **View static battle evidence** action opens the existing World Events layer filtered to battles. These raw `scripted_battle` records do not identify named bosses or prove current triggering. On narrow screens opening a guide swaps Explore for the shared Inspector; close it with × or Escape to return to the map, then reopen Explore. Locating an entrance closes the narrow Inspector so the map can be seen. Desktop Explore can remain open beside the Inspector.
+
+Data formats, actual retained Workspace file sizes and the absence of a Web SQL backend are described in [data formats and scale](../reference/data-formats-and-scale.md).
+
 ## Personal browser state
 
 Personal browser state is independent of `GaiaWorkspace` and project schemas.
