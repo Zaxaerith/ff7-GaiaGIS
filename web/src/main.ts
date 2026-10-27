@@ -66,7 +66,7 @@ function fail(message:string,expected=false){
   const technical=message;message=expected?t('help.local'):t('error.dataset');
   element('loading').hidden=false;element('loading').classList.toggle('error',!expected);element('loading').classList.add('needs-data');
   element('loading-text').textContent=message;element('loading-text').title=technical;element('loading-title').textContent=expected?t('load.open'):t('load.attention');
-  root.querySelector<HTMLElement>('.loading-actions')!.hidden=false;element('view-status').textContent=expected?t('start.publicStatus'):t('load.failed');setBusy(true);
+  document.querySelector<HTMLElement>('.loading-actions')!.hidden=false;element('view-status').textContent=expected?t('start.publicStatus'):t('load.failed');setBusy(true);
 }
 function bindCommon(){
   const about=element<HTMLDialogElement>('about-dialog');

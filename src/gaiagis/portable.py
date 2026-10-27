@@ -39,18 +39,38 @@ def launch_preflight():
         raise OSError('At least 256 MB of free space is needed in the GaiaGIS workspace for the first build.')
 
 
+def _draw_launch_scene(canvas, width, height):
+    """Original vector decoration; no game art, fonts or rendering runtime."""
+    canvas.delete('scene')
+    sx=width/680;sy=height/164
+    def polygon(points,fill,outline=''):
+        canvas.create_polygon(*[value*(sx if i%2==0 else sy) for i,value in enumerate(points)],fill=fill,outline=outline,tags='scene')
+    # A quiet light cone and an abstract broad blade, deliberately not a game asset.
+    for points,color in [((493,0,398,164,645,164,550,0),'#07101d'),((503,0,435,164,608,164,540,0),'#0b192b'),((512,0,471,164,577,164,532,0),'#10233a')]:polygon(points,color)
+    canvas.create_oval(412*sx,143*sy,626*sx,160*sy,fill='#05080e',outline='',tags='scene')
+    polygon((518,161,495,72,519,56,546,144),'#465b6c','#8099ac')
+    polygon((518,161,519,56,527,59,531,146),'#91aab8')
+    polygon((489,74,487,65,527,52,531,61),'#263b50','#6a90b0')
+    polygon((500,60,491,26,500,23,511,56),'#1b2838','#536e87')
+    polygon((490,29,487,20,499,16,502,25),'#526f86')
+    canvas.create_text(28*sx,58*sy,text='GaiaGIS',anchor='w',fill='#edf4ff',font=('TkDefaultFont',34),tags='scene')
+    canvas.create_line(30*sx,91*sy,196*sx,91*sy,fill='#589dd0',width=2,tags='scene')
+
+
 def launch_window():
     """One small native startup window; parsing/building remain in existing owners."""
     import tkinter as tk
     from tkinter import ttk, filedialog
     from .local import main as local_main, CONFIG
     messages={
-        'title':('Start GaiaGIS','启动 GaiaGIS','啟動 GaiaGIS','GaiaGIS を起動','GaiaGIS 시작'),
+        'title':('Your world awaits','世界，等待探索','世界，等待探索','世界が待っている','당신의 세계가 기다립니다'),
         'hint':('Select your original FF7 PC data folder. Game files are only read.','选择原版 FF7 PC 数据目录。游戏文件只读。','選擇原版 FF7 PC 資料目錄。遊戲檔案唯讀。','オリジナル版 FF7 PC データを選択。ゲームは読み取り専用です。','원본 FF7 PC 데이터 폴더를 선택하세요. 게임 파일은 읽기 전용입니다.'),
         'workspace':('GaiaGIS workspace','GaiaGIS 工作区','GaiaGIS 工作區','GaiaGIS ワークスペース','GaiaGIS 작업 공간'),
         'data_language':('Game data language (separate from UI)','游戏数据语言（独立于界面）','遊戲資料語言（獨立於介面）','ゲームデータ言語（UI とは別）','게임 데이터 언어 (UI와 별도)'),
-        'choose':('Choose FF7 folder','选择 FF7 目录','選擇 FF7 目錄','FF7 フォルダーを選択','FF7 폴더 선택'),
-        'start':('Start / Retry','启动／重试','啟動／重試','起動 / 再試行','시작 / 다시 시도'),
+        'choose':('Choose original FF7 folder','选择原版 FF7 目录','選擇原版 FF7 目錄','原作 FF7 フォルダーを選択','원작 FF7 폴더 선택'),
+        'start':('Start exploring / Retry','开始探索／重试','開始探索／重試','探索開始 / 再試行','탐험 시작 / 다시 시도'),
+        'idle':('Choose your game, then start exploring.','选择游戏目录，然后开始探索。','選擇遊戲目錄，然後開始探索。','ゲームのフォルダーを選んで探索を始めましょう。','게임 폴더를 선택한 뒤 탐험을 시작하세요.'),
+        'details':('Source & technical details','来源与技术详情','來源與技術詳情','ソースと技術詳細','소스 및 기술 상세'),
         'checking':('Checking installation…','正在检查安装目录…','正在檢查安裝目錄…','インストールを確認中…','설치 확인 중…'),
         'building':('Preparing resources','正在准备资源','正在準備資源','リソースを準備中','리소스 준비 중'),
         'ready':('Viewer ready. Keep this window open while playing with GaiaGIS.','Viewer 已就绪。使用 GaiaGIS 时请保持本窗口打开。','Viewer 已就緒。使用 GaiaGIS 時請保持本視窗開啟。','Viewer の準備完了。使用中はこのウィンドウを開いたままにしてください。','Viewer 준비 완료. GaiaGIS 사용 중 이 창을 열어 두세요.'),
@@ -58,27 +78,52 @@ def launch_window():
         'stop':('Close / Stop','关闭／停止','關閉／停止','閉じる / 停止','닫기 / 중지'),
         'cancel':('Cancel after current resource','当前资源完成后取消','目前資源完成後取消','現在のリソース完了後に中止','현재 리소스 완료 후 취소'),
     }
-    window=tk.Tk();window.title('GaiaGIS '+__version__);window.geometry('600x500');window.minsize(420,450)
-    language=ttk.Combobox(window,values=['English','简体中文','繁體中文','日本語','한국어'],state='readonly',width=18);language.current(0);language.pack(anchor='e',padx=16,pady=8)
-    frame=ttk.Frame(window,padding=16);frame.pack(fill='both',expand=True)
-    hint=ttk.Label(frame,wraplength=550);hint.pack(fill='x')
-    workspace_label=ttk.Label(frame,wraplength=550);workspace_label.pack(fill='x',pady=(8,0))
-    source=tk.StringVar();ttk.Entry(frame,textvariable=source).pack(fill='x',pady=12)
-    data_label=ttk.Label(frame);data_label.pack(anchor='w')
-    data_language=ttk.Combobox(frame,values=['en — English','fr — Français','de — Deutsch','es — Español'],state='readonly',width=24);data_language.current(0);data_language.pack(anchor='w',pady=(4,10))
-    buttons=ttk.Frame(frame);buttons.pack(fill='x')
-    status=tk.StringVar();status_label=ttk.Label(frame,textvariable=status,wraplength=550);status_label.pack(fill='x',pady=12)
-    bar=ttk.Progressbar(frame,maximum=15);bar.pack(fill='x')
-    details=tk.Text(frame,height=4,wrap='word',state='disabled');details.pack(fill='both',expand=True,pady=8)
-    events=queue.Queue();cancel=threading.Event();worker=None;server=None;last_state='checking';last_detail='';close_pending=False
+    window=tk.Tk();window.title('GaiaGIS '+__version__);window.geometry('680x660');window.minsize(560,620);window.configure(background='#050912')
+    style=ttk.Style(window);style.theme_use('clam')
+    style.configure('Gaia.TFrame',background='#050912')
+    style.configure('Gaia.TLabel',background='#050912',foreground='#c9d8eb',font=('TkDefaultFont',10))
+    style.configure('Title.Gaia.TLabel',foreground='#89c8ff',font=('TkDefaultFont',13))
+    style.configure('Gaia.TButton',background='#101f34',foreground='#edf4ff',bordercolor='#365878',padding=(12,8),font=('TkDefaultFont',10))
+    style.map('Gaia.TButton',background=[('pressed','#234a70'),('active','#173958'),('disabled','#10151e')],foreground=[('disabled','#718093')],bordercolor=[('focus','#a0d6ff')])
+    style.configure('Primary.Gaia.TButton',background='#143754',bordercolor='#73b9ef')
+    style.configure('Gaia.TEntry',fieldbackground='#0c1726',foreground='#edf4ff',insertcolor='#edf4ff',bordercolor='#365878',padding=7)
+    style.configure('Gaia.TCombobox',fieldbackground='#0c1726',foreground='#edf4ff',background='#152a43',arrowcolor='#9bceff',padding=5)
+    style.map('Gaia.TCombobox',fieldbackground=[('readonly','#0c1726')],foreground=[('readonly','#edf4ff'),('disabled','#718093')])
+    style.configure('Gaia.Horizontal.TProgressbar',background='#6ebcff',troughcolor='#101d2f',bordercolor='#1f354e',lightcolor='#6ebcff',darkcolor='#6ebcff')
+    scene=tk.Canvas(window,height=132,background='#050912',highlightthickness=0);scene.pack(fill='x');scene.bind('<Configure>',lambda e:_draw_launch_scene(scene,e.width,e.height))
+    frame=ttk.Frame(window,padding=(20,8,20,12),style='Gaia.TFrame');frame.pack(fill='both',expand=True)
+    top=ttk.Frame(frame,style='Gaia.TFrame');top.pack(fill='x')
+    title=ttk.Label(top,style='Title.Gaia.TLabel');title.pack(side='left')
+    language=ttk.Combobox(top,values=['English','简体中文','繁體中文','日本語','한국어'],state='readonly',width=14,style='Gaia.TCombobox');language.current(0);language.pack(side='right')
+    hint=ttk.Label(frame,wraplength=620,style='Gaia.TLabel');hint.pack(fill='x',pady=(8,0))
+    source=tk.StringVar();source_entry=ttk.Entry(frame,textvariable=source,style='Gaia.TEntry');source_entry.pack(fill='x',pady=(8,4))
+    data_label=ttk.Label(frame,style='Gaia.TLabel');data_label.pack(anchor='w')
+    data_language=ttk.Combobox(frame,values=['en — English','fr — Français','de — Deutsch','es — Español'],state='readonly',width=24,style='Gaia.TCombobox');data_language.current(0);data_language.pack(anchor='w',pady=(4,8))
+    buttons=ttk.Frame(frame,style='Gaia.TFrame');buttons.pack(fill='x')
+    status=tk.StringVar();status_label=ttk.Label(frame,textvariable=status,wraplength=620,style='Gaia.TLabel');status_label.pack(fill='x',pady=8)
+    bar=ttk.Progressbar(frame,maximum=15,style='Gaia.Horizontal.TProgressbar');bar.pack(fill='x')
+    more=ttk.Button(frame,style='Gaia.TButton');more.pack(anchor='w',pady=(8,0))
+    diagnostics=ttk.Frame(frame,style='Gaia.TFrame')
+    workspace_label=ttk.Label(diagnostics,wraplength=620,style='Gaia.TLabel');workspace_label.pack(fill='x')
+    details=tk.Text(diagnostics,height=3,wrap='word',state='disabled',background='#0a1320',foreground='#c9d8eb',insertbackground='#edf4ff',relief='flat',borderwidth=0,font='TkFixedFont');details.pack(fill='both',expand=True,pady=4)
+    events=queue.Queue();cancel=threading.Event();worker=None;server=None;last_state='idle';last_detail='';close_pending=False;show_details=False
     def text(key):return messages[key][language.current()]
     def refresh():
+        title.configure(text=text('title'));more.configure(text=('− ' if show_details else '+ ')+text('details'))
         data_label.configure(text=text('data_language'))
         workspace_label.configure(text=text('workspace')+': '+str(WORKSPACE_ROOT))
         hint.configure(text=text('hint'));choose.configure(text=text('choose'));start.configure(text=text('start'));stop.configure(text=text('cancel') if worker and worker.is_alive() and not server else text('stop'));status.set(text(last_state)+(f' · {int(bar["value"])}/{int(bar["maximum"])}' if last_state=='building' else ''));
     def choose_folder():
         value=filedialog.askdirectory(parent=window,title=text('choose'))
         if value:source.set(value)
+    def toggle_details():
+        nonlocal show_details
+        show_details=not show_details
+        scene.configure(height=60 if show_details else 132)
+        if show_details:diagnostics.pack(fill='both',expand=True)
+        else:diagnostics.pack_forget()
+        refresh()
+    more.configure(command=toggle_details)
     def progress(label,done,total):
         if cancel.is_set() and not label.startswith('error:'):raise KeyboardInterrupt()
         events.put(('progress',(label,done,total)))
@@ -111,7 +156,12 @@ def launch_window():
         if server:threading.Thread(target=server.shutdown,daemon=True).start()
         elif not worker or not worker.is_alive():window.destroy()
         else:refresh()
-    choose=ttk.Button(buttons,command=choose_folder);choose.pack(side='left');start=ttk.Button(buttons,command=begin);start.pack(side='left',padx=8);stop=ttk.Button(buttons,command=close);stop.pack(side='right')
+    choose=ttk.Button(buttons,command=choose_folder,style='Gaia.TButton');choose.pack(fill='x',pady=(0,6));start=ttk.Button(buttons,command=begin,style='Primary.Gaia.TButton');start.pack(fill='x');stop=ttk.Button(frame,command=close,style='Gaia.TButton');stop.pack(side='bottom',anchor='e',pady=(8,0))
+    def keyboard_action(target,action):
+        if target.instate(['!disabled']):action()
+        return 'break'
+    for button,command in ((choose,choose_folder),(start,begin),(stop,close),(more,toggle_details)):
+        button.bind('<Return>',lambda _,target=button,action=command:keyboard_action(target,action))
     def poll():
         nonlocal server,last_state,last_detail
         while not events.empty():
@@ -126,6 +176,7 @@ def launch_window():
                 last_state='failed' if kind=='error' or value else 'checking'
                 if kind=='error':last_detail=value
                 choose.configure(state='normal');start.configure(state='normal');data_language.configure(state='readonly');server=None
+                if last_state=='failed' and not show_details:toggle_details()
             details.configure(state='normal');details.delete('1.0','end');details.insert('end',last_detail);details.configure(state='disabled');refresh()
         window.after(100,poll)
     language.bind('<<ComboboxSelected>>',lambda _:refresh());window.protocol('WM_DELETE_WINDOW',close)
@@ -137,6 +188,7 @@ def launch_window():
     except (OSError,ValueError,AttributeError):pass
     refresh();poll()
     if source.get():window.after(200,begin)
+    else:choose.focus_set()
     window.mainloop();return 0
 
 

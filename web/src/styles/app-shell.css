@@ -65,3 +65,20 @@ body.gaia-shell:has(.explorer-minimal) .integrated-inspector{display:none}
 .variant-table-scroll {max-width:100%;overflow-x:auto}
 .variant-table-scroll table {font-size:.72rem}
 #variant-active-note {color:var(--accent,#f2c879);max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* Player-facing navigation above the unchanged six tool panels. */
+body.gaia-shell .integrated-panel .player-menu{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;border-bottom:0;padding:0}
+body.gaia-shell .player-menu button{min-height:48px;padding:9px 8px;text-align:left;font-size:14px;line-height:1.35;border-color:#354c6e;background:linear-gradient(110deg,#101a2d,#112235);color:#e5eefb}
+body.gaia-shell .player-menu button[aria-pressed=true]{background:linear-gradient(100deg,#163763,#142d48);border-color:#78baff;box-shadow:inset 3px 0 #8dcaff;color:#f2f8ff}
+body.gaia-shell .player-menu button:focus-visible{outline-color:#a8d8ff}
+body.gaia-shell .menu-path{margin:10px 0 8px;font-size:13px;line-height:1.4;color:var(--ink);overflow-wrap:anywhere}
+body.gaia-shell .integrated-panel .panel-tools{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px}
+body.gaia-shell .panel-tools button{font-size:13px;min-height:40px}
+body.gaia-shell .panel-tools button[hidden]{display:none}
+body.gaia-shell #integrated-close{width:auto;min-width:44px;min-height:40px;font-size:13px}
+body.gaia-shell #collapse-inspector{width:auto;min-width:64px;min-height:40px;font-size:14px}
+body.gaia-shell .integrated-panel[data-area=world] :is(.guide-heading,#game-guide,#gaia-intro){display:none}
+body.gaia-shell .integrated-panel[data-area=guide]:not(.explorer-minimal) :is(#discovery,#user-drawing,#explorer-panel,#explorer-launch){display:none}
+body.gaia-shell .guide-result{border-left:2px solid #42658c}
+body.gaia-shell .guide-result:hover,body.gaia-shell .guide-result:focus-visible{border-color:#8dcaff;background:linear-gradient(100deg,#163763,#142d48)}
+@media(max-width:700px){body.gaia-shell .player-menu button{min-height:48px;font-size:14px}body.gaia-shell .integrated-panel .panel-tools{grid-template-columns:repeat(2,minmax(0,1fr))}body.gaia-shell .integrated-content{scroll-padding-bottom:24px}}

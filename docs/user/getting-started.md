@@ -6,19 +6,33 @@ The Web Viewer is the main interface. Pages/static Web, the Windows launcher and
 
 ## Choose your start
 
-When no valid map is rendered, the centre shows a compact welcome area:
+Without a valid map, the title screen shows a black/navy scene with original broad-blade vector artwork, a soft spotlight and four vertical choices. It does not need private geometry or a WebGL map. No game screenshot, model, font, logo or music is bundled.
 
 | Choice | What it does | Required input |
 |---|---|---|
-| **Explore FF7 Guides** | Opens the existing Explore panel, search and Quick Start | None: read the 58 authored Atlas entries, subject to spoiler settings |
-| **Open Workspace** | Opens Data and focuses the existing Workspace Folder button | A GaiaGIS-generated folder containing `gaia-workspace.json` |
-| **Start from Original FF7** | Shows five Windows steps and the official [Releases page](https://github.com/Zaxaerith/ff7-GaiaGIS/releases) | A supported, legally held original FF7 PC installation/data folder |
+| **Start exploring** | Resumes a connected map; otherwise offers guides, a prepared Workspace or Windows creation instructions | Full map needs your private Workspace |
+| **Game guides** | Opens the existing Explore panel, search and Quick Start | None: read the 58 authored Atlas entries, subject to spoiler settings |
+| **Load Workspace** | Opens Data and focuses the existing Workspace Folder button | A GaiaGIS-generated folder containing `gaia-workspace.json` |
+| **Settings & help** | Changes UI language, opens existing display/data help, or advanced file controls | None |
 
-Guides include treasures, Materia, secrets and boss clues. Their three Quick Start actions remain **Find a Materia**, **Find a hidden place** and **How to obtain a treasure**. Choosing guides explicitly expands this existing section even if it was previously collapsed. The small **Back to getting started** button returns to the three choices; the Windows steps also support Back/Escape. There is no blocking modal or additional search system.
+Guides include treasures, Materia, secrets and boss clues. Their three Quick Start actions remain **Find a Materia**, **Find a hidden place** and **How to obtain a treasure**. Choosing guides expands this section even if previously collapsed. Use **Title screen** to return; this preserves the loaded Workspace, map/projection and current selection, including WM2/WM3 or Field views. **Return to map** or Escape resumes the connected view. With no map, Escape returns through the inline help to the title. Arrow keys/Home/End move menu focus; Tab and Enter retain native button behavior. Decorative fades respect `prefers-reduced-motion`.
 
 A Workspace is converted GaiaGIS output, **not the raw game directory**. Static Web reads prepared Workspaces; it does not unpack an entire game installation or upload resources. PS1 discs, Remake/Rebirth and unverified arbitrary MOD data are outside the verified input contract. Without private data the public text works, while unavailable geographic anchors have no map action.
 
-The welcome area yields to a currently rendered, validated map, whether loaded manually or supplied automatically by the Windows launcher. It does not infer a connection from a prior visit. `gaiagis.seenIntro` only remembers whether Quick Start was collapsed; it does not suppress current-session connection guidance. Failed choices retain the existing validation message and a way to select another folder. If a bad replacement is rejected while the previous map is still valid, that map remains available.
+The title yields to a currently rendered, validated map, whether loaded manually or supplied automatically by the Windows launcher. It does not infer a connection from a prior visit. `gaiagis.seenIntro` only remembers Quick Start folding. Failed choices retain existing validation and a way to select another folder; rejecting a bad replacement preserves a still-valid old map. Returning to the title is session-only and never unloads data. Data replacement clears the old title subview.
+
+## In-app menu
+
+Four player-facing groups call the original six tool panels; feature owners, data and Inspector remain shared:
+
+| Group | Existing tools |
+|---|---|
+| Explore the world | Explore locations, Nearby, bookmarks, tours, drawing; Map; Analysis routes |
+| Guides & bestiary | Explore Atlas/search/Gameplay; Layers for separate static battle evidence |
+| Map & GIS analysis | Analysis, Map, View/projections and Layers |
+| Data & settings | Data/Workspace/Save/source diagnostics and View/UI settings |
+
+The current group/tool path stays visible. Close menu reveals the map; **Back** closes the Inspector without deleting the selection. On narrow screens menu and Inspector take turns instead of competing for width. Source precision, spoiler settings and raw-source folds remain unchanged.
 
 ## Browser first
 
@@ -31,13 +45,15 @@ npm --prefix web run build:release
 npm --prefix web run preview:release
 ```
 
-Open `http://127.0.0.1:5175/`. Read guides directly, or use **Open Workspace → Data → Workspace Folder** to select its generated folder containing `gaia-workspace.json`. The button uses the existing native folder picker or directory-input fallback; it never asks you to guess binary files. **Advanced: individual Workspace files** and the original V1 metadata/mesh pair are retained for developer exports. The browser does not need the EXE, Python or QGIS to read a Workspace. Folder import is explicit and session-local: after a page refresh, select it again. Missing optional resources receive an unavailable notice; source-only Atlas/search remain usable.
+Open `http://127.0.0.1:5175/`. Read guides directly, or use **Load Workspace → Data → Workspace Folder** to select its generated folder containing `gaia-workspace.json`. The button uses the existing native folder picker or directory-input fallback; it never asks you to guess binary files. **Advanced: individual Workspace files** and the original V1 metadata/mesh pair are retained for developer exports (V1 controls under title Settings & help). The browser does not need the EXE, Python or QGIS to read a Workspace. Folder import is explicit and session-local: after a page refresh, select it again. Missing optional resources receive an unavailable notice; source-only Atlas/search remain usable.
 
 To create a Workspace from source, use the [source checkout instructions](#source-checkout) below; to create it without developer tools, use the approved Windows portable package. Supply the supported original **FF7 PC data**, including the matching `data/wm` and `data/field` resources for Field features. Supported installation/data/wm/workingdir layouts are discovered by the existing parser. Copied complete supported data folders need no running FF7.exe. PS1 discs, arbitrary ports and Remake/Rebirth are outside this format contract.
 
 ## Windows portable
 
 When an approved version's GitHub Release contains a Windows ZIP, extract the entire ZIP and run `GaiaGIS.exe`. The startup window lets you choose your own original FF7 installation, shows resource progress and opens the browser when ready. A successfully validated folder is remembered; the next launch reuses unchanged resources automatically. The launcher reads game inputs, generates `output/local-workspace` inside the extracted folder, starts a loopback server and opens the Viewer. Python, Node and QGIS are not required by the portable runtime. Extract into a folder you can write to (for example a folder you choose on a data drive), rather than running inside the ZIP or a protected directory. The EXE location determines the data root; there is no developer drive path or silently created AppData workspace. The initial build requires at least 256 MB of free disk space.
+
+The native Tk launcher now shares the title's black/navy palette and original Canvas blade/light motif, with **Choose original FF7 folder** and **Start exploring / Retry**. UI language and EN/FR/DE/ES game-data language remain separate. Technical details are folded and expand on failure. Generation stays in the native launcher; the browser does not open a native original-game chooser or invoke Python over HTTP. No new local command/path endpoint was added. This two-stage presentation preserves the existing restricted read-only loopback transport.
 
 If validation fails, select the installation root again and use Start / Retry; Remake/Rebirth folders and folders without the required original-game data are not supported. Details identify the missing input. Cancellation waits for the current resource to finish; restarting checks which completed resources can be reused. Closing the launcher stops its local server. Occupied/reserved ports are skipped automatically.
 

@@ -1,26 +1,38 @@
-/* SPDX-License-Identifier: GPL-3.0-only. Non-modal start content in the existing viewport. */
-.welcome{position:absolute;inset:0;z-index:11;display:flex;flex-direction:column;align-items:center;padding:20px;box-sizing:border-box;overflow:auto;pointer-events:none}
+/* SPDX-License-Identifier: GPL-3.0-only. Original CSS/vector title; no game artwork. */
+.welcome{position:fixed;inset:0;z-index:70;isolation:isolate;overflow:auto;display:flex;align-items:center;min-height:100dvh;background:#03070d;color:#e3edf5;pointer-events:none}
 .welcome[hidden],.welcome [hidden]{display:none!important}
-.welcome-card{width:100%;max-width:54rem;flex-shrink:0;margin-block:auto;padding:20px;border:2px solid var(--rim);border-radius:8px;background:var(--window-gradient);box-shadow:var(--window-shadow);box-sizing:border-box;pointer-events:auto}
-.welcome h2{font-size:1.45rem!important;margin:0 0 8px}
-body.gaia-shell .welcome p,body.gaia-shell .welcome li{color:var(--ink);font-size:.88rem;line-height:1.5;overflow-wrap:anywhere}
-.welcome-card>p{margin:8px 0 14px}
-.welcome-choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,13rem),1fr));gap:12px}
-.welcome-choice{min-width:0;padding:12px;border:1px solid var(--rim);border-radius:6px;background:var(--surface-raised)}
-.welcome-choice:first-child{border-color:var(--accent)}
-body.gaia-shell .welcome button{width:100%;white-space:normal;min-height:44px;line-height:1.35;font-weight:600}
-.welcome-choice:first-child button{border-color:var(--accent);color:var(--accent)}
-.welcome-choice p{margin:10px 0 0}
-.welcome-original-help{margin-top:12px;border-top:1px solid var(--rim);padding-top:10px}
-.welcome-original-help ol{padding-left:24px}
-.welcome-original-help li{margin:4px 0}
-body.gaia-shell .welcome a{display:inline-block;color:var(--accent);padding:8px 0;overflow-wrap:anywhere}
-.welcome-original-help button{max-width:10rem}
-#welcome-advanced{font-size:.8rem;margin-top:12px}
-#welcome-advanced summary{cursor:pointer;padding:6px 0}
-#welcome-advanced .loading-actions{padding:0;justify-content:flex-start}
-#welcome-advanced .loading-actions button{width:auto;font-weight:400}
-.welcome-return{pointer-events:auto;margin-block:auto;max-width:20rem}
+.welcome:before{content:'';position:absolute;inset:0;z-index:-1;background:radial-gradient(ellipse at 73% 88%,#17304188,transparent 48%),linear-gradient(105deg,#02050a 25%,#081322 75%,#02060b)}
+.welcome-scene{position:absolute;inset:0 0 0 32%;overflow:hidden;z-index:-1;pointer-events:none}
+.welcome-scene:before{content:'';position:absolute;inset:-15% -25% 0 -10%;background:conic-gradient(from 155deg at 52% 0%,transparent 0deg,#a4d7ff10 7deg,#8fc7ed1c 19deg,transparent 29deg);filter:blur(9px)}
+.welcome-scene svg{height:100%;width:100%;object-fit:contain;filter:drop-shadow(0 0 32px #2b70a820)}
+.welcome-scene:after{content:'';position:absolute;left:2%;right:0;bottom:15%;height:1px;background:linear-gradient(90deg,transparent,#9ab8ca24,transparent);transform:rotate(-5deg)}
+.welcome-content{position:relative;margin:clamp(28px,7vh,90px) 0 clamp(70px,10vh,100px) clamp(24px,9vw,180px);width:min(31rem,48%);pointer-events:auto}
+.welcome-brand{margin-bottom:clamp(28px,6vh,64px)}
+body.gaia-shell .welcome h1{font:300 clamp(2.9rem,6vw,5.6rem)/1.05 system-ui,sans-serif;letter-spacing:.08em;color:#f3f8fc;margin:0;text-shadow:0 2px 32px #79bbeb30}
+body.gaia-shell .welcome-brand p{color:#91b4cc;text-transform:uppercase;letter-spacing:.19em;font-size:.72rem;line-height:1.8;margin:14px 0 0}
+#welcome-menu{display:flex;flex-direction:column;gap:8px;width:min(100%,21rem)}
+body.gaia-shell .welcome button{min-height:48px;padding:10px 16px;border:1px solid transparent;border-radius:2px;background:transparent;color:#c7d7e6;text-align:left;font-size:1rem;line-height:1.4;overflow-wrap:anywhere;cursor:pointer}
+body.gaia-shell #welcome-menu button{position:relative;padding-left:32px;letter-spacing:.04em;background:linear-gradient(90deg,#142e461c,transparent)}
+body.gaia-shell #welcome-menu button:before{content:'';position:absolute;left:11px;top:calc(50% - 3px);width:6px;height:6px;border:1px solid #8dceff;transform:rotate(45deg);opacity:0}
+body.gaia-shell .welcome button:hover,body.gaia-shell #welcome-menu button[data-selected=true]{color:#fff;background:linear-gradient(90deg,#205d9080,#14426d38,transparent);border-left-color:#81c9ff}
+body.gaia-shell #welcome-menu button[data-selected=true]:before{opacity:1}
+body.gaia-shell .welcome :is(button,a,select,summary,[tabindex]):focus-visible{outline:2px solid #a3d8ff;outline-offset:4px}
+body.gaia-shell .welcome-subview{width:100%;max-height:65dvh;overflow:auto;box-sizing:border-box;border-left:1px solid #6194ba66;padding:0 8px 0 20px;background:linear-gradient(90deg,#07121ee8,#07121e88);scrollbar-width:thin;scrollbar-color:#355973 transparent}
+body.gaia-shell .welcome h2{color:#eef8ff;font-weight:400;font-size:1.3rem;line-height:1.4;margin:0 0 16px}
+body.gaia-shell .welcome :is(p,li,label){color:#adc2d3;font-size:.92rem;line-height:1.65;overflow-wrap:anywhere}
+.welcome-subview p{margin:12px 0}.welcome-subview ol{padding-left:22px}.welcome-subview li{padding-bottom:6px}
+.welcome-subview>button{display:block;width:100%;margin:6px 0}
+body.gaia-shell .welcome a{display:inline-block;color:#9fd4ff;min-height:32px;padding:6px 0;text-underline-offset:4px}
+body.gaia-shell .welcome select{color:#d8eafa;background:#101f2e;border:1px solid #456884;min-height:44px;width:100%;margin:8px 0 14px;font:inherit}
+body.gaia-shell .welcome-caption{position:absolute;bottom:22px;left:clamp(24px,9vw,180px);right:24px;font-size:.68rem;letter-spacing:.07em;color:#657c8e;pointer-events:none}
+body.gaia-shell .welcome-return{position:fixed;bottom:calc(var(--shell-footer) + 10px);left:12px;z-index:56;min-height:44px;padding:8px 14px;background:#0b1928e8;border:1px solid #436789;color:#d6eafa;max-width:calc(100vw - 24px);font-size:.82rem}
+.welcome-return[hidden]{display:none!important}
 .welcome-active>.loading.needs-data,.welcome-active>.view-caption,.welcome-active>.navigation-tools,.welcome-active>.zoom-controls,.welcome-active>#view-center{display:none}
-#welcome-status:not([hidden]){border-left:3px solid var(--accent);padding-left:10px}
-@media(max-width:700px){.welcome{padding:12px}.welcome-card{padding:14px}.welcome-choices{grid-template-columns:minmax(0,1fr);gap:8px}.welcome-choice{padding:10px}.welcome h2{font-size:1.25rem!important}.welcome-choice p{margin-top:6px}}
+.welcome:not([data-screen=ambient]){pointer-events:auto}.welcome[data-screen=ambient]{z-index:9;pointer-events:none}.welcome[data-screen=ambient] .welcome-scene{opacity:.35}
+body.title-open :is(.topbar,footer,#app-docks,.app-menu,.inspector-toggle,.map-breadcrumb,.explorer-hud){visibility:hidden}
+#welcome-status:not([hidden]){border-left:2px solid #79bded;margin-top:20px;padding-left:12px;max-width:32rem}
+#welcome-advanced{margin:16px 0;color:#a3bbce;font-size:.85rem}#welcome-advanced summary{padding:8px 0;cursor:pointer}#welcome-advanced .loading-actions{justify-content:flex-start;flex-wrap:wrap;padding:0}
+@media(min-width:1100px) and (prefers-reduced-motion:no-preference){.welcome-brand{animation:title-reveal 700ms ease-out}.welcome-scene svg{animation:title-reveal 1200ms ease-out}@keyframes title-reveal{from{opacity:.25;transform:translateY(4px)}to{opacity:1;transform:none}}}
+@media(max-width:900px){.welcome-content{width:55%;margin-left:6vw}.welcome-scene{left:27%;right:-18%}.welcome-brand{margin-bottom:30px}body.gaia-shell .welcome-caption{left:6vw}}
+@media(max-width:540px){.welcome{align-items:center}.welcome-content{width:calc(100% - 48px);margin:36px 24px 76px}.welcome-scene{left:5%;right:-55%;opacity:.3}.welcome-scene:before{opacity:.4}.welcome-brand{margin-bottom:26px}body.gaia-shell .welcome h1{font-size:3rem}.welcome-subview{max-height:62dvh;padding-left:14px}body.gaia-shell .welcome-caption{left:24px;bottom:16px;right:24px}#welcome-menu{width:100%}body.gaia-shell .welcome button{min-height:48px}}
+@media(max-height:530px){.welcome{align-items:flex-start}.welcome-content{margin-top:24px;margin-bottom:55px}.welcome-brand{margin-bottom:16px}.welcome-subview{max-height:48dvh}.welcome-scene{opacity:.35}}

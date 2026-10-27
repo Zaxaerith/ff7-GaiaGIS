@@ -4,13 +4,16 @@ A local-first GIS reconstruction of the original FINAL FANTASY VII world, with a
 
 ## Quick start
 
-The **Web Viewer is the main interface**. Open the [public Viewer](https://zaxaerith.github.io/ff7-GaiaGIS/); when no map is connected, choose one of three starts:
+The **Web Viewer is the main interface**. Open the [public Viewer](https://zaxaerith.github.io/ff7-GaiaGIS/). Without a map, an original vector title scene offers four simple choices:
 
-1. **Explore FF7 Guides** opens the existing Explore search, categories and three game shortcuts. Public guides work without a Workspace.
-2. **Open Workspace** takes you to **Data → Workspace Folder**. Select a GaiaGIS-generated folder containing `gaia-workspace.json`, not the original game directory. Individual binary files are an advanced option.
-3. **Start from Original FF7** explains how to get the official Windows ZIP from [Releases](https://github.com/Zaxaerith/ff7-GaiaGIS/releases), extract it completely and run `GaiaGIS.exe`. The launcher reads supported original PC data, generates/reuses a private Workspace and opens the local Web Viewer automatically.
+1. **Start exploring** returns to an already loaded map, or explains how to unlock one while offering public guides immediately.
+2. **Game guides** opens the existing Atlas search, categories and three game shortcuts. Public guides work without a Workspace.
+3. **Load Workspace** focuses the existing folder selector. Select a GaiaGIS-generated folder containing `gaia-workspace.json`, not the original game directory.
+4. **Settings & help** provides the five UI languages, display/data help and folded advanced loading controls.
 
-Static Web does not unpack an FF7 installation. Game resources stay on your device; PS1, Remake/Rebirth and unverified MOD inputs are outside the verified contract. A live connection hides the welcome area. [Browser, Windows and developer instructions](docs/user/getting-started.md).
+To create a map from original game data, get the official Windows ZIP from [Releases](https://github.com/Zaxaerith/ff7-GaiaGIS/releases), extract it fully and run `GaiaGIS.exe`. Its coordinated native launch screen selects and validates EN/FR/DE/ES PC resources, incrementally prepares the Workspace and opens the browser automatically. This is a two-stage native/browser flow, with no browser-to-native chooser interface. Static Web does not unpack an installation or upload resources. PS1, Remake/Rebirth and unverified MOD inputs remain outside the verified contract.
+
+The in-app menu groups the existing tools as **Explore the world**, **Guides & bestiary**, **Map & GIS analysis** and **Data & settings**. **Title screen** returns to the title without unloading the active map. Keyboard arrows, Tab, Enter and Escape are supported; decorative motion respects reduced-motion settings. [Browser, Windows and developer instructions](docs/user/getting-started.md).
 
 **v5.5.1 — Game Guide & Exploration UX** puts Places, Treasures & Rewards, Materia, Secrets and Boss clues in **Explore → FF7 Game Guide**. Browse the existing 58 authored entries (subject to spoiler settings), including Kalm's Megalixir, Knights of the Round and the Wutai Pagoda challenge, without a Workspace. Cards distinguish an entrance from a parent place or Field association; private data enables verified map actions. [Guide navigation](docs/user/navigation.md#game-guide-v551) · [Data formats, actual size and database boundaries](docs/reference/data-formats-and-scale.md).
 

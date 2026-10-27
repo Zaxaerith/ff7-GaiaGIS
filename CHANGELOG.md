@@ -2,6 +2,8 @@
 
 ## 5.5.1 — Game Guide & Exploration UX
 
+- Replace the card-based welcome with an original lightweight vector title scene, four vertical actions, inline map-unlock/help, shared five-language settings and keyboard focus. Returning to title/resuming keeps the current Workspace, map, projection and selection; WM2/WM3 and Field retain access.
+- Group existing six tool panels under four player-facing Shell sections with current-path labels, blue selection and explicit Inspector return. Coordinate the native Tk launcher with original Canvas art and folded diagnostics, preserving native selection/generation and the existing restricted loopback flow; no browser/native command bridge is added.
 - Add a non-modal first-start area with working Guide, prepared Workspace and original-PC-game paths. Reuse Explore/Quick Start and the existing Data folder selector; move individual-file/V1 entry points into advanced controls.
 - Show onboarding only when the current map is unavailable. Preserve automatic launcher adoption, manual validation/errors and session-only connection state; a remembered Quick Start preference never stands in for loaded geometry. Add five-language inline Windows instructions and an unversioned Releases link.
 
