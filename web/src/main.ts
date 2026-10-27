@@ -21,7 +21,6 @@ import './styles/discovery.css';
 import './styles/user-mapping.css';
 import './styles/atlas.css';
 import './styles/welcome.css';
-import './styles/neo-classic.css';
 import {evidenceSection} from './ui/contentPresentation';
 import {updateWorkspaceConnection,cancelWorkspaceImport,workspaceConnection} from './app/workspaceUX';
 import {mountLayout} from './ui/layout';
@@ -191,9 +190,13 @@ const multimaps=mountMultimap(root,()=>activeViewer);
 let explorer:ExplorerController|undefined,explorerPromise:Promise<ExplorerController>|undefined;
 let saveOwner:ReturnType<typeof mountSave>|undefined;
 const attachSave=()=>{saveOwner?.dispose();saveOwner=mountSave(()=>activeViewer,id=>multimaps.switchMap(id),ensureExplorer);};
-const ensureExplorer=()=>explorerPromise??=import('./explorer/controller').then(({ExplorerController})=>{explorer=new ExplorerController(()=>activeViewer,()=>multimaps.viewer);document.getElementById('explorer-launch')?.remove();document.getElementById('app-group-explore')?.append(document.getElementById('explorer-panel')!);return explorer;});
+const ensureExplorer=()=>explorerPromise??=import('./explorer/controller').then(({ExplorerController})=>{explorer=new ExplorerController(()=>activeViewer,()=>multimaps.viewer);document.getElementById('explorer-launch')?.remove();document.getElementById('character-explorer-content')?.append(document.getElementById('explorer-panel')!);return explorer;});
 const launch=document.createElement('details');launch.id='explorer-launch';const summary=document.createElement('summary');summary.textContent=t('explore.title');launch.append(summary);document.querySelector('.multimap-bar')!.append(launch);launch.addEventListener('toggle',()=>{if(launch.open)void ensureExplorer().then(()=>{(document.getElementById('explorer-panel') as HTMLDetailsElement).open=true;});});
 workspaceLoader.register('explorer',async files=>(await ensureExplorer()).loadFile(files[0]));
+document.addEventListener('gaiagis:character-explorer',()=>{
+ const generation=appStore.state.data.generation;
+ void ensureExplorer().then(controller=>{const panel=document.getElementById('integrated-panel');if(generation===appStore.state.data.generation&&panel?.dataset.area==='explorer'&&panel.dataset.screen==='content')controller.openCharacterExplorer();}).catch(error=>{const panel=document.getElementById('integrated-panel'),target=document.getElementById('character-explorer-content');if(generation!==appStore.state.data.generation||panel?.dataset.area!=='explorer'||!target)return;target.querySelector('#explorer-load-error')?.remove();const note=document.createElement('p');note.id='explorer-load-error';note.setAttribute('role','alert');note.textContent=t('explorerAccess.asset');note.title=String(error);target.append(note);});
+});
 
 document.addEventListener('gaiagis-explore-entrance',e=>{const entrance=(e as CustomEvent<import('./data/poi').Entrance>).detail;void ensureExplorer().then(controller=>controller.fromEntrance(entrance));});
 const localAbort=new AbortController();

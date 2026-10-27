@@ -2,6 +2,8 @@
 
 ## 5.5.1 — Game Guide & Exploration UX
 
+- After failed Neo-Classic acceptance, selectively restore the stable classic window/control styling and remove the global override stylesheet. Replace nested navigation with five direct destinations and separate navigation/content scrolling; retain Guide, Gameplay, title and all data owners.
+- Restore direct Character Explorer access with Cloud/foot defaults, visible party/vehicle/Chocobo choices and explicit missing-asset guidance. Fix idle visual/movement selection synchronization and prevent title/navigation keys or held movement input from affecting a hidden walk; preserve the original Walker/model/animation logic.
 - Rework title and application together as GaiaGIS VII — Neo-Classic: shared typography/colour/window/focus tokens, a visibly leaning original blade with local light/contact shadow, smaller title and borderless vertical text choices.
 - Start with the map unobstructed; use a single floating menu/Inspector drawer, compact four-area navigation and expandable original tool tabs. Keep map geometry, selection and all feature owners alive.
 - Present Atlas acquisition/rewards, Enemy attributes and Formation membership before shared folded evidence. Apply the same disclosures to source corners/topology endpoints and unify Field, Workspace and GIS controls/tables; coordinate the native launcher palette without changing its workflow.

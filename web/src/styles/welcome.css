@@ -1,4 +1,5 @@
 /* SPDX-License-Identifier: GPL-3.0-only. Neo-Classic title, using the application's shared primitives. */
+.welcome,.welcome-return{--vii-bg-title:#030712;--vii-font-family:system-ui,-apple-system,"Segoe UI","Microsoft YaHei",sans-serif;--vii-font-title:clamp(2.2rem,3.5vw,3.45rem);--vii-font-menu:1rem;--vii-font-body:.9rem;--vii-font-note:.8rem;--vii-border:var(--rim);--vii-accent:var(--accent);--vii-text:var(--ink);--vii-muted:var(--subtle);--vii-input:var(--window-bg);--vii-panel-gradient:var(--window-gradient);--vii-selection:linear-gradient(90deg,#b2c6ec20,transparent);--vii-shadow:var(--window-shadow);--vii-space:16px;--vii-radius:6px;--vii-focus:2px solid var(--ring);--vii-duration:160ms}
 .welcome{position:fixed;inset:0;z-index:70;isolation:isolate;overflow:auto;display:flex;align-items:center;min-height:100dvh;background:var(--vii-bg-title);color:var(--vii-text);font-family:var(--vii-font-family);pointer-events:none}
 .welcome[hidden],.welcome [hidden]{display:none!important}
 .welcome:before{content:'';position:absolute;inset:0;z-index:-1;background:linear-gradient(100deg,var(--vii-bg-title) 12%,#02050b 62%,#050b17)}

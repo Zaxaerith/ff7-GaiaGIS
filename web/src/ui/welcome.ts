@@ -56,7 +56,7 @@ export function mountWelcome(activate:Activate){
  const release=make('a',windows,'start.releases') as HTMLAnchorElement;release.href=RELEASES_URL;release.target='_blank';release.rel='noopener noreferrer';make('p',windows,'start.staticNote');make('p',windows,'start.support');make('p',windows,'start.privacy');
  const options=panel('settings','start.settings');
  const languageLabel=make('label',options,'nav.language');languageLabel.setAttribute('for','welcome-language');const language=document.createElement('select');language.id='welcome-language';for(let i=0;i<locales.length;i++){const option=document.createElement('option');option.value=locales[i];option.textContent=localeNames[i];language.append(option);}scope.listen(language,'change',()=>setLocale(language.value as ReturnType<typeof locale>));options.append(language);
- button(options,'welcome-interface','start.interface',()=>{leave();activate('view');document.getElementById('panel-tools-summary')?.focus();});
+ button(options,'welcome-interface','start.interface',()=>{leave();activate('view');document.getElementById('panel-content-title')?.focus();});
  button(options,'welcome-data-help','start.dataHelp',()=>{leave();startWorkspace(activate);const help=document.getElementById('workspace-help') as HTMLDetailsElement|null;if(help)help.open=true;});
  const advanced=document.createElement('details');advanced.id='welcome-advanced';make('summary',advanced,'start.advanced');make('p',advanced,'start.advancedHint');
  const actions=document.querySelector<HTMLElement>('.loading-actions'),parent=actions?.parentNode,next=actions?.nextSibling;if(actions)advanced.append(actions);options.append(advanced);
