@@ -6,7 +6,7 @@ import type {FieldCamera} from '../src/data/fieldCamera';
 import {discoverWorkspace,parseManifest} from '../src/app/workspace';
 import {describe,it,expect} from 'vitest';
 import curated from '../../src/gaiagis/atlas_data/content.json';
-import {parseAtlasContent,parseAtlasPack,searchAtlas,resolveBinding,atlasAnchor,spoilerVisible,validateAtlasPoi,atlasFactTerms,guideCategories,guideCategory,guidePrecision} from '../src/data/atlas';
+import {parseAtlasContent,parseAtlasPack,searchAtlas,resolveBinding,atlasAnchor,atlasMapTarget,spoilerVisible,validateAtlasPoi,atlasFactTerms,guideCategories,guideCategory,guidePrecision} from '../src/data/atlas';
 import type {AtlasPack,AtlasEntity} from '../src/data/atlas';
 import type {PoiDataset} from '../src/data/poi';
 
@@ -59,6 +59,25 @@ describe('Game Guide location precision',()=>{
  it('keeps a parent-place navigation action distinct from an exact reward marker',()=>{
   const e={...entity,spatialBinding:{kind:'parent_location' as const,locationId:'midgar'}},b=resolveBinding(e,poi);
   expect(guidePrecision(e,b)).toBe('parent');expect(atlasAnchor(b,poi)).toBeNull();expect(atlasAnchor(b,poi,true)?.entrance.id).toBe('entry-1');
+ });
+});
+describe('Map-first Atlas target evidence',()=>{
+ it('uses an existing entrance identity without creating an Atlas reward marker',()=>{
+  const binding=resolveBinding(entity,poi),target=atlasMapTarget(binding,poi);
+  expect(target?.location).toBe(poi.locations[0]);expect(target?.entrance).toBe(poi.entrances[0]);
+  const parent={...entity,spatialBinding:{kind:'parent_location' as const,locationId:'midgar'}},parentBinding=resolveBinding(parent,poi);
+  expect(parentBinding.marker).toBe(false);expect(parentBinding.entranceId).toBeNull();expect(atlasMapTarget(parentBinding,poi)).toEqual(target);
+  const kalm=content.entities.find(e=>e.id==='kalm-treasure')!,kalmPoi={...poi,locations:[{...poi.locations[0],id:'kalm'}],entrances:[{...poi.entrances[0],location_id:'kalm'}]};
+  expect(atlasMapTarget(resolveBinding(kalm,kalmPoi),kalmPoi)?.location.id).toBe('kalm');expect(resolveBinding(kalm,kalmPoi).marker).toBe(false);
+ });
+ it('does not turn a Field-only parent into a world-map target',()=>{
+  const field={...entity,spatialBinding:{kind:'field_parent' as const,locationId:'midgar',fieldNames:['synthetic']}},binding=resolveBinding(field,poi);
+  expect(atlasAnchor(binding,poi,true)).not.toBeNull();expect(atlasMapTarget(binding,poi)).toBeNull();
+  for(const id of ['round-island-cave-reward','ancient-forest','sunken-gelnika']){const e=content.entities.find(e=>e.id===id)!;expect(atlasMapTarget(resolveBinding(e,null),null)).toBeNull();}
+ });
+ it('keeps public source-only and unresolved entries non-spatial',()=>{
+  expect(atlasMapTarget(resolveBinding(entity,null),null)).toBeNull();expect(atlasMapTarget(resolveBinding(entity,poi),null)).toBeNull();
+  const unresolved={...resolveBinding(entity,poi),precision:'unresolved' as const};expect(atlasMapTarget(unresolved,poi)).toBeNull();
  });
 });
 describe('Optional Field Interaction evidence contract',()=>{

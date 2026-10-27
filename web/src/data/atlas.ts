@@ -57,6 +57,13 @@ export function validateAtlasPoi(pack:AtlasPack,poi:PoiDataset){
 export function atlasAnchor(binding:AtlasBinding,poi:PoiDataset|null,parent=false):{location:Location;entrance:Entrance}|null{
  if(!poi||!binding.locationId||!parent&&!binding.marker)return null;const location=poi.locations.find(l=>l.id===binding.locationId),entrance=poi.entrances.find(e=>e.id===(parent?location?.primary_entrance:binding.entranceId));return location&&entrance?{location,entrance}:null;
 }
+/** A scene association alone never supplies a world-map target. Parent targets
+ * retain the actual place entrance; they are not reward positions or markers. */
+export function atlasMapTarget(binding:AtlasBinding,poi:PoiDataset|null){
+ if(binding.marker&&binding.precision==='entrance_level')return atlasAnchor(binding,poi);
+ if(binding.kind==='parent_location'&&binding.precision==='parent_place')return atlasAnchor(binding,poi,true);
+ return null;
+}
 export const spoilerVisible=(level:Spoiler,mode:'hide-major'|'show-all'|'hide-all'='hide-major')=>mode==='show-all'||level==='none'||mode==='hide-major'&&level==='minor';
 export type AtlasCategory='all'|'places'|'secrets'|'collectibles';
 export function atlasCategory(e:AtlasEntity,category:AtlasCategory){return category==='all'||category==='collectibles'&&e.tags.includes('collectible')||category==='secrets'&&e.tags.includes('secret')||category==='places'&&e.tags.includes('place');}

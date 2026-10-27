@@ -199,6 +199,14 @@ document.addEventListener('gaiagis:character-explorer',()=>{
 });
 
 document.addEventListener('gaiagis-explore-entrance',e=>{const entrance=(e as CustomEvent<import('./data/poi').Entrance>).detail;void ensureExplorer().then(controller=>controller.fromEntrance(entrance));});
+// Only this explicit guide action may leave a native/Field space for WM0.
+let atlasWorldTicket=0;
+document.addEventListener('gaiagis:atlas-world',e=>{
+ const id=(e as CustomEvent<string>).detail,selection=appStore.state.selection,generation=appStore.state.data.generation,ticket=++atlasWorldTicket;
+ if(!activeViewer||selection?.kind!=='atlas'||selection.id!==id||appStore.state.explorer.phase!=='idle')return;
+ appStore.dispatch({type:'view',view:{spatial:'world'}});
+ void multimaps.switchMap('WM0').then(()=>{if(ticket!==atlasWorldTicket||generation!==appStore.state.data.generation||appStore.state.map.id!=='WM0'||appStore.state.selection)return;document.dispatchEvent(new CustomEvent('gaiagis:guide',{detail:{entity:id}}));});
+});
 const localAbort=new AbortController();
 window.addEventListener('pagehide',()=>localAbort.abort(),{once:true});
 async function boot(){

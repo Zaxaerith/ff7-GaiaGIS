@@ -5,7 +5,7 @@ import {registerNavigation,clearNavigation,searchNavigation,setNavigationSelecti
 import {workspaceLoader} from '../app/assets';
 import {ResourceScope} from '../app/resources';
 import {locale,onLocaleChange,t} from '../i18n';
-import {atlasKinds,guideCategories,guideCategory,guidePrecision,parseAtlasContent,parseAtlasPack,validateAtlasPoi,resolveBinding,atlasAnchor,spoilerVisible,searchAtlas,atlasFactTerms} from '../data/atlas';
+import {atlasKinds,guideCategories,guideCategory,guidePrecision,parseAtlasContent,parseAtlasPack,validateAtlasPoi,resolveBinding,atlasAnchor,atlasMapTarget,spoilerVisible,searchAtlas,atlasFactTerms} from '../data/atlas';
 import type {AtlasContent,AtlasEntity,AtlasPack,AtlasBinding,AtlasCategory,GuideCategory,Spoiler} from '../data/atlas';
 import {resolveFieldAtlas,atlasEvidence,spatialStatus} from '../data/fieldContext';
 import type {FieldIndex} from '../data/fieldContext';
@@ -17,7 +17,7 @@ import type {GaiaViewer} from '../viewer/GaiaViewer';
 
 export function mountAtlas(viewer?:GaiaViewer,getPoi?:()=>PoiDataset|null){
  const scope=new ResourceScope(),started=performance.now();let content:AtlasContent=parseAtlasContent(curated),pack:AtlasPack|null=null,poi=getPoi?.()??null,active:string|null=null,embedded=false,revision=0;
- let fields:FieldIndex|null=null;
+ let fields:FieldIndex|null=null,located:string|null=null;
  const input=document.getElementById('location-search') as HTMLInputElement,results=document.getElementById('location-results')!;
  const locations=document.querySelector('.locations-controls')!;
  const header=document.createElement('header'),heading=document.createElement('h2'),intro=document.createElement('p');header.className='guide-heading';intro.className='control-note';header.append(heading,intro);locations.prepend(header);scope.own(()=>header.remove());
@@ -34,6 +34,7 @@ export function mountAtlas(viewer?:GaiaViewer,getPoi?:()=>PoiDataset|null){
  const toggles=new Map<string,HTMLInputElement>();for(const name of ['places','secrets','collectibles']){const label=document.createElement('label'),checkbox=document.createElement('input');checkbox.type='checkbox';checkbox.id='atlas-'+name;label.htmlFor=checkbox.id;label.append(checkbox,document.createTextNode(t('atlas.'+name)));layers.append(label);checkbox.onchange=refresh;toggles.set(name,checkbox);}
  const mode=()=>spoilers.value as 'hide-major'|'show-all'|'hide-all';const visible=(level:Spoiler)=>spoilerVisible(level,mode());
  const entity=(id:string)=>content.entities.find(e=>e.id===id);
+ const worldView=()=>appStore.state.map.id==='WM0'&&appStore.state.view.spatial==='world'&&appStore.state.explorer.phase==='idle';
  const binding=(e:AtlasEntity):AtlasBinding=>resolveFieldAtlas(e,(pack&&JSON.stringify(pack.content.entities.find(row=>row.id===e.id)?.spatialBinding)===JSON.stringify(e.spatialBinding)?pack.bindings[e.id]:null)??resolveBinding(e,poi),fields);
  function section(target:HTMLElement,key:string){return evidenceSection(target,t(key));}
  const paragraph=(parent:HTMLElement,text:string)=>{const node=document.createElement('p');node.textContent=text;parent.append(node);return node;};
@@ -58,11 +59,14 @@ export function mountAtlas(viewer?:GaiaViewer,getPoi?:()=>PoiDataset|null){
   // entrance binding can claim a verified map entrance or supply a marker.
   const precision=guidePrecision(e,b);
   paragraph(map,t('guide.'+precision)).className='vii-kicker';
-  if(precision==='parent'||e.spatialBinding.kind==='field_parent')paragraph(map,t('guide.parentNote'));
+  if(precision==='parent')paragraph(map,t('guide.parentNote'));
   if(precision==='field'||e.spatialBinding.kind==='field_parent')paragraph(map,t('guide.fieldNote'));
-  const anchor=atlasAnchor(b,poi),parent=atlasAnchor(b,poi,true);
-  if(viewer&&(anchor||parent)){const button=document.createElement('button');button.id='atlas-fly';button.textContent=t(anchor?'guide.fly':'guide.flyParent');button.onclick=()=>{const context=anchor??parent!;viewer.flyToLocation(context.entrance.longitude,context.entrance.latitude);if(innerWidth<1100)document.getElementById('collapse-inspector')?.click();};map.append(button);if(!anchor)paragraph(map,t('atlas.parentLocation')+' · '+parent!.location.display_name);}
-  else paragraph(map,t('guide.noMap'));
+  const context=atlasMapTarget(b,poi),world=worldView();
+  if(viewer&&context){
+   const button=document.createElement('button');button.id='atlas-fly';button.textContent=t(!world?'guide.openWorld':b.marker?'guide.fly':'guide.flyParent');button.onclick=()=>{if(!worldView())document.dispatchEvent(new CustomEvent('gaiagis:atlas-world',{detail:e.id}));else inspect(e);};map.append(button);
+   if(located===e.id&&world)paragraph(map,t(b.marker?'guide.locatedEntrance':'guide.locatedParent',{place:context.location.display_name})).className='control-note';
+   else if(!b.marker)paragraph(map,t('atlas.parentLocation')+' · '+context.location.display_name);
+  }else if(precision!=='field')paragraph(map,t('guide.noMap'));
   const fieldHost=document.createElement('section');fieldHost.className='vii-section';fieldHost.dataset.atlasSection='field';card.append(fieldHost);
   const requestedNames=e.spatialBinding.fieldNames??b.fieldNames;
   if(requestedNames.length){const names=paragraph(fieldHost,t('guide.field')+' · '+requestedNames.join(', '));names.className='control-note';}
@@ -77,9 +81,11 @@ export function mountAtlas(viewer?:GaiaViewer,getPoi?:()=>PoiDataset|null){
 
  }
  function inspect(e:AtlasEntity){
-  if(!visible(e.spoilerLevel)||appStore.state.map.id!=='WM0'||appStore.state.explorer.phase!=='idle')return;viewer?.clearSelection();active=e.id;embedded=false;const b=binding(e),anchor=atlasAnchor(b,poi);setNavigationSelection(anchor);viewer?.selectLocation(null);if(anchor)viewer?.selectLocation(anchor.location.id,anchor.entrance);
+  if(!visible(e.spoilerLevel))return;
+  const state=appStore.state,world=worldView(),b=binding(e),context=viewer&&world?atlasMapTarget(b,poi):null;
+  if(world){viewer?.cancelMotion();viewer?.clearSelection();viewer?.selectLocation(null);if(context)viewer?.selectLocation(context.location.id,context.entrance);}active=e.id;embedded=false;located=context?e.id:null;setNavigationSelection(context);
   const detail=document.getElementById('selection-details')!;detail.hidden=false;detail.replaceChildren();delete detail.dataset.location;delete detail.dataset.entrance;delete detail.dataset.sourceTriangle;delete detail.dataset.origin;detail.dataset.atlas=e.id;document.getElementById('selection-empty')!.hidden=true;document.getElementById('inspector-title')!.textContent=t('atlas.title');
-  appStore.dispatch({type:'select',selection:{kind:'atlas',id:e.id,mapId:'WM0',...(anchor?{geographicPoint:[anchor.entrance.longitude,anchor.entrance.latitude,anchor.entrance.height] as [number,number,number]}:{})}});card(e,detail);results.replaceChildren();input.setAttribute('aria-expanded','false');input.removeAttribute('aria-activedescendant');if(!document.getElementById('integrated-inspector')?.classList.contains('open'))document.getElementById('toggle-inspector')?.click();if(innerWidth<1100){document.getElementById('integrated-panel')?.classList.remove('open');document.getElementById('app-menu')?.setAttribute('aria-expanded','false');}detail.querySelector<HTMLElement>('#atlas-card h3')?.focus({preventScroll:true});
+  appStore.dispatch({type:'select',selection:{kind:'atlas',id:e.id,mapId:state.map.id,...(context?{geographicPoint:[context.entrance.longitude,context.entrance.latitude,context.entrance.height] as [number,number,number]}:{})}});card(e,detail);results.replaceChildren();input.setAttribute('aria-expanded','false');input.removeAttribute('aria-activedescendant');document.dispatchEvent(new Event('gaiagis:inspect'));const inspector=document.getElementById('integrated-inspector');if(inspector)inspector.scrollTop=0;if(context)viewer!.flyToLocation(context.entrance.longitude,context.entrance.latitude);detail.querySelector<HTMLElement>('#atlas-card h3')?.focus({preventScroll:true});
  }
  function drawGuide(){
   heading.textContent=t('guide.title');intro.textContent=t('guide.intro');controlsTitle.textContent=t('guide.filters');

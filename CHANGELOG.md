@@ -2,6 +2,10 @@
 
 ## 5.5.1 — Game Guide & Exploration UX
 
+- Move Return to title into the existing Features navigation footer; remove its fixed map overlay and preserve the loaded map/session when returning.
+- Selecting a guide selects its verified WM0 entrance or labelled parent place, opens the shared Inspector and focuses the map in one action. Field-only guides retain scene identity; other map spaces require an explicit World map action. Repositioning does not create reward coordinates.
+- Frame anchored places beside desktop details or above compact mobile details using the existing camera and flight owner. Cancel obsolete flights on new selections, dragging or wheel input; reading a guide no longer silently exits Field view.
+
 - After failed Neo-Classic acceptance, selectively restore the stable classic window/control styling and remove the global override stylesheet. Replace nested navigation with five direct destinations and separate navigation/content scrolling; retain Guide, Gameplay, title and all data owners.
 - Restore direct Character Explorer access with Cloud/foot defaults, visible party/vehicle/Chocobo choices and explicit missing-asset guidance. Fix idle visual/movement selection synchronization and prevent title/navigation keys or held movement input from affecting a hidden walk; preserve the original Walker/model/animation logic.
 - Rework title and application together as GaiaGIS VII — Neo-Classic: shared typography/colour/window/focus tokens, a visibly leaning original blade with local light/contact shadow, smaller title and borderless vertical text choices.
@@ -21,7 +25,7 @@
 - Put a paged Game Guide in Explore with Places, Treasures & Rewards, Materia, Secrets and Boss clues. Reuse 58 authored Atlas entries, 19 rewards, multilingual search and spoiler controls; tag only existing sourced knowledge.
 - Add three game-focused Quick Start paths and present descriptions, obtaining/challenge instructions, rewards, entrance/parent/Field precision and related scenes before expandable source details.
 - Keep Godo/Snow challenge guides separate from raw `scripted_battle` evidence. Never infer a boss from a battle ID, create a reward marker from a parent place or claim runtime availability.
-- Retain source-only text browsing, the six-panel Shell and existing GIS tools. Use bounded guide pages and the shared Inspector; narrow-screen map actions close the Inspector to reveal the map.
+- Retain source-only text browsing, the original panel owners and existing GIS tools. Use bounded guide pages and the shared Inspector; compact map details retain visible map context.
 - Document resource formats, conversion, Manifest/source checks, existing loading limits and a measured 20-asset, 118.144 MiB historical Workspace inventory. No Web SQL backend or data/schema regeneration is introduced.
 
 ## 5.5.0 — Regional Terrain Statistics

@@ -49,7 +49,9 @@ export class LocationsOverlay {
     const ordered=[...this.markers].sort((a,b)=>Number(b.location.id===this.selected)-Number(a.location.id===this.selected)||Number(['city','town','village'].includes(b.location.category))-Number(['city','town','village'].includes(a.location.category)));
     for(const m of ordered){
       const selected=m.location.id===this.selected;m.button.classList.toggle('selected',selected);m.button.classList.toggle('analysis-start',m.location.id===this.analysisStart);m.button.classList.toggle('analysis-target',m.location.id===this.analysisTarget);m.button.classList.toggle('analysis-unreachable',!!this.reachable&&!this.reachable.has(m.location.id));
-      if(!this.show||!filterLocation(m.location,this.filter)){m.button.hidden=true;continue;}
+      // A deliberate place/guide selection reveals its existing place marker,
+      // without enabling the whole POI layer or creating a reward coordinate.
+      if(!(selected&&this.kind==='location')&&(!this.show||!filterLocation(m.location,this.filter))){m.button.hidden=true;continue;}
       const location=this.target(m),p=markerPosition({...location,height:id==='globe'?location.height*this.relief:location.height},id,c);
       if(morph)m.point.set(...m.from).lerp(new Vector3(...m.to),morph.ease);else m.point.set(...p);
       m.current=m.point.toArray() as Position;

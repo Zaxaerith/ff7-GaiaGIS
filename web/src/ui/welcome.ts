@@ -26,7 +26,7 @@ export function startWorkspace(activate:Activate,doc:Document=document){
 }
 type Screen='menu'|'unlock'|'windows'|'settings';
 /** Title owns presentation only. It never starts, resets or disposes a Viewer. */
-export function mountWelcome(activate:Activate){
+export function mountWelcome(activate:Activate,titleActions:HTMLElement=document.getElementById('player-global-actions')!){
  const scope=new ResourceScope(),viewport=document.getElementById('viewport')!,host=document.createElement('section');host.id='gaia-welcome';host.className='welcome';host.setAttribute('aria-labelledby','welcome-title');
  const scene=document.createElement('div');scene.className='welcome-scene';scene.setAttribute('aria-hidden','true');scene.innerHTML=titleScene;host.append(scene);
  const content=document.createElement('div');content.className='welcome-content';host.append(content);
@@ -64,10 +64,10 @@ export function mountWelcome(activate:Activate){
  for(const [id,p]of panels)if(id!=='menu')button(p,'welcome-back-'+id,'start.back',back);
  const status=document.createElement('p');status.id='welcome-status';status.setAttribute('role','status');content.append(status);
  const caption=make('p',host,'start.caption');caption.className='welcome-caption';document.body.append(host);
- const titleButton=document.createElement('button');titleButton.id='welcome-return';titleButton.type='button';titleButton.className='welcome-return';titleButton.onclick=()=>{returnFocus=document.activeElement as HTMLElement|null;requested=true;browsing=false;history.length=0;screen='menu';refresh();explore.focus();};document.body.append(titleButton);
+ const titleButton=document.createElement('button');titleButton.id='welcome-return';titleButton.type='button';titleButton.className='welcome-return';titleButton.onclick=()=>{returnFocus=document.activeElement as HTMLElement|null;requested=true;browsing=false;history.length=0;screen='menu';refresh();explore.focus();};titleActions.append(titleButton);
  // Disable only existing background controls, leaving their state and owners intact.
  const inerted=new Map<HTMLElement,boolean>();
- function backgroundInert(on:boolean){if(on){for(const child of document.body.children){const node=child as HTMLElement;if(node===host||node===titleButton)continue;if(!inerted.has(node))inerted.set(node,node.inert);node.inert=true;}}else{for(const [node,value]of inerted)node.inert=value;inerted.clear();}}
+ function backgroundInert(on:boolean){if(on){for(const child of document.body.children){const node=child as HTMLElement;if(node===host)continue;if(!inerted.has(node))inerted.set(node,node.inert);node.inert=true;}}else{for(const [node,value]of inerted)node.inert=value;inerted.clear();}}
  function refresh(){
   const loading=document.getElementById('loading'),state=welcomeState(appStore.state,workspaceConnection,document.getElementById('app')?.dataset.ready==='true',loading?.classList.contains('needs-data')??false);
   if(generation!==appStore.state.data.generation){generation=appStore.state.data.generation;browsing=false;requested=false;screen='menu';history.length=0;returnFocus=null;}

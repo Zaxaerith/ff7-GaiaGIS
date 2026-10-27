@@ -21,6 +21,6 @@ export function presentDrawer(menu:HTMLElement,inspector:HTMLElement,target:'men
 }
 
 /** Navigation and feature content occupy separate views of the same drawer. */
-export function presentNavigation(root:HTMLElement,navigation:HTMLElement,content:HTMLElement,tools:HTMLElement,screen:'navigation'|'content',hasTools:boolean){
- root.dataset.screen=screen;navigation.hidden=screen!=='navigation';content.hidden=screen!=='content';tools.hidden=screen!=='content'||!hasTools;
+export function presentNavigation(root:HTMLElement,navigation:HTMLElement,content:HTMLElement,tools:HTMLElement,screen:'navigation'|'content',hasTools:boolean,globalActions?:HTMLElement){
+ root.dataset.screen=screen;navigation.hidden=screen!=='navigation';content.hidden=screen!=='content';tools.hidden=screen!=='content'||!hasTools;if(globalActions)globalActions.hidden=screen!=='navigation';
 }

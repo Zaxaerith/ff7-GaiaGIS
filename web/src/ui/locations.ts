@@ -44,7 +44,7 @@ export function mountLocations(viewer:GaiaViewer,meta:GaiaMeta,isCurrent:()=>boo
     for(const id of location.entrance_ids){const item=dataset.entrances.find(e=>e.id===id)!;const button=document.createElement('button');button.textContent=t('message.entrance',{field:item.field_name,entry:item.entrance_table_id,scenario:item.scenario});button.setAttribute('aria-pressed',String(id===e.id));button.addEventListener('click',()=>inspect(location,item));entrances.append(button);}technical.append(entrances);
     document.dispatchEvent(new CustomEvent('gaiagis:field-entrances',{detail:{host:detail,locationId:location.id,entranceId:entrance?.id}}));
     element('coordinates').textContent=`${formatNumber(e.longitude,2)}° / ${formatNumber(e.latitude,2)}°`;
-    setNavigationSelection({location,entrance:e});appStore.dispatch({type:'select',selection:{kind:entrance?'entrance':'location',id:entrance?.id??location.id,mapId:'WM0',geographicPoint:[e.longitude,e.latitude,e.height]}});viewer.flyToLocation(e.longitude,e.latitude);close();document.dispatchEvent(new CustomEvent('gaiagis-location-inspect',{detail:location.id}));
+    setNavigationSelection({location,entrance:e});appStore.dispatch({type:'select',selection:{kind:entrance?'entrance':'location',id:entrance?.id??location.id,mapId:'WM0',geographicPoint:[e.longitude,e.latitude,e.height]}});document.dispatchEvent(new Event('gaiagis:inspect'));viewer.flyToLocation(e.longitude,e.latitude);close();document.dispatchEvent(new CustomEvent('gaiagis-location-inspect',{detail:location.id}));
     history.replaceState(null,'',`${window.location.pathname}${window.location.search}#location=${encodeURIComponent(location.id)}`);
   }
   // Use the browser's URL components, never values supplied by POI data.

@@ -25,7 +25,7 @@ import {regionColor} from '../data/regions';
 import {LocationsOverlay} from './locations';
 import {eventLocation,filterEvent} from '../data/events';
 import type {WorldEvent,EventFilter} from '../data/events';
-import {flyDirection,flyDuration,shortestLongitude} from './flyTo';
+import {detailViewOffset,flyDirection,flyDuration,shortestLongitude} from './flyTo';
 import type {Location,LocationFilter} from '../data/poi';
 import {encounterColor,encounterPalette} from '../data/encounters';
 import type {ColorLayer,EncounterDataset} from '../data/encounters';
@@ -132,6 +132,7 @@ export class GaiaViewer {
   private encounters:EncounterDataset|null=null;
   private chocoboTracks=false;
   private reducedMotion=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  private detailLayout=()=>this.updateDetailFrame();
   private scene=new Scene();
   private perspective=new PerspectiveCamera(45,1,0.005,100);
   private mapCamera=new OrthographicCamera(-1,1,1,-1,0.005,100);
@@ -254,7 +255,7 @@ export class GaiaViewer {
       this.cancelFlight();
       this.pointers.add(e.pointerId);this.moved=0;
       this.pointerDown={x:e.clientX,y:e.clientY,lon:this.context.centerLon,lat:this.context.centerLat};
-    });
+    },{capture:true});
     this.renderer.domElement.addEventListener('pointermove',e=>{
       if(!this.pointerDown) return;
       const dx=e.clientX-this.pointerDown.x,dy=e.clientY-this.pointerDown.y;
@@ -273,7 +274,9 @@ export class GaiaViewer {
       this.pointers.delete(e.pointerId);this.pointerDown=null;
     });
     this.renderer.domElement.addEventListener('pointercancel',e=>{this.pointers.delete(e.pointerId);this.pointerDown=null;});
+    this.renderer.domElement.addEventListener('wheel',()=>this.cancelFlight(),{passive:true,capture:true});
     this.resizeObserver=new ResizeObserver(()=>this.resize());this.resizeObserver.observe(container);
+    document.addEventListener('gaiagis:map-layout',this.detailLayout);
     this.navigation=new NavigationOverlay(container);
     this.userMapping=new UserMappingOverlay(this.scene,this.renderer.getPixelRatio());
     this.atlas=new LocationsOverlay(container,location=>{if(!this.captureMeasurement&&!this.captureExplorer)this.onAtlas(location.id);},'atlas');
@@ -308,6 +311,19 @@ export class GaiaViewer {
     this.renderer.setSize(Math.max(1,this.container.clientWidth),Math.max(1,this.container.clientHeight));
     this.perspective.aspect=this.aspect;this.perspective.updateProjectionMatrix();
     const fit=this.fit();this.mapCamera.left=-fit.halfWidth;this.mapCamera.right=fit.halfWidth;this.mapCamera.top=fit.halfHeight;this.mapCamera.bottom=-fit.halfHeight;this.mapCamera.updateProjectionMatrix();
+    this.updateDetailFrame();
+  }
+  private updateDetailFrame(){
+    const inspector=document.getElementById('integrated-inspector');
+    const detail=inspector?.classList.contains('open')?inspector.getBoundingClientRect():null;
+    const view=this.container.getBoundingClientRect(),reserved=detailViewOffset(view,detail);
+    this.container.style.setProperty('--map-detail-right',`${reserved.x*2}px`);
+    this.container.style.setProperty('--map-detail-bottom',`${reserved.y*2}px`);
+    const offset=inspector?.dataset.mapAnchor==='true'&&!this.captureExplorer?reserved:{x:0,y:0};
+    for(const camera of [this.perspective,this.mapCamera]){
+      if(offset.x||offset.y)camera.setViewOffset(Math.max(1,view.width),Math.max(1,view.height),offset.x,offset.y,Math.max(1,view.width),Math.max(1,view.height));
+      else camera.clearViewOffset();
+    }
   }
   resetView(){
     if(this.morph) return;
@@ -377,6 +393,7 @@ export class GaiaViewer {
   selectLocation(id:string|null,position?:Pick<Location,'longitude'|'latitude'|'height'>){this.locations.select(id,position);if(this.morph)this.locations.beginMorph(this.morph.fromId,this.projectionId,this.context);}
   flyToLocation(lon:number,lat:number){
     if(!Number.isFinite(lon)||!Number.isFinite(lat))return;
+    this.updateDetailFrame();
     if(this.morph){this.queuedLocation={lon,lat};return;}
     this.cancelFlight();this.setAutoRotate(false);
     if(!flyDuration(this.reducedMotion)){this.focusLocation(lon,lat);return;}
@@ -582,5 +599,5 @@ export class GaiaViewer {
     if(value){if(this.suspendedAt===null)this.suspendedAt=performance.now();this.renderer.setAnimationLoop(null);this.comparison?.renderer.setAnimationLoop(null);}
     else {if(this.suspendedAt!==null){const now=performance.now(),elapsed=now-this.suspendedAt;if(this.morph)this.morph.start+=elapsed;if(this.flight)this.flight.start+=elapsed;this.previous=now;this.suspendedAt=null;}this.renderer.setAnimationLoop(t=>this.animate(t));}
   }
-  dispose(){this.setWorldVariants(null);this.onVariantSelection=()=>{};this.userMapping.dispose();this.textured.dispose();this.texturePack?.image.close();this.renderer.setAnimationLoop(null);this.setProjectionComparison(null);this.locations.dispose();this.events.dispose();this.atlas.dispose();this.resizeObserver.disconnect();this.globeControls.dispose();this.mapControls.dispose();this.scene.traverse(object=>{if(object instanceof Mesh||object instanceof LineSegments){object.geometry.dispose();object.material.dispose();}});this.renderer.dispose();this.renderer.domElement.remove();}
+  dispose(){document.removeEventListener('gaiagis:map-layout',this.detailLayout);this.setWorldVariants(null);this.onVariantSelection=()=>{};this.userMapping.dispose();this.textured.dispose();this.texturePack?.image.close();this.renderer.setAnimationLoop(null);this.setProjectionComparison(null);this.locations.dispose();this.events.dispose();this.atlas.dispose();this.resizeObserver.disconnect();this.globeControls.dispose();this.mapControls.dispose();this.scene.traverse(object=>{if(object instanceof Mesh||object instanceof LineSegments){object.geometry.dispose();object.material.dispose();}});this.renderer.dispose();this.renderer.domElement.remove();}
 }

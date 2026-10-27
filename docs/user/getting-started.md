@@ -15,7 +15,7 @@ Without a valid map, the title screen shows a black/navy scene with original bro
 | **Load Workspace** | Opens Data and focuses the existing Workspace Folder button | A GaiaGIS-generated folder containing `gaia-workspace.json` |
 | **Settings & help** | Changes UI language, opens existing display/data help, or advanced file controls | None |
 
-Guides include treasures, Materia, secrets and boss clues. Their three Quick Start actions remain **Find a Materia**, **Find a hidden place** and **How to obtain a treasure**. Choosing guides expands this section even if previously collapsed. Use **Title screen** to return; this preserves the loaded Workspace, map/projection and current selection, including WM2/WM3 or Field views. **Return to map** or Escape resumes the connected view. With no map, Escape returns through the inline help to the title. Arrow keys/Home/End move menu focus; Tab and Enter retain native button behavior. Decorative fades respect `prefers-reduced-motion`.
+Guides include treasures, Materia, secrets and boss clues. Their three Quick Start actions remain **Find a Materia**, **Find a hidden place** and **How to obtain a treasure**. Choosing guides expands this section even if previously collapsed. Use **Features → Return to title** to return; this preserves the loaded Workspace, map/projection and current selection, including WM2/WM3 or Field views. **Return to map** or Escape resumes the connected view. With no map, Escape returns through the inline help to the title. Arrow keys/Home/End move menu focus; Tab and Enter retain native button behavior. Decorative fades respect `prefers-reduced-motion`.
 
 A Workspace is converted GaiaGIS output, **not the raw game directory**. Static Web reads prepared Workspaces; it does not unpack an entire game installation or upload resources. PS1 discs, Remake/Rebirth and unverified arbitrary MOD data are outside the verified input contract. Without private data the public text works, while unavailable geographic anchors have no map action.
 
@@ -35,13 +35,19 @@ Five direct entries call the existing feature owners; data, Viewer and Inspector
 
 The map starts with both drawers closed. **Features** opens one list; selecting an entry replaces that list with its content. **Back** returns to the same feature list; closing navigation reveals the map. GIS and settings have direct tool tabs, without an additional category/disclosure layer. An Inspector opened from content can return to that content; otherwise it returns to the map. At desktop and narrow widths, menu and Inspector are mutually exclusive and do not reduce map width. Source precision and spoiler settings remain unchanged.
 
+## Guide selection and map context
+
+Choose a guide once to open its details. In a loaded WM0 world view, a verified entrance also focuses and highlights that existing place. A parent-place reward such as Kalm Megalixir focuses Kalm and states that this is not the reward's precise location. Use Reposition to return after moving the map. Field-only rewards show their scene links without moving the globe or adding a marker. Without a Workspace, public text works without map controls. In Native or Field views, an eligible guide offers an explicit World map action; reading it does not switch spaces.
+
+Details open automatically. On narrow screens anchored place/guide details use a bottom sheet, leaving the upper map visible; desktop framing leaves the target beside the Inspector. Back restores the originating search/content. The title action is only in Features navigation, never a fixed button over map controls or the footer.
+
 ## Character Explorer
 
 After loading a matching Workspace, choose **Features → Character Explorer**. The controls are reached in two clicks: WM0 opens with **Cloud** and **On foot**. Choose Tifa, Cid or another available party model; vehicles and Chocobos are independent option groups. Click **Start Explorer**, then pick a compatible source face on the map to place the character. Use the displayed WASD/arrow/touch controls; **Exit Explorer** or Escape returns to the map. Starting still uses the original conservative terrain rules, not unrestricted gameplay movement.
 
 If the optional Explorer asset is missing, this entry remains visible and names `gaia-explorer.bin` as required. Only models actually present in the pack can be selected. WM2 retains its submarine mode; WM3 retains its local glacier/party mode. Reopening active exploration preserves the chosen model and state. Title-screen and feature-navigation keys belong to those interfaces, and held movement input pauses while they are open. Walker, model decoding, animation, collision and original-source checks remain unchanged.
 
-The application uses the stable classic deep-blue gradient and silver borders again. Guide descriptions, acquisition/rewards and enemy attributes remain readable before folded original evidence. Browser-native pickers and the existing two-stage Windows launcher are unchanged. Real rendering at 390/768/1366/1920px and virtual-keyboard behavior await human acceptance; unit checks do not establish a visual pass.
+The application uses the stable classic deep-blue gradient and silver borders again. Guide descriptions, acquisition/rewards and enemy attributes remain readable before folded original evidence. Browser-native pickers and the existing two-stage Windows launcher are unchanged. A bounded headless check measured real layouts at 390/768/1366/1920px, including guide targets and control spacing. Full visual, touch and virtual-keyboard acceptance remains manual; geometry checks do not establish a human visual pass.
 
 ## Browser first
 

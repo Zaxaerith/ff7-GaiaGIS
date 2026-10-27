@@ -19,7 +19,7 @@ export const startCatalog=[
  ['start.support','Use supported original PC data. PS1, Remake/Rebirth and unverified MOD resources are outside the verified input contract.','请使用受支持的原版 PC 数据；PS1、Remake/Rebirth 和未经验证的 MOD 不在已验证输入范围。','請使用受支援的原版 PC 資料；PS1、Remake/Rebirth 與未經驗證的 MOD 不在已驗證輸入範圍。','対応する PC 原作データを使用してください。PS1、Remake/Rebirth、未検証 MOD は検証済み入力の対象外です。','지원되는 PC 원작 데이터를 사용하세요. PS1, Remake/Rebirth 및 미검증 MOD는 검증된 입력 범위 밖입니다.'],
  ['start.privacy','Your game resources stay on your device; they are not uploaded.','游戏资源留在本机，不会上传。','遊戲資源保留在本機，不會上傳。','ゲームデータは端末内に留まり、アップロードされません。','게임 리소스는 기기에 남으며 업로드되지 않습니다.'],
  ['start.back','Back','返回','返回','戻る','뒤로'],
- ['start.return','Title screen','标题画面','標題畫面','タイトル画面','타이틀 화면'],
+ ['start.return','Return to title','返回标题','返回標題','タイトルに戻る','타이틀로 돌아가기'],
  ['start.advanced','Advanced: V1 geometry files','高级：V1 几何文件','進階：V1 幾何檔案','詳細：V1 地形ファイル','고급: V1 기하 파일'],
  ['start.advancedHint','For existing developer exports only: gaia-meta.json and gaia-mesh.bin. A Workspace folder is the usual map entry.','仅用于已有开发导出：gaia-meta.json 与 gaia-mesh.bin。普通地图加载请选择 Workspace 文件夹。','僅用於已有開發匯出：gaia-meta.json 與 gaia-mesh.bin。一般地圖載入請選擇 Workspace 資料夾。','開発用の既存出力 gaia-meta.json と gaia-mesh.bin 用です。通常は Workspace フォルダーを選びます。','기존 개발자 출력 gaia-meta.json 및 gaia-mesh.bin용입니다. 일반 지도 로딩은 Workspace 폴더를 선택하세요.'],
  ['start.advancedFiles','Advanced: individual Workspace files','高级：单独选择 Workspace 文件','進階：個別選擇 Workspace 檔案','詳細：Workspace ファイルの個別選択','고급: Workspace 파일 개별 선택'],
