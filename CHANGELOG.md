@@ -2,6 +2,9 @@
 
 ## 5.5.1 — Game Guide & Exploration UX
 
+- Rework title and application together as GaiaGIS VII — Neo-Classic: shared typography/colour/window/focus tokens, a visibly leaning original blade with local light/contact shadow, smaller title and borderless vertical text choices.
+- Start with the map unobstructed; use a single floating menu/Inspector drawer, compact four-area navigation and expandable original tool tabs. Keep map geometry, selection and all feature owners alive.
+- Present Atlas acquisition/rewards, Enemy attributes and Formation membership before shared folded evidence. Apply the same disclosures to source corners/topology endpoints and unify Field, Workspace and GIS controls/tables; coordinate the native launcher palette without changing its workflow.
 - Replace the card-based welcome with an original lightweight vector title scene, four vertical actions, inline map-unlock/help, shared five-language settings and keyboard focus. Returning to title/resuming keeps the current Workspace, map, projection and selection; WM2/WM3 and Field retain access.
 - Group existing six tool panels under four player-facing Shell sections with current-path labels, blue selection and explicit Inspector return. Coordinate the native Tk launcher with original Canvas art and folded diagnostics, preserving native selection/generation and the existing restricted loopback flow; no browser/native command bridge is added.
 - Add a non-modal first-start area with working Guide, prepared Workspace and original-PC-game paths. Reuse Explore/Quick Start and the existing Data folder selector; move individual-file/V1 entry points into advanced controls.

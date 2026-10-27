@@ -1,0 +1,80 @@
+/* SPDX-License-Identifier: GPL-3.0-only. Shared windows, content and tools; no image/font assets. */
+body.gaia-shell{font-family:var(--vii-font-family);font-size:var(--vii-font-body);line-height:1.5;background:var(--vii-bg-app);--surface-raised:var(--vii-surface);--title-bg:var(--vii-menu)}
+body.gaia-shell footer{font-size:var(--vii-font-note)}
+body.gaia-shell :is(.integrated-panel,.integrated-inspector,dialog,.explorer-hud){background:var(--vii-panel-gradient);border:1px solid var(--vii-border);border-radius:var(--vii-radius);box-shadow:var(--vii-shadow)}
+body.gaia-shell :is(h2,h3,h4){font-weight:600;letter-spacing:.015em;line-height:1.4}
+body.gaia-shell :is(.integrated-content,.integrated-inspector,[id=field-workspace]) :is(h2,h3){font-size:1.12rem}
+body.gaia-shell :is(.integrated-content,.integrated-inspector,[id=field-workspace]) h4{font-size:var(--vii-font-body);margin:16px 0 8px}
+body.gaia-shell :is(.integrated-content,.integrated-inspector,[id=field-workspace]) :is(p,label,dt,dd,li){line-height:1.6}
+body.gaia-shell :is(.control-note,.source-subtitle,.eyebrow,.menu-path){font-size:var(--vii-font-note);color:var(--vii-muted)}
+body.gaia-shell :is(button,select,input:not([type=range]):not([type=checkbox]),textarea){font:inherit;color:var(--vii-text);background:var(--vii-input);border:1px solid var(--vii-rule);border-radius:var(--vii-radius)}
+body.gaia-shell button{min-height:36px;padding:7px 10px;line-height:1.4;transition:background var(--vii-duration),border-color var(--vii-duration),color var(--vii-duration)}
+body.gaia-shell :is(button,summary):hover{color:var(--vii-text);background-color:var(--vii-surface)}
+body.gaia-shell :is(button[aria-pressed=true],button[aria-selected=true],.location-result[aria-selected=true]){background:var(--vii-selection);border-color:var(--vii-accent);box-shadow:none;color:var(--vii-text)}
+body.gaia-shell .vii-choice{position:relative;padding-left:26px;border:0;border-radius:0;box-shadow:none;text-align:left;background:transparent;color:var(--vii-text)}
+body.gaia-shell .vii-choice:before{content:'';position:absolute;left:9px;top:calc(50% - 3px);width:6px;height:6px;transform:rotate(45deg);background:var(--vii-accent);opacity:0}
+body.gaia-shell .vii-choice:is(:hover,:focus-visible,[aria-pressed=true],[aria-selected=true],[data-selected=true]){background:var(--vii-selection);border:0;box-shadow:none;color:var(--vii-accent)}
+body.gaia-shell .vii-choice:is(:hover,:focus-visible,[aria-pressed=true],[aria-selected=true],[data-selected=true]):before{opacity:1}
+body.gaia-shell :is(button,select,input,textarea,summary,a,[tabindex]):focus-visible{outline:var(--vii-focus);outline-offset:3px}
+body.gaia-shell :is(input[type=search],#location-search){padding:11px 12px;border-color:var(--vii-border);background:var(--vii-input);font-size:1rem;box-shadow:inset 0 1px 6px #0005}
+body.gaia-shell :is(input,select,textarea)[aria-invalid=true]{outline:2px solid var(--danger)}
+body.gaia-shell :is(button,select,input):disabled{color:var(--inactive);opacity:.7;cursor:not-allowed}
+body.gaia-shell :is(.vii-fold,.analysis-group,.encounter-group,.presentation-settings,.event-advanced,.traversal-inspector details,.source-inspector details,.field-card details,.integrated-content details,.integrated-inspector details,[id=field-tool-shelf] details){border:0;border-top:1px solid var(--vii-rule);border-radius:0;padding:0;margin:12px 0;background:transparent}
+body.gaia-shell :is(.vii-fold,.analysis-group,.encounter-group,.presentation-settings,.event-advanced,.traversal-inspector details,.source-inspector details,.field-card details,.integrated-content details,.integrated-inspector details,[id=field-tool-shelf] details)>summary{position:relative;list-style:none;padding:10px 8px 10px 25px;min-height:40px;box-sizing:border-box;cursor:pointer;color:var(--vii-text);font-size:var(--vii-font-body);font-weight:500}
+body.gaia-shell :is(.vii-fold,.analysis-group,.encounter-group,.presentation-settings,.event-advanced,.traversal-inspector details,.source-inspector details,.field-card details,.integrated-content details,.integrated-inspector details,[id=field-tool-shelf] details)>summary::-webkit-details-marker{display:none}
+body.gaia-shell :is(.vii-fold,.analysis-group,.encounter-group,.presentation-settings,.event-advanced,.traversal-inspector details,.source-inspector details,.field-card details,.integrated-content details,.integrated-inspector details,[id=field-tool-shelf] details)>summary:before{content:'';position:absolute;left:8px;top:18px;width:5px;height:5px;border:1px solid var(--vii-border);transform:rotate(45deg);transition:background var(--vii-duration)}
+body.gaia-shell :is(.vii-fold,.analysis-group,.encounter-group,.presentation-settings,.event-advanced,.traversal-inspector details,.source-inspector details,.field-card details,.integrated-content details,.integrated-inspector details,[id=field-tool-shelf] details)[open]>summary{background:var(--vii-selection);color:var(--vii-accent)}
+body.gaia-shell :is(.vii-fold,.analysis-group,.encounter-group,.presentation-settings,.event-advanced,.traversal-inspector details,.source-inspector details,.field-card details,.integrated-content details,.integrated-inspector details,[id=field-tool-shelf] details)[open]>summary:before{background:var(--vii-accent);border-color:var(--vii-accent)}
+body.gaia-shell :is(.vii-evidence,pre,code){font-size:var(--vii-font-note);overflow-wrap:anywhere}
+body.gaia-shell pre{padding:12px;background:var(--vii-input);color:var(--vii-muted);border:1px solid var(--vii-rule);border-radius:var(--vii-radius);white-space:pre-wrap;max-height:24rem;overflow:auto;font-variant-numeric:tabular-nums}
+body.gaia-shell .vii-content-heading{padding:2px 0 16px;border-bottom:1px solid var(--vii-rule);margin-bottom:16px}
+body.gaia-shell .vii-content-heading :is(h2,h3){margin:0 0 8px;font-size:1.35rem;line-height:1.35;color:var(--vii-text)}
+body.gaia-shell #selection-details .vii-content-heading h3{font-size:1.35rem;margin:0 0 8px}
+body.gaia-shell .vii-content-heading .vii-kicker{margin:0;color:var(--vii-accent);font-size:var(--vii-font-note);letter-spacing:.06em}
+body.gaia-shell .vii-lead{font-size:1rem;line-height:1.65;color:var(--vii-text);margin:12px 0 18px}
+body.gaia-shell .vii-section{margin:18px 0;padding:0;border:0;min-width:0}
+body.gaia-shell .vii-section>h4{color:var(--vii-accent);margin-bottom:8px}
+body.gaia-shell #gaia-intro{padding:0 0 12px;border:0;border-bottom:1px solid var(--vii-rule);border-radius:0;background:transparent}
+body.gaia-shell #gaia-intro .analysis-actions{display:flex;flex-direction:column;gap:0}
+body.gaia-shell :is(.vii-list-action,.guide-result){position:relative;border:0;border-bottom:1px solid var(--vii-rule);border-radius:0;background:transparent;text-align:left;padding:12px 12px 12px 26px;box-shadow:none}
+body.gaia-shell :is(.vii-list-action,.guide-result):is(:hover,:focus-visible,[aria-selected=true],[aria-pressed=true]){background:var(--vii-selection)}
+body.gaia-shell :is(.vii-list-action,.guide-result):is(:hover,:focus-visible,[aria-selected=true],[aria-pressed=true]):before{content:'';position:absolute;left:9px;top:calc(50% - 3px);width:6px;height:6px;background:var(--vii-accent);transform:rotate(45deg)}
+body.gaia-shell :is(.property-list,.vii-stats){font-variant-numeric:tabular-nums}
+body.gaia-shell .vii-stats:not(.property-list){display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:16px 0}
+body.gaia-shell .vii-stats:not(.property-list) dd{font-size:1.18rem;font-weight:500}
+body.gaia-shell .vii-stats dd{margin:4px 0 0}
+body.gaia-shell .vii-content-heading .selected-terrain{font-size:1.35rem;line-height:1.4;margin:0 0 8px}
+body.gaia-shell :is(.property-list,.vii-stats)>div{border-color:var(--vii-rule);gap:12px;padding:8px 0}
+body.gaia-shell :is(.property-list,.vii-stats) dt{color:var(--vii-muted);font-size:var(--vii-font-note)}
+body.gaia-shell :is(.property-list,.vii-stats) dd{color:var(--vii-text)}
+body.gaia-shell :is(.vii-evidence,.source-inspector) .property-list dd{font-size:var(--vii-font-note)}
+body.gaia-shell :is(.analysis-result,.workspace-status-card,.source-inspector,[data-source-relation],.field-place-context,.field-card){border-color:var(--vii-rule);background:transparent;border-radius:var(--vii-radius)}
+body.gaia-shell :is(.analysis-result,.workspace-status-card,[data-source-relation]){padding:12px}
+body.gaia-shell .workspace-status-card{border-left:2px solid var(--vii-accent)}
+body.gaia-shell :is([role=status],[role=alert],.analysis-result):not(:empty){line-height:1.6;overflow-wrap:anywhere}
+body.gaia-shell [role=alert]{color:var(--danger)}
+body.gaia-shell :is(.analysis-group,.source-inspector,.integrated-content,.integrated-inspector) table{width:100%;border-collapse:collapse;font-size:var(--vii-font-note);font-variant-numeric:tabular-nums;line-height:1.5}
+body.gaia-shell :is(.analysis-group,.source-inspector,.integrated-content,.integrated-inspector) :is(th,td){padding:9px 7px;border-bottom:1px solid var(--vii-rule);text-align:right;vertical-align:top}
+body.gaia-shell :is(.analysis-group,.source-inspector,.integrated-content,.integrated-inspector) th{font-weight:500;color:var(--vii-muted);background:var(--vii-menu)}
+body.gaia-shell :is(.analysis-group,.source-inspector,.integrated-content,.integrated-inspector) :is(th,td):first-child{text-align:left}
+body.gaia-shell :is(.source-inspector,.integrated-inspector) h5{font-size:var(--vii-font-body);font-weight:500;margin:16px 0 8px}
+body.gaia-shell :is(.variant-table-scroll,.regional-table-scroll){overflow-x:auto;max-width:100%}
+body.gaia-shell .analysis-actions{grid-template-columns:repeat(auto-fit,minmax(min(100%,8rem),1fr));gap:8px}
+body.gaia-shell .info .inspector-note{margin-top:20px;padding-top:12px;border-top:1px solid var(--vii-rule);font-size:var(--vii-font-note)}
+body.gaia-shell #selection-context>p:first-child{font-size:var(--vii-font-note);color:var(--vii-muted);border-bottom:1px solid var(--vii-rule);padding-bottom:10px;margin:0 0 12px}
+body.gaia-shell [id=field-workspace]{background:var(--vii-bg-app);color:var(--vii-text)}
+body.gaia-shell :is(.field-workspace-toolbar,#field-tool-shelf){background:var(--vii-panel-gradient);border-color:var(--vii-border)}
+body.gaia-shell .field-workspace-toolbar{padding:12px var(--vii-space);gap:10px}
+body.gaia-shell .field-stage{padding:var(--vii-space);gap:10px}
+body.gaia-shell :is(.field-mode-buttons,.field-canvas-controls){gap:8px}
+body.gaia-shell .field-workspace-toolbar>p{font-size:var(--vii-font-note);color:var(--vii-muted)}
+body.gaia-shell :is(.field-world-controls,#field-breadcrumb){border-top:1px solid var(--vii-rule);padding-top:8px}
+body.gaia-shell .field-legend{font-size:var(--vii-font-note);padding:8px;color:var(--vii-muted)}
+body.gaia-shell .field-node rect{fill:var(--vii-menu);stroke:var(--vii-border)}
+body.gaia-shell .field-node text{fill:var(--vii-text)}
+body.gaia-shell .field-node[aria-pressed=true] rect{stroke:var(--vii-accent)}
+body.gaia-shell :is(.analysis-panel label,.field-canvas-controls label){font-size:var(--vii-font-note)}
+body.gaia-shell :is(.field-card,.source-inspector) button{max-width:100%;white-space:normal}
+@media(max-width:900px){body.gaia-shell :is(.integrated-panel,.integrated-inspector,[id=field-workspace]) button{min-height:44px}body.gaia-shell :is(.integrated-panel,.integrated-inspector,[id=field-workspace]) summary{min-height:44px}}
+@media(max-width:540px){body.gaia-shell{--vii-space:12px}body.gaia-shell :is(input[type=search],input:not([type=checkbox]):not([type=range]),select){font-size:1rem}body.gaia-shell .analysis-actions{grid-template-columns:repeat(2,minmax(0,1fr))}body.gaia-shell .field-stage{padding:8px}body.gaia-shell .vii-content-heading :is(h2,h3){font-size:1.25rem}}
+@media(prefers-reduced-motion:reduce){body.gaia-shell :is(button,summary,.vii-content-heading){transition:none;animation:none}}

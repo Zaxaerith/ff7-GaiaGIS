@@ -11,6 +11,7 @@ import {resolveFieldAtlas,atlasEvidence,spatialStatus} from '../data/fieldContex
 import type {FieldIndex} from '../data/fieldContext';
 import {renderSpatialEvidence} from './fieldContext';
 import {mountGameplay} from './gameplay';
+import {contentHeading,evidenceSection,storySection} from './contentPresentation';
 import type {PoiDataset,Location} from '../data/poi';
 import type {GaiaViewer} from '../viewer/GaiaViewer';
 
@@ -34,36 +35,35 @@ export function mountAtlas(viewer?:GaiaViewer,getPoi?:()=>PoiDataset|null){
  const mode=()=>spoilers.value as 'hide-major'|'show-all'|'hide-all';const visible=(level:Spoiler)=>spoilerVisible(level,mode());
  const entity=(id:string)=>content.entities.find(e=>e.id===id);
  const binding=(e:AtlasEntity):AtlasBinding=>resolveFieldAtlas(e,(pack&&JSON.stringify(pack.content.entities.find(row=>row.id===e.id)?.spatialBinding)===JSON.stringify(e.spatialBinding)?pack.bindings[e.id]:null)??resolveBinding(e,poi),fields);
- function section(target:HTMLElement,key:string,open=false){const detail=document.createElement('details'),summary=document.createElement('summary');detail.open=open;summary.textContent=t(key);detail.append(summary);target.append(detail);return detail;}
+ function section(target:HTMLElement,key:string){return evidenceSection(target,t(key));}
  const paragraph=(parent:HTMLElement,text:string)=>{const node=document.createElement('p');node.textContent=text;parent.append(node);return node;};
  function card(e:AtlasEntity,target:HTMLElement){
   const old=document.getElementById('atlas-card');old?.remove();const card=document.createElement('section');card.id='atlas-card';card.className='atlas-card';card.dataset.entity=e.id;target.insertBefore(card,target.querySelector('.location-technical'));
   if(!visible(e.spoilerLevel)){paragraph(card,t('atlas.hidden'));return;}
-  const title=document.createElement('h3');title.textContent=e.localizedNames[locale()];title.tabIndex=-1;card.append(title);
+  const title=contentHeading(card,e.localizedNames[locale()],t('atlas.'+e.kind)+' · '+t('atlas.'+(e.region==='unknown'?'unknownRegion':e.region))).querySelector('h3')!;title.tabIndex=-1;
   const lang=locale(),facts=e.facts.filter(f=>visible(f.spoilerLevel));
   const cite=(host:HTMLElement,ids:string[])=>{const refs=document.createElement('span');refs.className='atlas-fact-sources';host.append(refs);for(const id of ids){const source=content.sources.find(s=>s.id===id)!;const link=document.createElement('a');link.textContent=source.provider+' · '+source.title;link.href=source.url;link.target='_blank';link.rel='noopener noreferrer';link.dataset.sourceId=id;refs.append(link);}};
-  const type=paragraph(card,t('atlas.'+e.kind)+' · '+t('atlas.'+(e.region==='unknown'?'unknownRegion':e.region)));type.className='control-note';
-  paragraph(card,e.summary[lang]);
+  paragraph(card,e.summary[lang]).className='vii-lead';
   if(guideCategory(e,'battles')){const note=paragraph(card,t('guide.battles')+' · '+t('guide.battleNote'));note.className='control-note';}
   for(const key of ['access','gameplay','discoveries'] as const){const rows=facts.filter(f=>f.text[lang]!==e.summary[lang]).filter(f=>key==='discoveries'?['reward','secret'].includes(f.kind):key==='gameplay'?['gameplay','category'].includes(f.kind):f.kind==='access');
    const children=key==='discoveries'?[...new Set([...e.secrets,...e.collectibles])].map(entity).filter((child):child is AtlasEntity=>!!child&&visible(child.spoilerLevel)):[];
-   if(!rows.length&&!children.length)continue;const group=section(card,key==='access'?'guide.access':key==='gameplay'?'guide.gameplay':'guide.rewards',true);group.dataset.atlasSection=key;
+   if(!rows.length&&!children.length)continue;const group=storySection(card,t(key==='access'?'guide.access':key==='gameplay'?'guide.gameplay':'guide.rewards'));group.dataset.atlasSection=key;
    for(const f of rows)paragraph(group,f.text[lang]);
-   for(const child of children){const button=document.createElement('button');button.textContent=child.localizedNames[lang];button.dataset.atlasEntity=child.id;button.onclick=()=>inspect(child);group.append(button);}
+   for(const child of children){const button=document.createElement('button');button.textContent=child.localizedNames[lang];button.className='vii-list-action';button.dataset.atlasEntity=child.id;button.onclick=()=>inspect(child);group.append(button);}
   }
   const relatedEntities=e.relatedEntities.map(entity).filter((child):child is AtlasEntity=>!!child&&visible(child.spoilerLevel));
-  if(relatedEntities.length){const related=section(card,'atlas.related',true);related.dataset.atlasSection='related';for(const child of relatedEntities){const button=document.createElement('button');button.textContent=child.localizedNames[lang];button.dataset.atlasEntity=child.id;button.onclick=()=>inspect(child);related.append(button);}}
-  const b=binding(e),map=document.createElement('section');map.className='guide-map';map.dataset.atlasSection='map';card.append(map);const mapTitle=document.createElement('h4');mapTitle.textContent=t('guide.map');map.append(mapTitle);
+  if(relatedEntities.length){const related=storySection(card,t('atlas.related'));related.dataset.atlasSection='related';for(const child of relatedEntities){const button=document.createElement('button');button.textContent=child.localizedNames[lang];button.className='vii-list-action';button.dataset.atlasEntity=child.id;button.onclick=()=>inspect(child);related.append(button);}}
+  const b=binding(e),map=storySection(card,t('guide.map'));map.classList.add('guide-map');map.dataset.atlasSection='map';
   // Authored parent/scene associations remain useful offline; only a validated
   // entrance binding can claim a verified map entrance or supply a marker.
   const precision=guidePrecision(e,b);
-  paragraph(map,t('guide.'+precision));
+  paragraph(map,t('guide.'+precision)).className='vii-kicker';
   if(precision==='parent'||e.spatialBinding.kind==='field_parent')paragraph(map,t('guide.parentNote'));
   if(precision==='field'||e.spatialBinding.kind==='field_parent')paragraph(map,t('guide.fieldNote'));
   const anchor=atlasAnchor(b,poi),parent=atlasAnchor(b,poi,true);
   if(viewer&&(anchor||parent)){const button=document.createElement('button');button.id='atlas-fly';button.textContent=t(anchor?'guide.fly':'guide.flyParent');button.onclick=()=>{const context=anchor??parent!;viewer.flyToLocation(context.entrance.longitude,context.entrance.latitude);if(innerWidth<1100)document.getElementById('collapse-inspector')?.click();};map.append(button);if(!anchor)paragraph(map,t('atlas.parentLocation')+' · '+parent!.location.display_name);}
   else paragraph(map,t('guide.noMap'));
-  const fieldHost=document.createElement('section');fieldHost.dataset.atlasSection='field';card.append(fieldHost);
+  const fieldHost=document.createElement('section');fieldHost.className='vii-section';fieldHost.dataset.atlasSection='field';card.append(fieldHost);
   const requestedNames=e.spatialBinding.fieldNames??b.fieldNames;
   if(requestedNames.length){const names=paragraph(fieldHost,t('guide.field')+' · '+requestedNames.join(', '));names.className='control-note';}
   document.dispatchEvent(new CustomEvent('gaiagis:field-context',{detail:{host:fieldHost,locationId:b.locationId??e.spatialBinding.locationId??null,names:requestedNames}}));
@@ -86,7 +86,7 @@ export function mountAtlas(viewer?:GaiaViewer,getPoi?:()=>PoiDataset|null){
   for(const button of shortcuts.querySelectorAll<HTMLButtonElement>('button')){const name=button.dataset.guideCategory!;button.textContent=t('guide.'+name);button.setAttribute('aria-pressed',String(name===guideFilter));}
   const matches=searchAtlas(content,input.value,locale(),mode(),category.value as AtlasCategory,region.value,kind.value).filter(e=>guideCategory(e,guideFilter)&&(spatialFilter.value==='all'||spatialStatus(binding(e).precision)===spatialFilter.value));
   const totalPages=Math.max(1,Math.ceil(matches.length/pageSize));page=Math.min(page,totalPages-1);count.textContent=t('guide.count',{count:matches.length,total:content.entities.length});guideList.replaceChildren();
-  for(const e of matches.slice(page*pageSize,(page+1)*pageSize)){const button=document.createElement('button');button.type='button';button.dataset.guideEntity=e.id;button.className='guide-result';const name=document.createElement('strong'),kind=document.createElement('span');name.textContent=e.localizedNames[locale()];kind.textContent=t('guide.open')+' · '+t('atlas.'+e.kind);button.append(name,kind);button.onclick=()=>inspect(e);guideList.append(button);}
+  for(const e of matches.slice(page*pageSize,(page+1)*pageSize)){const button=document.createElement('button');button.type='button';button.dataset.guideEntity=e.id;button.className='guide-result vii-list-action';const name=document.createElement('strong'),kind=document.createElement('span');name.textContent=e.localizedNames[locale()];kind.textContent=t('guide.open')+' · '+t('atlas.'+e.kind);button.append(name,kind);button.onclick=()=>inspect(e);guideList.append(button);}
   if(!matches.length){const note=document.createElement('p');note.textContent=t('guide.noMatches');guideList.append(note);}
   pages.replaceChildren();if(totalPages>1){const previous=document.createElement('button'),next=document.createElement('button'),position=document.createElement('span');previous.textContent=t('guide.previous');next.textContent=t('guide.next');position.textContent=t('guide.page',{page:page+1,pages:totalPages});previous.disabled=page===0;next.disabled=page===totalPages-1;previous.onclick=()=>{page--;drawGuide();};next.onclick=()=>{page++;drawGuide();};pages.append(previous,position,next);}
   battleNote.hidden=eventsButton.hidden=guideFilter!=='battles';battleNote.textContent=t('guide.battleNote');eventsButton.textContent=t('guide.events');eventsButton.disabled=!viewer;

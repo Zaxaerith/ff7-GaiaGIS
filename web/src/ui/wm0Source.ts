@@ -6,6 +6,7 @@ import type {SourceEvidenceResources,SourceEvidenceStatus} from '../analysis/sou
 import {appStore} from '../app/state';
 import {findNavigation} from '../app/navigation';
 import {ResourceScope} from '../app/resources';
+import {evidenceSection} from './contentPresentation';
 import type {GaiaMeta} from '../data/mesh';
 import type {GaiaViewer} from '../viewer/GaiaViewer';
 import {t,locale,onLocaleChange,formatNumber} from '../i18n';
@@ -53,9 +54,9 @@ export function mountWM0Source(viewer:GaiaViewer,meta:GaiaMeta,getResources:()=>
  function renderInspector(){
   if(!selected?.host.isConnected||!usable())return;const {face,host,context}=selected;host.querySelector('#wm0-source-inspector')?.remove();const geometry=source(),lineage=geometry.source(face),m=geometry.metrics(face),e=evidenceIndex().query(lineage);
   const section=document.createElement('section');section.id='wm0-source-inspector';section.className='source-inspector';section.dataset.sourceId=`${lineage.section}/${lineage.mesh}/${lineage.triangle}`;section.dataset.sourceFace=String(face);section.dataset.queryKind=context?.kind??'selection';section.dataset.wrapOffset=String(context?.source.wrapOffset??0);section.dataset.identity=e.identityKey??'';
-  const heading=document.createElement('h3');heading.textContent=t('source.selection');section.append(heading);properties(section,[[t('ui.source'),'WM0 · '+section.dataset.sourceId],[t('source.rawCorners'),geometry.corners(face).map(p=>p.join(', ')).join(' / ')],[t('native.area'),formatNumber(m.area,3)],[t('source.diagnostics'),`${Number(m.zeroXZ)} / ${Number(m.degenerate3D)} / ${'duplicateCount'in m?m.duplicateCount:1}`]]);
+  const heading=document.createElement('h3');heading.textContent=t('source.selection');section.append(heading);properties(section,[[t('ui.source'),'WM0 · '+section.dataset.sourceId],[t('native.area'),formatNumber(m.area,3)]]);
   if(context)properties(section,[[t('source.queryContext'),describe(context)],[t('source.wrap'),String(context.source.wrapOffset)]]);
-  const raw=document.createElement('details'),rawTitle=document.createElement('summary'),hash=document.createElement('p'),rawNote=document.createElement('p');rawTitle.textContent=t('atlas.technical');hash.className=rawNote.className='control-note';hash.textContent='wm0.map · SHA-256 '+lineage.sourceSHA;rawNote.textContent=t('source.rawUnavailable');raw.append(rawTitle,hash,rawNote);section.append(raw);
+  const raw=evidenceSection(section,t('atlas.technical')),hash=document.createElement('p'),rawNote=document.createElement('p');hash.className=rawNote.className='control-note';hash.textContent='wm0.map · SHA-256 '+lineage.sourceSHA;rawNote.textContent=t('source.rawUnavailable');raw.append(hash,rawNote);properties(raw,[[t('source.rawCorners'),geometry.corners(face).map(p=>p.join(', ')).join(' / ')],[t('source.diagnostics'),`${Number(m.zeroXZ)} / ${Number(m.degenerate3D)} / ${'duplicateCount'in m?m.duplicateCount:1}`]]);
   const relations=document.createElement('h4'),relationNote=document.createElement('p');relations.textContent=t('source.relations');relationNote.className='control-note';relationNote.textContent=t('source.relationScope');section.append(relations,relationNote);
   function group(key:string,value:SourceEvidenceStatus,count:number){const card=document.createElement('div'),label=document.createElement('h4');card.dataset.sourceRelation=key;card.dataset.relationStatus=value;label.textContent=t(key)+' · '+(value==='linked'?String(count):statusText(value));card.append(label);section.append(card);return card;}
   function link(host:HTMLElement,kind:'event'|'entrance'|'location'|'atlas'|'field',id:string,text:string,action?:()=>void){const b=document.createElement('button');b.type='button';b.textContent=text;b.dataset['source'+kind[0].toUpperCase()+kind.slice(1)]=id;b.disabled=!action;b.onclick=action??null;host.append(b);}

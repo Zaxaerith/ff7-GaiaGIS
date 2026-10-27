@@ -1,41 +1,40 @@
-/* SPDX-License-Identifier: GPL-3.0-only */
-.atlas-card {border-top:1px solid #9ecafa;margin-top:12px;padding-top:8px;}
-.atlas-card h3 {font-size:1rem;margin:4px 0 8px;}
-.atlas-card details {margin:6px 0;padding:5px 0;border-bottom:1px solid #526489;}
-.atlas-card summary {cursor:pointer;font-weight:600;}
-.atlas-card p {margin:7px 0;line-height:1.45;overflow-wrap:anywhere;}
-.atlas-card button,.atlas-card a {display:block;margin:6px 0;max-width:100%;text-align:left;overflow-wrap:anywhere;}
-.atlas-card a {color:#bbdcff;}
-.guide-heading h2 {margin:0 0 8px;}
-.guide-heading .control-note {margin-bottom:10px;}
-.guide-categories {display:flex;flex-wrap:wrap;gap:6px;}
-.guide-categories button {flex:1 1 42%;text-align:left;}
-#guide-count {font-size:.8rem;margin:8px 0;}
-#guide-results {display:grid;gap:6px;}
-.guide-result {width:100%;text-align:left;display:grid;gap:4px;}
-.guide-result span {font-size:.75rem;color:var(--subtle);}
-.guide-pages {display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px;font-size:.8rem;}
-.guide-pages span {text-align:center;}
-#game-guide,.guide-map-options {margin:10px 0 14px;min-width:0;}
-.guide-map-options>summary {cursor:pointer;margin-bottom:10px;}
-.guide-map {border:1px solid var(--rim);padding:8px;margin-top:10px;border-radius:4px;}
-.guide-map h4 {margin:0;}
-#atlas-card [data-atlas-section=technical] {margin-top:12px;}
-#gameplay-explorer {margin:12px 0;min-width:0;}
-#gameplay-explorer button,.gameplay-evidence button {display:block;text-align:left;width:100%;margin:5px 0;}
-#gameplay-explorer .guide-pages button {width:auto;}
-#gameplay-explorer pre,.gameplay-evidence pre,#selection-details[data-gameplay] pre {white-space:pre-wrap;overflow-wrap:anywhere;max-height:20rem;overflow:auto;font-size:.75rem;}
-#selection-details[data-gameplay] button {display:block;text-align:left;max-width:100%;margin:6px 0;}
-#atlas-filters select {width:100%;margin:4px 0 7px;}
-#atlas-filters label {display:block;}
-#atlas-layers label {display:flex;align-items:center;gap:6px;margin:7px 0;}
-.atlas-marker i {border-radius:0;transform:rotate(45deg);background:#79e2ef;border:2px solid #263959;box-shadow:0 0 0 1px white;}
-.atlas-marker {z-index:2;}
-@media(max-width:700px){
- .atlas-card {max-height:45dvh;overflow-y:auto;overscroll-behavior:contain;padding-right:4px;}
- .atlas-card button {min-height:36px;}
-}
-
+/* SPDX-License-Identifier: GPL-3.0-only. Content follows the shared Neo-Classic tokens. */
+body.gaia-shell .atlas-card{border:0;margin:0;padding:0;max-height:none;overflow:visible}
+body.gaia-shell .atlas-card :is(p,li){line-height:1.65}
+.atlas-card button,.atlas-card a{display:block;margin:6px 0;max-width:100%;text-align:left;overflow-wrap:anywhere}
+.guide-heading h2{margin:0 0 8px}.guide-heading .control-note{margin-bottom:14px}
+.guide-categories{display:flex;gap:4px;overflow-x:auto;scrollbar-width:thin;padding:0 0 8px;scroll-snap-type:x proximity}
+body.gaia-shell .guide-categories button{flex:0 0 auto;min-height:44px;padding:8px 12px;border:0;border-bottom:1px solid transparent;border-radius:0;background:transparent;font-size:var(--vii-font-note);color:var(--vii-muted);white-space:nowrap;scroll-snap-align:start}
+body.gaia-shell .guide-categories button[aria-pressed=true]{border-bottom-color:var(--vii-accent);color:var(--vii-text);box-shadow:none;background:var(--vii-selection)}
+#guide-count{font-size:var(--vii-font-note);margin:10px 0;color:var(--vii-muted)}
+#guide-results{display:flex;flex-direction:column;gap:0}
+body.gaia-shell .guide-result{width:100%;display:grid;gap:5px;text-align:left;border:0;border-bottom:1px solid var(--inner);border-radius:0;padding:14px 14px 14px 26px;background:transparent;position:relative;min-height:64px;box-shadow:none}
+body.gaia-shell .guide-result strong{font-weight:550;font-size:var(--vii-font-body);color:var(--vii-text)}
+.guide-result span{font-size:var(--vii-font-note);color:var(--vii-muted)}
+body.gaia-shell .guide-result:is(:hover,:focus-visible){background:var(--vii-selection);border-color:var(--inner)}
+body.gaia-shell .guide-result:before{content:'';position:absolute;left:9px;top:23px;width:5px;height:5px;transform:rotate(45deg);border:1px solid var(--vii-accent);opacity:0}
+body.gaia-shell .guide-result:is(:hover,:focus-visible):before{opacity:1}
+.guide-pages{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:12px;font-size:var(--vii-font-note)}
+.guide-pages span{text-align:center}.guide-pages button{min-width:44px}
+#game-guide,.guide-map-options{margin:12px 0 18px;min-width:0}
+.guide-map-options>summary{cursor:pointer;margin-bottom:10px}
+body.gaia-shell .guide-map{border:0;border-left:2px solid var(--vii-accent);padding:0 0 0 12px;background:transparent;border-radius:0}
+#atlas-card [data-atlas-section=technical]{margin-top:20px}
+#gameplay-explorer{margin:20px 0;min-width:0;border-top:1px solid var(--inner);padding-top:12px}
+#gameplay-explorer>summary{font-size:var(--vii-font-menu);color:var(--vii-text);padding-block:10px}
+#gameplay-explorer button,.gameplay-evidence button{display:block;text-align:left;width:100%;margin:5px 0}
+#gameplay-explorer .guide-pages button{width:auto}
+#gameplay-explorer pre,.gameplay-evidence pre,#selection-details[data-gameplay] pre{white-space:pre-wrap;overflow-wrap:anywhere;max-height:20rem;overflow:auto;font-size:var(--vii-font-note)}
+#selection-details[data-gameplay] button{display:block;text-align:left;max-width:100%;margin:6px 0}
+#atlas-filters{margin:12px 0;padding:0 0 8px;border-bottom:1px solid var(--inner)}
+#atlas-filters>summary{min-height:36px;line-height:36px;cursor:pointer}
+#atlas-filters select{width:100%;margin:4px 0 12px}#atlas-filters label{display:block;font-size:var(--vii-font-note)}
+#atlas-layers label{display:flex;align-items:center;gap:6px;margin:7px 0}
+.atlas-marker i{border-radius:0;transform:rotate(45deg);background:var(--vii-accent);border:2px solid var(--vii-menu);box-shadow:0 0 0 1px var(--vii-text)}
+.atlas-marker{z-index:2}
+.atlas-fact-sources{display:block;font-size:var(--vii-font-note);margin-top:var(--space-1)}
+.atlas-fact-sources a{display:inline-block;margin:2px 8px 2px 0}
+@media(max-width:700px){.guide-categories{padding-bottom:10px}body.gaia-shell .atlas-card button{min-height:44px}}
 /* Field topology is a diagram, never a geographic map. */
 .field-place-context,.field-card{overflow-wrap:anywhere;max-width:100%;min-width:0}
 .field-place-context button,.field-card button{display:block;max-width:100%;margin:var(--space-2) 0;white-space:normal;text-align:left}
@@ -51,8 +50,8 @@
 
 .spatial-evidence li { overflow-wrap: anywhere; margin-block: .45rem; }
 
-.atlas-fact-sources {display:block;font-size:.8em;margin-top:var(--space-1);}
-.atlas-fact-sources a {display:inline-block;margin:2px 8px 2px 0;}
+
+
 .field-triangle-details pre { white-space:pre-wrap;overflow-wrap:anywhere;font-size:.8rem; }
 
 /* The shared viewport keeps world instances alive while Field borrows its surface. */

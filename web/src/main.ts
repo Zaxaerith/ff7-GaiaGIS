@@ -21,6 +21,8 @@ import './styles/discovery.css';
 import './styles/user-mapping.css';
 import './styles/atlas.css';
 import './styles/welcome.css';
+import './styles/neo-classic.css';
+import {evidenceSection} from './ui/contentPresentation';
 import {updateWorkspaceConnection,cancelWorkspaceImport,workspaceConnection} from './app/workspaceUX';
 import {mountLayout} from './ui/layout';
 import {loadMesh,readLocalDataset,MissingDatasetError} from './data/mesh';
@@ -154,13 +156,14 @@ async function start(provided?:{mesh:GaiaMesh;meta:GaiaMeta}){
       if(source===null){appStore.dispatch({type:'select',selection:null});element('coordinates').textContent='';return;}
       document.querySelector('.controls')!.classList.remove('mobile-open');mobileButton.setAttribute('aria-expanded','false');
       const a=mesh.attributes(source);const detail=element('selection-details');detail.replaceChildren();
+      const identity=document.createElement('header');identity.className='vii-content-heading';detail.append(identity);
       const terrain=document.createElement('div');terrain.className='selected-terrain';
       const swatch=document.createElement('i');swatch.style.background=a.origin?distinguishedCapColor:terrainPalette[a.terrain!];
-      const name=document.createElement('span');name.textContent=a.origin?t('inspect.ocean'):meta.terrain_names[a.terrain!]||`Terrain ${a.terrain}`;terrain.append(swatch,name);detail.append(terrain);
-      const region=document.createElement('p');region.className='selected-region';region.textContent=a.origin?(a.origin===1?t('inspect.northCap'):t('inspect.southCap')):meta.region_names[a.region!]||`Region ${a.region}`;detail.append(region);
-      const origin=document.createElement('span');origin.className='origin-badge'+(a.origin?' synthetic':'');origin.textContent=a.origin?t('inspect.cap'):t('inspect.geometry');detail.append(origin);
-      const addProperties=(rows:[string,string][])=>{const list=document.createElement('dl');list.className='property-list';for(const [label,value]of rows){const row=document.createElement('div'),dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=value;row.append(dt,dd);list.append(row);}detail.append(list);};
-      if(!a.origin) addProperties([[t('ui.source'),`WM${a.map}`],[t('map.space'),'WM0Native → GaiaGeographic (V1)'],[t('ui.section'),String(a.section)],[t('ui.mesh'),String(a.mesh)],[t('ui.triangle'),String(a.triangle)],[t('ui.terrainID'),String(a.terrain)],[t('ui.regionID'),String(a.region)],[t('ui.scriptTexture'),`${a.script} / ${a.texture}`]]);
+      const name=document.createElement('span');name.textContent=a.origin?t('inspect.ocean'):meta.terrain_names[a.terrain!]||`Terrain ${a.terrain}`;terrain.append(swatch,name);identity.append(terrain);
+      const region=document.createElement('p');region.className='selected-region vii-kicker';region.textContent=a.origin?(a.origin===1?t('inspect.northCap'):t('inspect.southCap')):meta.region_names[a.region!]||`Region ${a.region}`;identity.append(region);
+      const origin=document.createElement('span');origin.className='origin-badge'+(a.origin?' synthetic':'');origin.textContent=a.origin?t('inspect.cap'):t('inspect.geometry');identity.append(origin);
+      const addProperties=(rows:[string,string][],host:HTMLElement=detail)=>{const list=document.createElement('dl');list.className='property-list vii-stats';for(const [label,value]of rows){const row=document.createElement('div'),dt=document.createElement('dt'),dd=document.createElement('dd');dt.textContent=label;dd.textContent=value;row.append(dt,dd);list.append(row);}host.append(list);};
+      if(!a.origin) addProperties([[t('ui.source'),`WM${a.map}`],[t('map.space'),'WM0Native → GaiaGeographic (V1)'],[t('ui.section'),String(a.section)],[t('ui.mesh'),String(a.mesh)],[t('ui.triangle'),String(a.triangle)],[t('ui.terrainID'),String(a.terrain)],[t('ui.regionID'),String(a.region)],[t('ui.scriptTexture'),`${a.script} / ${a.texture}`]],evidenceSection(detail,t('atlas.technical')));
       else {const note=document.createElement('p');note.className='synthetic-note';note.textContent=t('inspect.synthetic');detail.append(note);addProperties([[t('inspect.capFace'),String(a.capTriangle)]]);}
       let sin=0,cos=0,lat=0,height=0;
       for(let j=0;j<3;j++){const i=mesh.indices[source*3+j]*3,l=mesh.geographic[i]*Math.PI/180,p=mesh.geographic[i+1]*Math.PI/180;sin+=Math.sin(l)*Math.cos(p);cos+=Math.cos(l)*Math.cos(p);lat+=mesh.geographic[i+1]/3;height+=mesh.geographic[i+2]/3;}

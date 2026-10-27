@@ -13,3 +13,9 @@ export function menuIndex(key:string,current:number,length:number){
  if(key==='ArrowLeft'||key==='ArrowUp')return (current-1+length)%length;
  return null;
 }
+
+/** Both desktop and narrow layouts expose one drawer, without touching Viewer state. */
+export function presentDrawer(menu:HTMLElement,inspector:HTMLElement,target:'menu'|'inspector'|null,menuButton:HTMLElement,inspectorButton:HTMLElement){
+ menu.classList.toggle('open',target==='menu');inspector.classList.toggle('open',target==='inspector');
+ menuButton.setAttribute('aria-expanded',String(target==='menu'));inspectorButton.setAttribute('aria-expanded',String(target==='inspector'));
+}

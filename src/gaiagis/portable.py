@@ -45,16 +45,19 @@ def _draw_launch_scene(canvas, width, height):
     sx=width/680;sy=height/164
     def polygon(points,fill,outline=''):
         canvas.create_polygon(*[value*(sx if i%2==0 else sy) for i,value in enumerate(points)],fill=fill,outline=outline,tags='scene')
-    # A quiet light cone and an abstract broad blade, deliberately not a game asset.
-    for points,color in [((493,0,398,164,645,164,550,0),'#07101d'),((503,0,435,164,608,164,540,0),'#0b192b'),((512,0,471,164,577,164,532,0),'#10233a')]:polygon(points,color)
-    canvas.create_oval(412*sx,143*sy,626*sx,160*sy,fill='#05080e',outline='',tags='scene')
-    polygon((518,161,495,72,519,56,546,144),'#465b6c','#8099ac')
-    polygon((518,161,519,56,527,59,531,146),'#91aab8')
-    polygon((489,74,487,65,527,52,531,61),'#263b50','#6a90b0')
-    polygon((500,60,491,26,500,23,511,56),'#1b2838','#536e87')
-    polygon((490,29,487,20,499,16,502,25),'#526f86')
-    canvas.create_text(28*sx,58*sy,text='GaiaGIS',anchor='w',fill='#edf4ff',font=('TkDefaultFont',34),tags='scene')
-    canvas.create_line(30*sx,91*sy,196*sx,91*sy,fill='#589dd0',width=2,tags='scene')
+    # Local light and a diagonal broad blade. All ground marks meet its sunk tip.
+    for points,color in [((558,0,443,164,601,164,579,0),'#08122a'),((563,0,472,164,573,164,573,0),'#0d1d39')]:polygon(points,color)
+    canvas.create_oval(419*sx,144*sy,575*sx,163*sy,fill='#0a1630',outline='',tags='scene')
+    polygon((495,153,490,159,367,162,465,153),'#01040b')
+    polygon((528,55,565,79,495,158,476,135),'#506e8a','#9ec5ee')
+    polygon((565,79,571,83,500,158,495,158),'#142a47','#45688c')
+    polygon((528,55,534,59,483,135,495,158,476,135),'#c4d9e9')
+    polygon((545,68,550,72,492,145,495,158,486,140),'#8faec4')
+    polygon((522,48,530,41,576,73,570,82),'#244f82','#9ec5ee')
+    polygon((550,50,565,58,590,19,577,12),'#102447','#87aacd')
+    polygon((577,12,590,19,595,10,582,2),'#7397b6','#b3d1ec')
+    canvas.create_text(28*sx,58*sy,text='GaiaGIS',anchor='w',fill='#f3f7ff',font=('TkDefaultFont',28),tags='scene')
+    canvas.create_line(30*sx,86*sy,165*sx,86*sy,fill='#65d4ff',width=1,tags='scene')
 
 
 def launch_window():
@@ -78,19 +81,19 @@ def launch_window():
         'stop':('Close / Stop','关闭／停止','關閉／停止','閉じる / 停止','닫기 / 중지'),
         'cancel':('Cancel after current resource','当前资源完成后取消','目前資源完成後取消','現在のリソース完了後に中止','현재 리소스 완료 후 취소'),
     }
-    window=tk.Tk();window.title('GaiaGIS '+__version__);window.geometry('680x660');window.minsize(560,620);window.configure(background='#050912')
+    window=tk.Tk();window.title('GaiaGIS '+__version__);window.geometry('680x660');window.minsize(560,620);window.configure(background='#030712')
     style=ttk.Style(window);style.theme_use('clam')
-    style.configure('Gaia.TFrame',background='#050912')
-    style.configure('Gaia.TLabel',background='#050912',foreground='#c9d8eb',font=('TkDefaultFont',10))
-    style.configure('Title.Gaia.TLabel',foreground='#89c8ff',font=('TkDefaultFont',13))
-    style.configure('Gaia.TButton',background='#101f34',foreground='#edf4ff',bordercolor='#365878',padding=(12,8),font=('TkDefaultFont',10))
-    style.map('Gaia.TButton',background=[('pressed','#234a70'),('active','#173958'),('disabled','#10151e')],foreground=[('disabled','#718093')],bordercolor=[('focus','#a0d6ff')])
-    style.configure('Primary.Gaia.TButton',background='#143754',bordercolor='#73b9ef')
-    style.configure('Gaia.TEntry',fieldbackground='#0c1726',foreground='#edf4ff',insertcolor='#edf4ff',bordercolor='#365878',padding=7)
-    style.configure('Gaia.TCombobox',fieldbackground='#0c1726',foreground='#edf4ff',background='#152a43',arrowcolor='#9bceff',padding=5)
-    style.map('Gaia.TCombobox',fieldbackground=[('readonly','#0c1726')],foreground=[('readonly','#edf4ff'),('disabled','#718093')])
-    style.configure('Gaia.Horizontal.TProgressbar',background='#6ebcff',troughcolor='#101d2f',bordercolor='#1f354e',lightcolor='#6ebcff',darkcolor='#6ebcff')
-    scene=tk.Canvas(window,height=132,background='#050912',highlightthickness=0);scene.pack(fill='x');scene.bind('<Configure>',lambda e:_draw_launch_scene(scene,e.width,e.height))
+    style.configure('Gaia.TFrame',background='#030712')
+    style.configure('Gaia.TLabel',background='#030712',foreground='#bacce5',font=('TkDefaultFont',10))
+    style.configure('Title.Gaia.TLabel',foreground='#f3f7ff',font=('TkDefaultFont',13))
+    style.configure('Gaia.TButton',background='#0b1c50',foreground='#f3f7ff',bordercolor='#9ec5ee',borderwidth=1,padding=(12,8),font=('TkDefaultFont',10))
+    style.map('Gaia.TButton',background=[('pressed','#174c9b'),('active','#123777'),('disabled','#091229')],foreground=[('disabled','#7487a5')],bordercolor=[('focus','#65d4ff')])
+    style.configure('Primary.Gaia.TButton',background='#174c9b',bordercolor='#65d4ff')
+    style.configure('Gaia.TEntry',fieldbackground='#07132d',foreground='#f3f7ff',insertcolor='#f3f7ff',bordercolor='#9ec5ee',padding=7)
+    style.configure('Gaia.TCombobox',fieldbackground='#07132d',foreground='#f3f7ff',background='#0b1c50',arrowcolor='#65d4ff',padding=5)
+    style.map('Gaia.TCombobox',fieldbackground=[('readonly','#07132d')],foreground=[('readonly','#f3f7ff'),('disabled','#7487a5')])
+    style.configure('Gaia.Horizontal.TProgressbar',background='#65d4ff',troughcolor='#0b1c50',bordercolor='#9ec5ee',lightcolor='#65d4ff',darkcolor='#65d4ff')
+    scene=tk.Canvas(window,height=132,background='#030712',highlightthickness=0);scene.pack(fill='x');scene.bind('<Configure>',lambda e:_draw_launch_scene(scene,e.width,e.height))
     frame=ttk.Frame(window,padding=(20,8,20,12),style='Gaia.TFrame');frame.pack(fill='both',expand=True)
     top=ttk.Frame(frame,style='Gaia.TFrame');top.pack(fill='x')
     title=ttk.Label(top,style='Title.Gaia.TLabel');title.pack(side='left')
@@ -105,7 +108,7 @@ def launch_window():
     more=ttk.Button(frame,style='Gaia.TButton');more.pack(anchor='w',pady=(8,0))
     diagnostics=ttk.Frame(frame,style='Gaia.TFrame')
     workspace_label=ttk.Label(diagnostics,wraplength=620,style='Gaia.TLabel');workspace_label.pack(fill='x')
-    details=tk.Text(diagnostics,height=3,wrap='word',state='disabled',background='#0a1320',foreground='#c9d8eb',insertbackground='#edf4ff',relief='flat',borderwidth=0,font='TkFixedFont');details.pack(fill='both',expand=True,pady=4)
+    details=tk.Text(diagnostics,height=3,wrap='word',state='disabled',background='#07132d',foreground='#bacce5',insertbackground='#f3f7ff',relief='flat',borderwidth=0,font='TkFixedFont');details.pack(fill='both',expand=True,pady=4)
     events=queue.Queue();cancel=threading.Event();worker=None;server=None;last_state='idle';last_detail='';close_pending=False;show_details=False
     def text(key):return messages[key][language.current()]
     def refresh():

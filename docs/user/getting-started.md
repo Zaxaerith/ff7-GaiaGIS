@@ -32,7 +32,15 @@ Four player-facing groups call the original six tool panels; feature owners, dat
 | Map & GIS analysis | Analysis, Map, View/projections and Layers |
 | Data & settings | Data/Workspace/Save/source diagnostics and View/UI settings |
 
-The current group/tool path stays visible. Close menu reveals the map; **Back** closes the Inspector without deleting the selection. On narrow screens menu and Inspector take turns instead of competing for width. Source precision, spoiler settings and raw-source folds remain unchanged.
+The current group/tool path stays visible. The map starts with both drawers closed. **Menu** opens four compact text choices; choosing one folds the category list and shows its content. Expand **Tools in this section** to reach the original panel tabs. Close menu reveals the map; **Back** closes the Inspector without deleting the selection. At desktop and narrow widths, one floating drawer is shown at a time; drawers do not reduce the world/native viewport width. Escape closes an expanded navigation layer before closing its drawer. Source precision and spoiler settings remain unchanged.
+
+## Neo-Classic interface
+
+Title, Shell, Atlas, Gameplay details, Source Inspector and Field tools share the same system fonts, blue gradient windows, thin silver-blue borders, cyan diamond choices, input styles and evidence disclosures. The original title illustration now has a visibly leaning blade, distinct face/bevel/side planes and a shadow at the inserted tip. Its smaller heading and text-only choices leave the scene largely black.
+
+Guide descriptions, acquisition methods and rewards are readable first. Enemy details show name, Level/HP/MP and formation membership before the original records. Technical hashes, Actor/script offsets, original source corners and topology endpoints remain available under closed **Raw source and technical details** disclosures. Area, slope, region/terrain IDs and GIS numeric values keep their original meaning; the theme does not alter analysis. Field toolbar/tool shelf, statistical tables and Workspace status use the same shared visual primitives. The optional scientific colour preference uses the same layout and interaction rules.
+
+Deep Field registration/palette labs and older drawing/tour forms inherit the shared windows and controls, while retaining their existing specialist layouts. Browser-native pickers and operating-system window chrome remain native. Actual rendering, touch/virtual-keyboard behavior and Windows DPI still require human acceptance; no automated browser visual claim is made.
 
 ## Browser first
 

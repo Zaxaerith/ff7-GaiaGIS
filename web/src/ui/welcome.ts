@@ -45,7 +45,7 @@ export function mountWelcome(activate:Activate){
  const guides=button(nav,'welcome-guides','start.gameGuides',()=>{leave();startGuides(activate);});menuButtons.push(guides);
  const workspace=button(nav,'welcome-workspace','start.loadWorkspace',()=>{leave();startWorkspace(activate);});menuButtons.push(workspace);
  const settings=button(nav,'welcome-settings','start.settings',()=>show('settings',settings));menuButtons.push(settings);
- for(const b of menuButtons)scope.listen(b,'focus',()=>{for(const item of menuButtons)item.dataset.selected=String(item===b);});menuButtons[0].dataset.selected='true';
+ for(const b of menuButtons){b.className='vii-choice';scope.listen(b,'focus',()=>{for(const item of menuButtons)item.dataset.selected=String(item===b);});}menuButtons[0].dataset.selected='true';
  const panel=(id:Screen,key:string)=>{const p=document.createElement('section');p.className='welcome-subview';p.id='welcome-'+id+'-panel';p.tabIndex=-1;make('h2',p,key);panels.set(id,p);content.append(p);return p;};
  const unlock=panel('unlock','start.unlock');make('p',unlock,'start.unlockHint');
  button(unlock,'welcome-unlock-guides','start.guides',()=>{leave();startGuides(activate);});
@@ -56,7 +56,7 @@ export function mountWelcome(activate:Activate){
  const release=make('a',windows,'start.releases') as HTMLAnchorElement;release.href=RELEASES_URL;release.target='_blank';release.rel='noopener noreferrer';make('p',windows,'start.staticNote');make('p',windows,'start.support');make('p',windows,'start.privacy');
  const options=panel('settings','start.settings');
  const languageLabel=make('label',options,'nav.language');languageLabel.setAttribute('for','welcome-language');const language=document.createElement('select');language.id='welcome-language';for(let i=0;i<locales.length;i++){const option=document.createElement('option');option.value=locales[i];option.textContent=localeNames[i];language.append(option);}scope.listen(language,'change',()=>setLocale(language.value as ReturnType<typeof locale>));options.append(language);
- button(options,'welcome-interface','start.interface',()=>{leave();activate('view');document.getElementById('app-tab-view')?.focus();});
+ button(options,'welcome-interface','start.interface',()=>{leave();activate('view');document.getElementById('panel-tools-summary')?.focus();});
  button(options,'welcome-data-help','start.dataHelp',()=>{leave();startWorkspace(activate);const help=document.getElementById('workspace-help') as HTMLDetailsElement|null;if(help)help.open=true;});
  const advanced=document.createElement('details');advanced.id='welcome-advanced';make('summary',advanced,'start.advanced');make('p',advanced,'start.advancedHint');
  const actions=document.querySelector<HTMLElement>('.loading-actions'),parent=actions?.parentNode,next=actions?.nextSibling;if(actions)advanced.append(actions);options.append(advanced);

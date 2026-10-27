@@ -6,6 +6,7 @@ import type {RoutingData} from '../data/routing';
 import type {GaiaViewer} from '../viewer/GaiaViewer';
 import {sourceGeographic} from '../explorer/coordinates';
 import {ResourceScope} from '../app/resources';
+import {evidenceSection} from './contentPresentation';
 import {appStore} from '../app/state';
 import {t,onLocaleChange,formatNumber} from '../i18n';
 import {sourceResultPager} from './surfaceQueries';
@@ -50,7 +51,7 @@ export function mountWM0Topology(viewer:GaiaViewer,getSource:()=>WM0Source,usabl
   for(const [name,values]of [['rawNeighbors',comparison.raw],['periodicNeighbors',comparison.periodic],['routingNeighbors',comparison.routing],...(comparison.reason?[]:[['geometryOnly',comparison.geometryOnly],['routingOnly',comparison.routingOnly]])] as [string,number[]][]){make('h5',section,t('topology.'+name));faceList(section,'wm0-topology-'+name,values);}
   const duplicates=index.duplicates(face);if(duplicates.length>1){make('h5',section,t('topology.duplicate')+` × ${duplicates.length}`);faceList(section,'wm0-topology-duplicates',duplicates);}
   for(const edge of index.face(face)){
-   const card=make('section',section);card.dataset.topologyEdge=String(edge.slot);make('h5',card,t('topology.edge',{slot:edge.slot,count:edge.incidence}));make('pre',card,`raw (X,Z,Y) A [${edge.a.join(', ')}] → B [${edge.b.join(', ')}]`);
+   const card=make('section',section);card.dataset.topologyEdge=String(edge.slot);make('h5',card,t('topology.edge',{slot:edge.slot,count:edge.incidence}));make('pre',evidenceSection(card,t('atlas.technical')),`raw (X,Z,Y) A [${edge.a.join(', ')}] → B [${edge.b.join(', ')}]`);
    make('p',card,[edge.boundary?'boundary':edge.incidence===2?'regular':null,edge.nonmanifold?'nonmanifold':null,edge.collapsed?'collapsed':null,edge.duplicate?'duplicate':null,edge.repeated?'repeated':null,edge.geometricAmbiguous?'ambiguous':null].filter(Boolean).map(k=>t('topology.'+k)).join(' · '));
    make('p',card,t('topology.'+(edge.uniqueRaw?'uniqueRaw':'allReferences')));
    const refs=sourceResultPager(card,`wm0-topology-edge-${edge.slot}`,r=>`${identity(r.face)} · ${t('topology.slot',{slot:r.slot})}${r.face!==face&&!comparison.reason?' · CSR '+(comparison.routing.includes(r.face)?'✓':'—'):''}`,(r:{face:number;slot:number})=>choose(r.face));refs.set(edge.references);own.own(()=>refs.dispose());
