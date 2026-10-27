@@ -2,6 +2,9 @@
 
 ## 5.5.1 — Game Guide & Exploration UX
 
+- Add a non-modal first-start area with working Guide, prepared Workspace and original-PC-game paths. Reuse Explore/Quick Start and the existing Data folder selector; move individual-file/V1 entry points into advanced controls.
+- Show onboarding only when the current map is unavailable. Preserve automatic launcher adoption, manual validation/errors and session-only connection state; a remembered Quick Start preference never stands in for loaded geometry. Add five-language inline Windows instructions and an unversioned Releases link.
+
 - Add optional private Gameplay Evidence: source-pinned Field item/Materia/battle/flag instructions, Scene/Formation/Enemy identities and kernel names, without executing scripts or inferring chests, claim flags or reward coordinates.
 - Join verified static Field/World battle operands and positive-weight world encounter records to original formations. Keep byte/code-word offsets, conditions and missing/partial decoding explicit; preserve duplicate identities.
 - Add two exact reviewed EN Godo/Snow source profiles linking existing guides to Field BATTLE/Actor/Formation evidence. Modified fingerprints do not inherit Boss semantics. Retain 58 Atlas entries and 19 rewards.

@@ -14,5 +14,5 @@ function fixture(){
   return root;
 }
 it('accepts an executable code-only artifact with notices',()=>expect(auditRelease(fixture())).toMatchObject({source_only:true,game_derived_files:0}));
-it.each(['gaia-meta.json','assets/gaia-mesh.bin','gaia-field-walkmesh.bin','assets/map.png','assets/viewer.js.map'])('rejects unexpected release content %s',name=>{const root=fixture();writeFileSync(join(root,name),'Unapproved');expect(()=>auditRelease(root)).toThrow(/Unexpected release file/);});
+it.each(['gaia-meta.json','assets/gaia-mesh.bin','gaia-field-walkmesh.bin','gaia-gameplay.json','scene.bin','kernel.bin','flevel.lgp','assets/map.png','assets/viewer.js.map'])('rejects unexpected release content %s',name=>{const root=fixture();writeFileSync(join(root,name),'Unapproved');expect(()=>auditRelease(root)).toThrow(/Unexpected release file/);});
 it('rejects a data directory even if empty',()=>{const root=fixture();mkdirSync(join(root,'data'));expect(()=>auditRelease(root)).toThrow(/directory/);});

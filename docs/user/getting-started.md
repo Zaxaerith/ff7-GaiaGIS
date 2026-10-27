@@ -2,7 +2,23 @@
 
 GaiaGIS is a local-first GIS viewer of the original Final Fantasy VII world. Public delivery contains code, authored knowledge and open-source runtimes; game-derived assets come from your own installation.
 
-The Web Viewer is the main interface. The Windows launcher is an optional way to prepare a private Workspace and start its local browser server. **v4.1.0 has completed browser human acceptance.** Use its bundled or locally built Web Viewer for the new optional interaction resource. Hosted Pages deployment is separate from the Windows Release and may still show an older version.
+The Web Viewer is the main interface. Pages/static Web, the Windows launcher and a source checkout are three different ways to start. Hosted Pages and Windows Releases are published separately and can show different versions. This local v5.5.1 candidate still awaits the user's unified human acceptance.
+
+## Choose your start
+
+When no valid map is rendered, the centre shows a compact welcome area:
+
+| Choice | What it does | Required input |
+|---|---|---|
+| **Explore FF7 Guides** | Opens the existing Explore panel, search and Quick Start | None: read the 58 authored Atlas entries, subject to spoiler settings |
+| **Open Workspace** | Opens Data and focuses the existing Workspace Folder button | A GaiaGIS-generated folder containing `gaia-workspace.json` |
+| **Start from Original FF7** | Shows five Windows steps and the official [Releases page](https://github.com/Zaxaerith/ff7-GaiaGIS/releases) | A supported, legally held original FF7 PC installation/data folder |
+
+Guides include treasures, Materia, secrets and boss clues. Their three Quick Start actions remain **Find a Materia**, **Find a hidden place** and **How to obtain a treasure**. Choosing guides explicitly expands this existing section even if it was previously collapsed. The small **Back to getting started** button returns to the three choices; the Windows steps also support Back/Escape. There is no blocking modal or additional search system.
+
+A Workspace is converted GaiaGIS output, **not the raw game directory**. Static Web reads prepared Workspaces; it does not unpack an entire game installation or upload resources. PS1 discs, Remake/Rebirth and unverified arbitrary MOD data are outside the verified input contract. Without private data the public text works, while unavailable geographic anchors have no map action.
+
+The welcome area yields to a currently rendered, validated map, whether loaded manually or supplied automatically by the Windows launcher. It does not infer a connection from a prior visit. `gaiagis.seenIntro` only remembers whether Quick Start was collapsed; it does not suppress current-session connection guidance. Failed choices retain the existing validation message and a way to select another folder. If a bad replacement is rejected while the previous map is still valid, that map remains available.
 
 ## Browser first
 
@@ -15,7 +31,7 @@ npm --prefix web run build:release
 npm --prefix web run preview:release
 ```
 
-Open `http://127.0.0.1:5175/`. If you already have a private Workspace, choose **Data → Workspace Folder**, then select its folder containing `gaia-workspace.json`. The browser does not need the EXE, Python or QGIS to read it. Folder import is explicit and session-local: after a page refresh, select the folder again. Missing optional resources receive an unavailable notice; source-only Atlas/search remain usable.
+Open `http://127.0.0.1:5175/`. Read guides directly, or use **Open Workspace → Data → Workspace Folder** to select its generated folder containing `gaia-workspace.json`. The button uses the existing native folder picker or directory-input fallback; it never asks you to guess binary files. **Advanced: individual Workspace files** and the original V1 metadata/mesh pair are retained for developer exports. The browser does not need the EXE, Python or QGIS to read a Workspace. Folder import is explicit and session-local: after a page refresh, select it again. Missing optional resources receive an unavailable notice; source-only Atlas/search remain usable.
 
 To create a Workspace from source, use the [source checkout instructions](#source-checkout) below; to create it without developer tools, use the approved Windows portable package. Supply the supported original **FF7 PC data**, including the matching `data/wm` and `data/field` resources for Field features. Supported installation/data/wm/workingdir layouts are discovered by the existing parser. Copied complete supported data folders need no running FF7.exe. PS1 discs, arbitrary ports and Remake/Rebirth are outside this format contract.
 
@@ -25,7 +41,7 @@ When an approved version's GitHub Release contains a Windows ZIP, extract the en
 
 If validation fails, select the installation root again and use Start / Retry; Remake/Rebirth folders and folders without the required original-game data are not supported. Details identify the missing input. Cancellation waits for the current resource to finish; restarting checks which completed resources can be reused. Closing the launcher stops its local server. Occupied/reserved ports are skipped automatically.
 
-Explore contains a compact Start exploring section: Find a place, My Save, My map, Routes and Game data help. It can be collapsed and reopened without a welcome overlay. Data shows the current connection; the detailed resource inventory is optional. Atlas Fly-to is directly available when a verified anchor (or clearly labelled parent-place anchor) exists; raw source details remain folded.
+A valid launcher-provided Workspace enters the map directly without another manual picker or welcome overlay. Automatic loading uses the existing loopback capability and source/hash checks; static Pages does not probe that service. Explore retains the game Quick Start and folded GIS/session tools (places, Save, drawing, routes and data help). Data identifies the actual automatic/manual connection. Atlas map actions still require a verified anchor or clearly labelled parent place; source details remain folded.
 
 Local candidate ZIPs are developer validation products, not official Release artifacts. Source ZIP/TAR downloads alone are not Windows executables.
 

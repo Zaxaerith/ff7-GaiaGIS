@@ -4,13 +4,17 @@ A local-first GIS reconstruction of the original FINAL FANTASY VII world, with a
 
 ## Quick start
 
-The **Web Viewer is the main interface**. Open the [public Viewer](https://zaxaerith.github.io/ff7-GaiaGIS/) for authored Atlas/search and local user tools. For original map and Field data, first create a private Workspace from your legally held original FF7 PC data, then choose **Data → Workspace Folder** in that same browser Viewer. Select the generated folder containing `gaia-workspace.json`, not the game directory. [Browser setup and Workspace creation](docs/user/getting-started.md).
+The **Web Viewer is the main interface**. Open the [public Viewer](https://zaxaerith.github.io/ff7-GaiaGIS/); when no map is connected, choose one of three starts:
+
+1. **Explore FF7 Guides** opens the existing Explore search, categories and three game shortcuts. Public guides work without a Workspace.
+2. **Open Workspace** takes you to **Data → Workspace Folder**. Select a GaiaGIS-generated folder containing `gaia-workspace.json`, not the original game directory. Individual binary files are an advanced option.
+3. **Start from Original FF7** explains how to get the official Windows ZIP from [Releases](https://github.com/Zaxaerith/ff7-GaiaGIS/releases), extract it completely and run `GaiaGIS.exe`. The launcher reads supported original PC data, generates/reuses a private Workspace and opens the local Web Viewer automatically.
+
+Static Web does not unpack an FF7 installation. Game resources stay on your device; PS1, Remake/Rebirth and unverified MOD inputs are outside the verified contract. A live connection hides the welcome area. [Browser, Windows and developer instructions](docs/user/getting-started.md).
 
 **v5.5.1 — Game Guide & Exploration UX** puts Places, Treasures & Rewards, Materia, Secrets and Boss clues in **Explore → FF7 Game Guide**. Browse the existing 58 authored entries (subject to spoiler settings), including Kalm's Megalixir, Knights of the Round and the Wutai Pagoda challenge, without a Workspace. Cards distinguish an entrance from a parent place or Field association; private data enables verified map actions. [Guide navigation](docs/user/navigation.md#game-guide-v551) · [Data formats, actual size and database boundaries](docs/reference/data-formats-and-scale.md).
 
 An optional private **Original game evidence** asset adds Field grant/battle instructions, original formations and enemies with source-language names. The same Explore search and Inspector connect verified script identities to existing guides, including two exact EN Godo/Snow profiles. Static grants are not chest counts or saved collection status; no reward coordinates or runtime behavior are inferred. [Incremental generation and evidence limits](docs/reference/data-formats-and-scale.md#可选-gameplay-evidencev551).
-
-For Windows players, an approved [Release](https://github.com/Zaxaerith/ff7-GaiaGIS/releases) ZIP supplies **GaiaGIS.exe** to create/connect the Workspace and open that browser interface. Extract the whole ZIP to a writable folder, select the original FF7 data and keep the launcher open. No Python or Node installation is needed by the portable runtime.
 
 **GaiaGIS v5.5.0 — Regional Terrain Statistics** adds Global, By Region and By Terrain views for original WM0 BASE records. Cross-table face counts and raw² area contributions retain zero-area and duplicate sources, with explicit denominators, raw height, slope/aspect summaries and paged Source Inspector links. Original IDs and spherical navigation centers stay unchanged; no Workspace regeneration is needed. [Statistics method and limits](docs/reference/spatial-analysis.md#regional-terrain-statistics-v55).
 

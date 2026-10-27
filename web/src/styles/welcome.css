@@ -1,0 +1,26 @@
+/* SPDX-License-Identifier: GPL-3.0-only. Non-modal start content in the existing viewport. */
+.welcome{position:absolute;inset:0;z-index:11;display:flex;flex-direction:column;align-items:center;padding:20px;box-sizing:border-box;overflow:auto;pointer-events:none}
+.welcome[hidden],.welcome [hidden]{display:none!important}
+.welcome-card{width:100%;max-width:54rem;flex-shrink:0;margin-block:auto;padding:20px;border:2px solid var(--rim);border-radius:8px;background:var(--window-gradient);box-shadow:var(--window-shadow);box-sizing:border-box;pointer-events:auto}
+.welcome h2{font-size:1.45rem!important;margin:0 0 8px}
+body.gaia-shell .welcome p,body.gaia-shell .welcome li{color:var(--ink);font-size:.88rem;line-height:1.5;overflow-wrap:anywhere}
+.welcome-card>p{margin:8px 0 14px}
+.welcome-choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,13rem),1fr));gap:12px}
+.welcome-choice{min-width:0;padding:12px;border:1px solid var(--rim);border-radius:6px;background:var(--surface-raised)}
+.welcome-choice:first-child{border-color:var(--accent)}
+body.gaia-shell .welcome button{width:100%;white-space:normal;min-height:44px;line-height:1.35;font-weight:600}
+.welcome-choice:first-child button{border-color:var(--accent);color:var(--accent)}
+.welcome-choice p{margin:10px 0 0}
+.welcome-original-help{margin-top:12px;border-top:1px solid var(--rim);padding-top:10px}
+.welcome-original-help ol{padding-left:24px}
+.welcome-original-help li{margin:4px 0}
+body.gaia-shell .welcome a{display:inline-block;color:var(--accent);padding:8px 0;overflow-wrap:anywhere}
+.welcome-original-help button{max-width:10rem}
+#welcome-advanced{font-size:.8rem;margin-top:12px}
+#welcome-advanced summary{cursor:pointer;padding:6px 0}
+#welcome-advanced .loading-actions{padding:0;justify-content:flex-start}
+#welcome-advanced .loading-actions button{width:auto;font-weight:400}
+.welcome-return{pointer-events:auto;margin-block:auto;max-width:20rem}
+.welcome-active>.loading.needs-data,.welcome-active>.view-caption,.welcome-active>.navigation-tools,.welcome-active>.zoom-controls,.welcome-active>#view-center{display:none}
+#welcome-status:not([hidden]){border-left:3px solid var(--accent);padding-left:10px}
+@media(max-width:700px){.welcome{padding:12px}.welcome-card{padding:14px}.welcome-choices{grid-template-columns:minmax(0,1fr);gap:8px}.welcome-choice{padding:10px}.welcome h2{font-size:1.25rem!important}.welcome-choice p{margin-top:6px}}
