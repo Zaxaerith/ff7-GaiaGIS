@@ -192,5 +192,56 @@ cell. Selecting/sorting/paging does not rescan geometry. Current Source/Viewer
 ownership clears the cache and selections on Workspace/map/Field/Variant/Explorer
 transitions or disposal. Existing spherical Region navigation centers keep their
 own weights and are not reinterpreted as raw² centers. X periodic display does
-not duplicate records; Z is not periodic. No Region components, polygons,
-hydrology, coverage union or original-runtime verification is included.
+not duplicate records; Z is not periodic. Region components use the separate
+v5.6 tool below; polygons, hydrology, coverage union and original-runtime
+verification are not included.
+
+## Regional connectivity and boundaries (v5.6.0)
+
+Input is the same WM0 BASE source and exact three-dimensional edge index used
+by Topology Evidence. Synthetic caps and projection copies are excluded. Each
+source face remains a node, including duplicates and zero-horizontal-area faces.
+Strict Raw (A) joins two different owners only when the edge has exactly two
+occurrences, passes `uniqueRaw`, both faces are nondegenerate in 3D and their
+original Region IDs agree. Vertical valid faces can connect; common vertices,
+XY-only contact, proximity and Routing CSR cannot establish these edges.
+
+Strict + Confirmed X Periodicity (B) adds only the existing confirmed west/east
+pairs after checking valid owners and the same Region. These raw edges each
+still have incidence one; they are not required to pass ordinary two-owner
+`uniqueRaw`. Z never wraps. Component identity is source SHA, Region, A/B and
+the minimum source-face ID, which may be zero. Duplicate geometry is not merged:
+ambiguous edges cannot connect it, while its nodes and raw² contributions remain.
+
+Confirmed cross-Region edges are counted once. Their length is
+`hypot(delta X, delta Z)` in raw units, not 3D slant distance, metres or km.
+Open edges, geometric ambiguity and confirmed X pairs have separate lists.
+There is no polygon union, automatic closure, repair or physical land-use claim.
+The source-derived counters can differ for other supported inputs; no research
+counts are used as a browser fallback.
+
+Selected components use an independent translucent source-mapped overlay;
+base colour, traversal, service-area and current source selection retain their
+own buffers. Selected Region/pair boundaries use projected line segments,
+including the existing antimeridian cut and projection morph handling. Raw
+west/east identities remain separate; no west-to-east chord is drawn. Turning
+off or clearing these overlays restores the underlying map state.
+
+POI representatives and complete trigger sets map through the exact
+SHA/Section/Mesh/Triangle lineage. Multiple entrances can span Regions or
+components. Atlas parent bindings are explicitly parent-place context;
+Field-only identities without a WM0 source cannot acquire membership or a
+reward marker. This is static geometric evidence, not entry availability,
+collision, story state or a replacement for routing components.
+
+Source/Topology are shared by their current Viewer owner. Clearing one analysis
+does not invalidate the other tool's borrowed index. Partitions/member indices
+and boundary occurrences are cached for sorting/paging and released on data or
+spatial-mode lifecycle changes. The interactive path cooperatively schedules
+small batches of the same topology/partition algorithm; cancellation discards
+unfinished results. Existing synchronous consumers retain the same index/API.
+Displayed preparation time includes scheduling waits, not just CPU work.
+No Workspace asset, Manifest change or database
+is required. Browser performance and the limited local checks are recorded in
+the ignored current development report; Node research timing is not a browser
+performance guarantee.

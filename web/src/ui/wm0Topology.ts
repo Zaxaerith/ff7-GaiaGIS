@@ -12,7 +12,7 @@ import {t,onLocaleChange,formatNumber} from '../i18n';
 import {sourceResultPager} from './surfaceQueries';
 
 /** Borrows the current Source/Viewer/CSR owners; no resource loader or overlay. */
-export function mountWM0Topology(viewer:GaiaViewer,getSource:()=>WM0Source,usable:()=>boolean,getRouting:()=>RoutingData|null,selectFace:(face:number)=>void){
+export function mountWM0Topology(viewer:GaiaViewer,getSource:()=>WM0Source,usable:()=>boolean,getRouting:()=>RoutingData|null,selectFace:(face:number)=>void,borrowTopology?:()=>WM0Topology){
  const scope=new ResourceScope(),box=document.createElement('details');box.id='wm0-topology';box.className='analysis-group surface-query-panel';
  const make=(tag:string,host:HTMLElement,text='')=>{const e=document.createElement(tag);e.textContent=text;host.append(e);return e;};
  const title=make('summary',box),note=make('p',box),build=make('button',box) as HTMLButtonElement,clear=make('button',box) as HTMLButtonElement,status=make('p',box),stats=make('div',box),label=make('label',box),filter=make('select',label) as HTMLSelectElement,count=make('p',box);
@@ -64,10 +64,10 @@ export function mountWM0Topology(viewer:GaiaViewer,getSource:()=>WM0Source,usabl
   const request=++ticket;preparing=true;failed=false;render();renderInspector();
   await new Promise<void>(resolve=>{frame=requestAnimationFrame(()=>{frame=0;resolve();});});
   if(scope.disposed||request!==ticket||!usable())return;
-  try{source=getSource();index=createWM0Topology(source);}catch(e){failed=true;status.title=String(e);}
+  try{source=getSource();index=borrowTopology?borrowTopology():createWM0Topology(source);}catch(e){failed=true;status.title=String(e);}
   if(scope.disposed||request!==ticket||!usable())return;preparing=false;render();renderInspector();
  }
- function reset(){ticket++;if(frame)cancelAnimationFrame(frame);frame=0;preparing=failed=false;lastRouting=null;selected=undefined;discardInspector();if(source)releaseWM0Topology(source);source=undefined;index=undefined;filterValue='all';pager.set([]);stats.replaceChildren();for(const k of ['faces','edgeKeys','prepareMs'])delete box.dataset[k];status.removeAttribute('title');render();}
+ function reset(){ticket++;if(frame)cancelAnimationFrame(frame);frame=0;preparing=failed=false;lastRouting=null;selected=undefined;discardInspector();if(source&&!borrowTopology)releaseWM0Topology(source);source=undefined;index=undefined;filterValue='all';pager.set([]);stats.replaceChildren();for(const k of ['faces','edgeKeys','prepareMs'])delete box.dataset[k];status.removeAttribute('title');render();}
  build.onclick=()=>void prepare();clear.onclick=reset;filter.onchange=()=>{filterValue=filter.value as TopologyFilter;render();};scope.listen(box,'toggle',()=>{if(box.open)void prepare();});
  let available=usable();scope.own(appStore.subscribe(()=>{const next=usable();box.hidden=appStore.state.map.id!=='WM0'||appStore.state.view.spatial!=='world';if(available&&!next)reset();available=next;
   const graph=next?getRouting():null;if(graph!==lastRouting){lastRouting=graph;renderInspector();}

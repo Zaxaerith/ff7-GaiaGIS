@@ -13,15 +13,26 @@ const bits:Record<TopologyFilter,number>={all:0,boundary:BOUNDARY,nonmanifold:NO
 const cache=new WeakMap<WM0Source,WM0Topology>();
 export type WM0Topology=ReturnType<typeof buildTopology>;
 export function createWM0Topology(source:WM0Source){let value=cache.get(source);if(!value){value=buildTopology(source);cache.set(source,value);}return value;}
+/** The same builder, cooperatively scheduled only when an interactive owner asks. */
+export async function prepareWM0Topology(source:WM0Source,pause:()=>Promise<void>,current:()=>boolean){
+ const previous=cache.get(source);if(previous)return previous;
+ const steps=topologySteps(source);
+ try {let step=steps.next();while(!step.done){await pause();if(!current())throw new DOMException('Topology superseded','AbortError');const shared=cache.get(source);if(shared)return shared;step=steps.next();}cache.set(source,step.value);return step.value;}
+ finally {steps.return(undefined as never);}
+}
 export function releaseWM0Topology(source:WM0Source){cache.delete(source);}
 
 function buildTopology(source:WM0Source){
+ const steps=topologySteps(source);let step=steps.next();while(!step.done)step=steps.next();return step.value;
+}
+function* topologySteps(source:WM0Source){
  const began=performance.now(),n=source.count,total=n*3;
  const faceFlags=new Uint8Array(n),edgeFor=new Uint32Array(total),leader=new Uint32Array(n),duplicateNext=new Int32Array(n).fill(-1);
  const vertices=new Map<string,number>(),edges=new Map<string,number>(),faces=new Map<string,number>();
  const counts:number[]=[],flags:number[]=[],sides:number[]=[],seams=new Map<string,[number,number]>();
  let duplicateExcess=0,duplicateGroups=0;
  for(let face=0;face<n;face++){
+  if(face&&face%2048===0)yield;
   const points=source.corners(face);if(points.length!==3)throw Error('WM0 topology source triangle');points.forEach(nativePoint);
   const ids=points.map(p=>{const key=p.join(',');let id=vertices.get(key);if(id===undefined){id=vertices.size;vertices.set(key,id);}return id;});
   const faceKey=ids.slice().sort((a,b)=>a-b).join('/'),first=faces.get(faceKey);leader[face]=first??face;
@@ -40,12 +51,13 @@ function buildTopology(source:WM0Source){
    edgeFor[face*3+slot]=edge;counts[edge]++;
   }
  }
- const offsets=new Uint32Array(edges.size+1);for(let e=0;e<counts.length;e++)offsets[e+1]=offsets[e]+counts[e];
- const owners=new Uint32Array(total),cursor=offsets.slice(0,-1);for(let o=0;o<total;o++)owners[cursor[edgeFor[o]]++]=o;
+ const offsets=new Uint32Array(edges.size+1);for(let e=0;e<counts.length;e++){offsets[e+1]=offsets[e]+counts[e];if(e&&e%16384===0)yield;}
+ const owners=new Uint32Array(total),cursor=offsets.slice(0,-1);for(let o=0;o<total;o++){owners[cursor[edgeFor[o]]++]=o;if(o&&o%16384===0)yield;}
  const edgeFlags=Uint8Array.from(flags),side=Uint8Array.from(sides),partner=new Int32Array(edges.size).fill(-1),confirmed=new Uint8Array(edges.size);
  const incidence:Record<number,number>={},multiplicity:Record<number,number>={};
  let collapsedKeys=0,collapsedOccurrences=0,repeatedKeys=0,repeatedOccurrences=0,duplicateEdges=0,geometricAmbiguous=0,periodicPairs=0,periodicEdges=0,periodicUnresolved=0;
  for(let e=0;e<counts.length;e++){
+  if(e&&e%8192===0)yield;
   const count=counts[e];incidence[count]=(incidence[count]??0)+1;
   if(count===1)edgeFlags[e]|=BOUNDARY;else if(count>2)edgeFlags[e]|=NONMANIFOLD;
   let repeated=0,hasDuplicate=false;
@@ -63,6 +75,7 @@ function buildTopology(source:WM0Source){
  }
  let unresolvedEdges=0;
  for(let e=0;e<counts.length;e++){
+  if(e&&e%8192===0)yield;
   if(side[e]){periodicEdges++;if(!confirmed[e]){periodicUnresolved++;edgeFlags[e]|=AMBIGUOUS;}}
   unresolvedEdges+=Number(!!(edgeFlags[e]&AMBIGUOUS));
   // Duplicate filter means actual duplicate faces, not every adjacent face.
@@ -72,6 +85,11 @@ function buildTopology(source:WM0Source){
  const filtered=new Map<TopologyFilter,number[]>();
  const valid=(face:number)=>{if(!Number.isInteger(face)||face<0||face>=n)throw Error('WM0 topology face');};
  const refs=(edge:number)=>Array.from(owners.subarray(offsets[edge],offsets[edge+1]),o=>({face:Math.floor(o/3),slot:o%3}));
+ const link=(e:number)=>{const f=edgeFlags[e],opposite=partner[e];return {id:e,occurrence:owners[offsets[e]],incidence:offsets[e+1]-offsets[e],references:refs(e),
+  boundary:!!(f&BOUNDARY),collapsed:!!(f&COLLAPSED),nonmanifold:!!(f&NONMANIFOLD),duplicate:!!(f&DUPLICATE),repeated:!!(f&REPEATED),geometricAmbiguous:!!(f&(COLLAPSED|NONMANIFOLD|DUPLICATE|REPEATED)),ambiguous:!!(f&AMBIGUOUS),
+  uniqueRaw:offsets[e+1]-offsets[e]===2&&!(f&(COLLAPSED|NONMANIFOLD|DUPLICATE|REPEATED)),
+  periodic:{side:side[e]===1?'west' as const:side[e]===2?'east' as const:null,status:!side[e]?'none' as const:confirmed[e]?'paired' as const:opposite<0?'unmatched' as const:'ambiguous' as const,edge:opposite<0?null:opposite,references:opposite<0?[]:refs(opposite)}};};
+ const describe=(e:number,occurrence=owners[offsets[e]],points=source.corners(Math.floor(occurrence/3)))=>{const slot=occurrence%3;return {...link(e),occurrence,slot,a:points[slot],b:points[(slot+1)%3],key:[points[slot].join(','),points[(slot+1)%3].join(',')].sort().join('|')};};
  const summary={faces:n,vertexRecords:total,uniqueVertices:vertices.size,edgeKeys:edges.size,edgeRecords:total,incidence,
   boundaryEdges:incidence[1]??0,regularEdges:incidence[2]??0,nonmanifoldEdges:Object.entries(incidence).reduce((s,[k,v])=>s+(Number(k)>2?v:0),0),
   collapsedKeys,collapsedOccurrences,repeatedKeys,repeatedOccurrences,duplicateGroups,duplicateFaces:duplicateExcess+duplicateGroups,duplicateExcess,duplicateEdges,multiplicity,
@@ -80,15 +98,12 @@ function buildTopology(source:WM0Source){
  // incidence/occurrence indices; ordered corner records remain in WM0Source.
  vertices.clear();edges.clear();faces.clear();seams.clear();
  return {source,summary,
+  /** Visits the original edge index once, without rebuilding edge keys/corners. */
+  *uniqueEdges(){for(let e=0;e<offsets.length-1;e++)yield link(e);},
+  edge(id:number){if(!Number.isInteger(id)||id<0||id>=offsets.length-1)throw Error('WM0 topology edge');return describe(id);},
   faces(filter:TopologyFilter){let rows=filtered.get(filter);if(!rows){rows=[];for(let f=0;f<n;f++)if(!bits[filter]||faceFlags[f]&bits[filter])rows.push(f);filtered.set(filter,rows);}return rows;},
   duplicates(face:number){valid(face);const rows=[leader[face]];for(let i=duplicateNext[leader[face]];i>=0;i=duplicateNext[i])rows.push(i);return rows.sort((a,b)=>a-b);},
-  face(face:number){valid(face);const points=source.corners(face);return [0,1,2].map(slot=>{
-   const e=edgeFor[face*3+slot],f=edgeFlags[e],opposite=partner[e],references=refs(e);
-   return {id:e,slot,a:points[slot],b:points[(slot+1)%3],key:[points[slot].join(','),points[(slot+1)%3].join(',')].sort().join('|'),incidence:offsets[e+1]-offsets[e],references,
-    boundary:!!(f&BOUNDARY),collapsed:!!(f&COLLAPSED),nonmanifold:!!(f&NONMANIFOLD),duplicate:!!(f&DUPLICATE),repeated:!!(f&REPEATED),geometricAmbiguous:!!(f&(COLLAPSED|NONMANIFOLD|DUPLICATE|REPEATED)),ambiguous:!!(f&AMBIGUOUS),
-    uniqueRaw:offsets[e+1]-offsets[e]===2&&!(f&(COLLAPSED|NONMANIFOLD|DUPLICATE|REPEATED)),
-    periodic:{side:side[e]===1?'west':side[e]===2?'east':null,status:!side[e]?'none':confirmed[e]?'paired':opposite<0?'unmatched':'ambiguous',edge:opposite<0?null:opposite,references:opposite<0?[]:refs(opposite)}};
-   });}
+  face(face:number){valid(face);const points=source.corners(face);return [0,1,2].map(slot=>describe(edgeFor[face*3+slot],face*3+slot,points));}
  };
 }
 

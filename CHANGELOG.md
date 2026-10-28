@@ -1,5 +1,12 @@
 # Changelog
 
+## 5.6.0 — WM0 Regional Connectivity & Boundary Explorer
+
+- Add lazy, source-derived Region components under Strict Raw (A) and Strict + Confirmed X Periodicity (B). Preserve every BASE face, raw Region ID and area contribution; isolate ambiguous duplicate/degenerate relations and use the minimum source-face ID, including zero, as component identity.
+- Query confirmed Region adjacency/boundary segments separately from open edges, ambiguous candidates and X seam pairs. Keep exact three-dimensional edge identity and raw X/Z lengths without polygon union, Z wrapping or traversal claims.
+- Highlight one component and display selected Region/pair boundaries in the existing map and projections, independently of Routing, service-area, traversal and source-selection state. Reuse source-face paging and Inspector navigation.
+- Associate validated POI representatives and complete trigger-face sets with component sets; retain multi-entrance locations and parent/Field-only Atlas precision. Share the existing Source/Topology lifecycle without new Workspace assets or formats.
+
 ## 5.5.1 — Game Guide & Exploration UX
 
 - Move Return to title into the existing Features navigation footer; remove its fixed map overlay and preserve the loaded map/session when returning.

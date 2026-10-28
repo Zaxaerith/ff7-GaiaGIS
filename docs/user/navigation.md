@@ -471,3 +471,39 @@ metadata can be research data. **Release reference frame**, Camera/Field changes
 Workspace replacement and World return release the image and points. No image is
 uploaded or included in a shared link. Without a real frame the Lab clearly says
 that original-runtime reference evidence is absent.
+
+## Regional connectivity and boundaries (v5.6.0)
+
+With your existing WM0 Workspace loaded, open **Features → GIS analysis →
+Regional Connectivity & Boundaries** and calculate. Nothing is generated or
+uploaded. Without the supported private WM0 source the tool is unavailable.
+
+Choose **A: Strict Raw** or **B: Strict + Confirmed X Periodicity**. Overview
+shows original face/Region counts, strict components, isolated duplicate nodes,
+confirmed boundaries and seam influence. These are geometric components, not
+walking/routing reachability. A duplicate-related singleton is not an island.
+
+Select an original Region, sort its components, and choose one to show its
+source-face range. Use the highlight checkbox to remove only this overlay.
+Source-face lists are paged, at most 50 per page; selecting a face opens the
+existing Source Inspector and focuses that source on the current projection.
+The minimum component ID may be zero.
+
+The adjacency view lists confirmed Region pairs and raw X/Z lengths. Choose a
+Region/pair and enable boundary lines to see its confirmed segments. Separate
+edge lists expose open edges, ambiguous candidates and X seam pairs with their
+original edge IDs, XYZ and owners. These lines do not form an automatically
+closed region polygon. West/east seam identities remain separate; Z does not
+connect.
+
+Content associations show an entrance's representative and complete trigger
+component set. Gongaga and HP↔MP Cave have multiple trigger components; Mythril
+Mine's two entrances span two Regions. A parent-place Atlas association describes
+the parent entrance, not the reward location. Field-only entries without a
+world source remain unassigned. Existing guide/Field actions retain their own
+precision and spoiler rules.
+
+Clear resets this tool's choices and overlays, preserving map colouring, route,
+service-area and source-selection owners. Switching Workspace/map or entering
+Field, Explorer or World Variants clears this analysis state through the existing
+lifecycle. The five main entries and classic blue interface are unchanged.

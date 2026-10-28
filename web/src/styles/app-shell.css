@@ -112,9 +112,9 @@ body.gaia-shell:has(.integrated-panel.open) .integrated-inspector{display:none}
  #app-docks{inset:calc(var(--shell-header) + 4px) 4px calc(var(--shell-footer) + 4px)}
  body.gaia-shell :is(.integrated-panel,.integrated-inspector){inset:0;width:100%;height:100%;max-height:100%;box-sizing:border-box;margin:0;padding:12px}
  body.gaia-shell .integrated-panel[data-screen=navigation]{height:auto}
- body.gaia-shell .integrated-inspector:is([data-selection=atlas],[data-selection=location],[data-selection=entrance]){top:auto;bottom:0;height:45%;max-height:45%;min-height:180px}
+ body.gaia-shell .integrated-inspector:is([data-selection=atlas],[data-selection=location],[data-selection=entrance],[data-selection=triangle],[data-selection=encounter]){top:auto;bottom:0;height:45%;max-height:45%;min-height:180px}
  body.gaia-shell #viewport .view-center{left:16px;bottom:calc(20px + var(--map-detail-bottom,0px));max-width:calc(100% - 100px);transform:none}
- body.gaia-shell:has(#integrated-panel.open) #viewport :is(.navigation-tools,.zoom-controls,.view-center),body.gaia-shell:has(.integrated-inspector.open:not([data-selection=atlas],[data-selection=location],[data-selection=entrance])) #viewport :is(.navigation-tools,.zoom-controls,.view-center){visibility:hidden}
+ body.gaia-shell:has(#integrated-panel.open) #viewport :is(.navigation-tools,.zoom-controls,.view-center),body.gaia-shell:has(.integrated-inspector.open:not([data-selection=atlas],[data-selection=location],[data-selection=entrance],[data-selection=triangle],[data-selection=encounter])) #viewport :is(.navigation-tools,.zoom-controls,.view-center){visibility:hidden}
  body.gaia-shell .integrated-content{flex:1;min-height:0;padding-top:8px;scroll-padding-bottom:24px}
  body.gaia-shell :is(button,summary){min-height:44px}
  body.gaia-shell :is(input:not([type=checkbox]):not([type=range]),select){font-size:16px}

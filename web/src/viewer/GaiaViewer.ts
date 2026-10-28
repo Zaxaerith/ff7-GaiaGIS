@@ -39,6 +39,7 @@ import {applyRelief,validateExaggeration} from './relief';
 import {displayTextureAttributes,textureAlpha} from '../data/textures';
 import type {DecodedTextures} from '../data/textures';
 import {CartographicLine} from './cartographicLines';
+import {RegionalConnectivityOverlay} from './regionalConnectivityOverlay';
 import {ComparisonView} from './comparisonView';
 import type {LinkedView} from './comparisonView';
 import type {GeoPoint} from '../projections/Projection';
@@ -89,6 +90,9 @@ export class GaiaViewer {
   readonly measurement=new CartographicLine('#73e4ed');
   readonly tissot=new CartographicLine('#dfb4ff',true);
   readonly comparedRoutes=[new CartographicLine('#6de0d0'),new CartographicLine('#ffab82'),new CartographicLine('#c5acff')];
+  private regionalOverlay!:RegionalConnectivityOverlay;
+  setRegionalComponent(mask:Uint8Array|null){this.regionalOverlay.setComponent(this.variantResearch?null:mask);this.comparison?.setRegionalComponent(this.regionalOverlay.mask);}
+  setRegionalBoundaries(geo:Float32Array|null){this.regionalOverlay.setBoundaries(this.variantResearch?null:geo);if(this.morph)this.regionalOverlay.begin(this.morph.fromId,this.projectionId,this.context);this.comparison?.setRegionalBoundaries(this.regionalOverlay.boundary.geo);}
   private comparison:ComparisonView|null=null;
   private comparisonId:ProjectionId='equal-earth';
   private compareLayout:HTMLElement|null=null;
@@ -186,6 +190,7 @@ export class GaiaViewer {
     material.customProgramCacheKey=()=> 'gaia-wm0-source-research-mask-v1';
     this.surface.frustumCulled=false;
     this.scene.add(this.surface);
+    this.regionalOverlay=new RegionalConnectivityOverlay(this.display.renderToSource,this.mesh.sourceTriangleCount,geometry);this.scene.add(this.regionalOverlay.component,this.regionalOverlay.boundary.line);
     const edges=new BufferGeometry();
     edges.setAttribute('position',geometry.getAttribute('position'));
     edges.setAttribute('gaiaMask',geometry.getAttribute('gaiaMask'));
@@ -215,7 +220,7 @@ export class GaiaViewer {
     this.diagnostics.mapId=mesh.attributes(0).map??0;
     const highlightMaterial=new MeshBasicMaterial({color:'#ffdf8f',side:DoubleSide,transparent:true,opacity:0.92,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-3,polygonOffsetUnits:-3});
     addVisibilityMask(highlightMaterial);
-    this.highlight=new Mesh(new BufferGeometry(),highlightMaterial);this.highlight.visible=false;this.highlight.frustumCulled=false;
+    this.highlight=new Mesh(new BufferGeometry(),highlightMaterial);this.highlight.visible=false;this.highlight.frustumCulled=false;this.highlight.renderOrder=2;
     this.scene.add(this.highlight);
     this.renderer=new WebGLRenderer({antialias:true,alpha:true,powerPreference:'high-performance'});
     configureOutput(this.renderer);this.renderer.setClearColor(0,0);
@@ -291,7 +296,7 @@ export class GaiaViewer {
   setTextureFiltering(linear:boolean){this.textured.filtering(linear);}
   setReliefShading(value:boolean){this.shading=value;this.syncTexture();}
   private syncTexture(){this.textured.uniforms.gaiaTextureEnabled.value=this.originalTexture&&!!this.texturePack?1:0;this.textured.uniforms.gaiaShading.value=this.shading&&this.projectionId==='globe'?1:0;}
-  setRelief(value:number){this.relief=validateExaggeration(value);this.cache.delete('globe');const start=performance.now();if(this.morph){if(this.projectionId==='globe')applyRelief(this.display,this.morph.to.positions,this.context.radius,value);}else if(this.projectionId==='globe'){applyRelief(this.display,this.frame.positions,this.context.radius,value);this.changed();}this.locations.relief=this.events.relief=this.atlas.relief=value;this.route.relief=value;for(const o of [this.measurement,this.tissot,...this.comparedRoutes])o.relief=value;this.diagnostics.reliefUpdateMs=performance.now()-start;}
+  setRelief(value:number){this.relief=validateExaggeration(value);this.cache.delete('globe');const start=performance.now();if(this.morph){if(this.projectionId==='globe')applyRelief(this.display,this.morph.to.positions,this.context.radius,value);}else if(this.projectionId==='globe'){applyRelief(this.display,this.frame.positions,this.context.radius,value);this.changed();}this.locations.relief=this.events.relief=this.atlas.relief=value;this.route.relief=value;for(const o of [this.measurement,this.tissot,...this.comparedRoutes])o.relief=value;this.regionalOverlay.setRelief(value);if(this.morph)this.regionalOverlay.begin(this.morph.fromId,this.projectionId,this.context);this.diagnostics.reliefUpdateMs=performance.now()-start;}
   private get camera(){return this.morph||this.projectionId==='globe'?this.perspective:this.mapCamera;}
   viewState():LinkedView{const key=`${this.projectionId}:${this.camera.position.toArray().map(x=>x.toFixed(5))}:${this.mapCamera.zoom.toFixed(4)}:${this.context.centerLon.toFixed(4)}:${this.context.centerLat.toFixed(4)}`;if(key!==this.centerKey&&!this.morph){this.centerResolved=true;if(this.projectionId==='globe'){const c=geographicViewCenter(this.perspective.position.x,this.perspective.position.y,this.perspective.position.z);this.centerCache=[c.lon??0,c.lat,0];}else if(rotatesCenter(this.projectionId))this.centerCache=[this.context.centerLon,this.context.centerLat,0];else{const center=inverseDisplay(this.projectionId,this.mapControls.target.x,this.mapControls.target.y,this.context,this.centerCache);this.centerResolved=!!center;if(center)this.centerCache=center;}this.centerKey=key;}return {center:this.centerCache,centerResolved:this.centerResolved,zoom:this.projectionId==='globe'?this.distance('globe')/this.perspective.position.length():this.mapCamera.zoom};}
   setGridMode(mode:GridMode){this.gridMode=mode;this.graticule.visible=mode!=='off';this.gridKey=this.gridCameraKey='';this.gridLast=-Infinity;}
@@ -302,7 +307,7 @@ export class GaiaViewer {
   setTissot(value:boolean){this.tissot.line.visible=value;this.tissot.update(this.projectionId,this.context);if(this.comparison)this.comparison.tissot.line.visible=value;}
   setComparisonFlags(flags:Uint8Array|null){if(flags&&flags.length!==this.mesh.sourceTriangleCount)throw new Error('Comparison map scope differs');this.comparisonFlags=flags;this.colorSurface();}
   setComparedRoutes(paths:number[][]){if(paths.length>3)throw new Error('Maximum three route overlays');this.comparedRoutes.forEach((o,i)=>o.set(routeSegments(corridorPoints(this.mesh,paths[i]??[]))));if(this.comparison)this.comparison.comparedRoutes.forEach((o,i)=>o.set(this.comparedRoutes[i].geo));}
-  setProjectionComparison(id:ProjectionId|null){if(id!==null&&this.variantResearch)return;if(id===null){this.comparison?.dispose();this.comparison=null;if(this.compareLayout){this.compareLayout.before(this.container);this.compareLayout.remove();this.compareLayout=null;}this.diagnostics.comparisonDrawCalls=0;this.resize();return;}this.comparisonId=id;if(!this.comparison){const layout=document.createElement('div');layout.className='comparison-layout';this.container.before(layout);layout.append(this.container);this.compareLayout=layout;this.comparison=new ComparisonView(layout,this.display,this.surface.geometry.getAttribute('color') as BufferAttribute,l=>{this.onGeographicPick([l.longitude,l.latitude,l.height]);if(!this.captureMeasurement){this.flyToLocation(l.longitude,l.latitude);this.onLocation(l);}},l=>{const event=this.eventRecords.find(e=>e.id===l.id);if(event){this.onGeographicPick([event.longitude,event.latitude,event.height??0]);if(!this.captureMeasurement){this.flyToLocation(event.longitude,event.latitude);this.onEvent(event);}}});this.comparison.userMapping.set(this.userMapping.frame);this.comparison.onUserFeature=id=>this.onUserFeature(id);this.comparison.route.set(routeSegments(corridorPoints(this.mesh,this.analysisPath)));this.comparison.measurement.set(this.measurement.geo);this.comparison.tissot.line.visible=this.tissot.line.visible;this.comparison.comparedRoutes.forEach((o,i)=>o.set(this.comparedRoutes[i].geo));this.resize();}}
+  setProjectionComparison(id:ProjectionId|null){if(id!==null&&this.variantResearch)return;if(id===null){this.comparison?.dispose();this.comparison=null;if(this.compareLayout){this.compareLayout.before(this.container);this.compareLayout.remove();this.compareLayout=null;}this.diagnostics.comparisonDrawCalls=0;this.resize();return;}this.comparisonId=id;if(!this.comparison){const layout=document.createElement('div');layout.className='comparison-layout';this.container.before(layout);layout.append(this.container);this.compareLayout=layout;this.comparison=new ComparisonView(layout,this.display,this.surface.geometry.getAttribute('color') as BufferAttribute,l=>{this.onGeographicPick([l.longitude,l.latitude,l.height]);if(!this.captureMeasurement){this.flyToLocation(l.longitude,l.latitude);this.onLocation(l);}},l=>{const event=this.eventRecords.find(e=>e.id===l.id);if(event){this.onGeographicPick([event.longitude,event.latitude,event.height??0]);if(!this.captureMeasurement){this.flyToLocation(event.longitude,event.latitude);this.onEvent(event);}}},this.mesh.sourceTriangleCount);this.comparison.setRegionalComponent(this.regionalOverlay.mask);this.comparison.setRegionalBoundaries(this.regionalOverlay.boundary.geo);this.comparison.userMapping.set(this.userMapping.frame);this.comparison.onUserFeature=id=>this.onUserFeature(id);this.comparison.route.set(routeSegments(corridorPoints(this.mesh,this.analysisPath)));this.comparison.measurement.set(this.measurement.geo);this.comparison.tissot.line.visible=this.tissot.line.visible;this.comparison.comparedRoutes.forEach((o,i)=>o.set(this.comparedRoutes[i].geo));this.resize();}}
   private get aspect(){return Math.max(0.01,this.container.clientWidth/Math.max(1,this.container.clientHeight));}
   private fit(id=this.projectionId){return fitProjectionToViewport(projections[id].bounds(this.context),this.aspect);}
   private distance(id:ProjectionId){const fit=this.fit(id);return fit.halfHeight/Math.tan(this.perspective.fov*Math.PI/360)+(id==='globe'?0.45:0);}
@@ -339,7 +344,7 @@ export class GaiaViewer {
     if(id===this.projectionId&&!this.morph) return;
     if(this.comparison)this.pendingLinked=this.viewState();
     this.cancelFlight();
-    for(const o of [this.measurement,this.tissot,...this.comparedRoutes])o.begin(this.projectionId,id,this.context);
+    for(const o of [this.measurement,this.tissot,...this.comparedRoutes])o.begin(this.projectionId,id,this.context);this.regionalOverlay.begin(this.projectionId,id,this.context);
     this.locations.beginMorph(this.projectionId,id,this.context,!!this.morph);
     this.atlas.beginMorph(this.projectionId,id,this.context,!!this.morph);
     this.events.beginMorph(this.projectionId,id,this.context,!!this.morph);this.route.begin(this.projectionId,id,this.context,!!this.morph);
@@ -573,7 +578,7 @@ export class GaiaViewer {
     this.atlas.update(this.projectionId,this.context,this.camera,markerMorph);
     this.route.update(this.projectionId,this.context,markerMorph?.ease);
     for(const o of [this.measurement,this.tissot,...this.comparedRoutes])o.update(this.projectionId,this.context,markerMorph?.ease,this.camera.position);
-    this.diagnostics.tissotGenerationMs=this.tissot.generationMs;
+    this.regionalOverlay.update(this.projectionId,this.context,markerMorph?.ease,this.camera.position);this.diagnostics.tissotGenerationMs=this.tissot.generationMs;
     this.syncTexture();if(this.originalTexture||this.shading)this.sphereDepth.value=0;
     this.userMapping.update(this.projectionId,this.context,!this.captureExplorer&&!this.morph);
     this.variantResearch?.update(this.projectionId,this.context,this.relief,this.texturePack,this.textured.texture,this.originalTexture,this.shading,markerMorph?.ease,this.camera.position);
@@ -592,12 +597,12 @@ export class GaiaViewer {
     const next=data?new WorldVariantSurface(data,state):null;
     this.variantResearch?.dispose();this.variantResearch=next;this.variantBaseVisibility.value=Number(!!next);
     if(!next)return;
-    this.clearSelection();this.setProjectionComparison(null);this.scene.add(next.surface,next.boundary.line);
+    this.regionalOverlay.clear();this.clearSelection();this.setProjectionComparison(null);this.scene.add(next.surface,next.boundary.line);
   }
   private suspendedAt:number|null=null;
   setSuspended(value:boolean){
     if(value){if(this.suspendedAt===null)this.suspendedAt=performance.now();this.renderer.setAnimationLoop(null);this.comparison?.renderer.setAnimationLoop(null);}
     else {if(this.suspendedAt!==null){const now=performance.now(),elapsed=now-this.suspendedAt;if(this.morph)this.morph.start+=elapsed;if(this.flight)this.flight.start+=elapsed;this.previous=now;this.suspendedAt=null;}this.renderer.setAnimationLoop(t=>this.animate(t));}
   }
-  dispose(){document.removeEventListener('gaiagis:map-layout',this.detailLayout);this.setWorldVariants(null);this.onVariantSelection=()=>{};this.userMapping.dispose();this.textured.dispose();this.texturePack?.image.close();this.renderer.setAnimationLoop(null);this.setProjectionComparison(null);this.locations.dispose();this.events.dispose();this.atlas.dispose();this.resizeObserver.disconnect();this.globeControls.dispose();this.mapControls.dispose();this.scene.traverse(object=>{if(object instanceof Mesh||object instanceof LineSegments){object.geometry.dispose();object.material.dispose();}});this.renderer.dispose();this.renderer.domElement.remove();}
+  dispose(){document.removeEventListener('gaiagis:map-layout',this.detailLayout);this.setWorldVariants(null);this.onVariantSelection=()=>{};this.userMapping.dispose();this.textured.dispose();this.texturePack?.image.close();this.renderer.setAnimationLoop(null);this.setProjectionComparison(null);this.regionalOverlay.dispose();this.locations.dispose();this.events.dispose();this.atlas.dispose();this.resizeObserver.disconnect();this.globeControls.dispose();this.mapControls.dispose();this.scene.traverse(object=>{if(object instanceof Mesh||object instanceof LineSegments){object.geometry.dispose();object.material.dispose();}});this.renderer.dispose();this.renderer.domElement.remove();}
 }
