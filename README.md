@@ -4,6 +4,14 @@ A local-first GIS reconstruction of the original FINAL FANTASY VII world, with a
 
 ## Quick start
 
+The v5.6 Web interface uses five destinations: **World**, **Character Explorer**,
+**Game Guide**, **GIS Analysis**, and **Data & Settings**. GIS opens a searchable,
+flat tool directory; select a tool directly instead of navigating the old
+Layers / Analysis / Map / View tabs. **Tool directory**, **Show map**, and the
+independent Inspector's **Back** preserve current parameters and valid results.
+On phones the five destinations stay in one bottom row; object details use a
+bounded bottom panel. See [navigation](docs/user/navigation.md#task-based-navigation-v560).
+
 **v5.6.0 — Regional Connectivity & Boundaries** adds a source-derived tool in **Features → GIS analysis**: compare strict Region components with/without confirmed X seams, highlight a component, display selected Region boundaries and inspect original faces and entrance/Atlas context. It uses your existing WM0 Workspace; source-only pages report the analysis unavailable. Region topology is separate from movement/routing connectivity. [Method and limits](docs/reference/spatial-analysis.md#regional-connectivity-and-boundaries-v560) · [Using the tool](docs/user/navigation.md#regional-connectivity-and-boundaries-v560).
 
 The **Web Viewer is the main interface**. Open the [public Viewer](https://zaxaerith.github.io/ff7-GaiaGIS/). Without a map, an original vector title scene offers four simple choices:

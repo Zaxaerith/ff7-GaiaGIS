@@ -1,5 +1,46 @@
 # Navigation
 
+## Task-based navigation (v5.6.0)
+
+The five destinations are **World**, **Character Explorer**, **Game Guide**,
+**GIS Analysis**, and **Data & Settings**. They change the visible controls,
+not the current map, Workspace, projection or active walking session. The old
+`PanelId` groups still host their original controls internally; Layers,
+Analysis, Map and View are no longer visible navigation levels.
+
+**GIS Analysis** opens a searchable tool directory with four static headings:
+Regional & Terrain, Network & Paths, Source & Topology, and Map Display. A
+heading is neither a submenu nor a disclosure. Choose **Regional Connectivity
+& Boundaries**, **Routing**, **Source Query**, **Projection**, or another task
+directly. The operation header offers **Tool directory** and **Show map**.
+Reopen the current task using its map button or the GIS destination. Parameters
+and still-valid computed results remain with their original owners; navigation
+does not create historical snapshots of overwritten calculations.
+
+The Inspector is the existing shared object view. Selecting a source face,
+place, guide or gameplay record opens it, including reselecting the same face.
+**Back** closes only the Inspector and returns to the originating tool or guide
+search, with its focus context. It does not clear the selection or calculation.
+**Clear selection** is a separate explicit action. Escape first cancels temporary
+capture, then returns from Inspector, operation to directory, or content to map.
+
+At 1200px and wider, tools and Inspector can occupy opposite sides of the map.
+Below 1200px only one content pane is visible. Below 700px the destinations form
+a single bottom row; the operation is the sole active content layer and the
+Inspector uses roughly 47% of the available map height. Hidden content is inert
+and cannot receive Tab focus. Close or collapse panes to regain map space.
+
+Character Explorer presents the existing character and foot controls directly.
+Changing destinations does not exit a walk. Navigation, search, Inspector and
+other controls release movement keys; focus the map or touch pad to continue.
+Source picks and measurement/drawing captures pause when their tool is hidden,
+while already produced results remain. Field and WM2/WM3 keep their real spatial
+owners; returning through navigation never silently converts them to WM0.
+
+Public source-only mode keeps authored guides available and explains missing
+private geometry. Load a generated Workspace through **Data & Settings**.
+**Return to title** and help are also there; they preserve the current session.
+
 ## Field Interaction Geometry
 
 With the optional Interaction Pack loaded in the v4.1 Web Viewer, open **Field Walkmesh → Interaction geometry**. Trigger, Script LINE, constant SLINE modifications and geometric anomalies have separate controls. Trigger uses dash-dot lines and T labels, LINE uses dotted lines, and SLINE modifications use long dashes; square endpoints distinguish them from Gateway lines and entrance/arrival points.
@@ -474,7 +515,7 @@ that original-runtime reference evidence is absent.
 
 ## Regional connectivity and boundaries (v5.6.0)
 
-With your existing WM0 Workspace loaded, open **Features → GIS analysis →
+With your existing WM0 Workspace loaded, open **GIS Analysis →
 Regional Connectivity & Boundaries** and calculate. Nothing is generated or
 uploaded. Without the supported private WM0 source the tool is unavailable.
 

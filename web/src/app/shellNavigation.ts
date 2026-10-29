@@ -14,6 +14,12 @@ export function menuIndex(key:string,current:number,length:number){
  return null;
 }
 
+/** Presentation only; closing a pane never clears an owner or its selection. */
+export function paneVisibility(width:number,panelOpen:boolean,inspectorOpen:boolean,layer:'map'|'tool'|'inspector'){
+ const compact=width<1200;
+ return {tool:panelOpen&&(!compact||!inspectorOpen||layer==='tool'),inspector:inspectorOpen&&(!compact||!panelOpen||layer==='inspector')};
+}
+
 /** Both desktop and narrow layouts expose one drawer, without touching Viewer state. */
 export function presentDrawer(menu:HTMLElement,inspector:HTMLElement,target:'menu'|'inspector'|null,menuButton:HTMLElement,inspectorButton:HTMLElement){
  menu.classList.toggle('open',target==='menu');inspector.classList.toggle('open',target==='inspector');

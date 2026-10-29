@@ -2,6 +2,10 @@
 
 ## 5.6.0 — WM0 Regional Connectivity & Boundary Explorer
 
+- Migrate the accepted navigation prototype to the real Viewer: five-domain rail, searchable flat GIS task directory, one operation window and an independent Inspector. Keep the original singleton tool owners and DOM contracts; remove visible legacy technical tabs.
+- Preserve valid calculations, map/projection, Workspace and Explorer state across navigation. Pause hidden temporary map captures and movement keys while UI controls have focus; restore the originating tool/focus when object details close.
+- Reserve actual map space beside desktop panels, use one content pane on tablets and a bounded bottom Inspector on phones. Strengthen only main windows with classic silver-white borders; retain the existing deep-blue theme and five languages.
+
 - Add lazy, source-derived Region components under Strict Raw (A) and Strict + Confirmed X Periodicity (B). Preserve every BASE face, raw Region ID and area contribution; isolate ambiguous duplicate/degenerate relations and use the minimum source-face ID, including zero, as component identity.
 - Query confirmed Region adjacency/boundary segments separately from open edges, ambiguous candidates and X seam pairs. Keep exact three-dimensional edge identity and raw X/Z lengths without polygon union, Z wrapping or traversal claims.
 - Highlight one component and display selected Region/pair boundaries in the existing map and projections, independently of Routing, service-area, traversal and source-selection state. Reuse source-face paging and Inspector navigation.

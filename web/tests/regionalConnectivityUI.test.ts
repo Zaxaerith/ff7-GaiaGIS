@@ -52,8 +52,8 @@ describe('regional connectivity UI over existing owners',()=>{
   expect(f.select).toHaveBeenCalledWith(0);expect(f.viewer.flyToLocation).toHaveBeenCalled();expect(f.viewer.setRegionalComponent.mock.lastCall?.[0]?.length).toBe(64);
   expect(f.node('faces-results').children).toHaveLength(50);f.node('faces-next').click();expect(f.node('faces-results').children).toHaveLength(14);f.node('sort').change('id');f.node('strategy').change('B');expect(f.getSource).toHaveBeenCalledOnce();expect(f.getTopology).toHaveBeenCalledOnce();
  });
- it('links Source Inspector back through the existing Analysis tab and clears only its own overlays',async()=>{
-  const f=fixture();await f.compute();const host=f.doc.createElement('section');f.doc.body.append(host);owner!.inspect(0,host as unknown as HTMLElement);host.querySelector('#connectivity-source-inspector')!.children.find(n=>n.tag==='button')!.click();expect(f.analysisTab.onclick).toHaveBeenCalledOnce();
+ it('links Source Inspector directly to its concrete tool without activating a hidden legacy tab and clears only its own overlays',async()=>{
+  const f=fixture();await f.compute();const open=vi.fn();f.doc.addEventListener('gaiagis:open-tool',e=>open((e as CustomEvent).detail));const host=f.doc.createElement('section');f.doc.body.append(host);owner!.inspect(0,host as unknown as HTMLElement);host.querySelector('#connectivity-source-inspector')!.children.find(n=>n.tag==='button')!.click();expect(open).toHaveBeenCalledExactlyOnceWith({toolId:'regionalConnectivity'});expect(f.analysisTab.onclick).not.toHaveBeenCalled();
   f.node('clear').click();expect(f.viewer.setRegionalComponent.mock.lastCall?.[0]).toBeNull();expect(f.viewer.setRegionalBoundaries.mock.lastCall?.[0]).toBeNull();expect(createWM0Topology(f.source)).toBe(f.getTopology.mock.results[0].value);expect(f.doc.getElementById('regional-connectivity')!.dataset.faces).toBeUndefined();
  });
  it('drops stale requests after map/source availability changes and removes all UI on disposal',async()=>{

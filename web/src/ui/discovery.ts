@@ -27,7 +27,10 @@ export function mountDiscovery(getViewer:()=>GaiaViewer|undefined,getNative:()=>
  const button=(key:string,id:string,fn:()=>void)=>{const b=document.createElement('button');b.id=id;b.textContent=t('nav23.'+key);b.onclick=fn;return b;};
  const note=(key:string)=>{const p=document.createElement('p');p.className='control-note';p.textContent=t('nav23.'+key);return p;};
  const section=(key:string,parent:HTMLElement=root)=>{const d=document.createElement('details'),s=document.createElement('summary');d.id='discovery-'+key;s.textContent=t('nav23.'+key);d.append(s);parent.append(d);return d;};
- function showPanel(panel:'explore'|'analysis'|'view'){appStore.dispatch({type:'panel',panel});document.getElementById('integrated-panel')?.classList.add('open');document.getElementById('app-menu')?.setAttribute('aria-expanded','true');}
+ function showPanel(panel:'explore'|'analysis'|'view'){
+  if(document.body.classList.contains('ux-rail')){document.dispatchEvent(new CustomEvent(panel==='explore'?'gaiagis:open-area':'gaiagis:open-tool',{detail:panel==='explore'?{area:'world'}:{toolId:panel==='analysis'?'routeProfile':'projection'}}));return;}
+  appStore.dispatch({type:'panel',panel});document.getElementById('integrated-panel')?.classList.add('open');document.getElementById('app-menu')?.setAttribute('aria-expanded','true');
+ }
  const live=document.createElement('p');live.id='discovery-status';live.setAttribute('role','status');root.append(live);const message=(key:string)=>live.textContent=t('nav23.'+key);
  document.getElementById('app-group-explore')!.append(root);scope.own(()=>root.remove());
  const bookmarks=section('bookmarks'),bookmarkList=document.createElement('div');bookmarkList.id='bookmark-list';bookmarks.append(button('saveView','save-view',()=>editBookmark(null,captureView())),bookmarkList);
