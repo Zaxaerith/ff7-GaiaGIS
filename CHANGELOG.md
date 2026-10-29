@@ -2,6 +2,9 @@
 
 ## 5.6.0 — WM0 Regional Connectivity & Boundary Explorer
 
+- Render original character textures with repeat addressing, preserving the P file's integer-offset eye/mouth UVs. Fix missing facial details without altering geometry, alpha handling or the existing Explorer asset.
+- Anchor Explorer direction controls and its single preview notice to the actual map viewport. Preserve the selected place while roaming, keep its Inspector closed until explicitly requested, and distinguish exiting roaming from selecting a GIS tool.
+
 - Migrate the accepted navigation prototype to the real Viewer: five-domain rail, searchable flat GIS task directory, one operation window and an independent Inspector. Keep the original singleton tool owners and DOM contracts; remove visible legacy technical tabs.
 - Preserve valid calculations, map/projection, Workspace and Explorer state across navigation. Pause hidden temporary map captures and movement keys while UI controls have focus; restore the originating tool/focus when object details close.
 - Reserve actual map space beside desktop panels, use one content pane on tablets and a bounded bottom Inspector on phones. Strengthen only main windows with classic silver-white borders; retain the existing deep-blue theme and five languages.

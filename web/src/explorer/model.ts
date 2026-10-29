@@ -1,7 +1,7 @@
 import {srgbToLinear,modelLighting} from './lighting';
 import type {LightingPreset} from '../app/presentation';
 // SPDX-License-Identifier: GPL-3.0-only
-import {Box3,BufferAttribute,BufferGeometry,DataTexture,DoubleSide,Group,Mesh,MeshBasicMaterial,NearestFilter,RGBAFormat,SRGBColorSpace,UnsignedByteType,Vector3} from 'three';
+import {Box3,BufferAttribute,BufferGeometry,DataTexture,DoubleSide,Group,Mesh,MeshBasicMaterial,NearestFilter,RepeatWrapping,RGBAFormat,SRGBColorSpace,UnsignedByteType,Vector3} from 'three';
 import type {ExplorerModel,ExplorerPack} from '../data/explorer';
 import {locomotion} from './locomotion';
 export class OriginalModel {
@@ -16,7 +16,10 @@ export class OriginalModel {
    for(let i=0;i<part.vertices;i++){p.set(values.subarray(i*12,i*12+3),i*3);n.set(values.subarray(i*12+3,i*12+6),i*3);c.set(values.subarray(i*12+6,i*12+10),i*4);uv.set(values.subarray(i*12+10,i*12+12),i*2);}
    for(let i=0;i<part.vertices;i++)for(let j=0;j<3;j++)c[i*4+j]=srgbToLinear(c[i*4+j]);
    geometry.setAttribute('position',new BufferAttribute(p,3));geometry.setAttribute('normal',new BufferAttribute(n,3));geometry.setAttribute('color',new BufferAttribute(c,4));geometry.setAttribute('uv',new BufferAttribute(uv,2));
-   let texture:DataTexture|undefined;if(part.texture){texture=textures.get(part.texture);if(!texture){const r=pack.header.textures.find(t=>t.name===part.texture)!;texture=new DataTexture(new Uint8Array(pack.payload,r.offset,r.bytes),r.width,r.height,RGBAFormat,UnsignedByteType);texture.colorSpace=SRGBColorSpace;texture.magFilter=texture.minFilter=NearestFilter;texture.flipY=false;texture.needsUpdate=true;textures.set(r.name,texture);this.textures.push(texture);textureBytes+=r.bytes;}}
+   let texture:DataTexture|undefined;if(part.texture){texture=textures.get(part.texture);if(!texture){const r=pack.header.textures.find(t=>t.name===part.texture)!;texture=new DataTexture(new Uint8Array(pack.payload,r.offset,r.bytes),r.width,r.height,RGBAFormat,UnsignedByteType);texture.colorSpace=SRGBColorSpace;texture.magFilter=texture.minFilter=NearestFilter;
+    // Original P UVs retain integer tile offsets (e.g. eye U=1.x, mouth V=5.x).
+    // Model textures repeat; clamping samples their border instead of the face.
+    texture.wrapS=texture.wrapT=RepeatWrapping;texture.flipY=false;texture.needsUpdate=true;textures.set(r.name,texture);this.textures.push(texture);textureBytes+=r.bytes;}}
    const material=new MeshBasicMaterial({vertexColors:true,map:texture??null,side:DoubleSide,alphaTest:.005});this.lights.push(modelLighting(material));const mesh=new Mesh(geometry,material);this.meshes.push(mesh);this.bones[part.bone].add(mesh);bytes+=p.byteLength+n.byteLength+c.byteLength+uv.byteLength;
   }
   this.pose(0,0);this.object.updateMatrixWorld(true);const box=new Box3().setFromObject(this.object);const dims=box.getSize(new Vector3());this.groundOffset=-box.min.y;this.orientation.position.y=this.groundOffset;

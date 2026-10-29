@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 import {describe,it,expect} from 'vitest';
-import {Vector3} from 'three';
+import {Vector2,Vector3,RepeatWrapping,DoubleSide,MeshBasicMaterial} from 'three';
 import {decodeExplorer,Surface} from '../src/data/explorer';
 import type {ExplorerHeader,ExplorerSurface,SourcePoint} from '../src/data/explorer';
 import {advance,barycentric,compatible,locate} from '../src/explorer/walker';
@@ -29,6 +29,15 @@ describe('optional Explorer transport',()=>{
  });
  it('preserves clip frame samples without inventing interpolation',async()=>{const p=await decodeExplorer(await fixture()),m=new OriginalModel(p,p.header.models[0]);m.pose(99,123);expect(m.root.rotation.x).toBe(0);m.dispose();});
  it('creates current model only and disposes all local GPU objects',async()=>{const p=await decodeExplorer(await fixture()),m=new OriginalModel(p,p.header.models[0]);expect(m.meshes).toHaveLength(1);expect(m.bones[1].position.z).toBe(-2);expect(m.textures).toHaveLength(1);m.dispose();expect(m.object.children).toHaveLength(0);expect(m.object.parent).toBe(null);});
+ it('samples original integer-tiled face UVs without rewriting UV, image rows or alpha',async()=>{
+  const uv=[1.75,5.25,-.25,-1.25,2.125,3.75],rgba=[201,127,33,128];
+  const p=await decodeExplorer(await fixture((_h,bytes)=>{const view=new DataView(bytes.buffer);for(let i=0;i<3;i++){view.setFloat32(336+i*48+40,uv[i*2],true);view.setFloat32(336+i*48+44,uv[i*2+1],true);view.setFloat32(336+i*48+36,.25,true);}bytes.set(rgba,528);}));
+  const model=new OriginalModel(p,p.header.models[0]),texture=model.textures[0],geometry=model.meshes[0].geometry;
+  expect(Array.from(geometry.getAttribute('uv').array)).toEqual(uv);expect(geometry.getAttribute('color').getW(0)).toBe(.25);
+  expect([texture.wrapS,texture.wrapT]).toEqual([RepeatWrapping,RepeatWrapping]);expect(texture.flipY).toBe(false);expect(Array.from(texture.image.data??[])).toEqual(rgba);
+  for(const [point,wanted]of [[[1.75,5.25],[.75,.25]],[[-.25,-1.25],[.75,.75]]] as const)expect(texture.transformUv(new Vector2(...point)).toArray()).toEqual(wanted);
+  const material=model.meshes[0].material;expect(material).toBeInstanceOf(MeshBasicMaterial);if(!(material instanceof MeshBasicMaterial))throw Error('Expected original model material');expect(material.side).toBe(DoubleSide);expect(material.alphaTest).toBe(.005);expect(material.depthWrite).toBe(true);model.dispose();
+ });
 });
 describe('source topology walker',()=>{
  it('interpolates authoritative raw height',()=>{expect(locate(surface(),0,[.5,.25,.25]).rawInterpolatedHeight).toBe(7.5);});

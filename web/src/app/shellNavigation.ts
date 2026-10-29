@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-only
-import type {PanelId} from './state';
+import type {PanelId,SelectionKind} from './state';
 
 /** Presentation groups only: the original six panels retain their owners/state. */
 export const playerAreas=['world','explorer','guide','gis','settings'] as const;
@@ -19,6 +19,9 @@ export function paneVisibility(width:number,panelOpen:boolean,inspectorOpen:bool
  const compact=width<1200;
  return {tool:panelOpen&&(!compact||!inspectorOpen||layer==='tool'),inspector:inspectorOpen&&(!compact||!panelOpen||layer==='inspector')};
 }
+
+/** Session diagnostics never masquerade as a newly inspected world object. */
+export function autoOpenInspector(kind:SelectionKind|null){return kind!==null&&kind!=='explorer';}
 
 /** Both desktop and narrow layouts expose one drawer, without touching Viewer state. */
 export function presentDrawer(menu:HTMLElement,inspector:HTMLElement,target:'menu'|'inspector'|null,menuButton:HTMLElement,inspectorButton:HTMLElement){

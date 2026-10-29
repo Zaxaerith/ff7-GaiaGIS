@@ -3,7 +3,7 @@ export const explorerCatalog=[
  ['explore.title','Explorer','探索模式','探索模式','探索モード','탐험 모드'],
  ['explore.load','Load Explorer pack','加载探索数据包','載入探索資料包','探索パックを読み込む','탐험 팩 불러오기'],
  ['explore.start','Explore · place on surface','探索 · 点击地表放置','探索 · 點擊地表放置','探索 · 地表に配置','탐험 · 표면에 배치'],
- ['explore.exit','Return to GIS','返回 GIS','返回 GIS','GIS に戻る','GIS로 돌아가기'],
+ ['explore.exit','Exit roaming','退出漫游','退出漫遊','探索を終了','로밍 종료'],
  ['explore.unavailable','Explorer data unavailable','探索数据不可用','探索資料不可用','探索データなし','탐험 데이터 없음'],
  ['explore.ready','Choose a model, then click a source triangle.','选择模型，然后点击源三角形。','選擇模型，然後點擊來源三角形。','モデルを選び、ソース三角形をクリック。','모델 선택 후 원본 삼각형을 클릭하세요.'],
  ['explore.placing','Click the actual source surface. No automatic snapping.','点击真实源地表，不会自动吸附。','點擊真實來源地表，不會自動吸附。','実際のソース地表をクリック。自動スナップなし。','실제 원본 표면을 클릭하세요. 자동 스냅 없음.'],

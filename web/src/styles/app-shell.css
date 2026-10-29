@@ -122,6 +122,23 @@ body.gaia-shell #explorer-exit{background:var(--window-bg)}
 body.gaia-shell #character-explorer-content details>summary{cursor:pointer;min-height:40px;padding-top:8px}
 body.gaia-shell .integrated-panel.explorer-minimal{max-height:100%}
 
+/* Explorer overlays belong to the actual WM0/Native viewport. The map frame
+   already excludes Rail, Inspector and status bar; do not offset the map. */
+body.gaia-shell :is(.viewport,.native-viewport)>.explorer-pad{position:absolute;inset:auto auto 12px 12px;z-index:24;display:grid;grid-template-columns:repeat(3,42px);gap:6px;padding:8px;width:max-content;max-width:calc(100% - 84px);border-radius:5px;touch-action:none}
+body.gaia-shell .explorer-pad button{width:42px;height:42px;min-height:42px;padding:0;touch-action:none}
+body.gaia-shell .explorer-pad button[data-key=w]{grid-area:1/2}
+body.gaia-shell .explorer-pad button[data-key=a]{grid-area:2/1}
+body.gaia-shell .explorer-pad button[data-key=s]{grid-area:2/2}
+body.gaia-shell .explorer-pad button[data-key=d]{grid-area:2/3}
+body.gaia-shell .explorer-pad button[data-key=q]{grid-area:3/1}
+body.gaia-shell .explorer-pad button[data-key=e]{grid-area:3/3}
+body.gaia-shell .explorer-pad[data-vertical=false] :is([data-key=q],[data-key=e]){display:none}
+body.gaia-shell :is(.viewport,.native-viewport)>.explorer-hud{position:absolute;inset:auto auto 126px 12px;z-index:24;display:flex;align-items:center;gap:8px;width:max-content;max-width:calc(100% - 112px);padding:7px 9px;font-size:12px;line-height:1.4;border-radius:5px}
+body.gaia-shell :is(.viewport,.native-viewport):has(>.explorer-pad[data-vertical=true])>.explorer-hud{bottom:174px}
+body.gaia-shell .explorer-hud>span{min-width:0;overflow-wrap:anywhere}
+body.gaia-shell .explorer-hud>button{flex:0 0 auto;min-height:40px;max-width:96px;padding:6px 9px}
+body.gaia-shell:has(#explorer-hud:not([hidden])) #viewport :is(.view-center,#tool-resume-bar){visibility:hidden}
+
 @media(min-width:1600px){:root{--tool-width:360px;--inspector-width:352px}body.gaia-shell .integrated-content{padding:20px}body.gaia-shell .tool-grid{gap:8px}}
 @media(min-width:700px) and (max-width:1199px){
  :root{--rail-width:76px;--tool-width:320px;--inspector-width:320px}

@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-only
 import {describe,it,expect} from 'vitest';
-import {playerAreas,areaPanels,areaStart,panelArea,menuIndex,presentDrawer,presentNavigation,paneVisibility} from '../src/app/shellNavigation';
+import {playerAreas,areaPanels,areaStart,panelArea,menuIndex,presentDrawer,presentNavigation,paneVisibility,autoOpenInspector} from '../src/app/shellNavigation';
 describe('player menu over the original panel owners',()=>{
+ it('keeps Explorer diagnostics out of object inspection while explicit world objects remain inspectable',()=>{expect(autoOpenInspector('explorer')).toBe(false);expect(autoOpenInspector('location')).toBe(true);expect(autoOpenInspector('atlas')).toBe(true);expect(autoOpenInspector(null)).toBe(false);});
  it.each([1920,1366])('reserves independent tool and Inspector panes at %ipx',width=>{expect(paneVisibility(width,true,true,'inspector')).toEqual({tool:true,inspector:true});expect(paneVisibility(width,false,true,'inspector')).toEqual({tool:false,inspector:true});});
  it.each([768,390])('presents one active content layer at %ipx without destroying the other context',width=>{expect(paneVisibility(width,true,true,'inspector')).toEqual({tool:false,inspector:true});expect(paneVisibility(width,true,true,'tool')).toEqual({tool:true,inspector:false});expect(paneVisibility(width,true,false,'tool')).toEqual({tool:true,inspector:false});expect(paneVisibility(width,false,false,'map')).toEqual({tool:false,inspector:false});});
  it('keeps all six original panels reachable without changing their identity',()=>{expect([...new Set(playerAreas.flatMap(id=>areaPanels[id]))].sort()).toEqual(['analysis','data','explore','layers','map','view']);for(const id of playerAreas)expect(areaPanels[id]).toContain(areaStart[id]);});
