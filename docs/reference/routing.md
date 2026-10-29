@@ -1,5 +1,51 @@
 # Traversal profiles and data
 
+## Ordered Journeys (v5.7.0)
+
+`navigation/journey.ts` composes the existing Worker `components` and `route`
+requests; it does not create a graph or replace Dijkstra. Each of at most six
+ordered stops expands all verified entrances and their trigger nodes. Eligibility
+uses one profile and one explicit conditional policy. The intersection of all
+endpoint Routing-component sets must be nonempty; the lowest shared ID is the
+stable selection rule. These IDs are unrelated to Region topology components.
+
+The first leg uses all eligible starting nodes in that component. Every later
+leg has exactly one start: the previous actual arrival node and entrance. A
+shared entrance ID is not enough to establish continuity. Responses are checked
+against the endpoints, labels, profile, actual CSR arcs and ordered Float64
+weight sum. Joined paths remove only the repeated junction node, retaining
+backtracking and repeat visits. Failure, cancellation or stale provenance never
+has a continuous total. This is a feasible ordered static itinerary, not a
+jointly optimal entrance choice or an optimized visit order.
+
+The session result binds WM0 source hash, actual Routing-buffer SHA-256, current
+POI/content fingerprints, Workspace generation and the selected scenario. POI,
+Atlas or graph replacement invalidates paths while retaining draft identities.
+One foreground display lease is shared with professional Routing/comparison;
+newer explicit actions win. Closing a pane or changing projection does not claim
+that lease or solve again. Journey clear removes its route/profile, not an
+independent Service Area. Path geometry uses the existing projection and X-seam
+splitting. Existing place markers show stop order; no reward marker is created.
+
+Graph distance sums the existing reference-sphere centroid weights. The optional
+Route Profile uses center → shared-edge midpoint → center distances; its corridor
+length and Terrain denominators differ. Both are reference measurements, not
+travel time or canon FF7 distance. Selected individual legs remain inspectable;
+an unusually long joined itinerary exceeding the single-profile sample limit
+can still display its route, with profiles inspected one leg at a time.
+
+Foot Midgar → Kalm → Junon fails the common-component test on the current BASE
+source. Green succeeds only by continuing from Kalm's actual arrival node;
+independently minimizing its two legs would omit movement within Kalm's trigger
+set. Mythril Mine's two entrances do not create a Field tunnel in WM0 CSR.
+Tiny Bronco requires eligible water nodes; no boarding, shore snap or transfer
+is added. Highwind flight, WM2 navigation and story/vehicle unlocks remain outside
+this tool.
+
+Journey drafts/results are session-only. Existing UserState v2 Tours may receive
+the ordered, verified place identities as a separate camera tour, retaining
+repeat visits but not graph nodes, movement assumptions or route evidence.
+
 The public `src/gaiagis/traversal_profiles.json` is a small reference behavior
 profile, shared directly by Python and TypeScript. It is **not** a derived map.
 No `gaia-traversal.json`, generator, optional dataset loader, per-triangle copy

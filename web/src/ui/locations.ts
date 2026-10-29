@@ -27,6 +27,7 @@ export function mountLocations(viewer:GaiaViewer,meta:GaiaMeta,isCurrent:()=>boo
     element<HTMLInputElement>('auto-rotate').checked=false;
     // Every displayed value is textContent; a local file never supplies HTML.
     const title=document.createElement('h3');title.textContent=location.display_name;detail.append(title);
+    const journey=document.createElement('button');journey.type='button';journey.dataset.journeyLocation=location.id;journey.textContent=t('journey.add');journey.onclick=()=>document.dispatchEvent(new CustomEvent('gaiagis:journey-add',{detail:{target:{kind:'location',id:location.id},parentConfirmed:false}}));detail.append(journey);
     const list=document.createElement('dl');list.className='property-list';
     const rows:[string,string][]=[[t('inspect.category'),location.category],[t('inspect.lonlat'),`${formatNumber(e.longitude,5)}° / ${formatNumber(e.latitude,5)}°`],
       [t('inspect.raw'),`${formatNumber(e.game_x,2)} / ${formatNumber(e.game_north,2)} / ${formatNumber(e.game_height,2)}`],

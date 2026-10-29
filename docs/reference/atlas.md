@@ -1,5 +1,24 @@
 # Atlas schema v1
 
+## Journey targets (v5.7.0)
+
+Guide/place cards expose Add to journey without a new search index or data pack.
+Targets retain the selected stable Atlas/POI identity. A location expands every
+verified entrance trigger face, not just its primary marker. `parent_location`
+keeps the original reward identity and explicitly routes to the parent place.
+`field_parent` requires an inline confirmation to use its verified parent as a
+place stop, while the reward's precision remains Field-only. `field_identity`
+and unresolved records stay reference goals and supply no WM0 endpoint.
+
+Kalm's Megalixir therefore targets Kalm, not an inn cabinet. Knights of the Round
+can explicitly add the related cave entrance without asserting acquisition or a
+Materia coordinate. Sunken Gelnika stays WM2/Field information; no nearest coast
+or world-map substitute is inferred. A reference cannot silently become the
+departure point. A successful plan labels references excluded from WM0 solving.
+Spoiler settings, source precision, Gameplay and Field context remain owned by
+the existing Atlas modules. Replacing an Atlas pack invalidates old Journey
+results even if its public content happens to be unchanged.
+
 ## Game Guide presentation (v5.5.1)
 
 Explore shows Places, Treasures & Rewards, Materia, Secrets and Boss clues above a ten-entry paged guide list. These facets filter the existing `searchAtlas()` results, preserving five-locale names/aliases, fact search and spoiler rules. They do not create a second registry or search index. `materia` tags describe existing sourced rewards; `battle-guide` identifies the existing Wutai Pagoda/Godo and Great Glacier/Snow knowledge, not decoded world battle IDs. The total remains 58 entities and 19 rewards.

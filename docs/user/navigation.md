@@ -1,5 +1,39 @@
 # Navigation
 
+## Evidence-aware Journeys (v5.7.0)
+
+Open **World → Exploration journey**. Select a place/guide and **Add stop**;
+the first stop is the departure. Add up to six stops including it. Use the up,
+down and remove controls to set the visiting order. Repeat places are allowed.
+Choose one movement scenario and **Plan route**. Conditional terrain is off by
+default; enabling it is a planning assumption, not verified bridge or story state.
+
+Place and guide Inspectors also offer **Add to journey**. Parent-place rewards
+keep their location warning; a Field-parent reward requires confirmation before
+its related place can participate. Field-only goals remain reference material,
+are labelled as excluded from routing, and cannot serve as the departure.
+Without private Workspace/POI/Routing data, public guide text and the ordered
+draft remain usable but no path or length is fabricated.
+
+Successful results show continuous graph distance and each leg. **Show complete
+route** restores its display after professional Routing; **View leg** highlights
+that leg and opens the existing Inspector with real source nodes/entrances,
+scenario, graph distance and distinct display-corridor length. Existing place
+markers show stop numbers; repeat visits can share one marker with several
+numbers. The map has no new chest/reward coordinates. Inspector Back, task
+navigation and projection changes preserve valid calculations. Source or
+Workspace replacement keeps only draft identities and requires planning again.
+
+Foot Midgar → Kalm → Junon is not connected in this static graph; Green/Black/Gold
+give continuous routes under their own assumptions. Do not interpret failure as
+proof that the original game is impossible, or success as guaranteed runtime
+traversability. There is no automatic Field crossing or vehicle transfer.
+
+**Export place Tour** saves eligible place identities to the existing local
+Tours list, in order, including repeat visits. It is a separate camera itinerary,
+not saved Journey evidence, character autoplay or route solving. Journey itself
+is not persisted to UserState, URL, Save or a Workspace asset.
+
 ## Task-based navigation (v5.6.0)
 
 The five destinations are **World**, **Character Explorer**, **Game Guide**,

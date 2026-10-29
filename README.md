@@ -4,6 +4,17 @@ A local-first GIS reconstruction of the original FINAL FANTASY VII world, with a
 
 ## Quick start
 
+**v5.7.0 — Evidence-aware Journey Planning** adds **World → Exploration journey**.
+Choose up to six stops in your own order, select one movement scenario, and plan
+a continuous static WM0 route. Place and guide cards can add verified entrances
+or explicitly labelled parent-place context; Field-only knowledge remains a
+reference, without invented reward positions. Each leg starts at the previous
+leg's actual source node. Disconnected goals keep a clear failure instead of a
+fake continuous total. Plans and evidence stay in the current session; exporting
+a place Tour saves only a separate camera itinerary. No Workspace regeneration
+is needed. [Journey use and limits](docs/user/navigation.md#evidence-aware-journeys-v570)
+· [Routing evidence](docs/reference/routing.md#ordered-journeys-v570).
+
 The v5.6 Web interface uses five destinations: **World**, **Character Explorer**,
 **Game Guide**, **GIS Analysis**, and **Data & Settings**. GIS opens a searchable,
 flat tool directory; select a tool directly instead of navigating the old

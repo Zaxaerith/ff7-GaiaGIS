@@ -76,6 +76,8 @@ export class GaiaViewer {
   get isMorphing(){return !!this.morph;}
   cancelMotion(){this.cancelFlight();}
   setRouteProgress(value:number){this.route.setProgress(value);}
+  setRouteColor(value='#ffe18c'){this.route.line.material.color.set(value);this.comparison?.route.line.material.color.set(value);}
+  setJourneyStops(ids:string[]){this.locations.setJourneyStops(ids);}
   setLayerOpacity(id:LayerId,value:number){if(this.opacities[id]===value)return;this.opacities[id]=Math.max(0,Math.min(1,value));this.colorSurface();this.events.setOpacity(this.opacities.events);this.atlas.setOpacity(this.opacities.atlas);this.route.line.material.opacity=.95*this.opacities.routes;this.route.progress.material.opacity=.95*this.opacities.routes;this.tissot.line.material.opacity=this.opacities.distortion;for(const line of this.comparedRoutes)line.line.material.opacity=this.opacities.routes;if(this.comparison){this.comparison.events.setOpacity(this.opacities.events);this.comparison.route.line.material.opacity=this.opacities.routes;this.comparison.tissot.line.material.opacity=this.opacities.distortion;}}
   captureExplorer=false;
   onExplorerFrame:(seconds:number)=>void=()=>{};

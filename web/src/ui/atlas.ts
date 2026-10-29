@@ -41,6 +41,9 @@ export function mountAtlas(viewer?:GaiaViewer,getPoi?:()=>PoiDataset|null){
  function card(e:AtlasEntity,target:HTMLElement){
   const old=document.getElementById('atlas-card');old?.remove();const card=document.createElement('section');card.id='atlas-card';card.className='atlas-card';card.dataset.entity=e.id;target.insertBefore(card,target.querySelector('.location-technical'));
   if(!visible(e.spoilerLevel)){paragraph(card,t('atlas.hidden'));return;}
+  // A named place already has this Atlas card embedded in its POI Inspector;
+  // keep one primary Journey action rather than duplicating both owners' UI.
+  target.querySelector('[data-journey-location]')?.remove();
   const title=contentHeading(card,e.localizedNames[locale()],t('atlas.'+e.kind)+' · '+t('atlas.'+(e.region==='unknown'?'unknownRegion':e.region))).querySelector('h3')!;title.tabIndex=-1;
   const lang=locale(),facts=e.facts.filter(f=>visible(f.spoilerLevel));
   const cite=(host:HTMLElement,ids:string[])=>{const refs=document.createElement('span');refs.className='atlas-fact-sources';host.append(refs);for(const id of ids){const source=content.sources.find(s=>s.id===id)!;const link=document.createElement('a');link.textContent=source.provider+' · '+source.title;link.href=source.url;link.target='_blank';link.rel='noopener noreferrer';link.dataset.sourceId=id;refs.append(link);}};
@@ -67,6 +70,14 @@ export function mountAtlas(viewer?:GaiaViewer,getPoi?:()=>PoiDataset|null){
    if(located===e.id&&world)paragraph(map,t(b.marker?'guide.locatedEntrance':'guide.locatedParent',{place:context.location.display_name})).className='control-note';
    else if(!b.marker)paragraph(map,t('atlas.parentLocation')+' · '+context.location.display_name);
   }else if(precision!=='field')paragraph(map,t('guide.noMap'));
+  const journey=document.createElement('div'),addJourney=document.createElement('button');journey.className='analysis-actions';journey.dataset.journeyTarget=e.id;addJourney.type='button';
+  const reference=['field_identity','unresolved','non_spatial'].includes(e.spatialBinding.kind),fieldParent=e.spatialBinding.kind==='field_parent';
+  addJourney.textContent=t(reference?'journey.addReference':fieldParent||e.spatialBinding.kind==='parent_location'?'journey.addParent':'journey.add');
+  const add=(parentConfirmed=false)=>document.dispatchEvent(new CustomEvent('gaiagis:journey-add',{detail:{target:{kind:'atlas',id:e.id},parentConfirmed}}));
+  if(fieldParent){
+   const confirmation=document.createElement('div'),confirm=document.createElement('button'),cancel=document.createElement('button');confirmation.hidden=true;confirmation.className='journey-parent-confirm';paragraph(confirmation,t('journey.parentNote'));confirm.type=cancel.type='button';confirm.textContent=t('journey.confirmParent');cancel.textContent=t('journey.cancel');confirm.onclick=()=>{add(true);confirmation.hidden=true;addJourney.hidden=false;};cancel.onclick=()=>{confirmation.hidden=true;addJourney.hidden=false;addJourney.focus();};confirmation.append(confirm,cancel);journey.append(confirmation);addJourney.onclick=()=>{confirmation.hidden=false;addJourney.hidden=true;confirm.focus();};
+  }else addJourney.onclick=()=>add();
+  journey.prepend(addJourney);map.append(journey);
   const fieldHost=document.createElement('section');fieldHost.className='vii-section';fieldHost.dataset.atlasSection='field';card.append(fieldHost);
   const requestedNames=e.spatialBinding.fieldNames??b.fieldNames;
   if(requestedNames.length){const names=paragraph(fieldHost,t('guide.field')+' · '+requestedNames.join(', '));names.className='control-note';}
@@ -117,7 +128,7 @@ export function mountAtlas(viewer?:GaiaViewer,getPoi?:()=>PoiDataset|null){
  scope.listen(document,'gaiagis:gameplay-ready',refresh);
  scope.listen(document,'gaiagis:poi',((event:CustomEvent<PoiDataset|null>)=>{poi=event.detail;pack=null;refresh();}) as EventListener);
  scope.listen(document,'gaiagis-location-inspect',((event:CustomEvent<string>)=>{const e=content.entities.find(e=>e.spatialBinding.kind==='location'&&e.spatialBinding.locationId===event.detail);if(e){active=e.id;embedded=true;card(e,document.getElementById('selection-details')!);}}) as EventListener);
- scope.own(workspaceLoader.register('atlas',async files=>{const attempt=++revision,file=files[0],begin=performance.now();if(file.name!=='gaia-atlas.json'||file.size>2_000_000)throw Error('Atlas size/name');const next=parseAtlasPack(JSON.parse(await file.text()));if(!poi)throw Error('Atlas requires matching POI identity');validateAtlasPoi(next,poi);if(attempt!==revision)return;pack=next;refresh();controls.dataset.loadMs=String(performance.now()-begin);}));
+ scope.own(workspaceLoader.register('atlas',async files=>{const attempt=++revision,file=files[0],begin=performance.now();if(file.name!=='gaia-atlas.json'||file.size>2_000_000)throw Error('Atlas size/name');const next=parseAtlasPack(JSON.parse(await file.text()));if(!poi)throw Error('Atlas requires matching POI identity');validateAtlasPoi(next,poi);if(attempt!==revision)return;pack=next;document.dispatchEvent(new Event('gaiagis:journey-targets-change'));refresh();controls.dataset.loadMs=String(performance.now()-begin);}));
  scope.own(appStore.subscribe(s=>{viewer?.setAtlasDisplay(s.map.id==='WM0'&&s.explorer.phase==='idle');if(s.selection?.kind!=='atlas'&&!['location','entrance'].includes(s.selection?.kind??'')){active=null;document.getElementById('atlas-card')?.remove();}if(!embedded&&s.selection?.kind==='atlas'&&active!==s.selection.id)active=null;}));
  scope.own(mountGameplay(viewer,()=>content,e=>visible(e.spoilerLevel)).dispose);
  scope.own(onLocaleChange(refresh));if(viewer)viewer.onAtlas=id=>{const e=entity(id);if(e)inspect(e);};refresh();controls.dataset.initMs=String(performance.now()-started);

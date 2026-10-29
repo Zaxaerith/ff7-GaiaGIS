@@ -1,0 +1,10 @@
+.journey-planner{min-width:0;padding:0 0 1rem;border-bottom:1px solid rgba(194,218,248,.35)}
+.location-marker.journey-stop i{background:#92e8c0;box-shadow:0 0 0 2px #92e8c066}.location-marker.journey-stop span{border-color:#92e8c0}
+.journey-planner h2{margin:.25rem 0 .65rem}.journey-planner h3{font-size:1rem}.journey-planner h4{margin:.25rem 0 .5rem}
+.journey-add{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.45rem;align-items:end}.journey-add label{grid-column:1/-1}.journey-add select{min-width:0;width:100%}
+.journey-scenario{display:grid;grid-template-columns:minmax(0,1fr);gap:.45rem;margin:.8rem 0}.journey-scenario select{min-width:0;width:100%}.journey-scenario .toggle-row{margin:.2rem 0}.journey-planner select{height:auto;min-height:38px;line-height:1.35;padding:8px;box-sizing:border-box}
+#journey-stops{padding:0;list-style:none;margin:.8rem 0;display:grid;gap:.6rem}#journey-stops>li{min-width:0;border-bottom:1px solid rgba(194,218,248,.2);padding:0 0 .6rem}
+.journey-stop-title{display:block;width:100%;text-align:left;overflow-wrap:anywhere}.journey-stop-actions,.journey-actions{display:flex;gap:.4rem;flex-wrap:wrap}.journey-stop-actions button{font-size:.85rem;min-height:36px;padding:.3rem .5rem}.journey-parent-confirm{margin-top:.4rem}
+.journey-leg{padding:.65rem 0;border-top:1px solid rgba(194,218,248,.25);overflow-wrap:anywhere}#journey-results{margin-top:.75rem;min-width:0}#journey-total{font-weight:700;color:#fff}#journey-status{white-space:normal;overflow-wrap:anywhere}#journey-plan{border-color:#d7ecff;background:linear-gradient(135deg,#285d9b,#143b71)}
+#journey-export-tour{margin-top:.6rem;max-width:100%}#selection-details[data-journey-leg] pre{white-space:pre-wrap;overflow-wrap:anywhere}
+@media(max-width:699px){.journey-add{grid-template-columns:minmax(0,1fr)}.journey-add label{grid-column:auto}.journey-planner button{min-height:42px;max-width:100%}.journey-stop-actions button{flex:1 1 auto}.journey-planner .control-note{line-height:1.5}.journey-planner select{font-size:1rem}}

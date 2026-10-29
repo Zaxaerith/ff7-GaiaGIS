@@ -1,5 +1,13 @@
 # Changelog
 
+## 5.7.0 — Evidence-aware Journey Planning
+
+- Add a session-only exploration plan under World, with up to six ordered stops, repeat visits, eight existing WM0 movement profiles and an explicit conditional-terrain scenario. Public guides can supply text goals without private geometry.
+- Resolve stable POI/Atlas identities to all verified entrance trigger nodes. Select the lowest common Routing component, continue each leg from the previous actual arrival node, and validate CSR arcs/weights before displaying a continuous total. Keep failures and never bridge disconnected entrances or simulate Field passage.
+- Add guide/place actions with parent-place precision and explicit confirmation for Field-parent rewards. Field-only references do not create WM0 endpoints, reward coordinates, acquisition state or fake markers.
+- Reuse the existing Routing Worker, RouteOverlay, Source Profile, shared Inspector and Tour storage. One foreground lease prevents stale Journey/professional results from overwriting one another; clearing a Journey preserves unrelated service-area analysis.
+- Retain draft identities across Workspace replacement but invalidate source-bound paths. Projection and Inspector navigation preserve valid results. Number existing place markers, distinguish graph/corridor distances and keep Tour export separate from solving or automatic walking. No Workspace or UserState schema change is required.
+
 ## 5.6.0 — WM0 Regional Connectivity & Boundary Explorer
 
 - Render original character textures with repeat addressing, preserving the P file's integer-offset eye/mouth UVs. Fix missing facial details without altering geometry, alpha handling or the existing Explorer asset.
