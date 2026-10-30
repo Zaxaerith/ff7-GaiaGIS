@@ -62,6 +62,8 @@ export class GaiaViewer {
   private spatialMode:'slope'|'aspect'|'service-area'|null=null;
   private spatialCache:ReturnType<typeof surfaceAttributes>|null=null;
   private serviceFlags:Uint8Array|null=null;
+  private encounterEvidenceMask:Uint8Array|null=null;
+  setEncounterEvidence(mask:Uint8Array|null){if(mask&&mask.length!==this.mesh.sourceTriangleCount)throw Error('Encounter scope mismatch');this.encounterEvidenceMask=mask;this.colorSurface();}
   get encounterData(){return this.encounters;}
   get sourceSurfaceAnalysis(){return this.spatialCache??=surfaceAttributes(this.mesh);}
   setSpatialLayer(mode:typeof this.spatialMode){this.spatialMode=mode;if(mode==='slope'||mode==='aspect')void this.sourceSurfaceAnalysis;this.colorSurface();}
@@ -473,6 +475,7 @@ export class GaiaViewer {
         mix=(this.colorLayer!=='terrain'||this.analysisVisibility.reachability&&!!this.reachable||!!this.comparisonFlags||this.chocoboTracks&&!!a.chocobo||this.showTriggers&&a.script!==null&&a.script>=3||this.analysisVisibility.routes&&this.corridor.has(source)) ? .65 : 0;
         if(this.spatialMode&&!a.origin)mix=Math.max(mix,.8*this.opacities[this.spatialMode]);
         mix*=gameplay?this.opacities.encounters:this.colorLayer==='traversal'?this.opacities.traversal:this.corridor.has(source)?this.opacities.routes:1;
+        if(!a.origin&&this.encounterEvidenceMask?.[source]){color=color.clone().lerp(new Color('#f6a85f'),.65);mix=Math.max(mix,.8);}
         previous=source;}
       for(let j=0;j<9;j+=3){const i=t*9+j;colors[i]=color.r;colors[i+1]=color.g;colors[i+2]=color.b;tint[t*3+j/3]=mix;}
     }

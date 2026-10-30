@@ -11,11 +11,12 @@ import {resolveFieldAtlas,atlasEvidence,spatialStatus} from '../data/fieldContex
 import type {FieldIndex} from '../data/fieldContext';
 import {renderSpatialEvidence} from './fieldContext';
 import {mountGameplay} from './gameplay';
+import type {EncounterResource} from '../data/encounters';
 import {contentHeading,evidenceSection,storySection} from './contentPresentation';
 import type {PoiDataset,Location} from '../data/poi';
 import type {GaiaViewer} from '../viewer/GaiaViewer';
 
-export function mountAtlas(viewer?:GaiaViewer,getPoi?:()=>PoiDataset|null){
+export function mountAtlas(viewer?:GaiaViewer,getPoi?:()=>PoiDataset|null,getEncounter:()=>EncounterResource|null=()=>null){
  const scope=new ResourceScope(),started=performance.now();let content:AtlasContent=parseAtlasContent(curated),pack:AtlasPack|null=null,poi=getPoi?.()??null,active:string|null=null,embedded=false,revision=0;
  let fields:FieldIndex|null=null,located:string|null=null;
  const input=document.getElementById('location-search') as HTMLInputElement,results=document.getElementById('location-results')!;
@@ -130,7 +131,7 @@ export function mountAtlas(viewer?:GaiaViewer,getPoi?:()=>PoiDataset|null){
  scope.listen(document,'gaiagis-location-inspect',((event:CustomEvent<string>)=>{const e=content.entities.find(e=>e.spatialBinding.kind==='location'&&e.spatialBinding.locationId===event.detail);if(e){active=e.id;embedded=true;card(e,document.getElementById('selection-details')!);}}) as EventListener);
  scope.own(workspaceLoader.register('atlas',async files=>{const attempt=++revision,file=files[0],begin=performance.now();if(file.name!=='gaia-atlas.json'||file.size>2_000_000)throw Error('Atlas size/name');const next=parseAtlasPack(JSON.parse(await file.text()));if(!poi)throw Error('Atlas requires matching POI identity');validateAtlasPoi(next,poi);if(attempt!==revision)return;pack=next;document.dispatchEvent(new Event('gaiagis:journey-targets-change'));refresh();controls.dataset.loadMs=String(performance.now()-begin);}));
  scope.own(appStore.subscribe(s=>{viewer?.setAtlasDisplay(s.map.id==='WM0'&&s.explorer.phase==='idle');if(s.selection?.kind!=='atlas'&&!['location','entrance'].includes(s.selection?.kind??'')){active=null;document.getElementById('atlas-card')?.remove();}if(!embedded&&s.selection?.kind==='atlas'&&active!==s.selection.id)active=null;}));
- scope.own(mountGameplay(viewer,()=>content,e=>visible(e.spoilerLevel)).dispose);
+ const gameplayOwner=mountGameplay(viewer,()=>content,e=>visible(e.spoilerLevel),getEncounter);scope.own(gameplayOwner.dispose);
  scope.own(onLocaleChange(refresh));if(viewer)viewer.onAtlas=id=>{const e=entity(id);if(e)inspect(e);};refresh();controls.dataset.initMs=String(performance.now()-started);
- return {evidence:()=>content,dispose(){revision++;clearNavigation('atlas');viewer?.setAtlasLocations([]);if(viewer)viewer.onAtlas=()=>{};scope.dispose();document.getElementById('atlas-card')?.remove();}};
+ return {evidence:()=>content,gameplayEvidence:()=>gameplayOwner.evidence(),dispose(){revision++;clearNavigation('atlas');viewer?.setAtlasLocations([]);if(viewer)viewer.onAtlas=()=>{};scope.dispose();document.getElementById('atlas-card')?.remove();}};
 }

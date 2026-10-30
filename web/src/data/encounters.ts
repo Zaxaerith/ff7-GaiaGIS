@@ -4,6 +4,7 @@ import type {GaiaMeta,TriangleAttributes} from './mesh';
 export const encounterKinds=['normal','back_attack','side_attack','both_sides','chocobo'] as const;
 export type EncounterKind=typeof encounterKinds[number];
 export interface EncounterRecord {scene_id:number;weight:number;packed:number;encounter_type:EncounterKind;byte_offset:number;}
+export interface EncounterResource {data:EncounterDataset;sha256:string;}
 export interface EncounterSet {id:string;region_id:number;slot:number;byte_offset:number;active_raw:number;active:boolean;encounter_rate:number;padding_hex:string;records:Record<EncounterKind,EncounterRecord[]>;}
 export interface EncounterDataset {
   schema:'gaiagis-encounters';version:1;reconstruction:'v1-geometric-gaia';
@@ -78,11 +79,16 @@ export function encounterColor(data:EncounterDataset|null,a:TriangleAttributes,r
 export async function readLocalEncounters(file:File,meta:GaiaMeta){
   if(file.size>1_000_000)throw new Error('Encounters file is too large.');return parseEncounters(JSON.parse(await file.text()),meta);
 }
-export async function loadOptionalEncounters(meta:GaiaMeta):Promise<EncounterDataset|null>{
+export async function decodeEncounterResource(bytes:ArrayBuffer,meta:GaiaMeta):Promise<EncounterResource>{
+  if(bytes.byteLength>1_000_000)throw Error('Encounters file is too large.');
+  const data=parseEncounters(JSON.parse(new TextDecoder().decode(bytes)),meta),digest=await crypto.subtle.digest('SHA-256',bytes);
+  return {data,sha256:Array.from(new Uint8Array(digest),n=>n.toString(16).padStart(2,'0')).join('')};
+}
+export async function loadOptionalEncounters(meta:GaiaMeta,capture?:(resource:EncounterResource)=>void):Promise<EncounterDataset|null>{
   if(import.meta.env.VITE_GAIA_SOURCE_ONLY==='true')return null;
   const response=await fetch(`${import.meta.env.BASE_URL}data/gaia-encounters.json`);
   if(response.status===404)return null;
   if(!response.ok)throw new Error(`Encounter data request failed (${response.status}).`);
   if(!response.headers.get('content-type')?.includes('application/json'))throw new Error('Encounter data is not JSON.');
-  const text=await response.text();if(text.length>1_000_000)throw new Error('Encounters file is too large.');return parseEncounters(JSON.parse(text),meta);
+  const resource=await decodeEncounterResource(await response.arrayBuffer(),meta);capture?.(resource);return resource.data;
 }

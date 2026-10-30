@@ -3,10 +3,11 @@ import {t,onLocaleChange,locales,dictionaries} from '../i18n';
 import type {PanelId} from './state';
 
 type ToolGroup='terrain'|'network'|'source'|'display';
-export type ToolId='regionalTerrain'|'regionalConnectivity'|'slopeAspect'|'routing'|'reachability'|'serviceArea'|'routeProfile'|'sourceQuery'|'sourceTransect'|'topology'|'measurement'|'projection'|'layers'|'maps'|'comparison'|'variants'|'distortion'|'staticEvents'|'nativeAnalysis';
+export type ToolId='encounterGeography'|'regionalTerrain'|'regionalConnectivity'|'slopeAspect'|'routing'|'reachability'|'serviceArea'|'routeProfile'|'sourceQuery'|'sourceTransect'|'topology'|'measurement'|'projection'|'layers'|'maps'|'comparison'|'variants'|'distortion'|'staticEvents'|'nativeAnalysis';
 export interface ToolDefinition {id:ToolId;group:ToolGroup;title:string;aliases:readonly string[];panels:readonly PanelId[];}
 /** A bounded presentation directory over existing owners, not a second analysis state. */
 export const toolCatalog:readonly ToolDefinition[]=[
+ {id:'encounterGeography',group:'terrain',title:'encgeo.title',aliases:['encounter formation enemy 遭遇 编队 敵 敵人 지역 적'],panels:['analysis']},
  {id:'regionalTerrain',group:'terrain',title:'regional.title',aliases:['region terrain statistics 区域 地形 統計 지역 지형'],panels:['analysis']},
  {id:'regionalConnectivity',group:'terrain',title:'connectivity.title',aliases:['region connectivity boundary component 连通 连結 境界 경계 연결'],panels:['analysis']},
  {id:'slopeAspect',group:'terrain',title:'tools.slopeAspect',aliases:['slope aspect 坡度 坡向 傾斜 경사'],panels:['analysis']},
@@ -50,6 +51,7 @@ export function mountToolPresentation(host:HTMLElement,onSelect:(id:ToolId)=>voi
   const want=(target:HTMLElement|null,set:Set<HTMLElement>)=>{if(target)set.add(target);return target;};
   let found=false;
   const choose=(targetId:string,set=keepAnalysis)=>{const target=want(node(targetId),set);if(target){found=true;if(target.tagName==='DETAILS'&&!opened.has(target)){(target as HTMLDetailsElement).open=true;opened.add(target);}}return target;};
+  if(id==='encounterGeography')choose('encounter-geography');
   if(id==='regionalTerrain')choose('regional-terrain-statistics');
   if(id==='regionalConnectivity')choose('regional-connectivity');
   if(id==='slopeAspect')choose('spatial-surface',keepSpatial);

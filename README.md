@@ -4,6 +4,16 @@ A local-first GIS reconstruction of the original FINAL FANTASY VII world, with a
 
 ## Quick start
 
+**v5.8.0 — Encounter Geography & Formation Evidence** adds **GIS Analysis →
+Encounter Geography**. Query an Encounter Set, Formation ID or composite
+`(Scene ID, Enemy ID)` against your existing WM0 BASE sources. Compare all table
+references with historical-rule static candidates, show an independent amber
+mask, and inspect raw Region/Terrain/Set counts and raw² contributions. Gameplay
+cards and source faces link back to the same tool and Inspector. This is static
+source coverage, **not encounter probability or guaranteed spawns**. No Workspace
+regeneration is needed; without Gameplay, Set analysis remains available.
+[Rules and evidence](docs/reference/encounter-geography.md).
+
 **v5.7.0 — Evidence-aware Journey Planning** adds **World → Exploration journey**.
 Choose up to six stops in your own order, select one movement scenario, and plan
 a continuous static WM0 route. Place and guide cards can add verified entrances

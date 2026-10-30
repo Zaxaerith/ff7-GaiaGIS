@@ -1,5 +1,9 @@
 # Route elevation profile
 
+The v5.8 [Encounter Geography tool](encounter-geography.md) independently queries
+BASE source coverage by Set, Formation or composite Enemy. Its face counts/raw²
+are separate from route corridor lengths and do not represent encounter odds.
+
 For the separate v5.4 WM0 edge evidence tool, see
 [Topology Evidence](global-source-gis.md#wm0-topology-evidence-v54). Original edge
 occurrences, confirmed X relations and loaded CSR comparisons are distinct from

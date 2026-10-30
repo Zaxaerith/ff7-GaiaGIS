@@ -188,3 +188,16 @@ body.gaia-shell:has(#explorer-hud:not([hidden])) #viewport :is(.view-center,#too
  body.gaia-shell #field-workspace-feedback:not(:empty){bottom:calc(var(--shell-footer) + var(--bottom-rail) + 8px)}
 }
 @media(prefers-reduced-motion:reduce){body.gaia-shell :is(.integrated-panel,.integrated-inspector){transition:none;animation:none}}
+
+/* Encounter evidence borrows the existing operation window and source pager. */
+#encounter-geography .encounter-query-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#encounter-geography label{display:flex;flex-direction:column;gap:4px;min-width:0;margin-block:8px}
+#encounter-geography :is(input,select){max-width:100%;min-width:0;box-sizing:border-box}
+#encounter-geography label:has(input[type=checkbox]){flex-direction:row;align-items:center}
+#encounter-geography .encounter-metric{display:flex;justify-content:space-between;gap:12px;padding-block:4px;border-bottom:1px solid #9ec5ee33}
+#encounter-geography .encounter-metric strong{font-variant-numeric:tabular-nums;white-space:nowrap}
+#encounter-geography .encounter-table-scroll{max-width:100%;overflow:auto}
+#encounter-geography table{width:100%;border-collapse:collapse;font-variant-numeric:tabular-nums}
+#encounter-geography :is(th,td){text-align:left;padding:7px 5px;border-bottom:1px solid #9ec5ee33}
+#encounter-geography .surface-query-results button{white-space:normal;overflow-wrap:anywhere}
+@media(max-width:699px){#encounter-geography .encounter-query-controls{grid-template-columns:minmax(0,1fr)}}

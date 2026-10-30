@@ -1,5 +1,13 @@
 # Changelog
 
+## 5.8.0 — Encounter Geography & Formation Evidence
+
+- Add one GIS task for WM0 BASE Encounter Set, Formation and composite Scene/Enemy source coverage, with all-table and historical-rule candidate scopes; ordinary and Chocobo records stay separate.
+- Independently validate the current Encounter asset digest, source archive/member fingerprints and every positive-weight Gameplay link. Duplicate, missing or conflicting links disable reverse associations while Set analysis remains usable.
+- Share the existing WM0 Source owner, compact Set index, bounded face/record pagers and Inspector. Add an independent amber source mask without changing Region Component, Service Area, terrain colouring or Routing state.
+- Summarize original Region/Terrain/Set face counts, raw² contribution and clamp/alias/fallback/zero-area/duplicate diagnostics. Formation/Enemy overlap is counted once per source face; duplicate source geometry is retained.
+- Connect existing Formation/Enemy cards, Game Guide and Source Inspector in five languages. Missing assets and no-record/no-coverage states remain distinct. No runtime probability, inferred reward position, new Workspace asset or Journey solver change is included.
+
 ## 5.7.0 — Evidence-aware Journey Planning
 
 - Add a session-only exploration plan under World, with up to six ordered stops, repeat visits, eight existing WM0 movement profiles and an explicit conditional-terrain scenario. Public guides can supply text goals without private geometry.

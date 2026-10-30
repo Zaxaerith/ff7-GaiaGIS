@@ -582,3 +582,19 @@ Clear resets this tool's choices and overlays, preserving map colouring, route,
 service-area and source-selection owners. Switching Workspace/map or entering
 Field, Explorer or World Variants clears this analysis state through the existing
 lifecycle. The five main entries and classic blue interface are unchanged.
+## Encounter geography (v5.8.0)
+
+From **GIS Analysis**, choose **Encounter Geography & Formation Evidence**.
+Select All Sets, a `region:slot` Set, a Formation ID or a Scene/Enemy ID pair;
+choose ordinary/Chocobo and all-table/static-candidate scope, then query.
+The amber mask, raw Region/Terrain/Set table and source face list describe the
+same selected union. Show/hide this mask without changing other analysis layers.
+Pages contain at most 50 sources. Face selection opens the shared Source Inspector;
+verified records open existing Formation/Enemy cards. Their **View WM0 encounter
+sources** action returns here. **Tool directory**, **Show map**, Inspector **Back**
+and projection changes preserve a valid result.
+
+Missing Gameplay still permits Set analysis. Missing geometry, unverified source
+links, no positive records and no matching source faces have distinct messages.
+Source-only pages do not fabricate private coverage. See
+[scope and source rules](../reference/encounter-geography.md).

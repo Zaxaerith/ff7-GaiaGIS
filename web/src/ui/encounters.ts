@@ -5,8 +5,8 @@ import {t,formatNumber} from '../i18n';
 // SPDX-License-Identifier: GPL-3.0-only
 import type {GaiaMeta,TriangleAttributes} from '../data/mesh';
 import type {GaiaViewer} from '../viewer/GaiaViewer';
-import {chocoboRating,encounterKinds,encounterPalette,loadOptionalEncounters,readLocalEncounters,resolveEncounter} from '../data/encounters';
-import type {ColorLayer,EncounterDataset} from '../data/encounters';
+import {chocoboRating,encounterKinds,encounterPalette,loadOptionalEncounters,decodeEncounterResource,resolveEncounter} from '../data/encounters';
+import type {ColorLayer,EncounterDataset,EncounterResource} from '../data/encounters';
 
 export function renderEncounterInspector(parent:HTMLElement,a:TriangleAttributes,data:EncounterDataset|null,meta:GaiaMeta){
   parent.querySelector('.gameplay-inspector')?.remove();
@@ -52,7 +52,7 @@ export function renderEncounterInspector(parent:HTMLElement,a:TriangleAttributes
 export function mountEncounters(viewer:GaiaViewer,meta:GaiaMeta,isCurrent:()=>boolean){
   const element=<T extends HTMLElement=HTMLElement>(id:string)=>document.getElementById(id) as T;
   const file=element<HTMLInputElement>('local-encounters-file'),status=element('encounter-status'),select=element<HTMLSelectElement>('color-layer');
-  let dataset:EncounterDataset|null=null,revision=0;
+  let dataset:EncounterDataset|null=null,revision=0,resource:EncounterResource|null=null;
   const inspect=(source:number,parent:HTMLElement)=>renderEncounterInspector(parent,viewer.mesh.attributes(source),dataset,meta);
   function legend(){
     if(!['encounter','encounter-rate'].includes(select.value))return;
@@ -79,8 +79,8 @@ export function mountEncounters(viewer:GaiaViewer,meta:GaiaMeta,isCurrent:()=>bo
   });
   select.addEventListener('change',()=>{viewer.setColorLayer(select.value as ColorLayer);legend();});
   element<HTMLInputElement>('chocobo-tracks').addEventListener('change',e=>{const show=(e.target as HTMLInputElement).checked;viewer.setChocoboTracks(show);element('tracks-legend').hidden=!show;});
-  const request=revision;void loadOptionalEncounters(meta).then(data=>{if(isCurrent()&&request===revision)adopt(data);}).catch(error=>{if(isCurrent()&&request===revision)status.textContent=t('ui.encountersUnavailable');status.title=error.message;});
-  async function loadFile(chosen:File,request=++revision){const data=await readLocalEncounters(chosen,meta);if(isCurrent()&&request===revision)adopt(data);}
+  const request=revision;void loadOptionalEncounters(meta,r=>{if(isCurrent()&&request===revision)resource=r;}).then(data=>{if(isCurrent()&&request===revision)adopt(data);}).catch(error=>{if(isCurrent()&&request===revision)status.textContent=t('ui.encountersUnavailable');status.title=error.message;});
+  async function loadFile(chosen:File,request=++revision){if(chosen.size>1_000_000)throw Error('Encounters file is too large.');const next=await decodeEncounterResource(await chosen.arrayBuffer(),meta);if(isCurrent()&&request===revision){resource=next;adopt(next.data);}}
   workspaceLoader.register("encounters",async files=>loadFile(files[0]));
-  return {inspect,loadFile};
+  return {inspect,loadFile,evidence:()=>resource};
 }
