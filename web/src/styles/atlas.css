@@ -137,3 +137,16 @@ body.field-active footer :is(#view-status,#coordinates,#fps){visibility:hidden}
 #field-projection-diagnostics input[type=number]{width:10em}
 .field-registration-lab fieldset{min-width:0;max-width:100%;box-sizing:border-box}
 .field-registration-lab pre,#field-projection-diagnostics pre{white-space:pre-wrap;overflow-wrap:anywhere;max-width:100%}
+
+/* One bounded operation fold in the existing Field toolbar. */
+#field-gateway-query{grid-column:1/-1;max-height:32vh;overflow:auto;padding:6px;border-top:1px solid var(--rim)}
+#field-gateway-query>summary{cursor:pointer;position:sticky;top:0;background:var(--window-bg);padding:5px 0;z-index:1}
+#field-gateway-query .gateway-query-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+#field-gateway-query label{display:flex;flex-direction:column;align-items:stretch;gap:4px;grid-column:auto;min-width:0}
+#field-gateway-query label:first-child{grid-column:1/-1}
+#field-gateway-query select{width:100%;max-width:100%;min-width:0;box-sizing:border-box;min-height:36px}
+#field-gateway-query button{white-space:normal;overflow-wrap:anywhere;max-width:100%}
+#field-gateway-query [id^=field-gateway-leg-]{width:100%;margin-block:3px;text-align:left}
+#field-gateway-query [aria-pressed=true]{border-color:var(--accent);color:var(--accent)}
+.field-edge.gateway-route{stroke:#ffcb78;stroke-width:3}
+@media(max-width:699px){#field-gateway-query select{min-height:44px}#field-gateway-query{max-height:30vh}}

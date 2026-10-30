@@ -1,5 +1,13 @@
 # Changelog
 
+## 5.9.0 — Field Gateway Network & Cross-Scene Reachability
+
+- Compose the existing directed Walkmesh paths into session-only Gateway chains of at most three transfers. Bind states and predecessor evidence to current Context/Walkmesh fingerprints and continue from each actual Arrival Triangle.
+- Require exact source 3D contact and the recorded target Triangle/XY, retain all contact candidates, and select a witness by Access hop count then Triangle ID. Distinguish disconnected Access, invalid geometry, missing resources and the transfer limit.
+- Add an operation fold in the existing Field Workspace. Reuse its Graph, Canvas, Inspector and back history; viewing a leg collapses the operation fold to give the map room. No new Viewer, routing engine or asset/schema is introduced.
+- Cache only touched scenes and validated Gateway records. Resource replacement, leaving Field and stale async requests release/reject old query results; closing Inspector or panning preserves them. Add five-language controls and evidence boundaries.
+- Keep MAPJUMP, world placeholders and Native entry metadata outside spatial paths. Fix a compact-Field resize callback re-entry exposed by the targeted browser layout checks, without changing navigation or theme.
+
 ## 5.8.0 — Encounter Geography & Formation Evidence
 
 - Add one GIS task for WM0 BASE Encounter Set, Formation and composite Scene/Enemy source coverage, with all-table and historical-rule candidate scopes; ordinary and Chocobo records stay separate.

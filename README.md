@@ -4,6 +4,16 @@ A local-first GIS reconstruction of the original FINAL FANTASY VII world, with a
 
 ## Quick start
 
+**v5.9.0 — Field Gateway Network & Cross-Scene Reachability** adds
+**Cross-scene static reachability** inside the existing Field Workspace. Choose a
+verified WM0 Entrance or incoming Gateway Arrival, a target Field, and at most
+three Gateway transfers. Every leg continues from the previous actual Arrival
+Triangle. View a leg on the same Walkmesh Canvas and inspect its original Access
+and Gateway evidence. MAPJUMP, world exits and Native relations remain separate;
+this is static source reachability, not a runtime travel guarantee. Existing
+Context v3 / Walkmesh v1 Workspaces need no regeneration.
+[Rules and use](docs/reference/field-gateway-network.md).
+
 **v5.8.0 — Encounter Geography & Formation Evidence** adds **GIS Analysis →
 Encounter Geography**. Query an Encounter Set, Formation ID or composite
 `(Scene ID, Enemy ID)` against your existing WM0 BASE sources. Compare all table

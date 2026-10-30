@@ -1,5 +1,6 @@
 import {journeyCatalog} from './journeyCatalog';
 import {encounterGeographyCatalog} from './encounterGeographyCatalog';
+import {fieldGatewayCatalog} from './fieldGatewayCatalog';
 import {toolNavigationCatalog} from './toolCatalog';
 import {appNavCatalog} from './appNavCatalog';
 import {explorerAccessCatalog} from './explorerAccessCatalog';
@@ -37,7 +38,7 @@ import {textureCatalog} from './textureCatalog';
 import {multimapCatalog} from './multimapCatalog';
 import {explorerCatalog} from './explorerCatalog';
 import {cartographyCatalog} from './cartographyCatalog';
-export const catalog=[...encounterGeographyCatalog,...journeyCatalog,...toolNavigationCatalog,...appNavCatalog,...explorerAccessCatalog,...neoContentCatalog,...navCatalog,...startCatalog,...gameplayCatalog,...guideCatalog,...regionalTerrainCatalog,...regionalConnectivityCatalog,...topologyCatalog,...sourceGisCatalog,...worldVariantsCatalog,...nativeGisCatalog,...coreCatalog,...uiCatalog,...helpCatalog,...inspectorCatalog,...messagesCatalog,...cartographyCatalog,...textureCatalog,...multimapCatalog,...explorerCatalog,...integratedCatalog,...presentationCatalog,...atlasCatalog,...backgroundCatalog,...scriptEvidenceCatalog,...registrationCatalog,...projectionCatalog,...navigationCatalog,...shellCatalog,...spatialCatalog,...userMappingCatalog,...saveCatalog,...saveSpatialCatalog] as const;
+export const catalog=[...fieldGatewayCatalog,...encounterGeographyCatalog,...journeyCatalog,...toolNavigationCatalog,...appNavCatalog,...explorerAccessCatalog,...neoContentCatalog,...navCatalog,...startCatalog,...gameplayCatalog,...guideCatalog,...regionalTerrainCatalog,...regionalConnectivityCatalog,...topologyCatalog,...sourceGisCatalog,...worldVariantsCatalog,...nativeGisCatalog,...coreCatalog,...uiCatalog,...helpCatalog,...inspectorCatalog,...messagesCatalog,...cartographyCatalog,...textureCatalog,...multimapCatalog,...explorerCatalog,...integratedCatalog,...presentationCatalog,...atlasCatalog,...backgroundCatalog,...scriptEvidenceCatalog,...registrationCatalog,...projectionCatalog,...navigationCatalog,...shellCatalog,...spatialCatalog,...userMappingCatalog,...saveCatalog,...saveSpatialCatalog] as const;
 export const locales=['en','zh-CN','zh-TW','ja','ko'] as const;export type Locale=typeof locales[number];
 export const localeNames=['English','简体中文','繁體中文','日本語','한국어'];
 export const dictionaries=Object.fromEntries(locales.map((l,i)=>[l,Object.fromEntries(catalog.map(row=>[row[0],row[i+1]]))])) as Record<Locale,Record<string,string>>;

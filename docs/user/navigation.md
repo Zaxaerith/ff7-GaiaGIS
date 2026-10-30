@@ -1,5 +1,20 @@
 # Navigation
 
+## Cross-scene Field reachability (v5.9.0)
+
+Open a Field Workspace from an existing place/entrance or Field Context entry.
+Expand **Cross-scene static reachability**, choose a verified Entrance or incoming
+Arrival, a target Field and at most three transfers. Click **Query static
+reachability**. The operation uses original Gateway geometry and directed
+Walkmesh Access, with no MAPJUMP/world shortcut.
+
+Choose a result leg to show its local path and source Gateway on the same Canvas.
+The controls fold away for map space; reopen them to select the next leg. Inspector
+details and Field Back preserve the valid query. Returning to World or replacing
+its resources clears it. A disconnected or limit result retains diagnostics,
+including the actual start Triangle and rejected contact candidates.
+[Method, source checks and limits](../reference/field-gateway-network.md).
+
 ## Evidence-aware Journeys (v5.7.0)
 
 Open **World → Exploration journey**. Select a place/guide and **Add stop**;
