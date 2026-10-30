@@ -22,6 +22,7 @@ class NodeStub extends EventTarget {
  constructor(readonly tag:string){super();}
  append(...nodes:NodeStub[]){for(const node of nodes){node.remove();node.parent=this;this.children.push(node);}}
  prepend(...nodes:NodeStub[]){for(const node of nodes.reverse()){node.remove();node.parent=this;this.children.unshift(node);}}
+ insertBefore(node:NodeStub,before:NodeStub|null){node.remove();node.parent=this;const index=before?this.children.indexOf(before):-1;this.children.splice(index<0?this.children.length:index,0,node);return node;}
  replaceChildren(...nodes:NodeStub[]){for(const node of this.children)node.parent=null;this.children=[];this.append(...nodes);}
  remove(){if(this.parent){this.parent.children.splice(this.parent.children.indexOf(this),1);this.parent=null;}}
  all():NodeStub[]{return this.children.flatMap(node=>[node,...node.all()]);}
