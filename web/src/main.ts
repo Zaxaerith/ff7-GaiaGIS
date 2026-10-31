@@ -132,7 +132,8 @@ async function start(provided?:{mesh:GaiaMesh;meta:GaiaMeta}){
     element('toggle-graticule').addEventListener('click',()=>setGraticule(!element<HTMLInputElement>('graticule').checked));
     element('north-up').addEventListener('click',()=>{viewer.setAutoRotate(false);element<HTMLInputElement>('auto-rotate').checked=false;viewer.northUp();});
     bind('cap-distinction',v=>viewer.setCapDistinction(v));bind('auto-rotate',v=>viewer.setAutoRotate(v));
-    element('reset-view').addEventListener('click',()=>viewer.resetView());element('zoom-in').addEventListener('click',()=>viewer.zoom(0.83));element('zoom-out').addEventListener('click',()=>viewer.zoom(1.2));
+    const zoom=(factor:number)=>{if(!explorer?.zoom(factor)&&appStore.state.map.id==='WM0'&&appStore.state.view.spatial==='world')viewer.zoom(factor);};
+    element('reset-view').addEventListener('click',()=>viewer.resetView());element('zoom-in').addEventListener('click',()=>zoom(0.83));element('zoom-out').addEventListener('click',()=>zoom(1.2));
     element<HTMLSelectElement>('projection').addEventListener('change',e=>viewer.setProjection((e.target as HTMLSelectElement).value as ProjectionId));
     const mobileButton=element('mobile-display');
     mobileButton.addEventListener('click',()=>{const open=document.querySelector('.controls')!.classList.toggle('mobile-open');mobileButton.setAttribute('aria-expanded',String(open));element('info-panel').classList.remove('mobile-open');});

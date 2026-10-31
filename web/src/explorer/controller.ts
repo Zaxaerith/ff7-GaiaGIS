@@ -115,7 +115,17 @@ export class ExplorerController {
  private pointerDown=(e:PointerEvent)=>{if(!this.state||e.target!==this.canvas())return;this.canvas()?.focus();this.drag={x:e.clientX,y:e.clientY,id:e.pointerId};this.canvas()?.setPointerCapture(e.pointerId);e.stopImmediatePropagation();};
  private pointerMove=(e:PointerEvent)=>{if(!this.drag||e.pointerId!==this.drag.id)return;this.yaw-=(e.clientX-this.drag.x)*.006;this.pitch=Math.max(.1,Math.min(1.35,this.pitch+(e.clientY-this.drag.y)*.006));this.drag={x:e.clientX,y:e.clientY,id:e.pointerId};e.stopImmediatePropagation();};
  private pointerUp=(e:PointerEvent)=>{if(!this.drag||e.pointerId!==this.drag.id)return;this.drag=null;e.stopImmediatePropagation();};
- private wheel=(e:WheelEvent)=>{if(!this.state||e.target!==this.canvas())return;e.preventDefault();e.stopImmediatePropagation();this.distance=Math.max(500,Math.min(12000,this.distance*Math.exp(e.deltaY*.001)));};
+ /** Consume overview zoom while placing, and keep active zoom relative to the character. */
+ zoom(factor:number){
+  if(!this.armed)return false;
+  if(this.state&&Number.isFinite(factor)&&factor>0){
+   this.distance=Math.max(500,Math.min(12000,this.distance*factor));
+   // Toolbar focus pauses frame(); return focus to its map so following resumes.
+   this.canvas()?.focus({preventScroll:true});
+  }
+  return true;
+ }
+ private wheel=(e:WheelEvent)=>{if(!this.armed||e.target!==this.canvas())return;e.preventDefault();e.stopImmediatePropagation();this.zoom(Math.exp(e.deltaY*.001));};
  private mapChanging=()=>{if(this.armed){this.exit();if(this.restoreTimer){clearTimeout(this.restoreTimer);this.restoreTimer=null;}this.status.textContent=t('explore.transition');}queueMicrotask(()=>this.translate());};
  // Roaming never owns the object selection: keep explicit guide/place changes.
  exit(translate=true){appStore.dispatch({type:'explorer',phase:'idle'});if(this.restoreTimer){clearTimeout(this.restoreTimer);this.restoreTimer=null;}this.model?.dispose();this.model=null;this.shadow?.dispose();this.shadow=null;this.diagnostics.shadowDrawCalls=0;this.state=null;this.keys.clear();this.drag=null;this.pad.hidden=true;document.body.append(this.pad);this.armed=false;delete this.panel.dataset.state;this.diagnostics.modelGeometryBytes=this.diagnostics.modelTextureBytes=this.diagnostics.modelDrawCalls=0;const v=this.viewer,snapshot=this.snapshot;if(v){v.captureExplorer=false;v.onExplorerFrame=()=>{};v.onExplorerPick=()=>{};const bridge='map' in v?v:v.explorerBridge;bridge.camera.near=snapshot?.near??.005;bridge.camera.updateProjectionMatrix();bridge.controls.enabled=true;if(snapshot){const restore=()=>{if('map' in v&&snapshot.topdown!==v.topdown)v.setView(!!snapshot.topdown);const b='map' in v?v:v.overviewBridge;b.camera.near=snapshot.near;b.camera.position.copy(snapshot.position);b.camera.up.copy(snapshot.up);b.camera.zoom=snapshot.zoom;b.camera.updateProjectionMatrix();b.controls.target.copy(snapshot.target);b.controls.update();};if('mesh' in v&&snapshot.projection&&v.projectionId!==snapshot.projection){v.setProjection(snapshot.projection);this.restoreTimer=setTimeout(restore,1250);}else restore();}}

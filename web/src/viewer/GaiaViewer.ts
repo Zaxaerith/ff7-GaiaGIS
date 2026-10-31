@@ -438,9 +438,12 @@ export class GaiaViewer {
   }
   setAutoRotate(value:boolean){this.globeControls.autoRotate=value;}
   zoom(factor:number){
-    if(this.morph) return;
+    if(this.captureExplorer||this.morph||this.suspendedAt!==null||!Number.isFinite(factor)||factor<=0) return;
     this.cancelFlight();
-    if(this.projectionId==='globe') this.perspective.position.multiplyScalar(factor);
+    if(this.projectionId==='globe') {
+      const offset=this.perspective.position.clone().sub(this.globeControls.target);
+      this.perspective.position.copy(this.globeControls.target).add(offset.multiplyScalar(factor).clampLength(this.globeControls.minDistance,this.globeControls.maxDistance));
+    }
     else {this.mapCamera.zoom=Math.max(0.5,Math.min(20,this.mapCamera.zoom/factor));this.mapCamera.updateProjectionMatrix();}
   }
   clearSelection(){this.selected=null;this.highlight.visible=false;this.onSelection(null);}

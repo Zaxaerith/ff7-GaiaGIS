@@ -2,6 +2,7 @@
 
 ## 5.9.0 — Field Gateway Network & Cross-Scene Reachability
 
+- Fix WM0 zoom buttons competing with the Explorer follow camera: active roaming shares the wheel's 500–12000 character distance; placement consumes overview zoom. Globe buttons preserve the current target/direction and obey the existing 1.08–14 OrbitControls limits. Native roaming keeps its own camera and exiting restores the overview snapshot.
 - Compose the existing directed Walkmesh paths into session-only Gateway chains of at most three transfers. Bind states and predecessor evidence to current Context/Walkmesh fingerprints and continue from each actual Arrival Triangle.
 - Require exact source 3D contact and the recorded target Triangle/XY, retain all contact candidates, and select a witness by Access hop count then Triangle ID. Distinguish disconnected Access, invalid geometry, missing resources and the transfer limit.
 - Add an operation fold in the existing Field Workspace. Reuse its Graph, Canvas, Inspector and back history; viewing a leg collapses the operation fold to give the map room. No new Viewer, routing engine or asset/schema is introduced.
