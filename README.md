@@ -4,6 +4,14 @@ A local-first GIS reconstruction of the original FINAL FANTASY VII world, with a
 
 ## Quick start
 
+**v5.10.0 — Gameplay Event Geography & Script Provenance** adds **Gameplay event
+spatial evidence** in the existing Field Workspace and **GIS → World event
+geography**. Query original Actor/Slot/Entry/offset records, exact line contacts
+and directed Access from verified entrances/arrivals. Compare same-Actor and
+same-Entry candidates without inventing reward positions or active states.
+WM0 trigger-face statistics keep placements and unresolved scripts separate.
+Existing Workspaces need no regeneration. [Evidence and use](docs/reference/gameplay-event-geography.md).
+
 **v5.9.0 — Field Gateway Network & Cross-Scene Reachability** adds
 **Cross-scene static reachability** inside the existing Field Workspace. Choose a
 verified WM0 Entrance or incoming Gateway Arrival, a target Field, and at most

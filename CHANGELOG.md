@@ -1,5 +1,13 @@
 # Changelog
 
+## 5.10.0 — Gameplay Event Geography & Script Provenance
+
+- Add a scene-lazy Field evidence query over Interaction, background/Palette script evidence and Gameplay, with original Actor/Slot/Entry/offset and geometry filters, 50-row paging and exact Triangle contact lookup.
+- Verify current asset/Section fingerprints and generation before cross-channel associations. Keep same-Actor and same-Entry relations as candidates; grants retain null positions and empty flagLinks, and line updates/switches never imply active state.
+- Reuse the existing Canvas, Inspector, Gameplay/guide navigation and Walkmesh network for directed contact reachability from validated WM0 entrances or actual incoming Gateway arrivals. Keep all contacts and original Access evidence; refuse XY-only/variable geometry and mismatched Access.
+- Add World event geography over original WM0 trigger-face identities, with raw Region/Terrain counts and raw² contributions. Separate constant placements and unresolved observations; World Battles without anchors remain unlocated. No new mask, Workspace asset, parser or schema is introduced.
+- Preserve five-language FF7 UI and source-only delivery. Scene/source replacement rejects stale async results; Inspector close and panning preserve valid session evidence.
+
 ## 5.9.0 — Field Gateway Network & Cross-Scene Reachability
 
 - Fix WM0 zoom buttons competing with the Explorer follow camera: active roaming shares the wheel's 500–12000 character distance; placement consumes overview zoom. Globe buttons preserve the current target/direction and obey the existing 1.08–14 OrbitControls limits. Native roaming keeps its own camera and exiting restores the overview snapshot.

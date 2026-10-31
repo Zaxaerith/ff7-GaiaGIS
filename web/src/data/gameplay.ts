@@ -75,6 +75,7 @@ export function parseGameplay(value:unknown,fields:FieldPack,contextSHA256:strin
  }
  return p;
 }
+export interface GameplayResource {index:GameplayIndex;sha256:string;contextSHA256:string;generation:number;}
 export class GameplayIndex {
  readonly scenes=new Map<number,GameplayScene>();readonly formations=new Map<number,GameplayFormation>();readonly enemies=new Map<string,GameplayEnemy>();readonly records=new Map<string,{scene:GameplayScene;record:GameplayRecord}>();
  readonly items=new Map<number,string>();readonly materia=new Map<number,string>();

@@ -150,3 +150,11 @@ body.field-active footer :is(#view-status,#coordinates,#fps){visibility:hidden}
 #field-gateway-query [aria-pressed=true]{border-color:var(--accent);color:var(--accent)}
 .field-edge.gateway-route{stroke:#ffcb78;stroke-width:3}
 @media(max-width:699px){#field-gateway-query select{min-height:44px}#field-gateway-query{max-height:30vh}}
+
+/* Scene-local event queries reuse the existing FF7 window and bounded folds. */
+.field-workspace-toolbar:has(>.field-event-tool){max-height:40%;overflow:auto;overscroll-behavior:contain;box-sizing:border-box}
+.field-event-tool{grid-column:1/-1;max-width:100%;min-width:0}.field-event-tool>div{padding:.5rem}
+.event-evidence-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.4rem}.event-evidence-form label{display:flex;flex-direction:column;min-width:0}.event-evidence-form input,.event-evidence-form select{width:100%;min-width:0;box-sizing:border-box}
+#field-event-inspection pre{white-space:pre-wrap;overflow-wrap:anywhere}#field-event-inspection button{max-width:100%;white-space:normal;overflow-wrap:anywhere}
+#world-event-geography table{width:100%;font-variant-numeric:tabular-nums}#world-event-geography td{text-align:right}
+@media(max-width:699px){.field-workspace-toolbar:has(>.field-event-tool){max-height:36%}.event-evidence-form input,.event-evidence-form select{min-height:44px}}

@@ -613,3 +613,18 @@ Missing Gameplay still permits Set analysis. Missing geometry, unverified source
 links, no positive records and no matching source faces have distinct messages.
 Source-only pages do not fabricate private coverage. See
 [scope and source rules](../reference/encounter-geography.md).
+
+## Gameplay event evidence (v5.10)
+
+In a Field Walkmesh, open **Gameplay event spatial evidence**. Use the existing
+Field selector and filter original Actor, Slot, Entry, offset or geometry. Select
+a record to inspect its original evidence and candidate relationships. The
+Triangle Inspector's event action filters exact contacts for the selected face.
+Choose a validated entrance/Arrival to check a local directed Access path.
+Closing Inspector returns to the same Field; no data is reloaded by this action.
+
+Under **GIS → World event geography**, analyze the current Events, filter raw
+Region/Terrain and select source faces. Constant model placements and unresolved
+scripts have separate lists. A script or grant reference is never an inferred
+reward coordinate, completion flag or guarantee that the event executes.
+See [source rules](../reference/gameplay-event-geography.md).

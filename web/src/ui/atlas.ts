@@ -133,5 +133,5 @@ export function mountAtlas(viewer?:GaiaViewer,getPoi?:()=>PoiDataset|null,getEnc
  scope.own(appStore.subscribe(s=>{viewer?.setAtlasDisplay(s.map.id==='WM0'&&s.explorer.phase==='idle');if(s.selection?.kind!=='atlas'&&!['location','entrance'].includes(s.selection?.kind??'')){active=null;document.getElementById('atlas-card')?.remove();}if(!embedded&&s.selection?.kind==='atlas'&&active!==s.selection.id)active=null;}));
  const gameplayOwner=mountGameplay(viewer,()=>content,e=>visible(e.spoilerLevel),getEncounter);scope.own(gameplayOwner.dispose);
  scope.own(onLocaleChange(refresh));if(viewer)viewer.onAtlas=id=>{const e=entity(id);if(e)inspect(e);};refresh();controls.dataset.initMs=String(performance.now()-started);
- return {evidence:()=>content,gameplayEvidence:()=>gameplayOwner.evidence(),dispose(){revision++;clearNavigation('atlas');viewer?.setAtlasLocations([]);if(viewer)viewer.onAtlas=()=>{};scope.dispose();document.getElementById('atlas-card')?.remove();}};
+ return {evidence:()=>content,gameplayEvidence:()=>gameplayOwner.evidence(),gameplayResource:()=>gameplayOwner.resource(),dispose(){revision++;clearNavigation('atlas');viewer?.setAtlasLocations([]);if(viewer)viewer.onAtlas=()=>{};scope.dispose();document.getElementById('atlas-card')?.remove();}};
 }
