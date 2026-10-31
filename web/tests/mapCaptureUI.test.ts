@@ -15,6 +15,7 @@ vi.mock('../src/ui/wm0Topology',()=>({mountWM0Topology:()=>({inspect(){},dispose
 vi.mock('../src/ui/regionalTerrain',()=>({mountRegionalTerrain:()=>({dispose(){}})}));
 vi.mock('../src/ui/regionalConnectivity',()=>({mountRegionalConnectivity:()=>({inspect(){},dispose(){}})}));
 vi.mock('../src/ui/encounterGeography',()=>({mountEncounterGeography:()=>({inspect(){},dispose(){}})}));
+vi.mock('../src/ui/worldEventGeography',()=>({mountWorldEventGeography:()=>({inspect(){},dispose(){}})}));
 
 // Owner wiring only: no data reconstruction or browser layout claims.
 class NodeStub extends EventTarget {
