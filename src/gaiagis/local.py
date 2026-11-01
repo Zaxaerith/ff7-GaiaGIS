@@ -153,6 +153,9 @@ def server_manifest(root):
         if name=='gaia-field-script-evidence.bin':
             from .field_script_evidence import MAX_PACK, GENERATOR_VERSION
             if asset['bytes']>MAX_PACK or asset.get('generator_version')!=GENERATOR_VERSION:raise ValueError('Script evidence asset profile/budget')
+        if name=='gaia-field-dialogue.bin':
+            from .field_dialogue import MAX_PACK, GENERATOR_VERSION
+            if asset['bytes']>MAX_PACK or asset.get('generator_version')!=GENERATOR_VERSION:raise ValueError('Dialogue asset profile/budget')
         if name=='gaia-gameplay.json':
             from .gameplay import MAX_BYTES, GENERATOR_VERSION
             if asset['bytes']>MAX_BYTES or asset.get('generator_version')!=GENERATOR_VERSION:raise ValueError('Gameplay evidence asset profile/budget')

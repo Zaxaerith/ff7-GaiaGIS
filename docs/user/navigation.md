@@ -628,3 +628,21 @@ Region/Terrain and select source faces. Constant model placements and unresolved
 scripts have separate lists. A script or grant reference is never an inferred
 reward coordinate, completion flag or guarantee that the event executes.
 See [source rules](../reference/gameplay-event-geography.md).
+
+## Field dialogue evidence (v5.11)
+
+Open an existing **Field Walkmesh** or Field Graph, then **Gameplay event spatial
+evidence**. **Dialogue references** limits the shared query to MESSAGE/ASK;
+**Field Text IDs / references** opens a paged text inventory. Actor, raw Slot,
+Entry, table/main, opcode, offset and Text ID are independent filters. Select a
+record to open the same Inspector; inspect its Text ID, original aliases,
+incoming/target REQ references or same-Actor/Entry candidates. Reverse-reference
+a Text ID to see its instructions. No separate dialogue map or search service
+is created.
+
+Private EN preview is folded and optional. Missing bodies retain the metadata
+query; invalid tables/terminators retain the scene and explain unavailable text.
+Unreferenced means only not referenced by the current reachable MESSAGE/ASK
+index. A selected exact-contact Interaction can use the existing directed path
+from a validated Entrance/Arrival. The line is a candidate, not the dialogue's
+position or proof of playback. See [generation and limits](../reference/field-dialogue.md).

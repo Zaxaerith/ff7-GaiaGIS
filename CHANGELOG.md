@@ -1,5 +1,13 @@
 # Changelog
 
+## 5.11.0 — Field Dialogue Geography & Conditional Evidence
+
+- Add an optional, source-bound Dialogue Evidence transport with metadata-only and private referenced-text modes. Incremental generation changes only this asset and its Manifest entry, preserving a legacy Manifest recovery copy.
+- Reuse the unchanged production Field CFG for MESSAGE/ASK, original Actor/Slot/table/main aliases, raw offsets, Text ID reverse references and bounded text-table diagnostics. Keep unreachable boundaries ownerless and all existing partial/CMUSC stops.
+- Integrate the current Field window, pagers, shared Inspector and event associations. Explicit REQ/REQSW/REQEW targets retain Actor/raw Slot/Entry/priority; same-Actor lines and Gameplay remain candidates, never dialogue positions or causal triggers.
+- Show symbolic private EN text using safe DOM text, strict extra/AKAO/terminator bounds and visible unknown glyphs. Do not evaluate names, choices, values, timing, window state or Save banks. New Viewer reads old Workspaces; old Viewer rejects the new optional asset type.
+- Add limited raw ASK writes, IF reads/operators/successors, adjacent same-address evidence and bounded selected-Entry control checks. No CMUSC repair, new coordinates, story VM, gameplay state or public game text.
+
 ## 5.10.0 — Gameplay Event Geography & Script Provenance
 
 - Add a scene-lazy Field evidence query over Interaction, background/Palette script evidence and Gameplay, with original Actor/Slot/Entry/offset and geometry filters, 50-row paging and exact Triangle contact lookup.

@@ -1040,3 +1040,33 @@ v4.6 retains GAIAMAP v1, its 72-byte records, identities, hashes and the existin
 ## Optional explicit World Variant research
 
 World Variants uses a separate source-bound JSON file with schema/generator and bounded payload hash. It is explicitly imported, never added as an unknown logical type to Manifest v1. Old/new Workspaces and canonical GAIAWEB v1 remain unchanged. [Contract, raw axes and limits](world-variants.md).
+
+## Optional Field Dialogue transport (v5.11)
+
+`gaia-field-dialogue.bin`: logical type `field-dialogue`, mapId `shared`, generator
+`field-dialogue-1`, dependency exactly `gaia-field-context.json`. The 16-byte
+little-endian prefix is `GAIADLG\0`, U32 version 1 and U32 metadata byte length.
+Metadata binds the known original EN Field archive and maplist, exact Context
+SHA, decoder revision `field-cfg-v510-cmusc-stop`, EN source language and
+`metadata-only` / `with-text` mode. Each scene has a contiguous zlib span,
+uncompressed size/SHA and Field/member/Section 1/5/8 identities. Scene payloads
+retain the existing reader's CFG, aliases, selected instruction bytes and text
+table metadata. Only referenced valid text may have a hex-encoded body in the
+private with-text mode. This is evidence, not executable scripts or a VM.
+
+Limits: 16,000,000 encoded bytes, 1,000,000 metadata bytes, 2,000,000 decoded
+bytes/scene, 16,384 selected records, 65,535 CFG boundaries and 2,112 aliases.
+These are rejection budgets, not measured browser performance guarantees.
+Encoded-file integrity is checked at import; per-scene bodies/CFG are decoded
+only on demand. The Field owner retains only the current dialogue scene.
+Workspace generation is a runtime binding, never a persisted private text cache.
+
+The Manifest remains v1 but its recognized asset vocabulary is extended. A new
+Viewer accepts an old Manifest without Dialogue; an old v5.10 Viewer rejects a
+new Manifest containing `field-dialogue`. It is **not** transparently backward
+compatible. The incremental command preserves the previous Manifest under
+`.build/recovery/field-dialogue/<previous-Manifest-SHA>/gaia-workspace.json`.
+Use that matching old inventory with v5.10, or use v5.11 for the new asset.
+Old Context v1–v5 reading is unchanged; Dialogue generation requires the
+verified original EN archive and matching Context v3/v4/v5, not a foreign archive
+renamed to flevel.lgp. See [Dialogue source contract](field-dialogue.md).

@@ -4,6 +4,15 @@ A local-first GIS reconstruction of the original FINAL FANTASY VII world, with a
 
 ## Quick start
 
+**v5.11.0 — Field Dialogue Geography & Conditional Evidence** adds source-bound
+MESSAGE/ASK ↔ Text ID queries in the existing Field evidence window, original
+Actor/Slot/Entry aliases, explicit REQ targets and limited raw ASK/IF evidence.
+Optional locally generated EN previews use symbolic control tokens; names,
+answers and conditions are never evaluated. Same-Actor lines remain spatial
+candidates, not dialogue/NPC coordinates. Old Workspaces remain usable without
+the new asset; v5.10 Viewers cannot read the new Manifest entry.
+[Generation, privacy and use](docs/reference/field-dialogue.md).
+
 **v5.10.0 — Gameplay Event Geography & Script Provenance** adds **Gameplay event
 spatial evidence** in the existing Field Workspace and **GIS → World event
 geography**. Query original Actor/Slot/Entry/offset records, exact line contacts

@@ -158,3 +158,8 @@ body.field-active footer :is(#view-status,#coordinates,#fps){visibility:hidden}
 #field-event-inspection pre{white-space:pre-wrap;overflow-wrap:anywhere}#field-event-inspection button{max-width:100%;white-space:normal;overflow-wrap:anywhere}
 #world-event-geography table{width:100%;font-variant-numeric:tabular-nums}#world-event-geography td{text-align:right}
 @media(max-width:699px){.field-workspace-toolbar:has(>.field-event-tool){max-height:36%}.event-evidence-form input,.event-evidence-form select{min-height:44px}}
+
+/* Dialogue shares the Field evidence window; private text is deliberately plain. */
+.dialogue-shortcuts{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.5rem}
+.dialogue-shortcuts button{flex:1 1 11rem;white-space:normal}
+#field-event-inspection .dialogue-preview{font:inherit;line-height:1.65;white-space:pre-wrap;overflow-wrap:anywhere;padding:.6rem;background:rgba(0,0,0,.18);border-left:2px solid #c8d9f2;max-width:100%;box-sizing:border-box}

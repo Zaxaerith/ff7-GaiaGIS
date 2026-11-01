@@ -76,3 +76,14 @@ GIS 研究/交换导出可使用 **GeoPackage（基于 SQLite）**，由 Python/
 例如 Atlas 文字知识可在 source-only 模式读取，但地图入口必须有实际 POI/Field 证据；Save Field 标记继续要求 Field、Walkmesh、Triangle 与具体来源一致；世界状态预测继续以已验证**完整 EV** 指纹为门槛。格式可读取、关联已验证、原版运行时行为已验证是三个不同层次。本版没有 MOD 通用适配、存档写回或运行时模拟。
 
 代码依据：[`dataset.py`](../../src/gaiagis/dataset.py)、[`map_reader.py`](../../src/gaiagis/map_reader.py)、[`lgp.py`](../../src/gaiagis/lgp.py)、[`build_workspace.py`](../../src/gaiagis/build_workspace.py)、[`workspace.ts`](../../web/src/app/workspace.ts)、[`fieldContext.ts`](../../web/src/data/fieldContext.ts)、[`fieldCamera.ts`](../../web/src/data/fieldCamera.ts)、[`fieldScriptEvidence.ts`](../../web/src/data/fieldScriptEvidence.ts)。契约细节见 [Workspace](workspace-format.md)、[架构](architecture.md)、[多语言来源](multilingual-sources.md)、[数据分发边界](data-policy.md)。
+
+## v5.11 私有 Dialogue 增量样本
+
+新增可选 `gaia-field-dialogue.bin`（`field-dialogue-1`）：5,459,860 bytes，
+包含来源元数据及12,413个有效、被引用的EN正文；原正文不进入公开产物。
+最终本地Manifest为22个资产，总计139,215,301 bytes（约132.766 MiB）；
+旧21个资产的清单记录和文件修改时间均未改变。此为本机最终清单样本，
+不覆盖前文历史样本，也不代表其他语言/模式的固定大小。
+A metadata-only与B with-text的传输结构相同，B仅保留必要引用正文，
+而非复制全部文本。按Field懒解码、当前场景缓存，不新增SQL数据库。
+见[Dialogue契约](field-dialogue.md)。
