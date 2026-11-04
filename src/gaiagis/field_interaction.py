@@ -28,6 +28,8 @@ from .poi import parse_maplist
 from .safety import output_path, protect_input
 from .web_export import sha256
 
+from .field_provenance import LEGACY, context_decoder, evidence_identity, validate_profile
+
 GENERATOR_VERSION='field-interaction-1'
 FILENAME='gaia-field-interaction.bin'
 MAX_PACK=8_000_000
@@ -77,7 +79,7 @@ def parse_triggers(section):
     return records,unused
 
 
-def scene_interactions(payload, field_id, name, *, archive=None):
+def scene_interactions(payload, field_id, name, *, archive=None, decoder=LEGACY):
     script,section,local=field_sections(payload,walkmesh=True,archive=archive,member=name)
     triggers,unused=parse_triggers(section)
     points=None;triangles=0;mesh_reason=None
@@ -85,7 +87,7 @@ def scene_interactions(payload, field_id, name, *, archive=None):
         stats,points=parse_walkmesh(local,geometry=True);triangles=stats['triangles']
     except (FormatError,TypeError) as error:mesh_reason='mesh_unavailable'
     stops=[];records=[]
-    try:_,_,stops,records=parse_script(script,interactions=True)
+    try:_,_,stops,records=parse_script(script,interactions=True,decoder=decoder)
     except (FormatError,UnicodeError):stops=[dict(offset=None,opcode=None,reason='invalid_script',entryReachable=False)]
     for row in [*triggers,*records]:
         if 'a' in row:row['geometry']=segment_geometry(points,row['a'],row['b'])
@@ -125,7 +127,7 @@ def encode_interactions(source, directory):
     context_path=directory/'gaia-field-context.json'
     if not context_path.is_file() or context_path.stat().st_size>8_000_000:raise ValueError('Interaction requires existing Field Context')
     context=json.loads(context_path.read_text(encoding='utf8'))
-    if not isinstance(context,dict) or context.get('schema')!='gaiagis-field-context' or context.get('version') not in (1,2,3,4,5) or not isinstance(context.get('sources'),dict) or any(context['sources'].get(k)!=v for k,v in sources.items()):raise ValueError('Interaction Field source identity mismatch')
+    if not isinstance(context,dict) or context.get('schema')!='gaiagis-field-context' or context.get('version') not in (1,2,3,4,5,6) or not isinstance(context.get('sources'),dict) or any(context['sources'].get(k)!=v for k,v in sources.items()):raise ValueError('Interaction Field source identity mismatch')
     nodes=context.get('nodes')
     if not isinstance(nodes,list) or len(nodes)>2000 or any(not isinstance(n,dict) for n in nodes):raise ValueError('Interaction Field identities')
     scenes=[];pool=bytearray();counts=dict(fields=0,slots=0,triggers=0,unused=0,line=0,linon=0,sline=0,staticSline=0,dynamicSline=0,stops=0,backgroundMatched=0,backgroundUnknown=0)
@@ -133,7 +135,7 @@ def encode_interactions(source, directory):
         if node.get('status')!='available':continue
         fid=node['id'];name=node['name']
         if type(fid) is not int or not 0<=fid<len(names) or name!=names[fid] or name.casefold() not in entries or any(s['fieldId']==fid for s in scenes):raise ValueError('Interaction maplist/Field identity mismatch')
-        value=scene_interactions(read_entry(archive,entries[name.casefold()]),fid,name,archive=ds.field_name)
+        value=scene_interactions(read_entry(archive,entries[name.casefold()]),fid,name,archive=ds.field_name,decoder=context_decoder(context))
         decoded=json.dumps(value,separators=(',',':'),sort_keys=True).encode();compressed=zlib.compress(decoded,9)
         if len(decoded)>MAX_SCENE or len(compressed)>MAX_SCENE:raise FormatError('Interaction scene budget')
         scenes.append(dict(fieldId=fid,name=name,triangles=value['triangles'],section5SHA256=value['section5SHA256'],offset=len(pool),bytes=len(compressed),rawBytes=len(decoded),sha256=digest(decoded)))
@@ -145,11 +147,13 @@ def encode_interactions(source, directory):
             if key=='sline':counts['staticSline' if row['static'] else 'dynamicSline']+=1
         for row in value['triggers']:
             counts['backgroundMatched']+=row['background']['status']=='matched';counts['backgroundUnknown']+=row['background']['status']=='unknown'
-    meta=dict(schema='gaiagis-field-interaction',version=1,coordinateSpace='FieldLocal',generator_revision=GENERATOR_VERSION,sources=sources,scenes=scenes)
+    version,generator,decoder=evidence_identity('field-interaction',context)
+    meta=dict(schema='gaiagis-field-interaction',version=version,coordinateSpace='FieldLocal',generator_revision=generator,sources=sources,scenes=scenes)
+    if version==2:meta.update(decoder=decoder,contextSHA256=digest(context_path.read_bytes()))
     encoded=json.dumps(meta,separators=(',',':'),sort_keys=True).encode()
     if len(encoded)>MAX_HEADER or 16+len(encoded)+len(pool)>MAX_PACK:raise FormatError('Interaction header/pack budget')
     if sha256(archive)!=source_hash:raise RuntimeError('Field source changed during interaction generation')
-    payload=b'GAIAINT\0'+struct.pack('<II',1,len(encoded))+encoded+pool
+    payload=b'GAIAINT\0'+struct.pack('<II',version,len(encoded))+encoded+pool
     return payload,dict(counts,bytes=len(payload),seconds=round(time.perf_counter()-began,3),sources=sources)
 
 
@@ -276,20 +280,23 @@ def validate_interaction_scene(value, span, scene):
 
 
 def read_interaction(scene):
-    """Read/hash the optional v1 pack, decompress only this selected Field."""
+    """Read/hash the optional v1/v2 pack, decompress only this selected Field."""
     from .clean_output import reject_links
     began=time.perf_counter();path=scene['root']/FILENAME;record=scene['assets'].get(FILENAME)
     if not record or not path.is_file():raise ValueError('FieldLocal v2 requires Interaction Pack; run field-interaction --source YOUR_FF7_PC_DATA --workspace YOUR_WORKSPACE')
     reject_links(path)
-    if path.stat().st_size!=_int(record['bytes'],16,MAX_PACK) or record.get('generator_version')!=GENERATOR_VERSION:raise ValueError('Interaction manifest/checksum mismatch')
+    if path.stat().st_size!=_int(record['bytes'],16,MAX_PACK) or record.get('generator_version') not in (GENERATOR_VERSION,'field-interaction-2'):raise ValueError('Interaction manifest/checksum mismatch')
     with path.open('rb') as stream:
         prefix=stream.read(16)
-        if len(prefix)!=16 or prefix[:8]!=b'GAIAINT\0' or struct.unpack_from('<I',prefix,8)[0]!=1:raise ValueError('Interaction pack header')
+        if len(prefix)!=16 or prefix[:8]!=b'GAIAINT\0' or struct.unpack_from('<I',prefix,8)[0] not in (1,2):raise ValueError('Interaction pack header')
         length=struct.unpack_from('<I',prefix,12)[0]
         if not 0<length<=MAX_HEADER or 16+length>record['bytes']:raise ValueError('Interaction metadata budget')
         encoded=stream.read(length);checksum=hashlib.sha256(prefix+encoded)
-        meta=_shape(_decode(encoded),'schema version coordinateSpace generator_revision sources scenes')
-        if meta['schema']!='gaiagis-field-interaction' or type(meta['version']) is not int or meta['version']!=1 or meta['coordinateSpace']!='FieldLocal' or meta['generator_revision']!=GENERATOR_VERSION:raise ValueError('Interaction schema')
+        meta=_decode(encoded)
+        _shape(meta,'schema version coordinateSpace generator_revision sources scenes'+(' decoder contextSHA256' if meta.get('version')==2 else ''))
+        validate_profile(meta,'field-interaction',scene['context'])
+        if meta['schema']!='gaiagis-field-interaction' or meta['version']!=struct.unpack_from('<I',prefix,8)[0] or meta['coordinateSpace']!='FieldLocal':raise ValueError('Interaction schema')
+        if meta['version']==2 and meta.get('contextSHA256')!=scene['hashes']['gaia-field-context.json']:raise ValueError('Interaction Context checksum')
         _shape(meta['sources'],' '.join(field_source_keys(meta['sources'])))
         if any(_fingerprint(h)!=scene['context']['sources'][k] for k,h in meta['sources'].items()):raise ValueError('Interaction source mismatch')
         end=0;seen=set();chosen=None
@@ -351,7 +358,7 @@ def update_workspace(source, directory):
     payload,report=encode_interactions(source,directory)
     if not same_dependencies(manifest.get('sources',{}),report['sources'],['@field']):raise ValueError('Interaction Workspace source mismatch')
     kind,map_id,dependencies=ASSETS[FILENAME]
-    record=dict(filename=FILENAME,type=kind,mapId=map_id,sha256=digest(payload),bytes=len(payload),dependencies=dependencies,generator_version=GENERATOR_VERSION)
+    record=dict(filename=FILENAME,type=kind,mapId=map_id,sha256=digest(payload),bytes=len(payload),dependencies=dependencies,generator_version=json.loads(payload[16:16+struct.unpack_from('<I',payload,12)[0]])['generator_revision'])
     manifest['assets']=[r for r in manifest['assets'] if r['filename']!=FILENAME]+[record];manifest['tool_version']=__version__
     new_manifest=(json.dumps(manifest,sort_keys=True,indent=2)+'\n').encode()
     try:

@@ -9,6 +9,7 @@ from collections import Counter, defaultdict
 import hashlib
 from pathlib import Path
 
+from .field_provenance import LEGACY, context_decoder
 from .dataset import archive_key
 from .field_context import field_sections, parse_script
 from .lgp import inventory, read_entry
@@ -50,7 +51,7 @@ def decode_gameplay_operands(raw):
     return result
 
 
-def scene_gameplay(section, field_id, name, *, member_sha256=None):
+def scene_gameplay(section, field_id, name, *, member_sha256=None, decoder=LEGACY):
     """A partial CFG cannot produce a definite grant or battle association.
 
     Static means a fully decoded instruction with literal grant operands. It
@@ -60,7 +61,7 @@ def scene_gameplay(section, field_id, name, *, member_sha256=None):
     base = dict(fieldId=field_id, name=name, memberSHA256=member_sha256,
                 section1SHA256=digest(section), section1Bytes=len(section))
     try:
-        script_name, _, stops, trace = parse_script(section, evidence=True)
+        script_name, _, stops, trace = parse_script(section, evidence=True, decoder=decoder)
         selected = [r for r in trace['instructions'] if r['entryReachable'] and r['opcode'] in OPCODES]
         if len(selected) > MAX_RECORDS:
             raise FormatError('Gameplay record limit')
@@ -130,7 +131,7 @@ def index_field_gameplay(archive: Path, context: dict) -> dict:
             base['memberSHA256'] = digest(raw)
             try:
                 script, _ = field_sections(raw, archive=source_key, member=name)
-                base = scene_gameplay(script, field_id, name, member_sha256=base['memberSHA256'])
+                base = scene_gameplay(script, field_id, name, member_sha256=base['memberSHA256'], decoder=context_decoder(context))
             except (FormatError, UnicodeError):
                 base['reason'] = 'invalid_sections'
         scenes.append(base)

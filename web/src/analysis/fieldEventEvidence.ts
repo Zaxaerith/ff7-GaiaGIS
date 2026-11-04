@@ -1,3 +1,5 @@
+import {fieldDecoder} from '../data/fieldProvenance';
+import type {FieldDecoder} from '../data/fieldProvenance';
 import {dialogueNames} from '../data/fieldDialogue';
 import type {DialogueRecord,DialogueResource} from '../data/fieldDialogue';
 // SPDX-License-Identifier: GPL-3.0-only
@@ -8,7 +10,7 @@ import {SCRIPT_OPCODES} from '../data/fieldScriptEvidence';
 import type {ScriptEvidenceScene,ScriptEvidenceRecord} from '../data/fieldScriptEvidence';
 import type {GameplayRecord,GameplayResource} from '../data/gameplay';
 
-export interface EventAsset<T>{scene:T;sha256:string;sources:Record<string,string>;}
+export interface EventAsset<T>{scene:T;sha256:string;sources:Record<string,string>;decoder?:FieldDecoder;contextSHA256?:string;}
 export interface FieldEventInput {
  fields:FieldIndex;fieldId:number;contextSHA256:string;walkmeshSHA256:string;meshSHA256:string;generation:number;mesh:FieldWalkmesh|null;
  dialogue?:DialogueResource|null;interaction?:EventAsset<InteractionScene>|null;script?:EventAsset<ScriptEvidenceScene>|null;gameplay?:GameplayResource|null;
@@ -31,13 +33,13 @@ export function createFieldEventIndex(input:FieldEventInput){
  const sceneIdentity=(s:{fieldId:number;name:string;section1SHA256:string|null})=>s.fieldId===fieldId&&s.name===node.name&&hash(s.section1SHA256);
  const push=(r:FieldEventRow)=>{rows.push(r);for(const actor of new Set(r.owners.map(o=>o.actor))){let set=actors.get(actor);if(!set)actors.set(actor,set=new Set());set.add(r);}for(const id of r.candidates){const list=contacts.get(id)??[];list.push(r);contacts.set(id,list);}};
  const interaction=input.interaction;
- if(interaction){const s=interaction.scene;let valid=hash(interaction.sha256)&&sameSources(interaction.sources)&&sceneIdentity(s)&&hash(s.section8SHA256)&&s.section5SHA256===input.meshSHA256&&!!mesh&&s.triangles===mesh.triangles;
+ if(interaction){const s=interaction.scene;let valid=(fields.pack.version<6||interaction.decoder===fieldDecoder(fields.pack)&&interaction.contextSHA256===input.contextSHA256)&&hash(interaction.sha256)&&sameSources(interaction.sources)&&sceneIdentity(s)&&hash(s.section8SHA256)&&s.section5SHA256===input.meshSHA256&&!!mesh&&s.triangles===mesh.triangles;
   // Reuse the exact predicate once per scene; filtering never recomputes contacts.
   if(valid)for(const r of s.records)if(r.geometry&&r.a&&r.b){const candidates:number[]=[],relation=gatewayRelation(mesh!,r.a,r.b,candidates);if(relation!==r.geometry.relation||candidates.join(',')!==r.geometry.candidates.join(',')){valid=false;break;}}
   if(!valid)problems.push('interaction');else{section1=s.section1SHA256;section8=s.section8SHA256;for(const r of s.records)push({key:'interaction:'+r.key,channel:'interaction',kind:r.kind,section:r.kind==='trigger'?8:1,offset:r.offset,owners:r.owners??[],geometry:r.geometry?.relation??(r.kind==='sline'&&!r.static?'variable':'no_geometry'),candidates:r.geometry?.relation==='surface'?[...r.geometry.candidates]:[],record:r});}
  }
  const script=input.script;
- if(script){const s=script.scene;if(!hash(script.sha256)||!sameSources(script.sources)||!sceneIdentity(s)||!hash(s.section8SHA256)||section1!==null&&section1!==s.section1SHA256||section8!==null&&section8!==s.section8SHA256)problems.push('script');
+ if(script){const s=script.scene;if(fields.pack.version>=6&&(script.decoder!==fieldDecoder(fields.pack)||script.contextSHA256!==input.contextSHA256)||!hash(script.sha256)||!sameSources(script.sources)||!sceneIdentity(s)||!hash(s.section8SHA256)||section1!==null&&section1!==s.section1SHA256||section8!==null&&section8!==s.section8SHA256)problems.push('script');
   else{section1=s.section1SHA256;section8=s.section8SHA256;for(const r of s.records)push({key:'script:'+r.offset,channel:'script',kind:SCRIPT_OPCODES[r.opcode].name,section:1,offset:r.offset,owners:r.owners.map(id=>s.entries[id]),geometry:'no_geometry',candidates:[],record:r});}
  }
  const d=input.dialogue;

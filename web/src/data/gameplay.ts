@@ -1,4 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
+import {checkCFG} from './fieldProvenance';
+import type {FieldDecoder} from './fieldProvenance';
 import {archiveKey,assertSourceAgreement,gameArchives} from './sourceRoles';
 import type {FieldPack} from './fieldContext';
 import bossProfiles from '../../../src/gaiagis/atlas_data/boss-evidence.json';
@@ -12,7 +14,7 @@ export interface GameplayEnemy {id:number;sceneId:number;slot:number;name:string
 export interface GameplayFormation {id:number;battleId:number;sceneId:number;slot:number;enemyIds:number[];status:string;}
 export interface GameplayLink {battleId:number|null;formationId:number|null;fieldId?:number;recordId?:string;eventId?:string|null;sourceKind?:string;[key:string]:unknown;}
 export interface GameplayBoss {entityId:string;fieldId:number;fieldName:string;recordId:string;formationId:number;sceneId:number;enemyId:number;memberSHA256:string;section1SHA256:string;sceneSHA256:string;sources:string[];evidence:'reviewed_static_profile';}
-export interface GameplayPack {schema:'gaiagis-gameplay';version:1;generator_revision:'gameplay-1';sourceLanguage:string;sources:Record<string,string>;contextSHA256:string;atlasContentSHA256:string;
+export interface GameplayPack {schema:'gaiagis-gameplay';version:1|2;generator_revision:'gameplay-1'|'gameplay-2';decoder?:FieldDecoder;sourceLanguage:string;sources:Record<string,string>;contextSHA256:string;atlasContentSHA256:string;
  field:{scenes:GameplayScene[];coverage:Record<string,number>};battle:{scenes:{id:number;sha256:string;enemyIds:number[]}[];formations:GameplayFormation[];enemies:GameplayEnemy[];names:{items:{id:number;name:string}[];materia:{id:number;name:string}[]};coverage:Record<string,number>;[key:string]:unknown};
  links:{worldBattles:GameplayLink[];fieldBattles:GameplayLink[];encounters:GameplayLink[];[key:string]:unknown};atlasLinks:{entityId:string;fieldIds:number[];relation:string}[];bossMappings:GameplayBoss[];
 }
@@ -35,7 +37,8 @@ export function gameplayOperands(raw:Uint8Array):GameplayOperand[]{
 }
 /** Optional private asset, pinned to the actual current Context and archive pair. */
 export function parseGameplay(value:unknown,fields:FieldPack,contextSHA256:string,atlasSHA256:string):GameplayPack{
- const p=value as GameplayPack;check(p&&p.schema==='gaiagis-gameplay'&&p.version===1&&p.generator_revision==='gameplay-1');
+ const p=value as GameplayPack;check(p&&p.schema==='gaiagis-gameplay'&&[1,2].includes(p.version));
+ checkCFG(p,'gameplay',fields);
  check(hash(p.contextSHA256)&&p.contextSHA256===contextSHA256&&hash(p.atlasContentSHA256)&&p.atlasContentSHA256===atlasSHA256,'Gameplay Context/Atlas fingerprint mismatch');
  check(p.sources&&Object.entries(p.sources).every(([k,v])=>/^[a-z0-9_.-]{1,100}$/.test(k)&&!['__proto__','constructor','prototype'].includes(k)&&hash(v)));
  assertSourceAgreement(fields.sources,p.sources);const key=archiveKey(fields.sources,'field')!;check(p.sources[key]===fields.sources[key]&&p.sources.maplist===fields.sources.maplist,'Gameplay Field source identity mismatch');

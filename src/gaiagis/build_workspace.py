@@ -13,7 +13,7 @@ from .safety import WORKSPACE_ROOT, RESOURCE_ROOT, output_path
 from .web_export import build_web_assets, sha256
 from .atlas import GENERATOR_VERSION as ATLAS_VERSION, curated_hash, build_atlas
 
-from .field_context import GENERATOR_VERSION as FIELD_VERSION, build_field_context
+from .field_context import GENERATOR_VERSION as FIELD_VERSION, WALKMESH_REVISION, build_field_context
 from .presentation import GENERATOR_VERSION as PRESENTATION_VERSION
 from .field_camera import GENERATOR_VERSION as VISUAL_VERSION, build_field_visual
 from .field_interaction import GENERATOR_VERSION as INTERACTION_VERSION, build_field_interaction
@@ -86,17 +86,36 @@ def write_manifest(directory, sources, *, retained_visual=None):
                 continue
             assets.append(dict(filename=filename, type=kind, mapId=map_id,
                                sha256=sha256(path), bytes=path.stat().st_size,
-                               dependencies=dependencies, generator_version=DIALOGUE_VERSION if kind=='field-dialogue' else 'explorer-party-1' if kind=='explorer' else PRESENTATION_VERSION if kind=='presentation' else ATLAS_VERSION if kind=='atlas' else VISUAL_VERSION if kind=='field-visual' else INTERACTION_VERSION if kind=='field-interaction' else SCRIPT_EVIDENCE_VERSION if kind=='field-script-evidence' else GAMEPLAY_VERSION if kind=='gameplay' else FIELD_VERSION if kind in ('field-context','field-walkmesh') else GENERATOR_VERSION))
+                               dependencies=dependencies, generator_version=DIALOGUE_VERSION if kind=='field-dialogue' else 'explorer-party-1' if kind=='explorer' else PRESENTATION_VERSION if kind=='presentation' else ATLAS_VERSION if kind=='atlas' else VISUAL_VERSION if kind=='field-visual' else INTERACTION_VERSION if kind=='field-interaction' else SCRIPT_EVIDENCE_VERSION if kind=='field-script-evidence' else GAMEPLAY_VERSION if kind=='gameplay' else FIELD_VERSION if kind=='field-context' else WALKMESH_REVISION if kind=='field-walkmesh' else GENERATOR_VERSION))
+    import struct
+    for a in assets:
+        if a['type'] in ('field-interaction','field-script-evidence','field-dialogue','gameplay'):
+            path=directory/a['filename']
+            if path.suffix=='.json':header=json.loads(path.read_bytes())
+            else:
+                with path.open('rb') as stream:
+                    prefix=stream.read(16);length=struct.unpack_from('<I',prefix,12)[0]
+                    if length>1_000_000:raise ValueError('CFG metadata budget')
+                    header=json.loads(stream.read(length))
+            a['generator_version']=header['generator_revision']
     names = {a['filename'] for a in assets}
     if any(set(a['dependencies']) - names for a in assets):
         raise ValueError('Workspace dependency missing; manifest was not written')
     manifest = dict(schema='gaiagis-workspace', version=1, tool_version=TOOL_VERSION,
                     generator_version=GENERATOR_VERSION, timestamp_policy='omitted',
                     sources=dict(sorted(sources.items())), assets=assets)
+    from .field_bundle import validate_manifest_cfg
+    validate_manifest_cfg(directory,manifest)
     path = output_path(directory / 'gaia-workspace.json')
     from .field_interaction import atomic_write
     atomic_write(path, (json.dumps(manifest, sort_keys=True, indent=2) + '\n').encode())
     return manifest
+
+def _cfg_revision(directory,kind):
+    from .field_provenance import evidence_identity
+    try:return evidence_identity(kind,json.loads((directory/'gaia-field-context.json').read_bytes()))[1]
+    except (OSError,ValueError):return None
+
 
 def reusable(manifest, sources, directory, names, _visited=None, *, visual_revision=None):
     if not isinstance(manifest,dict) or not isinstance(manifest.get('sources'),dict) or not isinstance(manifest.get('assets'),list) or not all(isinstance(a,dict) for a in manifest['assets']) or manifest.get('schema') != 'gaiagis-workspace' or manifest.get('version') != 1 or not isinstance(manifest.get('tool_version'),str) or not re.fullmatch(r'\d+\.\d+\.\d+',manifest['tool_version']) or manifest.get('generator_version') != GENERATOR_VERSION:
@@ -114,14 +133,16 @@ def reusable(manifest, sources, directory, names, _visited=None, *, visual_revis
         if name=='gaia-explorer.bin' and record.get('generator_version')!='explorer-party-1':return False
         if name=='gaia-presentation.json' and record.get('generator_version')!=PRESENTATION_VERSION:return False
         if name=='gaia-atlas.json' and record.get('generator_version')!=ATLAS_VERSION:return False
-        if name in ('gaia-field-context.json','gaia-field-walkmesh.bin') and record.get('generator_version')!=FIELD_VERSION:return False
+        if name=='gaia-field-context.json' and record.get('generator_version')!=FIELD_VERSION:return False
+        if name=='gaia-field-walkmesh.bin' and record.get('generator_version') not in ('field-context-6','field-context-7','field-context-8',WALKMESH_REVISION):return False
         if name=='gaia-field-visual.bin' and record.get('generator_version')!=(visual_revision or VISUAL_VERSION):return False
-        if name=='gaia-field-interaction.bin' and record.get('generator_version')!=INTERACTION_VERSION:return False
-        if name=='gaia-field-script-evidence.bin' and record.get('generator_version')!=SCRIPT_EVIDENCE_VERSION:return False
-        if name=='gaia-field-dialogue.bin' and (record.get('generator_version')!=DIALOGUE_VERSION or not dialogue_matches_context(path,directory/'gaia-field-context.json')):return False
-        if name=='gaia-gameplay.json' and record.get('generator_version')!=GAMEPLAY_VERSION:return False
+        if name=='gaia-field-interaction.bin' and record.get('generator_version')!=_cfg_revision(directory,'field-interaction'):return False
+        if name=='gaia-field-script-evidence.bin' and record.get('generator_version')!=_cfg_revision(directory,'field-script-evidence'):return False
+        if name=='gaia-field-dialogue.bin' and (record.get('generator_version')!=_cfg_revision(directory,'field-dialogue') or not dialogue_matches_context(path,directory/'gaia-field-context.json')):return False
+        if name=='gaia-gameplay.json' and record.get('generator_version')!=_cfg_revision(directory,'gameplay'):return False
         dependencies = ASSETS[name][2]
         if record.get('dependencies') != dependencies:return False
+        if name in ('gaia-field-walkmesh.bin','gaia-field-visual.bin'):dependencies=[]  # Raw archive/maplist geometry identity, not CFG revision.
         if dependencies and not reusable(manifest, sources, directory, dependencies, visited | {name}, visual_revision=visual_revision):return False
     return True
 
@@ -215,6 +236,15 @@ def build_workspace(source, destination, stage1=None, *, game_language=None, reb
     source = discover(source, game_language); out = output_path(Path(destination))
     if out.is_relative_to(source.selected_path):
         raise ValueError('Workspace output must not be inside the selected source dataset')
+    from .field_transaction import workspace_lease, recover
+    with workspace_lease(out):recover(out)
+    context_path=out/'gaia-field-context.json'
+    if context_path.is_file() and all((out/n).is_file() for n in ('gaia-field-interaction.bin','gaia-field-script-evidence.bin','gaia-gameplay.json')):
+        from .field_provenance import source_decoder, CMUSC8
+        previous_context=json.loads(context_path.read_bytes())
+        if previous_context.get('version') in (3,4,5) and source_decoder(previous_context['sources'])==CMUSC8:
+            from .field_recovery import migrate
+            migrate(source,out)
     saved = _visual_snapshot(out)
     try:
         return _build_workspace(source, out, stage1, rebuild=rebuild, allow_optional_failure=allow_optional_failure,
@@ -309,7 +339,8 @@ def _build_workspace(source, destination, stage1=None, *, rebuild=False, allow_o
     step('atlas', ['gaia-atlas.json'], lambda: build_atlas(out))
     if (out/'gaia-poi.json').is_file():sources['field-poi.json']=sha256(out/'gaia-poi.json')
     if (out/'gaia-transitions.json').is_file():sources['field-transitions.json']=sha256(out/'gaia-transitions.json')
-    step('field-context', ['gaia-field-context.json','gaia-field-walkmesh.bin'], lambda: build_field_context(source,out))
+    keep_mesh=reusable(old,sources,out,['gaia-field-walkmesh.bin']) if not rebuild else False
+    step('field-context', ['gaia-field-context.json'] if keep_mesh else ['gaia-field-context.json','gaia-field-walkmesh.bin'], lambda: build_field_context(source,out,write_walkmesh=not keep_mesh))
     step('field-visual', ['gaia-field-visual.bin'], lambda: build_field_visual(source,out))
     step('field-interaction', ['gaia-field-interaction.bin'], lambda: build_field_interaction(source,out))
     step('field-script-evidence', ['gaia-field-script-evidence.bin'], lambda: build_field_script_evidence(source,out))

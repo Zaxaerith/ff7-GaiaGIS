@@ -1,6 +1,7 @@
 """Private EN Field dialogue evidence, using the existing bounded Field CFG.
 
-No VM, runtime variables, NPC coordinates or CMUSC recovery. Game strings stay
+No VM, runtime variables or NPC coordinates. Source-bound CFG recovery belongs
+to the shared Field decoder. Game strings stay
 in an optional private, per-scene compressed payload, never in audit output.
 """
 # SPDX-License-Identifier: GPL-3.0-only
@@ -13,6 +14,7 @@ import struct
 import zlib
 from .field_context import field_sections, parse_script, PC_MAPLIST_SHA256
 from .lzss import FormatError
+from .field_provenance import LEGACY, CMUSC8, context_decoder, evidence_identity, validate_profile
 
 FILENAME = 'gaia-field-dialogue.bin'
 MAGIC = b'GAIADLG\0'
@@ -79,10 +81,10 @@ def text_table(section, referenced, with_text):
         if t['offset'] in parameters:t.update(status='unavailable',reason='text_pointer_operand',bytes=None,body=None)
     return table
 
-def scene_dialogue(section, section8, section5, field_id, name, member_hash, *, with_text=False):
+def scene_dialogue(section, section8, section5, field_id, name, member_hash, *, with_text=False, decoder=LEGACY):
     base=dict(fieldId=field_id,name=name,memberSHA256=member_hash,section1SHA256=digest(section),section8SHA256=digest(section8),
         section5SHA256=digest(section5) if section5 is not None else None,section1Bytes=len(section))
-    _,_,stops,trace=parse_script(section,evidence=True)
+    _,_,stops,trace=parse_script(section,evidence=True,decoder=decoder)
     selected=[r for r in trace['instructions'] if r['opcode'] in TARGETS]
     roots=defaultdict(list)
     for i,entry in enumerate(trace['entries']):roots[entry['entry']].append(i)
@@ -106,15 +108,46 @@ def scene_dialogue(section, section8, section5, field_id, name, member_hash, *, 
     return dict(**base,status='partial' if stops or uncovered else 'complete',codeStart=trace['codeStart'],codeEnd=trace['codeEnd'],
         entries=trace['entries'],cfg=cfg,records=records,stops=stops,uncoveredBytes=uncovered,textTable=table)
 
-def validate_scene(scene):
+def validate_scene(scene, *, decoder=LEGACY):
     """Generator readback: do not re-interpret code or include text in errors."""
     if not isinstance(scene,dict) or len(scene.get('records',[]))>16_384 or len(scene.get('cfg',[]))>65_535 or len(scene.get('entries',[]))>2112:raise ValueError('Dialogue scene budget')
     records=scene['records'];previous=-1;ids=set()
+    start,end=scene['codeStart'],scene['codeEnd']
+    if not 32<=start<=end<=min(scene['section1Bytes'],65535):raise ValueError('Dialogue code bounds')
+    nodes={};cursor=start;total=0
+    for row in scene['cfg']:
+        if not isinstance(row,list) or not 4<=len(row)<=6 or not all(type(n) is int for n in row) or not cursor<=row[0]<end or not 1<=row[1]<=end-row[0] or not 0<=row[2]<=255 or row[3] not in (0,1) or len(set(row[4:]))!=len(row[4:]):raise ValueError('Dialogue CFG boundary')
+        if row[2]==253 and (decoder!=CMUSC8 or row[1]!=8):raise ValueError('Dialogue CMUSC decoder identity')
+        cursor=row[0]+row[1];total+=row[1];nodes[row[0]]=row
+    stops={r['offset'] for r in scene['stops']}
+    if len(stops)!=len(scene['stops']) or any(not start<=n<end for n in stops):raise ValueError('Dialogue stop boundary')
+    if scene['uncoveredBytes']!=end-start-total or scene['status']!=('partial' if stops or scene['uncoveredBytes'] else 'complete'):raise ValueError('Dialogue CFG accounting')
+    for row in nodes.values():
+        if any(n not in nodes and n not in stops for n in row[4:]):raise ValueError('Dialogue CFG successor boundary')
+    roots=defaultdict(list);keys=set()
+    for i,e in enumerate(scene['entries']):
+        key=(e['actor'],e['slot'],e['kind'])
+        if key in keys or not 0<=e['actor']<64 or not 0<=e['slot']<32 or e['kind'] not in ('table','main') or e['kind']=='main' and e['slot']!=0 or e['entry'] not in nodes and e['entry'] not in stops:raise ValueError('Dialogue Entry identity')
+        keys.add(key);roots[e['entry']].append(i)
+    ownership={r['offset']:[] for r in records};reachable=set();work=0
+    for entry,aliases in roots.items():
+        visited={entry};todo=[entry]
+        for at in todo:
+            work+=1
+            if work>8_000_000:raise ValueError('Dialogue CFG validation budget')
+            reachable.add(at)
+            if at in ownership:ownership[at].extend(aliases)
+            for target in nodes.get(at,[0,0,0,0])[4:]:
+                if target not in visited:visited.add(target);todo.append(target)
+    if any(bool(r[3])!=(r[0] in reachable) for r in nodes.values()):raise ValueError('Dialogue CFG reachability')
     for r in records:
         raw=bytes.fromhex(r['raw']);pc=r['offset'];op=r['opcode']
-        if op not in TARGETS or len(raw)!=TARGETS[op] or raw[0]!=op or pc<=previous or pc+len(raw)>scene['codeEnd']:raise ValueError('Dialogue instruction identity')
+        node=nodes.get(pc)
+        if op not in TARGETS or len(raw)!=TARGETS[op] or raw[0]!=op or pc<=previous or pc+len(raw)>scene['codeEnd'] or node is None or node[1]!=len(raw) or node[2]!=op or bool(node[3])!=r['entryReachable']:raise ValueError('Dialogue instruction identity')
         if not r['entryReachable'] and r['owners'] or any(not 0<=i<len(scene['entries']) for i in r['owners']):raise ValueError('Dialogue owners')
+        if r['owners']!=sorted(ownership[pc]):raise ValueError('Dialogue Entry ownership')
         previous=pc;ids.add(pc)
+    if ids!={pc for pc,row in nodes.items() if row[2] in TARGETS}:raise ValueError('Dialogue omitted reference')
     texts=scene['textTable']['texts'];refs={bytes.fromhex(r['raw'])[2 if r['opcode']==64 else 3] for r in records if r['entryReachable'] and r['opcode'] in DIALOGUES}
     for i,t in enumerate(texts):
         if t['id']!=i or t['body'] is not None and (i not in refs or t['status']!='valid'):raise ValueError('Dialogue text identity')
@@ -141,22 +174,23 @@ def encode_dialogue(source, directory, *, with_text=False):
     maplist=read_entry(archive,entries['maplist']);sources['maplist']=digest(maplist)
     if sources['maplist']!=PC_MAPLIST_SHA256:raise ValueError('Dialogue maplist source')
     names=parse_maplist(maplist);context_bytes=(directory/'gaia-field-context.json').read_bytes();context=json.loads(context_bytes)
-    if context.get('version') not in (3,4,5) or context.get('archive')!='flevel.lgp' or any(context['sources'].get(k)!=v for k,v in sources.items()):raise ValueError('Dialogue Context source')
+    if context.get('version') not in (3,4,5,6) or context.get('archive')!='flevel.lgp' or any(context['sources'].get(k)!=v for k,v in sources.items()):raise ValueError('Dialogue Context source')
     spans=[];pool=bytearray();coverage=Counter()
     for node in context['nodes']:
         if node['status']!='available':continue
         fid,name=node['id'],node['name']
         if names[fid]!=name or name not in entries:raise ValueError('Dialogue maplist identity')
         raw=read_entry(archive,entries[name]);section,s8,s5=field_sections(raw,walkmesh=True,archive='flevel.lgp',member=name)
-        scene=validate_scene(scene_dialogue(section,s8,s5,fid,name,digest(raw),with_text=with_text));data=encoded(scene);compressed=zlib.compress(data,9)
+        scene=validate_scene(scene_dialogue(section,s8,s5,fid,name,digest(raw),with_text=with_text,decoder=context_decoder(context)),decoder=context_decoder(context));data=encoded(scene);compressed=zlib.compress(data,9)
         if len(data)>MAX_SCENE:raise ValueError('Dialogue scene size')
         spans.append(dict(fieldId=fid,name=name,memberSHA256=scene['memberSHA256'],section1SHA256=scene['section1SHA256'],section8SHA256=scene['section8SHA256'],section5SHA256=scene['section5SHA256'],offset=len(pool),bytes=len(compressed),rawBytes=len(data),sha256=digest(data)))
         pool.extend(compressed);coverage[scene['status']]+=1;coverage['fields']+=1;coverage['validTables']+=scene['textTable']['status']=='valid';coverage['texts']+=len(scene['textTable']['texts'])
         for r in scene['records']:
             if r['opcode'] in DIALOGUES:coverage[('MESSAGE' if r['opcode']==64 else 'ASK')+('' if r['entryReachable'] else '_unreachable')]+=1
         coverage['textBodies']+=sum(t['body'] is not None for t in scene['textTable']['texts']);coverage['badTexts']+=sum(t['status']=='unavailable' for t in scene['textTable']['texts'])
-    meta=dict(schema='gaiagis-field-dialogue',version=1,generator_revision=GENERATOR_VERSION,decoder=DECODER,sourceLanguage='en',mode='with-text' if with_text else 'metadata-only',sources=sources,contextSHA256=digest(context_bytes),coverage=dict(coverage),scenes=spans)
-    header=encoded(meta);payload=MAGIC+struct.pack('<II',1,len(header))+header+pool
+    version,generator,decoder=evidence_identity('field-dialogue',context)
+    meta=dict(schema='gaiagis-field-dialogue',version=version,generator_revision=generator,decoder=DECODER if version==1 else decoder,sourceLanguage='en',mode='with-text' if with_text else 'metadata-only',sources=sources,contextSHA256=digest(context_bytes),coverage=dict(coverage),scenes=spans)
+    header=encoded(meta);payload=MAGIC+struct.pack('<II',version,len(header))+header+pool
     if len(header)>MAX_HEADER or len(payload)>MAX_PACK:raise ValueError('Dialogue pack budget')
     if sha256(archive)!=sources['flevel.lgp'] or (directory/'gaia-field-context.json').read_bytes()!=context_bytes:raise ValueError('Dialogue input changed')
     return payload,dict(coverage=meta['coverage'],bytes=len(payload),sources=sources,contextSHA256=meta['contextSHA256'],mode=meta['mode'])
@@ -168,10 +202,10 @@ def matches_context(path, context_path):
             prefix=stream.read(16)
             if len(prefix)!=16 or prefix[:8]!=MAGIC:return False
             version,length=struct.unpack_from('<II',prefix,8)
-            if version!=1 or not 0<length<=MAX_HEADER or 16+length>Path(path).stat().st_size:return False
+            if version not in (1,2) or not 0<length<=MAX_HEADER or 16+length>Path(path).stat().st_size:return False
             header=json.loads(stream.read(length))
         if not isinstance(header,dict):return False
-        return (header.get('generator_revision')==GENERATOR_VERSION and header.get('decoder')==DECODER
+        return (header.get('generator_revision')==f'field-dialogue-{version}' and header.get('decoder')==(DECODER if version==1 else context_decoder(json.loads(Path(context_path).read_bytes())))
             and header.get('sources')=={'flevel.lgp':EN_ARCHIVE,'maplist':PC_MAPLIST_SHA256}
             and header.get('contextSHA256')==digest(Path(context_path).read_bytes()))
     except (ValueError,OSError,struct.error):return False
@@ -198,7 +232,7 @@ def update_workspace(source,directory,*,with_text=False):
     if saved.exists() and saved.read_bytes()!=previous:raise ValueError('Dialogue recovery conflict')
     atomic_write(saved,previous)
     if old is not None:atomic_write(backup/FILENAME,old)
-    manifest['assets']=[r for r in manifest['assets'] if r['filename']!=FILENAME]+[dict(filename=FILENAME,type='field-dialogue',mapId='shared',sha256=digest(payload),bytes=len(payload),dependencies=['gaia-field-context.json'],generator_version=GENERATOR_VERSION)]
+    manifest['assets']=[r for r in manifest['assets'] if r['filename']!=FILENAME]+[dict(filename=FILENAME,type='field-dialogue',mapId='shared',sha256=digest(payload),bytes=len(payload),dependencies=['gaia-field-context.json'],generator_version=json.loads(payload[16:16+struct.unpack_from('<I',payload,12)[0]])['generator_revision'])]
     manifest['tool_version']=__version__
     try:atomic_write(path,payload);atomic_write(mp,encoded(manifest)+b'\n')
     except BaseException:

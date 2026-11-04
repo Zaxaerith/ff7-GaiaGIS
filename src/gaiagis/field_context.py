@@ -18,7 +18,9 @@ from .poi import parse_maplist, parse_field_table
 from .safety import output_path
 from .web_export import sha256
 
-GENERATOR_VERSION = 'field-context-8'
+from .field_provenance import LEGACY, CMUSC8, source_decoder
+
+GENERATOR_VERSION = 'field-context-9'
 WALKMESH_REVISION = 'field-walkmesh-1'
 MAX_WALKMESH_TRIANGLES = 65535  # 0xffff is reserved for a blocked edge.
 
@@ -107,7 +109,7 @@ _WIDTHS = tuple(map(int, '''
 '''.split()))
 
 
-def parse_script(section: bytes, *, interactions=False, evidence=False):
+def parse_script(section: bytes, *, interactions=False, evidence=False, decoder=LEGACY):
     """Section-1 entry-rooted static topology, not runtime availability.
 
     Unknown instruction width stops that branch. Overlapping instructions or
@@ -116,6 +118,8 @@ def parse_script(section: bytes, *, interactions=False, evidence=False):
     The default three-value return remains unchanged; evidence=True adds a
     fourth, read-only CFG/provenance view, separate from interactions=True.
     """
+    if decoder not in (LEGACY, CMUSC8):
+        raise ValueError('Unknown Field CFG decoder')
     if interactions and evidence:
         raise ValueError('Choose one optional script evidence view')
     if len(section) < 32:
@@ -139,7 +143,7 @@ def parse_script(section: bytes, *, interactions=False, evidence=False):
         if pc in decoded:
             return decoded[pc]
         op = section[pc]
-        size = _WIDTHS[op] if op != 0xfd else 0  # Independent references disagree on CMUSC width.
+        size = _WIDTHS[op] if op != 0xfd else (8 if decoder == CMUSC8 else 0)
         if op == 0x0f:
             if pc + 1 >= end:
                 raise FormatError('Truncated SPECIAL')
@@ -579,7 +583,7 @@ def native_relations(transitions: dict, available: set[int], sources: dict) -> l
     return [r for r in records.values() if r['fieldId'] in available]
 
 
-def build_field_context(source: Path, directory: Path) -> dict:
+def build_field_context(source: Path, directory: Path, *, write_walkmesh=True) -> dict:
     directory = output_path(directory)
     ds = discover(source)
     archive = ds.field_archive()
@@ -596,6 +600,7 @@ def build_field_context(source: Path, directory: Path) -> dict:
     if 'maplist' not in entries:
         raise FormatError('Field maplist unavailable')
     maplist = read_entry(archive, entries['maplist'])
+    decoder = source_decoder({ds.field_name: archive_hash, 'maplist': hashlib.sha256(maplist).hexdigest()})
     names = parse_maplist(maplist)
     if len(set(n.casefold() for n in names if n)) != len([n for n in names if n]):
         raise FormatError('Ambiguous field name identity')
@@ -635,7 +640,7 @@ def build_field_context(source: Path, directory: Path) -> dict:
             scenes.append(dict(fieldId=field_id, status='corrupt'))
         node['saveId'] = save_identity(field_id, hashlib.sha256(maplist).hexdigest())
         try:
-            script_name, jumps, unknown = parse_script(script)
+            script_name, jumps, unknown = parse_script(script, decoder=decoder)
             node['scriptName'] = script_name
             if hashlib.sha256(maplist).hexdigest() == PC_MAPLIST_SHA256 and SAVE_HEADER_ALIASES.get(field_id) == (name, script_name):
                 node['saveId'] = field_id
@@ -711,7 +716,7 @@ def build_field_context(source: Path, directory: Path) -> dict:
         transitions = json.loads(transitions_path.read_text(encoding='utf8'))
         native = native_relations(transitions, available, sources)
         sources.update(transitions['sources'])
-    result = dict(schema='gaiagis-field-context', version=5, coordinateSpace='FieldLocalIdentity',
+    result = dict(schema='gaiagis-field-context', version=6, scriptDecoder=decoder, coordinateSpace='FieldLocalIdentity',
                   archive=ds.field_name, sources=sources,
                   nodes=nodes, edges=verified, exits=exits, unresolved=unresolved,
                   bindings=entrance_bindings(poi, nodes), scriptTransitions='bounded_mapjump',
@@ -727,6 +732,6 @@ def build_field_context(source: Path, directory: Path) -> dict:
     if len(encoded) > 512_000 or 16 + len(encoded) + len(walkmesh_data) > 32_000_000:
         raise FormatError('Field walkmesh metadata/pack limit')
     # One private binary owner; offsets are relative to the raw Section-5 pool.
-    output_path(directory / 'gaia-field-walkmesh.bin').write_bytes(b'GAIAFLD\0' + struct.pack('<II', 1, len(encoded)) + encoded + walkmesh_data)
+    if write_walkmesh: output_path(directory / 'gaia-field-walkmesh.bin').write_bytes(b'GAIAFLD\0' + struct.pack('<II', 1, len(encoded)) + encoded + walkmesh_data)
     output_path(directory / 'gaia-field-context.json').write_text(json.dumps(result, separators=(',', ':'), sort_keys=True) + '\n', encoding='utf8')
     return result

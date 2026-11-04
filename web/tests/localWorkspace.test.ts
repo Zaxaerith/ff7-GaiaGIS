@@ -30,7 +30,7 @@ describe('private local workspace transport',()=>{
    ['gaia-field-walkmesh.bin','field-walkmesh','gaia-field-context.json'],
    ['gaia-field-visual.bin','field-visual','gaia-field-context.json'],
   ] as const){
-   const file=new File([name.endsWith('.json')?'{}':new Uint8Array(16)],name);files.push(file);
+   const file=new File([name.endsWith('.json')?JSON.stringify({schema:'gaiagis-field-context',version:1,coordinateSpace:'FieldLocalIdentity',archive:'flevel.lgp',sources:Object.fromEntries(['flevel.lgp','maplist','field.tbl','wm0.ev','wm0.map'].map(k=>[k,'a'.repeat(64)])),nodes:[],edges:[],exits:[],unresolved:[],bindings:[],scriptTransitions:'unverified'}):new Uint8Array(16)],name);files.push(file);
    manifest.assets.push({filename:name,type,mapId:type==='field-context'?'WM0':'shared',bytes:file.size,sha256:await fileHash(file),dependencies:[dependency]});
   }
   manifest.assets.reverse();files.push(new File([JSON.stringify(manifest)],'gaia-workspace.json'));

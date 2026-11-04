@@ -140,6 +140,7 @@ def prepare_viewer(env):
 
 
 def server_manifest(root):
+    if (root/'.build/field-cfg-transaction.json').exists():raise ValueError('CFG recovery required before serving Workspace')
     manifest = json.loads((root/'gaia-workspace.json').read_text(encoding='utf8'))
     if not isinstance(manifest,dict) or manifest.get('schema')!='gaiagis-workspace' or manifest.get('version')!=1:raise ValueError('Invalid workspace manifest')
     if not isinstance(manifest.get('assets'),list) or len(manifest['assets'])>len(ASSETS):raise ValueError('Invalid asset inventory')
@@ -152,13 +153,13 @@ def server_manifest(root):
         if name=='gaia-field-interaction.bin' and asset['bytes']>8_000_000:raise ValueError('Interaction asset budget')
         if name=='gaia-field-script-evidence.bin':
             from .field_script_evidence import MAX_PACK, GENERATOR_VERSION
-            if asset['bytes']>MAX_PACK or asset.get('generator_version')!=GENERATOR_VERSION:raise ValueError('Script evidence asset profile/budget')
+            if asset['bytes']>MAX_PACK or asset.get('generator_version') not in (GENERATOR_VERSION,GENERATOR_VERSION[:-1]+'2'):raise ValueError('Script evidence asset profile/budget')
         if name=='gaia-field-dialogue.bin':
             from .field_dialogue import MAX_PACK, GENERATOR_VERSION
-            if asset['bytes']>MAX_PACK or asset.get('generator_version')!=GENERATOR_VERSION:raise ValueError('Dialogue asset profile/budget')
+            if asset['bytes']>MAX_PACK or asset.get('generator_version') not in (GENERATOR_VERSION,GENERATOR_VERSION[:-1]+'2'):raise ValueError('Dialogue asset profile/budget')
         if name=='gaia-gameplay.json':
             from .gameplay import MAX_BYTES, GENERATOR_VERSION
-            if asset['bytes']>MAX_BYTES or asset.get('generator_version')!=GENERATOR_VERSION:raise ValueError('Gameplay evidence asset profile/budget')
+            if asset['bytes']>MAX_BYTES or asset.get('generator_version') not in (GENERATOR_VERSION,GENERATOR_VERSION[:-1]+'2'):raise ValueError('Gameplay evidence asset profile/budget')
         if asset.get('dependencies')!=ASSETS[name][2]:raise ValueError('Invalid asset dependencies')
         path=(root/name).resolve()
         if not path.is_relative_to(root) or not path.is_file() or sha256(path)!=asset['sha256'] or path.stat().st_size!=asset['bytes']:
@@ -166,10 +167,12 @@ def server_manifest(root):
         names.add(name)
     if not {'gaia-meta.json','gaia-mesh.bin'}.issubset(names):raise ValueError('Core geometry unavailable')
     if any(set(a['dependencies'])-names for a in manifest['assets']):raise ValueError('Workspace dependency missing')
+    from .field_bundle import validate_manifest_cfg
+    validate_manifest_cfg(root,manifest)
     return manifest
 
 
-def make_server(root, dist, host='127.0.0.1', port=5173):
+def _make_server(root, dist, host='127.0.0.1', port=5173):
     root=output_path(Path(root));dist=resource_path(Path(dist))
     if host not in ('127.0.0.1', 'localhost'):
         raise ValueError('Local Viewer must bind to loopback')
@@ -237,6 +240,22 @@ def make_server(root, dist, host='127.0.0.1', port=5173):
         except OSError as error:
             if error.errno not in (errno.EADDRINUSE,errno.EACCES) and getattr(error,'winerror',None) not in (10048,10013):raise
     raise RuntimeError('No free local port available')
+
+
+def make_server(root, dist, host='127.0.0.1', port=5173):
+    from .field_transaction import workspace_lease, recover
+    lease=workspace_lease(root);lease.__enter__()
+    try:
+        recover(Path(root))
+        server=_make_server(root,dist,host,port)
+    except BaseException:
+        lease.__exit__(*sys.exc_info());raise
+    close=server.server_close
+    def release():
+        try:close()
+        finally:lease.__exit__(None,None,None)
+    server.server_close=release
+    return server
 
 
 def parser():

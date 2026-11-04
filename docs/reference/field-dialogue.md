@@ -89,8 +89,10 @@ An explicit bounded check can show a selected record's complete-Entry control
 witness: the IF dominates that record and exactly one successor can reach it in
 the existing graph. It is not whole-game dataflow, runtime execution, branch
 truth or generalization of research samples. Partial CFGs refuse this proof;
-work/alias limits are shown. CMUSC remains unsupported by the unchanged production
-reader. Its later recovery is a separate parser/asset migration task.
+work/alias limits are shown. Legacy Workspaces retain CMUSC stops. v5.12 adds a
+separate, complete-EN-source-gated eight-byte decoder and a coherent v6/v2 asset
+group; it does not reinterpret an imported legacy pack. See
+[recovery, compatibility and rollback](field-script-recovery.md).
 
 ## Lifetime
 

@@ -1,3 +1,5 @@
+import {fieldDecoder} from './fieldProvenance';
+import type {FieldDecoder} from './fieldProvenance';
 import {archiveKey,assertSourceAgreement} from './sourceRoles';
 import type {FieldArchive} from './sourceRoles';
 // SPDX-License-Identifier: GPL-3.0-only
@@ -16,7 +18,7 @@ export type PointStatus='inside'|'boundary'|'outside'|'invalid_triangle'|'degene
 export interface FieldEntrance extends Pick<import('./poi').Entrance,'field_id'|'field_name'|'field_x'|'field_y'|'field_triangle'|'field_direction'|'field_table_record'|'field_table_byte_offset'>{entry:number;scenario:0|1;status:PointStatus;derivedZ:number|null;}
 export interface FieldGateway extends FieldEdge {sourceA:[number,number,number];sourceB:[number,number,number];targetXY:[number,number];targetTriangle:number;direction:[number,number,number,number];sourceRelation:'surface'|'xy_only'|'disjoint'|'unknown';destination:{status:PointStatus;derivedZ:number|null};}
 export interface FieldPack {
- schema:'gaiagis-field-context';version:1|2|3|4|5;coordinateSpace:'FieldLocalIdentity';archive:FieldArchive;sources:Record<string,string>;
+ schema:'gaiagis-field-context';version:1|2|3|4|5|6;scriptDecoder?:FieldDecoder;coordinateSpace:'FieldLocalIdentity';archive:FieldArchive;sources:Record<string,string>;
  nodes:FieldNode[];edges:FieldEdge[];exits:(FieldEdge&{name:string})[];
  unresolved:{fromField:number;to:number|null;gateway:number|null;reason:'invalid_section'|'missing_destination'}[];
  bindings:FieldBinding[];scriptTransitions:'unverified'|'bounded_mapjump';
@@ -37,9 +39,9 @@ const text=(v:unknown)=>typeof v==='string'&&/^[a-zA-Z0-9_-]{1,100}$/.test(v);
 const saveMaplist='d6ac24b79403a77feeb338450b7cb2169cdbcfa5d071a6cee4884e93b700bc29';
 const saveConflicts=new Set([88,89,90,91,404,526,593,594,699]);
 export function parseFieldPack(value:unknown):FieldPack {
- const version=(value as {version?:unknown})?.version,v2=[2,3,4,5].includes(Number(version)),v3=[3,4,5].includes(Number(version)),v4=version===4||version===5;
- const d=shape(value,['schema','version','coordinateSpace','archive','sources','nodes','edges','exits','unresolved','bindings','scriptTransitions',...(v2?['scriptEdges','scriptExits','scriptUnresolved','nativeRelations']:[]),...(v3?['entrances','gateways']:[]),...(version===5?['section1Recoveries']:[])]);
- if(d.schema!=='gaiagis-field-context'||![1,2,3,4,5].includes(Number(d.version))||d.coordinateSpace!=='FieldLocalIdentity'||(v4?d.archive!==archiveKey(d.sources as Record<string,unknown>,'field'):d.archive!=='flevel.lgp')||d.scriptTransitions!==(v2?'bounded_mapjump':'unverified'))fail();
+ const version=(value as {version?:unknown})?.version,v2=[2,3,4,5,6].includes(Number(version)),v3=[3,4,5,6].includes(Number(version)),v4=version===4||version===5||version===6;
+ const d=shape(value,['schema','version','coordinateSpace','archive','sources','nodes','edges','exits','unresolved','bindings','scriptTransitions',...(v2?['scriptEdges','scriptExits','scriptUnresolved','nativeRelations']:[]),...(v3?['entrances','gateways']:[]),...(version===5||version===6?['section1Recoveries']:[]),...(version===6?['scriptDecoder']:[])]);
+ if(d.schema!=='gaiagis-field-context'||![1,2,3,4,5,6].includes(Number(d.version))||d.coordinateSpace!=='FieldLocalIdentity'||(v4?d.archive!==archiveKey(d.sources as Record<string,unknown>,'field'):d.archive!=='flevel.lgp')||d.scriptTransitions!==(v2?'bounded_mapjump':'unverified'))fail();
  if(!d.sources||typeof d.sources!=='object'||Array.isArray(d.sources))fail();const sources=d.sources as Record<string,unknown>;
  if(Object.keys(sources).length>32||![String(d.archive),'maplist','field.tbl','wm0.ev','wm0.map'].every(k=>Object.hasOwn(sources,k))||!Object.entries(sources).every(([k,v])=>/^[a-z0-9_.-]{1,80}$/.test(k)&&typeof v==='string'&&/^[a-f0-9]{64}$/.test(v)))fail();
  archiveKey(sources,'world',v4);if(archiveKey(sources,'field')!==d.archive)fail();
@@ -47,7 +49,8 @@ export function parseFieldPack(value:unknown):FieldPack {
  for(const value of list(d.nodes,2000)){const n=shape(value,['id','name','status','saveId',...(v2?['scriptName']:[])]);if(!integer(n.id)||!text(n.name)||String(n.name).length>32||(n.name==='dummy'||/^wm\d+$/.test(String(n.name)))||!['available','missing','corrupt'].includes(String(n.status))||ids.has(Number(n.id))||names.has(String(n.name).toLowerCase()))fail();if(v2&&n.scriptName!==null&&(!text(n.scriptName)||String(n.scriptName).length>8))fail();const alias=({88:['qa','q_1'],89:['qb','q_2'],90:['qc','q_3'],91:['qd','q_4']} as Record<number,string[]>)[Number(n.id)];const reviewedAlias=v2&&alias?.[0]===n.name&&alias?.[1]===n.scriptName;
  if(n.saveId!==null&&(n.saveId!==n.id||n.status!=='available'||sources.maplist!==saveMaplist||saveConflicts.has(Number(n.id))&&!reviewedAlias))fail();ids.set(Number(n.id),n as unknown as FieldNode);names.add(String(n.name).toLowerCase());}
  const records=new Set<string>(),valid=(id:unknown)=>integer(id)&&ids.get(Number(id))?.status==='available';
- if(version===5){const recovered=new Set<number>();for(const value of list(d.section1Recoveries,6)){
+ fieldDecoder(d as unknown as FieldPack);
+ if(version===5||version===6){const recovered=new Set<number>();for(const value of list(d.section1Recoveries,6)){
   const r=shape(value,['fieldId','memberSHA256','declaredBytes','usedBytes']);
   if(!valid(r.fieldId)||ids.get(Number(r.fieldId))?.scriptName==null||recovered.has(Number(r.fieldId))||typeof r.memberSHA256!=='string'||!/^[a-f0-9]{64}$/.test(r.memberSHA256)||!integer(r.declaredBytes,8_000_000)||!integer(r.usedBytes,8_000_000)||!r.usedBytes||r.declaredBytes===r.usedBytes)fail();
   recovered.add(Number(r.fieldId));

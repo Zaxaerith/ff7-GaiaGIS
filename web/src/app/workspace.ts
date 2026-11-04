@@ -1,4 +1,6 @@
 import {DIALOGUE_FILE,DIALOGUE_GENERATOR,DIALOGUE_LIMITS} from '../data/fieldDialogue';
+import {parseFieldPack} from '../data/fieldContext';
+import {checkCFG} from '../data/fieldProvenance';
 import {archiveKey,assertSourceAgreement,gameArchives} from '../data/sourceRoles';
 // SPDX-License-Identifier: GPL-3.0-only
 import type {AssetId,AssetState} from './state';
@@ -20,9 +22,9 @@ export function parseManifest(value:unknown):WorkspaceManifest{
  if(!a||!Object.hasOwn(assetFiles,type)||!assetFiles[type].includes(a.filename)||!safeName(a.filename)||names.has(a.filename)||!hash(a.sha256)||!Number.isSafeInteger(a.bytes)||a.bytes<=0||a.bytes>160_000_000||!['WM0','WM2','WM3','shared'].includes(a.mapId)||!Array.isArray(a.dependencies)||!a.dependencies.every(safeName))throw Error('Invalid workspace asset');
  if(type==='field-visual'&&a.bytes>(a.generator_version==='field-visual-4'?100_000_000:a.generator_version==='field-visual-3'?96_000_000:64_000_000))throw Error('Visual asset budget');
  if(type==='field-interaction'&&a.bytes>8_000_000)throw Error('Interaction asset budget');
- if(type==='field-dialogue'&&(a.bytes>DIALOGUE_LIMITS.pack||a.generator_version!==DIALOGUE_GENERATOR||a.dependencies.length!==1||a.dependencies[0]!=='gaia-field-context.json'))throw Error('Dialogue dependency/budget');
- if(type==='gameplay'&&(a.filename!=='gaia-gameplay.json'||a.bytes>20_000_000||a.generator_version!=='gameplay-1'||a.dependencies.length!==1||a.dependencies[0]!=='gaia-field-context.json'))throw Error('Gameplay asset dependency/budget');
- if(type==='field-script-evidence'&&(a.bytes>SCRIPT_EVIDENCE_LIMITS.pack||a.generator_version!==SCRIPT_EVIDENCE_GENERATOR))throw Error('Script evidence asset budget/generator');
+ if(type==='field-dialogue'&&(a.bytes>DIALOGUE_LIMITS.pack||!['field-dialogue-1','field-dialogue-2'].includes(a.generator_version??'')||a.dependencies.length!==1||a.dependencies[0]!=='gaia-field-context.json'))throw Error('Dialogue dependency/budget');
+ if(type==='gameplay'&&(a.filename!=='gaia-gameplay.json'||a.bytes>20_000_000||!['gameplay-1','gameplay-2'].includes(a.generator_version??'')||a.dependencies.length!==1||a.dependencies[0]!=='gaia-field-context.json'))throw Error('Gameplay asset dependency/budget');
+ if(type==='field-script-evidence'&&(a.bytes>SCRIPT_EVIDENCE_LIMITS.pack||!['field-script-evidence-1','field-script-evidence-2'].includes(a.generator_version??'')))throw Error('Script evidence asset budget/generator');
  if(type==='field-script-evidence'&&(a.dependencies.length!==1||a.dependencies[0]!=='gaia-field-context.json'))throw Error('Script evidence Context dependency');
  const expected=type==='WM2'||type==='textures-WM2'?'WM2':type==='WM3'||type==='textures-WM3'?'WM3':type==='explorer'||type==='transitions'||type==='presentation'||type==='field-walkmesh'||type==='field-visual'||type==='field-interaction'||type==='field-script-evidence'||type==='field-dialogue'||type==='gameplay'?'shared':'WM0';
  if(a.mapId!==expected||a.type==='metadata'&&a.filename!=='gaia-meta.json')throw Error('Workspace map identity mismatch');names.add(a.filename);
@@ -72,6 +74,33 @@ export async function assetSources(file:File):Promise<Record<string,string>>{
  if(!Object.entries(sources).every(([name,value])=>safeName(name)&&!['__proto__','constructor','prototype'].includes(name)&&typeof value==='string'&&/^[a-fA-F0-9]{64}$/.test(value)))throw Error('Invalid asset source fingerprint');
  archiveKey(sources,'world',false);return sources;
 }
+/** Authenticate the declared CFG group before geometry adoption destroys old owners.
+ * Scene bodies remain lazy. The group gate never stores private dialogue text. */
+export async function preflightFieldCFG(plan:WorkspacePlan){
+ const contextFile=plan.files.get('gaia-field-context.json'),contextDeclared=plan.manifest?.assets.some(a=>a.filename==='gaia-field-context.json');
+ if(!contextFile&&!contextDeclared)return;
+ if(!contextFile||plan.issues['field-context'])throw Error('Incomplete Field CFG Context');
+ const fields=parseFieldPack(JSON.parse(await contextFile.text())),contextHash=await fileHash(contextFile);
+ const kinds=[['field-interaction','gaia-field-interaction.bin'],['field-script-evidence',SCRIPT_EVIDENCE_FILE],['field-dialogue',DIALOGUE_FILE],['gameplay','gaia-gameplay.json']] as const;
+ for(const [kind,name] of kinds){
+  const declared=plan.manifest?.assets.find(a=>a.filename===name),file=plan.files.get(name);
+  if(!declared&&!file)continue; // Old Workspace without Dialogue is valid.
+  if(plan.issues[kind]||!file)throw Error('Incomplete Field CFG group');
+  let meta:Record<string,any>;
+  if(kind==='gameplay'){if(file.size>20_000_000)throw Error('Gameplay budget');meta=JSON.parse(await file.text());}
+  else{
+   const prefix=await file.slice(0,16).arrayBuffer();if(prefix.byteLength!==16)throw Error('CFG pack header');
+   const v=new DataView(prefix),n=v.getUint32(12,true),magic=new TextDecoder().decode(prefix.slice(0,8));
+   if(magic!==({ 'field-interaction':'GAIAINT\0','field-script-evidence':'GAIASCR\0','field-dialogue':'GAIADLG\0'}[kind])||!n||n>1_000_000||16+n>file.size)throw Error('CFG metadata budget/identity');
+   meta=JSON.parse(new TextDecoder('utf8',{fatal:true}).decode(await file.slice(16,16+n).arrayBuffer()));
+   if(meta.version!==v.getUint32(8,true))throw Error('CFG transport version');
+  }
+  checkCFG(meta,kind,fields);
+  if((fields.version>=6||kind!=='field-interaction')&&meta.contextSHA256!==contextHash)throw Error('Field CFG Context fingerprint mismatch');
+  if(declared&&declared.generator_version!==meta.generator_revision)throw Error('Field CFG Manifest generator mismatch');
+  for(const key of [fields.archive,'maplist'])if(meta.sources?.[key]!==fields.sources[key])throw Error('Field CFG archive source mismatch');
+ }
+}
 /** Parsed assets remain owned by existing feature owners; only File handles are retained. */
 export class WorkspaceLoader {
  private epoch=0;private loaders=new Map<AssetId,AssetLoader>();
@@ -83,6 +112,8 @@ export class WorkspaceLoader {
  private async perform(files:readonly File[],epoch:number){if(epoch!==this.epoch)return;const plan=await discoverWorkspace(files);if(epoch!==this.epoch)return;
   const order=workspaceOrder(plan.manifest),sources={...plan.manifest?.sources};
   if(plan.issues.geometry){this.report('geometry',plan.issues.geometry);return plan;}
+  try{await preflightFieldCFG(plan);}catch{if(epoch!==this.epoch)return;this.report('field-context',{status:'incompatible',bytes:0,reason:'workspace.assetRejected'});return plan;}
+  if(epoch!==this.epoch)return;
   for(const id of order){if(epoch!==this.epoch)return;const issue=plan.issues[id];if(issue){this.report(id,issue);continue;}const selected=assetFiles[id].map(n=>plan.files.get(n)!);const bytes=selected.reduce((sum,f)=>sum+f.size,0),loader=this.loaders.get(id);if(!loader){this.report(id,{status:'unsupported',bytes});continue;}
    this.report(id,{status:'loading',bytes});try{const bindings:Record<string,string>={};for(const f of selected){const next=await assetSources(f);assertSourceAgreement({...sources,...bindings},next);for(const [key,hash]of Object.entries(next))bindings[key]=hash.toLowerCase();}requireForeignProvenance(id,sources,bindings);if(epoch!==this.epoch)return;await loader(selected);Object.assign(sources,bindings);if(epoch!==this.epoch)return;this.report(id,{status:plan.manifest?'loaded':'legacy',bytes,sourceHashes:bindings});}catch(e){if(epoch!==this.epoch)return;const text=e instanceof Error?e.message:String(e);this.report(id,{status:/mismatch|fingerprint|incompat|identity/i.test(text)?'incompatible':'corrupt',bytes,reason:'workspace.assetRejected'});if(id==='geometry')return plan;}
    await new Promise(resolve=>setTimeout(resolve,0));

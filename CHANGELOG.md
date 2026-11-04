@@ -1,5 +1,13 @@
 # Changelog
 
+## 5.12.0 — Field Script Recovery & Provenance Consistency
+
+- Gate eight-byte CMUSC decoding by the verified complete original EN archive and maplist. Retain legacy stops for old evidence and all unverified sources; preserve original instruction, Actor and Entry identities.
+- Add Context v6 and distinct v2 Field evidence generators with explicit decoder/Context provenance, including Interaction. Reject mixed CFG groups before replacing the current Viewer; retain old Workspace and metadata-only Dialogue support.
+- Incrementally recover only the 24 affected Fields, reusing the other 678 compressed scenes and existing Battle/World/Atlas evidence. Preserve Walkmesh and Visual bytes and separate script from geometry revisions.
+- Add an offline OS lease, bounded backups, Manifest-last replacement, interruption journal, startup recovery and explicit rollback. This is controlled consistency, not a multi-file atomic filesystem transaction.
+- Show recovered references through the existing Field Inspector. Keep unknown text boundaries, missing Fields and static-only precision; no story VM, Save evaluation, reward positions or public game text.
+
 ## 5.11.0 — Field Dialogue Geography & Conditional Evidence
 
 - Add an optional, source-bound Dialogue Evidence transport with metadata-only and private referenced-text modes. Incremental generation changes only this asset and its Manifest entry, preserving a legacy Manifest recovery copy.

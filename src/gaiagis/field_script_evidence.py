@@ -22,6 +22,8 @@ from .field_context import field_sections, parse_script
 from .lzss import FormatError
 
 FILENAME = 'gaia-field-script-evidence.bin'
+from .field_provenance import LEGACY, context_decoder, evidence_identity, validate_profile
+
 GENERATOR_VERSION = 'field-script-evidence-1'
 MAGIC = b'GAIASCR\0'
 SCHEMA = 'gaiagis-field-script-evidence'
@@ -157,9 +159,9 @@ def complement(start, end, intervals):
     return result
 
 
-def script_index(section):
+def script_index(section, *, decoder=LEGACY):
     """Select target opcodes only after the shared decoder verifies their CFG."""
-    _, _, stops, trace = parse_script(section, evidence=True)
+    _, _, stops, trace = parse_script(section, evidence=True, decoder=decoder)
     entries = trace['entries']
     selected = [r for r in trace['instructions'] if r['entryReachable'] and r['opcode'] in OPCODES]
     if len(selected) > MAX_RECORDS:
@@ -213,10 +215,10 @@ def script_index(section):
         records=records, stops=stops)
 
 
-def scene_evidence(script, section8, field_id, name):
+def scene_evidence(script, section8, field_id, name, *, decoder=LEGACY):
     """No visual parsing: a rejected Palette cannot be repaired by script bytes."""
     try:
-        index = script_index(script)
+        index = script_index(script, decoder=decoder)
     except EvidenceLimitError:
         # Limits describe this application's work budget. Refuse the candidate
         # rather than mislabel a valid source as an invalid-source index.
@@ -405,14 +407,15 @@ def _inflate(compressed, span):
 
 def validate_evidence(payload, sources, *, context_sha256=None, context=None, field_id=None):
     """Strict bounded readback; optionally return only one decoded scene."""
-    if not 16 < len(payload) <= MAX_PACK or payload[:8] != MAGIC or struct.unpack_from('<I', payload, 8)[0] != 1:
+    if not 16 < len(payload) <= MAX_PACK or payload[:8] != MAGIC or struct.unpack_from('<I', payload, 8)[0] not in (1,2):
         raise ValueError('Script evidence transport')
     length = struct.unpack_from('<I', payload, 12)[0]
     if not 0 < length <= MAX_HEADER or length > len(payload)-16:
         raise ValueError('Script evidence metadata budget')
-    meta = _shape(_decode(payload[16:16+length]), 'schema version generator_revision sources contextSHA256 scenes')
-    if meta['schema'] != SCHEMA or type(meta['version']) is not int or meta['version'] != 1 or meta['generator_revision'] != GENERATOR_VERSION:
-        raise ValueError('Script evidence schema/generator')
+    meta = _decode(payload[16:16+length])
+    _shape(meta, 'schema version generator_revision sources contextSHA256 scenes'+(' decoder' if meta.get('version')==2 else ''))
+    if meta['schema'] != SCHEMA or meta['version'] != struct.unpack_from('<I',payload,8)[0]:raise ValueError('Script evidence schema/version')
+    validate_profile(meta,'field-script-evidence',context)
     _shape(meta['sources'], ' '.join(field_source_keys(meta['sources']))); _hash(meta['contextSHA256'])
     if any(_hash(v) != sources.get(k) for k, v in meta['sources'].items()) or context_sha256 is not None and meta['contextSHA256'] != context_sha256:
         raise ValueError('Script evidence Context/source mismatch')
@@ -492,7 +495,7 @@ def encode_evidence(source, directory, *, audit_path=None, progress=None):
     if not context_path.is_file() or context_path.stat().st_size > 8_000_000:
         raise ValueError('Script evidence requires existing Field Context')
     context_bytes = context_path.read_bytes(); context = _decode(context_bytes)
-    if not isinstance(context, dict) or context.get('schema') != 'gaiagis-field-context' or context.get('version') not in (3,4,5) or not isinstance(context.get('sources'), dict) or any(context['sources'].get(k) != v for k, v in sources.items()):
+    if not isinstance(context, dict) or context.get('schema') != 'gaiagis-field-context' or context.get('version') not in (3,4,5,6) or not isinstance(context.get('sources'), dict) or any(context['sources'].get(k) != v for k, v in sources.items()):
         raise ValueError('Script evidence Field Context source mismatch')
     spans = []; pool = bytearray(); audits = []; counts = Counter(); opcodes = Counter(); max_scene = max_records = max_entries = max_owners = 0
     for node in _list(context.get('nodes'), 2000):
@@ -504,7 +507,7 @@ def encode_evidence(source, directory, *, audit_path=None, progress=None):
         if fid >= len(names) or name != names[fid] or name.casefold() not in entries or any(s['fieldId'] == fid for s in spans):
             raise ValueError('Script evidence maplist identity mismatch')
         script, section8 = field_sections(read_entry(archive, entries[name.casefold()]), archive=ds.field_name, member=name)
-        value = scene_evidence(script, section8, fid, name)
+        value = scene_evidence(script, section8, fid, name, decoder=context_decoder(context))
         raw = encode_json(value); compressed = zlib.compress(raw, 9)
         if len(raw) > MAX_SCENE or len(compressed) > MAX_SCENE:
             raise FormatError('Script evidence scene budget')
@@ -521,9 +524,11 @@ def encode_evidence(source, directory, *, audit_path=None, progress=None):
         audits.append(dict(fieldId=fid, name=name, status=value['status'], reason=value['reason'], section1SHA256=value['section1SHA256'], section8SHA256=value['section8SHA256'], entries=len(value['entries']), uniqueEntries=len({e['entry'] for e in value['entries']}), decodedInstructions=value['decodedInstructions'], reachableInstructions=value['reachableInstructions'], records=len(value['records']), opcode=dict(scene_ops), stops=dict(scene_stops), uncovered=value['uncovered'], unreachable=value['unreachable'], associations=dict(Counter(k for r in value['records'] for k, v in r['association'].items() if v is not None)), rawBytes=len(raw), bytes=len(compressed)))
         if progress:
             progress(len(spans), name)
-    meta = dict(schema=SCHEMA, version=1, generator_revision=GENERATOR_VERSION, sources=sources, contextSHA256=digest(context_bytes), scenes=spans)
+    version,generator,decoder=evidence_identity('field-script-evidence',context)
+    meta = dict(schema=SCHEMA, version=version, generator_revision=generator, sources=sources, contextSHA256=digest(context_bytes), scenes=spans)
+    if version==2:meta['decoder']=decoder
     encoded = encode_json(meta)
-    payload = MAGIC+struct.pack('<II', 1, len(encoded))+encoded+pool
+    payload = MAGIC+struct.pack('<II', version, len(encoded))+encoded+pool
     if len(encoded) > MAX_HEADER or len(payload) > MAX_PACK:
         raise FormatError('Script evidence metadata/pack budget')
     if sha256(archive) != archive_hash or context_path.read_bytes() != context_bytes:
@@ -576,7 +581,7 @@ def _update_workspace(source, directory, *, audit_path, staging):
     if not same_dependencies(manifest.get('sources', {}),report['sources'],['@field']):
         raise ValueError('Script evidence Workspace source mismatch')
     kind, map_id, dependencies = ASSETS[FILENAME]
-    entry = dict(filename=FILENAME, type=kind, mapId=map_id, sha256=digest(payload), bytes=len(payload), dependencies=dependencies, generator_version=GENERATOR_VERSION)
+    entry = dict(filename=FILENAME, type=kind, mapId=map_id, sha256=digest(payload), bytes=len(payload), dependencies=dependencies, generator_version=json.loads(payload[16:16+struct.unpack_from('<I',payload,12)[0]])['generator_revision'])
     manifest['assets'] = [r for r in manifest['assets'] if r['filename'] != FILENAME]+[entry]
     manifest['tool_version'] = __version__
     candidate = (json.dumps(manifest, sort_keys=True, indent=2)+'\n').encode('utf8')

@@ -1,3 +1,4 @@
+import {checkCFG} from './fieldProvenance';
 import {archiveKey} from './sourceRoles';
 // SPDX-License-Identifier: GPL-3.0-only
 import type {FieldPack,FieldWalkmesh,WalkmeshReach} from './fieldContext';
@@ -37,11 +38,12 @@ const raw=(v:unknown,size:number)=>{
 const xyz=(v:DataView,at:number)=>[0,1,2].map(k=>v.getInt16(at+k*2,true));
 const hash=async(v:Uint8Array)=>Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',v as Uint8Array<ArrayBuffer>)),n=>n.toString(16).padStart(2,'0')).join('');
 
-export function parseInteractionHeader(buffer:ArrayBuffer,total:number,fields:FieldPack){
- const v=new DataView(buffer);if(total>8_000_000||v.byteLength<16||new TextDecoder().decode(buffer.slice(0,8))!=='GAIAINT\0'||v.getUint32(8,true)!==1)throw Error('Interaction header');
+export function parseInteractionHeader(buffer:ArrayBuffer,total:number,fields:FieldPack,contextSHA256?:string){
+ const v=new DataView(buffer);if(total>8_000_000||v.byteLength<16||new TextDecoder().decode(buffer.slice(0,8))!=='GAIAINT\0'||![1,2].includes(v.getUint32(8,true)))throw Error('Interaction header');
  const length=v.getUint32(12,true),base=16+length;if(length>512_000||base>total||v.byteLength!==base)throw Error('Interaction metadata bounds');
- const meta=shape(JSON.parse(new TextDecoder('utf8',{fatal:true}).decode(buffer.slice(16))),['schema','version','coordinateSpace','generator_revision','sources','scenes']);
- if(meta.schema!=='gaiagis-field-interaction'||meta.version!==1||meta.coordinateSpace!=='FieldLocal'||meta.generator_revision!=='field-interaction-1')throw Error('Interaction schema');
+ const meta=shape(JSON.parse(new TextDecoder('utf8',{fatal:true}).decode(buffer.slice(16))),['schema','version','coordinateSpace','generator_revision','sources','scenes',...(v.getUint32(8,true)===2?['decoder','contextSHA256']:[])]);
+ if(meta.schema!=='gaiagis-field-interaction'||meta.version!==v.getUint32(8,true)||meta.coordinateSpace!=='FieldLocal')throw Error('Interaction schema');
+ const decoder=checkCFG(meta,'field-interaction',fields);if(meta.version===2&&(!fingerprint(contextSHA256)||meta.contextSHA256!==contextSHA256))throw Error('Interaction Context fingerprint mismatch');
  const sources=shape(meta.sources,[archiveKey(fields.sources,'field')!,'maplist']);if(Object.entries(sources).some(([k,h])=>!fingerprint(h)||h!==fields.sources[k]))throw Error('Interaction source identity mismatch');
  const scenes=new Map<number,SceneSpan>();let end=0;
  for(const value of list(meta.scenes,2000)){
@@ -50,7 +52,7 @@ export function parseInteractionHeader(buffer:ArrayBuffer,total:number,fields:Fi
   if(r.offset!==end||!integer(r.bytes,1,2_000_000)||!integer(r.rawBytes,1,2_000_000)||base+end+r.bytes>total)throw Error('Interaction scene span');
   end+=r.bytes;scenes.set(r.fieldId,r as SceneSpan);
  }
- if(base+end!==total)throw Error('Interaction trailing bytes');return {base,scenes,sources:sources as Record<string,string>};
+ if(base+end!==total)throw Error('Interaction trailing bytes');return {base,scenes,decoder,contextSHA256:meta.contextSHA256 as string|undefined,sources:sources as Record<string,string>};
 }
 
 function geometry(value:unknown,r:InteractionRecord,triangles:number,meshReason:string|null){
@@ -104,11 +106,11 @@ export function parseInteractionScene(value:unknown,span:SceneSpan):InteractionS
  return {...scene,triggers,scripts,records:[...triggers,...scripts]} as InteractionScene;
 }
 
-export async function openFieldInteraction(file:File,fields:FieldPack){
+export async function openFieldInteraction(file:File,fields:FieldPack,contextSHA256?:string){
  if(file.name!=='gaia-field-interaction.bin'||file.size<16||file.size>8_000_000)throw Error('Interaction file bounds');
  const v=new DataView(await file.slice(0,16).arrayBuffer()),length=v.getUint32(12,true);if(length>512_000||16+length>file.size)throw Error('Interaction metadata budget');
- const header=parseInteractionHeader(await file.slice(0,16+length).arrayBuffer(),file.size,fields);
- return {scenes:header.scenes,sources:header.sources,async decode(id:number,mesh:FieldWalkmesh,signal?:AbortSignal){
+ const header=parseInteractionHeader(await file.slice(0,16+length).arrayBuffer(),file.size,fields,contextSHA256);
+ return {decoder:header.decoder,contextSHA256:header.contextSHA256,scenes:header.scenes,sources:header.sources,async decode(id:number,mesh:FieldWalkmesh,signal?:AbortSignal){
   signal?.throwIfAborted();
   const span=header.scenes.get(id);if(!span||span.triangles!==mesh.triangles||!span.section5SHA256)throw Error('Interaction Walkmesh identity');
   const raw=new Uint8Array(4+mesh.triangles*30),v=new DataView(raw.buffer);v.setUint32(0,mesh.triangles,true);mesh.vertices.forEach((n,i)=>v.setInt16(4+i*2,n,true));mesh.access.forEach((n,i)=>v.setUint16(4+mesh.triangles*24+i*2,n,true));

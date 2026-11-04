@@ -1043,6 +1043,13 @@ World Variants uses a separate source-bound JSON file with schema/generator and 
 
 ## Optional Field Dialogue transport (v5.11)
 
+v5.12 additionally accepts Context v6 and CFG evidence v2 with explicit decoder
+and Context SHA binding, while retaining the v5.11 formats below. Walkmesh stays
+v1 with a separate geometry revision; Visual is unchanged. The five CFG assets
+and Manifest migrate together under a short-offline journal protocol. A v5.11
+Viewer rejects the new evidence generators. See [Field recovery contract and
+commands](field-script-recovery.md).
+
 `gaia-field-dialogue.bin`: logical type `field-dialogue`, mapId `shared`, generator
 `field-dialogue-1`, dependency exactly `gaia-field-context.json`. The 16-byte
 little-endian prefix is `GAIADLG\0`, U32 version 1 and U32 metadata byte length.

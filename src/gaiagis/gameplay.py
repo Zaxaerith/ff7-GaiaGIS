@@ -14,6 +14,8 @@ from .safety import output_path, protect_input
 from .web_export import sha256
 
 FILENAME = 'gaia-gameplay.json'
+from .field_provenance import evidence_identity
+
 GENERATOR_VERSION = 'gameplay-1'
 MAX_BYTES = 20_000_000
 DEPENDENCIES = ['gaia-field-context.json']
@@ -55,7 +57,7 @@ def resource_paths(dataset):
     return result
 
 
-def input_profile(dataset, directory, source_hashes=None):
+def input_profile(dataset, directory, source_hashes=None, *, context_sha256=None):
     """Small cache token includes absent optional files, not None-equality aliases."""
     directory = Path(directory)
     sources = dict(source_hashes or {})
@@ -65,7 +67,7 @@ def input_profile(dataset, directory, source_hashes=None):
     profile = dict(language=dataset.language, atlasContent=atlas_content_hash(), bossEvidence=boss_content_hash(),
                    archives={key: sources.get(key) for key in (dataset.world_name, dataset.field_name)},
                    optional={name: sources.get(name) for name in ('scene.bin', 'kernel.bin', 'kernel2.bin')},
-                   workspace={name: sha256(directory/name) if (directory/name).is_file() else None
+                   workspace={name: context_sha256 if name=='gaia-field-context.json' and context_sha256 is not None else sha256(directory/name) if (directory/name).is_file() else None
                               for name in ('gaia-field-context.json', 'gaia-events.json', 'gaia-encounters.json')})
     return digest(encoded(profile)), sources
 
@@ -256,11 +258,13 @@ def encode_gameplay(source, directory):
     links = _workspace_links(directory, sources, context, battle)
     links['worldBattles'].extend(world_scripts)
     links['fieldBattles'] = field_battle_links(field, battle)
-    value = dict(schema='gaiagis-gameplay', version=1, generator_revision=GENERATOR_VERSION,
+    version,generator,decoder=evidence_identity('gameplay',context)
+    value = dict(schema='gaiagis-gameplay', version=version, generator_revision=generator,
                  sourceLanguage=dataset.language, sources=sources, contextSHA256=digest(context_bytes),
                  atlasContentSHA256=atlas_content_hash(), field=field, battle=battle, links=links,
                  atlasLinks=atlas_links(context, field),
                  bossMappings=reviewed_boss_mappings(field, battle) if dataset.language == 'en' else [])
+    if version==2:value['decoder']=decoder
     payload = encoded(value)
     if len(payload) > MAX_BYTES:
         raise ValueError('Gameplay evidence exceeds bounded JSON budget')
@@ -300,7 +304,7 @@ def update_workspace(source, directory, *, game_language=None):
     manifest['tool_version'] = __version__
     manifest['assets'] = [row for row in manifest['assets'] if row['filename'] != FILENAME]
     manifest['assets'].append(dict(filename=FILENAME, type='gameplay', mapId='shared', bytes=len(payload),
-                                   sha256=digest(payload), dependencies=DEPENDENCIES, generator_version=GENERATOR_VERSION))
+                                   sha256=digest(payload), dependencies=DEPENDENCIES, generator_version=value['generator_revision']))
     target = output_path(directory/FILENAME)
     previous = target.read_bytes() if target.is_file() and target.stat().st_size <= MAX_BYTES else None
     if target.is_file() and previous is None:
@@ -336,7 +340,7 @@ def refresh_links(source, directory, *, game_language=None):
     old_manifest = manifest_path.read_bytes()
     manifest = json.loads(old_manifest)
     record = next((row for row in manifest['assets'] if row['filename'] == FILENAME), None)
-    if not record or record.get('generator_version') != GENERATOR_VERSION or not 0 < target.stat().st_size <= MAX_BYTES:
+    if not record or record.get('generator_version') not in (GENERATOR_VERSION,'gameplay-2') or not 0 < target.stat().st_size <= MAX_BYTES:
         raise ValueError('Gameplay snapshot missing or unsupported')
     previous = target.read_bytes()
     if digest(previous) != record['sha256'] or len(previous) != record['bytes']:
@@ -345,13 +349,15 @@ def refresh_links(source, directory, *, game_language=None):
     context_bytes = (directory/DEPENDENCIES[0]).read_bytes()
     context = json.loads(context_bytes)
     context_record = next((row for row in manifest['assets'] if row['filename'] == DEPENDENCIES[0]), None)
-    if (value.get('schema') != 'gaiagis-gameplay' or value.get('version') != 1 or
-            value.get('generator_revision') != GENERATOR_VERSION or value['sourceLanguage'] != dataset.language or
+    if (value.get('schema') != 'gaiagis-gameplay' or value.get('version') not in (1,2) or
+            value.get('generator_revision') not in (GENERATOR_VERSION,'gameplay-2') or value['sourceLanguage'] != dataset.language or
             not context_record or digest(context_bytes) != context_record['sha256'] or
             digest(context_bytes) != value['contextSHA256'] or
             archive_key(value['sources'], 'field') != dataset.field_name or
             value['sources'][dataset.field_name] != context['sources'][dataset.field_name]):
         raise ValueError('Gameplay snapshot/Context/source identity mismatch')
+    from .field_provenance import validate_profile
+    validate_profile(value,'gameplay',context)
     # Hash only the small optional inputs; never re-read the Field archive or
     # decode Scene data merely to refresh an encounter-member relationship.
     current = {key:sha for key,sha in value['sources'].items() if key not in ('scene.bin','kernel.bin','kernel2.bin')}

@@ -4,6 +4,14 @@ A local-first GIS reconstruction of the original FINAL FANTASY VII world, with a
 
 ## Quick start
 
+**v5.12.0 — Field Script Recovery & Provenance Consistency** recovers bounded
+CMUSC script evidence only for the verified complete original EN source. Explicit
+decoder and Context fingerprints prevent mixed old/new Field evidence. A
+journalled incremental migration updates the five CFG assets while retaining
+Walkmesh, Visual and all other GIS files. Existing Workspaces keep their legacy
+meaning until migrated. This is static source recovery, not runtime validation.
+[Migration and rollback](docs/reference/field-script-recovery.md).
+
 **v5.11.0 — Field Dialogue Geography & Conditional Evidence** adds source-bound
 MESSAGE/ASK ↔ Text ID queries in the existing Field evidence window, original
 Actor/Slot/Entry aliases, explicit REQ targets and limited raw ASK/IF evidence.

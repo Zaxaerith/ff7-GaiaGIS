@@ -1,3 +1,4 @@
+import {checkCFG} from './fieldProvenance';
 import {archiveKey} from './sourceRoles';
 // SPDX-License-Identifier: GPL-3.0-only
 import type {FieldPack} from './fieldContext';
@@ -61,11 +62,12 @@ function evidenceJSON(bytes:ArrayBuffer|Uint8Array){
 }
 
 export function parseScriptEvidenceHeader(buffer:ArrayBuffer,total:number,fields:FieldPack,contextSHA256:string){
- const v=new DataView(buffer);if(!integer(total,16,SCRIPT_EVIDENCE_LIMITS.pack)||v.byteLength<16||new TextDecoder().decode(buffer.slice(0,8))!=='GAIASCR\0'||v.getUint32(8,true)!==1)throw Error('Script evidence header');
+ const v=new DataView(buffer);if(!integer(total,16,SCRIPT_EVIDENCE_LIMITS.pack)||v.byteLength<16||new TextDecoder().decode(buffer.slice(0,8))!=='GAIASCR\0'||![1,2].includes(v.getUint32(8,true)))throw Error('Script evidence header');
  const length=v.getUint32(12,true),base=16+length;
  if(!length||length>SCRIPT_EVIDENCE_LIMITS.metadata||base>total||v.byteLength!==base)throw Error('Script evidence metadata bounds');
- const meta=shape(evidenceJSON(buffer.slice(16)),['schema','version','generator_revision','sources','contextSHA256','scenes']);
- if(meta.schema!=='gaiagis-field-script-evidence'||meta.version!==1||meta.generator_revision!==SCRIPT_EVIDENCE_GENERATOR)throw Error('Script evidence schema');
+ const meta=shape(evidenceJSON(buffer.slice(16)),['schema','version','generator_revision','sources','contextSHA256','scenes',...(v.getUint32(8,true)===2?['decoder']:[])]);
+ if(meta.schema!=='gaiagis-field-script-evidence'||meta.version!==v.getUint32(8,true))throw Error('Script evidence schema');
+ const decoder=checkCFG(meta,'field-script-evidence',fields);
  const sources=shape(meta.sources,[archiveKey(fields.sources,'field')!,'maplist']);if(Object.entries(sources).some(([key,h])=>!fingerprint(h)||h!==fields.sources[key])||!fingerprint(contextSHA256)||meta.contextSHA256!==contextSHA256)throw Error('Script evidence Context/source identity mismatch');
  const scenes=new Map<number,ScriptSceneSpan>();let end=0;
  for(const value of list(meta.scenes,2000)){
@@ -75,7 +77,7 @@ export function parseScriptEvidenceHeader(buffer:ArrayBuffer,total:number,fields
   end+=s.bytes;scenes.set(s.fieldId,s as ScriptSceneSpan);
  }
  if(base+end!==total||fields.nodes.filter(n=>n.status==='available').some(n=>!scenes.has(n.id)))throw Error('Script evidence trailing/missing Field data');
- return {base,scenes,sources:sources as Record<string,string>,contextSHA256};
+ return {base,scenes,decoder,sources:sources as Record<string,string>,contextSHA256};
 }
 
 function indices(value:unknown,entries:ScriptEntry[],required=false){
@@ -184,7 +186,7 @@ export async function openFieldScriptEvidence(file:File,fields:FieldPack,context
  const first=await file.slice(0,16).arrayBuffer();if(first.byteLength!==16)throw Error('Script evidence truncated header');
  const length=new DataView(first).getUint32(12,true);if(length>SCRIPT_EVIDENCE_LIMITS.metadata||!span(16,length,file.size))throw Error('Script evidence metadata budget');
  const header=parseScriptEvidenceHeader(await file.slice(0,16+length).arrayBuffer(),file.size,fields,contextSHA256);
- return {scenes:header.scenes,sources:header.sources,contextSHA256,async decode(id:number,signal?:AbortSignal){
+ return {decoder:header.decoder,scenes:header.scenes,sources:header.sources,contextSHA256,async decode(id:number,signal?:AbortSignal){
   signal?.throwIfAborted();const s=header.scenes.get(id);if(!s)throw Error('Script evidence scene unavailable');
   const compressed=await file.slice(header.base+s.offset,header.base+s.offset+s.bytes).arrayBuffer();signal?.throwIfAborted();
   const bytes=await inflateVisual(compressed,s.rawBytes,signal);if(await hash(bytes)!==s.sha256)throw Error('Script evidence scene fingerprint mismatch');signal?.throwIfAborted();
