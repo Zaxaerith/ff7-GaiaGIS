@@ -163,3 +163,12 @@ body.field-active footer :is(#view-status,#coordinates,#fps){visibility:hidden}
 .dialogue-shortcuts{display:flex;flex-wrap:wrap;gap:.4rem;margin-bottom:.5rem}
 .dialogue-shortcuts button{flex:1 1 11rem;white-space:normal}
 #field-event-inspection .dialogue-preview{font:inherit;line-height:1.65;white-space:pre-wrap;overflow-wrap:anywhere;padding:.6rem;background:rgba(0,0,0,.18);border-left:2px solid #c8d9f2;max-width:100%;box-sizing:border-box}
+
+/* The conditional evidence fold stays inside the current Field owner. */
+.field-conditional-tool,.field-conditional-inspection{min-width:0;max-width:100%;overflow-wrap:anywhere}
+.field-conditional-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.4rem}
+.field-conditional-form label{display:flex;flex-direction:column;min-width:0}
+.field-conditional-form input,.field-conditional-form select{width:100%;min-width:0;max-width:100%;box-sizing:border-box}
+.field-conditional-tool pre,.field-conditional-inspection pre{white-space:pre-wrap;overflow-wrap:anywhere;max-width:100%}
+.field-conditional-tool button,.field-conditional-inspection button{max-width:100%;white-space:normal;overflow-wrap:anywhere}
+@media(max-width:699px){.field-conditional-form input,.field-conditional-form select{min-height:44px}}

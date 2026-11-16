@@ -4,6 +4,14 @@ A local-first GIS reconstruction of the original FINAL FANTASY VII world, with a
 
 ## Quick start
 
+**v5.13.0 — Field Conditional Event Geography & Control-Flow Evidence** adds
+current-Field, bounded strict control dependence to the existing evidence window
+and Inspector. Complete acyclic Entry graphs can show Entry-bound strong and
+all-owning-roots core proofs; loops, uncertain exits, source conflicts and budget
+limits refuse proof. ASK/IF raw-address checks and single-hop REQ candidates do
+not imply answer values, execution or event coordinates. No new Workspace asset
+or rebuild is required. [Evidence boundaries](docs/reference/field-conditional-evidence.md).
+
 **v5.12.0 — Field Script Recovery & Provenance Consistency** recovers bounded
 CMUSC script evidence only for the verified complete original EN source. Explicit
 decoder and Context fingerprints prevent mixed old/new Field evidence. A

@@ -1,5 +1,13 @@
 # Changelog
 
+## 5.13.0 — Field Conditional Event Geography & Control-Flow Evidence
+
+- Add scene-lazy, source-bound static control dependence for MESSAGE, ASK, STITM, SMTRA, BATTLE and REQ/REQSW/REQEW. Accept only complete acyclic Entry-root CFGs with verified successors and local exits; keep Entry-bound strong and all-owning-roots core separate from the existing branch witness.
+- Preserve original Actor/main/table/raw Slot aliases without multiplying event counts. Expose proof roots, offsets, successor, Dom/Post-dom basis and conservative refusal reasons in the existing Field evidence window and Inspector.
+- Add bounded raw-address ASK/IF corridor checks and explicit single-hop REQ target candidates. Do not infer answer values, runtime state, scheduling or transitive control dependence.
+- Reuse original Interaction LINE contacts only as same-Actor spatial candidates, never event coordinates. Keep Trigger, Gateway-only routing and WM0/WM2/WM3 unchanged.
+- Compute in a cancellable single-current-Field worker with explicit node/work/memory/output budgets. No new Workspace asset or Manifest change; old decoders and missing resources degrade to unavailable strict evidence.
+
 ## 5.12.0 — Field Script Recovery & Provenance Consistency
 
 - Gate eight-byte CMUSC decoding by the verified complete original EN archive and maplist. Retain legacy stops for old evidence and all unverified sources; preserve original instruction, Actor and Entry identities.
