@@ -4,6 +4,11 @@ A local-first GIS reconstruction of the original FINAL FANTASY VII world, with a
 
 ## Quick start
 
+**v5.16.0 — Field Evidence GIS Export** exports a single Field to a private
+GeoPackage with its original geometry, script identities, Dialogue references
+and strict conditional evidence. An optional QGIS project links the attributes
+without adding coordinates to events. [Source CLI and QGIS guide](docs/reference/field-evidence-gis-export.md).
+
 **v5.15.0 — Encounter-aware Journey Analysis** shows where a verified WM0
 route crosses encounter table and static candidate ranges. Compare ordinary
 and Chocobo coverage along a complete Journey or one leg, then inspect the

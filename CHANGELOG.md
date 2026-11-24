@@ -1,5 +1,11 @@
 # Changelog
 
+## 5.16.0 — Field Evidence GIS Export
+
+- Add a private, single-Field GeoPackage v3 with the seven existing FieldLocal spatial layers and normalized script, Gameplay, Dialogue, conditional, ASK/IF and REQ attributes. Preserve native raw coordinates, original record keys and evidence grades.
+- Produce strict evidence through the existing TypeScript analyzer in an authenticated local source-CLI run. Validate fingerprints, state, relation keys and row counts before publishing. Fix the Interaction container version carried by explicit v2 exports.
+- Add an optional same-directory QGZ for read-only QGIS research, with relative sources, Cartesian measurements and preconfigured evidence relations. Existing v1/v2 commands and Workspace assets remain compatible.
+
 ## 5.15.0 — Encounter-aware Journey Analysis
 
 - Analyze successful WM0 Routing, Journey and World–Field world stages in the same Encounter Analysis panel. Reuse verified Route Profile half-edges and keep graph cost, corridor length and leg boundaries visible.

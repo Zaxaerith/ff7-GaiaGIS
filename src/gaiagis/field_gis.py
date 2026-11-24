@@ -83,8 +83,11 @@ def metadata_values(scene,network,version,interaction=None):
     identity=dict(field_id=scene['id'],field_name=scene['name']);n=scene['stats']['triangles'];reach=network['reach'];path=network['path']
     start=None if reach is None else reach['start'];end=None if path is None else path['end']
     values=dict(identity,schema=SCHEMA,version=version,coordinate_space='FieldLocal',source_file=scene['context']['archive'],source_sha256=scene['context']['sources'][scene['context']['archive']],maplist_sha256=scene['context']['sources']['maplist'],context_version=scene['context']['version'],walkmesh_version=1,exporter_version=__version__,section5_sha256=hashlib.sha256(scene['raw']).hexdigest(),triangle_count=n,access_count=n*3,coordinate_semantics='Original XYZ; no axis swap, transform, geography or scale',raw4_semantics='Original fourth S16; neither M nor verified collision/height',network_semantics=LABEL,component_labels='0-based, sorted by minimum Triangle ID; BFS Access slot 0/1/2',runtime_passability='UNKNOWN',units='Raw Unit / Raw Unit^2; no metres or geographic reference',start_triangle=start,end_triangle=end,path_status='not_requested' if path is None else path['reason'] or 'found')
-    if version==2:
-        values.update(interaction_version=1,interaction_sha256=scene['hashes']['gaia-field-interaction.bin'],section1_sha256=interaction['section1SHA256'],section8_sha256=interaction['section8SHA256'],section1_bytes=interaction['section1Bytes'],section8_bytes=interaction['section8Bytes'],interaction_semantics=INTERACTION_LABEL)
+    if version>=2:
+        if interaction is None:
+            values.update(dict.fromkeys(('interaction_version','interaction_sha256','section1_sha256','section8_sha256','section1_bytes','section8_bytes','interaction_semantics')))
+        else:
+            values.update(interaction_version=scene['interaction_version'],interaction_sha256=scene['hashes']['gaia-field-interaction.bin'],section1_sha256=interaction['section1SHA256'],section8_sha256=interaction['section8SHA256'],section1_bytes=interaction['section1Bytes'],section8_bytes=interaction['section8Bytes'],interaction_semantics=INTERACTION_LABEL)
     return values
 
 
@@ -105,7 +108,7 @@ def table_fields(version):
         'network_path': dict(sequence_index='int',triangle_id='int',start_triangle='int',end_triangle='int',hop_count='int',from_triangle='int',access_slot='int',access_offset='int',semantics='text'),
         'field_metadata': dict(schema='text',version='int',field_id='int',field_name='text',coordinate_space='text',source_file='text',source_sha256='text',maplist_sha256='text',context_version='int',walkmesh_version='int',exporter_version='text',section5_sha256='text',triangle_count='int',access_count='int',coordinate_semantics='text',raw4_semantics='text',network_semantics='text',component_labels='text',runtime_passability='text',units='text',start_triangle='int',end_triangle='int',path_status='text'),
     }
-    if version==2:
+    if version in (2,3):
         fields.update(INTERACTION_FIELDS)
         fields['field_metadata'].update(interaction_version='int',interaction_sha256='text',section1_sha256='text',section8_sha256='text',section1_bytes='int',section8_bytes='int',interaction_semantics='text')
     elif version!=1:raise ValueError('Unsupported FieldLocal format version')
@@ -232,10 +235,10 @@ def _point(record, triangle, xy, scene):
     return result
 
 
-def safe_target(path):
+def safe_target(path,suffix='.gpkg'):
     path=Path(path).absolute();target=output_path(path)
     allowed=WORKSPACE_ROOT/'output/exports/fieldlocal'
-    if target!=path or not target.is_relative_to(allowed) or target.suffix.lower()!='.gpkg':raise ValueError('Field GIS output must be under output/exports/fieldlocal/*.gpkg')
+    if target!=path or not target.is_relative_to(allowed) or target.suffix.lower()!=suffix:raise ValueError(f'Field GIS output must be under output/exports/fieldlocal/*{suffix}')
     for parent in (target,*target.parents):
         if parent==WORKSPACE_ROOT:break
         reject_links(parent)
@@ -243,17 +246,29 @@ def safe_target(path):
     return target
 
 
-def export_field(workspace, field, output, start=None, end=None, format_version=1):
-    if type(format_version) is not int or format_version not in (1,2):raise ValueError('Unsupported FieldLocal format version')
+def export_field(workspace, field, output, start=None, end=None, format_version=1, *, qgis_project=False):
+    if type(format_version) is not int or format_version not in (1,2,3):raise ValueError('Unsupported FieldLocal format version')
+    if qgis_project and format_version!=3:raise ValueError('--qgis-project requires format version 3')
     from osgeo import gdal,ogr
     from .gis_export import Package,polygon_geometry,_user_row
     gdal.UseExceptions();ogr.UseExceptions()
     if int(gdal.VersionInfo('VERSION_NUM'))<3090000:raise ValueError('FieldLocal export requires GDAL >= 3.9 for explicit SRID=-1')
     began=time.perf_counter();scene=load_field(workspace,field);target=safe_target(output)
-    interaction=None;pack_timing={}
-    if format_version==2:
+    project_target=safe_target(target.with_suffix('.qgz'),'.qgz') if qgis_project else None
+    if target.is_relative_to(scene['root']) or format_version==3 and Path(workspace).absolute()!=scene['root']:
+        raise ValueError('Redirected Workspace or overlapping export')
+    interaction=None;pack_timing={};interaction_reason=None;evidence=None;evidence_timing={}
+    if format_version>=2:
         from .field_interaction import read_interaction
-        interaction,pack_timing=read_interaction(scene)
+        if format_version==2:
+            interaction,pack_timing=read_interaction(scene)
+        elif 'gaia-field-interaction.bin' not in scene['assets']:
+            interaction_reason='not_registered'
+        elif not (scene['root']/'gaia-field-interaction.bin').is_file():
+            interaction_reason='file_missing'
+        else:
+            try:interaction,pack_timing=read_interaction(scene)
+            except ValueError:interaction_reason='source_rejected'
     schemas=table_fields(format_version)
     network=walkmesh_network(scene['access'],start,end);target.parent.mkdir(parents=True,exist_ok=True)
     if shutil.disk_usage(target.parent).free<256_000_000:raise ValueError('Insufficient disk space for bounded atomic export')
@@ -261,6 +276,11 @@ def export_field(workspace, field, output, start=None, end=None, format_version=
     with tempfile.TemporaryDirectory(prefix='.field-gis-',dir=target.parent) as scratch:
         temporary=output_path(Path(scratch)/target.name)
         try:
+            if format_version==3:
+                from .field_evidence_gis import read_evidence
+                started=time.perf_counter()
+                evidence=read_evidence(scene,interaction,interaction_reason,Path(scratch))
+                evidence_timing=dict(evidence['timing'],node_seconds=round(time.perf_counter()-started,4))
             package=Package(temporary)
             def layer(name,geometry=ogr.wkbNone):
                 counts[name]=0
@@ -306,20 +326,20 @@ def export_field(workspace, field, output, start=None, end=None, format_version=
                 row(entrances,dict(identity,entry_id=entry,scenario=scenario,variant='Default' if scenario==0 else 'Alternative',triangle_id=e['field_triangle'],raw_x=e['field_x'],raw_y=e['field_y'],derived_raw_z=result['derivedZ'],direction=_integer(e['field_direction'],0,255),record_index=record,source_file=(archive_key(scene['context']['sources'],'world',required=scene['context']['version']>=4) or 'world_us.lgp')+'/field.tbl',source_offset=record*12,validation=result['status'],z_semantics='Derived triangle-plane Raw Z; no independent FIELD.TBL Z'),geom(ogr.wkbPoint25D,[(e['field_x'],e['field_y'],result['derivedZ'])]))
             gateways=layer('gateway_segments',ogr.wkbLineString25D)
             candidates=layer('gateway_candidates')
-            seen=set();evidence={};world=set()
+            seen=set();gateway_evidence={};world=set()
             for key in ('edges','exits','unresolved'):
                 rows=scene['context'].get(key)
                 if not isinstance(rows,list) or len(rows)>24000:raise ValueError('Gateway topology evidence budget')
                 for e in rows:
                     if key=='unresolved' and e.get('reason')!='missing_destination':continue
                     identity_key=(e['fromField'],e['gateway'])
-                    if identity_key in evidence:raise ValueError('Duplicate Gateway topology evidence')
-                    evidence[identity_key]=e['to']
+                    if identity_key in gateway_evidence:raise ValueError('Duplicate Gateway topology evidence')
+                    gateway_evidence[identity_key]=e['to']
                     if key=='exits':world.add(identity_key)
             for g in scene['context']['gateways']:
                 if g['fromField']!=scene['id'] and g['to']!=scene['id']:continue
                 source=_integer(g['fromField']);to=_integer(g['to']);gid=_integer(g['gateway'],0,11);offset=56+gid*24
-                if (source,gid) in seen or g['offset']!=offset or to==32767 or source not in scene['nodes'] or evidence.get((source,gid))!=to or (g['destination']['status']=='world')!=((source,gid) in world):raise ValueError('Gateway identity/offset')
+                if (source,gid) in seen or g['offset']!=offset or to==32767 or source not in scene['nodes'] or gateway_evidence.get((source,gid))!=to or (g['destination']['status']=='world')!=((source,gid) in world):raise ValueError('Gateway identity/offset')
                 seen.add((source,gid));a=_vector(g['sourceA'],3);b=_vector(g['sourceB'],3);xy=_vector(g['targetXY'],2);direction=_vector(g['direction'],4,0,255);triangle=_integer(g['targetTriangle'])
                 if source==scene['id']:
                     contacts=[];relation=validate_gateway_segment(scene['points'],a,b,candidates=contacts)
@@ -340,8 +360,9 @@ def export_field(workspace, field, output, start=None, end=None, format_version=
                 row(paths,dict(sequence_index=k,triangle_id=i,start_triangle=start,end_triangle=end,hop_count=len(path['ids'])-1,from_triangle=parent,access_slot=slot,access_offset=None if k==0 else 4+n*24+(parent*3+slot)*2,semantics=LABEL))
             metadata=layer('field_metadata')
             row(metadata,metadata_values(scene,network,format_version,interaction))
-            if interaction is not None:
-                for name,entries in interaction_rows(scene,interaction,network).items():
+            if format_version>=2:
+                interaction_data=interaction_rows(scene,interaction,network) if interaction is not None else dict.fromkeys(INTERACTION_FIELDS,())
+                for name,entries in interaction_data.items():
                     table=layer(name,ogr.wkbLineString25D if name in ('field_triggers','script_lines') else ogr.wkbNone)
                     for attributes in entries:
                         geometry=None
@@ -349,9 +370,21 @@ def export_field(workspace, field, output, start=None, end=None, format_version=
                             geometry=geom(ogr.wkbLineString25D,[tuple(attributes[f'raw_{end}{axis}'] for axis in ('x','y','z')) for end in ('a','b')])
                         row(table,attributes,geometry)
             package.dataset.CommitTransaction();package.dataset.Close();package.dataset=None;package=None
-            checked=time.perf_counter();report=verify_package(temporary,scene,network,counts,format_version,interaction);verification_seconds=time.perf_counter()-checked
+            if evidence is not None:
+                from .field_evidence_gis import write_tables
+                started=time.perf_counter();counts.update(write_tables(temporary,evidence))
+                evidence_timing['database_seconds']=round(time.perf_counter()-started,4)
+            checked=time.perf_counter()
+            if evidence is None:report=verify_package(temporary,scene,network,counts,format_version,interaction)
+            else:report=verify_package(temporary,scene,network,counts,format_version,interaction,evidence=evidence)
+            verification_seconds=time.perf_counter()-checked
             if temporary.stat().st_size>LIMIT:raise ValueError('GeoPackage output budget')
-            if any(sha256(scene['root']/name)!=h for name,h in scene['hashes'].items()) or sha256(scene['root']/'gaia-workspace.json')!=scene['manifest_hash']:raise ValueError('Workspace changed during export')
+            for name,digest in {**scene['hashes'],'gaia-workspace.json':scene['manifest_hash']}.items():
+                source=scene['root']/name;reject_links(source)
+                if sha256(source)!=digest:raise ValueError('Workspace changed during export')
+            if evidence is not None:
+                from .field_evidence_gis import verify_observed
+                verify_observed(scene['root'],{name:pair for name,pair in scene.get('observed_evidence',{}).items() if name not in scene['hashes']})
             safe_target(target);os.link(temporary,target)  # Atomic no-clobber delivery, including races.
         finally:
             if package is not None:
@@ -360,24 +393,37 @@ def export_field(workspace, field, output, start=None, end=None, format_version=
                 # GDAL feature-count triggers to fail during Windows cleanup.
                 try:package.dataset.CommitTransaction()
                 finally:package.dataset.Close();package.dataset=None
-    return dict(field=scene['name'],format_version=format_version,pack_timing=pack_timing,verification_seconds=round(verification_seconds,4),counts=counts,wcc=len(network['wcc']['groups']),scc=len(network['scc']['groups']),reachable=None if network['reach'] is None else sum(d>=0 for d in network['reach']['distance']),path=path,bytes=target.stat().st_size,seconds=round(time.perf_counter()-began,4),validation=report)
+    result=dict(field=scene['name'],format_version=format_version,pack_timing=pack_timing,verification_seconds=round(verification_seconds,4),counts=counts,wcc=len(network['wcc']['groups']),scc=len(network['scc']['groups']),reachable=None if network['reach'] is None else sum(d>=0 for d in network['reach']['distance']),path=path,bytes=target.stat().st_size,seconds=round(time.perf_counter()-began,4),validation=report)
+    if evidence is not None:
+        result['analysis']={**evidence['run'],'timing':evidence_timing}
+    if project_target:
+        from .field_gis_project import create_field_project
+        try:result['qgis']=create_field_project(target,project_target,tuple(counts),scene['name'])
+        except (ImportError,OSError,ValueError,RuntimeError) as error:
+            result['qgis']=dict(status='unavailable',reason='pyqgis_missing' if isinstance(error,ImportError) else 'project_creation_failed')
+    return result
 
 
-def verify_package(path, scene, network, counts, format_version=1, interaction=None):
+def verify_package(path, scene, network, counts, format_version=1, interaction=None, *, evidence=None):
     """Reopen with SQLite and OGR before delivery; exact integer XYZ/raw4 proof."""
     from osgeo import gdal,ogr
     schemas=table_fields(format_version)
     if format_version==2 and interaction is None:raise ValueError('V2 verification requires validated Interaction evidence')
-    if set(counts)!=set(schemas):raise ValueError('FieldLocal table contract mismatch')
+    expected_tables=set(schemas)
+    if format_version==3:
+        from .field_evidence_gis import ATTRIBUTES,verify_tables
+        if evidence is None:raise ValueError('V3 verification requires evidence status')
+        expected_tables.update(ATTRIBUTES)
+    if set(counts)!=expected_tables:raise ValueError('FieldLocal table contract mismatch')
     with closing(sqlite3.connect(Path(path).resolve().as_uri()+'?mode=ro',uri=True)) as db:
         if db.execute('PRAGMA integrity_check').fetchone()[0]!='ok':raise ValueError('GeoPackage integrity')
         columns=db.execute('SELECT table_name,geometry_type_name,srs_id,z,m FROM gpkg_geometry_columns').fetchall()
         expected={'walkmesh_triangles':'POLYGON','walkmesh_edges':'LINESTRING','field_entrances':'POINT','gateway_segments':'LINESTRING','arrival_points':'POINT'}
-        if format_version==2:expected.update(field_triggers='LINESTRING',script_lines='LINESTRING')
+        if format_version>=2:expected.update(field_triggers='LINESTRING',script_lines='LINESTRING')
         contents=db.execute('SELECT table_name,data_type FROM gpkg_contents').fetchall()
-        if dict(contents)!={name:'features' if name in expected else 'attributes' for name in schemas}:raise ValueError('FieldLocal exact table contract mismatch')
+        if dict(contents)!={name:'features' if name in expected else 'attributes' for name in expected_tables}:raise ValueError('FieldLocal exact table contract mismatch')
         user_tables={name for (name,) in db.execute("SELECT name FROM sqlite_master WHERE type='table'") if not name.startswith(('gpkg_','rtree_','sqlite_'))}
-        if user_tables!=set(schemas):raise ValueError('Unexpected FieldLocal data table')
+        if user_tables!=expected_tables:raise ValueError('Unexpected FieldLocal data table')
         if {name:kind for name,kind,_,_,_ in columns}!=expected or any(srs!=-1 or z!=1 or m!=0 for _,_,srs,z,m in columns):raise ValueError('FieldLocal geometry CRS/Z/M mismatch')
         if db.execute('SELECT organization,organization_coordsys_id,definition FROM gpkg_spatial_ref_sys WHERE srs_id=-1').fetchone()!=('NONE',-1,'undefined'):raise ValueError('Undefined Cartesian CRS missing')
         if db.execute("SELECT count(*) FROM gpkg_contents WHERE data_type='features' AND srs_id!=-1").fetchone()[0]:raise ValueError('FieldLocal contents CRS')
@@ -395,8 +441,16 @@ def verify_package(path, scene, network, counts, format_version=1, interaction=N
             if actual!={key:types[kind] for key,kind in fields.items()}:raise ValueError('FieldLocal field contract mismatch')
         records=list(dataset.GetLayerByName('field_metadata'))
         wanted=metadata_values(scene,network,format_version,interaction)
-        if len(records)!=1 or any(records[0].GetField(key)!=value for key,value in wanted.items() if key!='exporter_version') or not re.fullmatch(r'\d+\.\d+\.\d+',records[0].GetField('exporter_version') or ''):raise ValueError('FieldLocal metadata mismatch')
-        if format_version==2:
+        if len(records)!=1 or any(records[0].GetField(key)!=value for key,value in wanted.items() if key not in ('exporter_version','interaction_version')) or not re.fullmatch(r'\d+\.\d+\.\d+',records[0].GetField('exporter_version') or ''):raise ValueError('FieldLocal metadata mismatch')
+        if format_version>=2:
+            expected_version=None
+            if interaction is not None:
+                # The authenticated manifest revision and verified header must independently agree.
+                revision=scene['assets']['gaia-field-interaction.bin']['generator_version']
+                expected_version={'field-interaction-1':1,'field-interaction-2':2}[revision]
+                if scene['interaction_version']!=expected_version:raise ValueError('Interaction reader/manifest version mismatch')
+            if records[0].GetField('interaction_version')!=expected_version:raise ValueError('Interaction container version metadata mismatch')
+        if interaction is not None:
             for name,entries in interaction_rows(scene,interaction,network).items():
                 actual=[]
                 for feature in dataset.GetLayerByName(name):
@@ -443,6 +497,7 @@ def verify_package(path, scene, network, counts, format_version=1, interaction=N
             expected_contacts.update((g['gateway'],i) for i in contacts)
         contacts=[(f.GetField('gateway_id'),f.GetField('triangle_id')) for f in dataset.GetLayerByName('gateway_candidates')]
         if len(contacts)!=len(set(contacts)) or set(contacts)!=expected_contacts:raise ValueError('Gateway one-to-many relation mismatch')
+        if format_version==3:verify_tables(path,dataset,evidence,counts)
     finally:dataset.Close()
     return dict(format_version=format_version,interaction_evidence_equal=interaction is not None,srs_id=-1,xyz_max_error=0,raw4_max_error=0,raw_access_equal=True,component_labels_equal=True)
 
@@ -450,11 +505,15 @@ def verify_package(path, scene, network, counts, format_version=1, interaction=N
 def main(argv=None):
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('operation',choices=['export']);parser.add_argument('--workspace',type=Path,required=True);parser.add_argument('--field',required=True);parser.add_argument('--output',type=Path,required=True)
-    parser.add_argument('--format-version',type=int,choices=(1,2),default=1)
+    parser.add_argument('--format-version',type=int,choices=(1,2,3),default=1)
+    parser.add_argument('--qgis-project',action='store_true',help='Write a same-stem relative-path QGZ beside a v3 export')
     parser.add_argument('--start-triangle',type=int);parser.add_argument('--end-triangle',type=int)
     args=parser.parse_args(argv)
     try:
-        print(json.dumps(export_field(args.workspace,args.field,args.output,args.start_triangle,args.end_triangle,args.format_version),ensure_ascii=False));return 0
+        options={'qgis_project':True} if args.qgis_project else {}
+        result=export_field(args.workspace,args.field,args.output,args.start_triangle,args.end_triangle,args.format_version,**options)
+        print(json.dumps(result,ensure_ascii=False))
+        return int(args.qgis_project and result['qgis']['status']!='complete')
     except ImportError:
         root=os.environ.get('GAIAGIS_QGIS_ROOT')
         if root and sys.platform=='win32' and not getattr(sys,'frozen',False):
@@ -464,8 +523,9 @@ def main(argv=None):
                 command=[str(root/'bin/python.exe'),'-B','-m','gaiagis','field-gis','export','--workspace',str(args.workspace.absolute()),'--field',args.field,'--output',str(args.output.absolute())]
                 for name,value in (('format-version',args.format_version),('start-triangle',args.start_triangle),('end-triangle',args.end_triangle)):
                     if value is not None:command.extend(['--'+name,str(value)])
+                if args.qgis_project:command.append('--qgis-project')
                 return subprocess.run(command,cwd=WORKSPACE_ROOT,env=env).returncode
             except (ValueError,OSError,RuntimeError) as error:parser.exit(1,f'QGIS/GDAL environment unavailable: {error}\n')
         parser.exit(1,'Field GIS requires GDAL >= 3.9-enabled Python. On Windows, set GAIAGIS_QGIS_ROOT to an installed QGIS/OSGeo4W root. Web/portable Viewer needs no GDAL.\n')
-    except (ValueError,OSError,RuntimeError,KeyError,TypeError,AttributeError,IndexError,struct.error,RecursionError) as error:
+    except (ValueError,OSError,RuntimeError,KeyError,TypeError,AttributeError,IndexError,struct.error,RecursionError,sqlite3.Error) as error:
         parser.exit(1,f'Field GIS export rejected: {error}\n')

@@ -327,7 +327,8 @@ def read_interaction(scene):
     if len(decoded)!=chosen['rawBytes'] or decoder.unconsumed_tail or decoder.unused_data or not decoder.eof or digest(decoded)!=chosen['sha256']:raise ValueError('Interaction decompression/scene checksum')
     decompress_seconds=time.perf_counter()-began
     result=validate_interaction_scene(_decode(decoded),chosen,scene)
-    return result,dict(metadata_seconds=metadata_seconds,decompress_seconds=decompress_seconds,scene_seconds=time.perf_counter()-began,decoded_bytes=len(decoded))
+    scene['interaction_version']=meta['version']
+    return result,dict(container_version=meta['version'],metadata_seconds=metadata_seconds,decompress_seconds=decompress_seconds,scene_seconds=time.perf_counter()-began,decoded_bytes=len(decoded))
 
 
 def atomic_write(path, payload):

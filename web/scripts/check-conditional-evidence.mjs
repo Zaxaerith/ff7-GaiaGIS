@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-only
 /** Optional local verifier. No install discovery, asset generation, or Workspace writes. */
 import {createHash} from 'node:crypto';
-import {spawnSync} from 'node:child_process';
+import {loadProduction} from './field-evidence-runtime.mjs';
 import {createReadStream} from 'node:fs';
 import {lstat, mkdir, mkdtemp, readFile, realpath, rename, rm, stat, writeFile} from 'node:fs/promises';
-import {createRequire} from 'node:module';
+
 import {dirname, isAbsolute, join, relative, resolve, sep} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {performance} from 'node:perf_hooks';
@@ -14,7 +14,7 @@ const WORKSPACE=join(ROOT,'output/local-workspace');
 const OUT=join(ROOT,'output/dev/current/conditional-evidence');
 const BASELINE=join(ROOT,'output/dev/current/research/v5.13-field-conditional-geography-statistics.csv');
 const ATLAS=join(ROOT,'src/gaiagis/atlas_data/content.json');
-const ENGINE=join(ROOT,'web/src/analysis/fieldConditionalEvidence.ts');
+
 const INPUTS=[
   ['gaia-workspace.json',100_000],['gaia-field-context.json',8_000_000],
   ['gaia-field-dialogue.bin',16_000_000],['gaia-gameplay.json',20_000_000],
@@ -82,56 +82,6 @@ function parseBaseline(bytes){
     rows.set(row.fieldId,row);
   }
   requireThat(rows.size===702,'baseline_coverage');return rows;
-}
-
-/** Compile only imported public source modules into this run's ignored directory.
- * No install/Workspace script is imported; no global require hook is changed. */
-async function loadProduction(directory){
-  const require=createRequire(import.meta.url),ts=require('typescript'),cache=new Map(),sources=[];
-  const allowedSource=join(ROOT,'web/src');
-  const allowedJSON=join(ROOT,'src/gaiagis/atlas_data/boss-evidence.json');
-  async function transpile(source,path,index){
-    if(typeof ts.transpileModule==='function'){
-      const output=ts.transpileModule(source,{fileName:path,reportDiagnostics:true,compilerOptions:{target:ts.ScriptTarget.ES2022,module:ts.ModuleKind.CommonJS,esModuleInterop:true,sourceMap:false,inlineSourceMap:false}});
-      requireThat(!(output.diagnostics??[]).some(d=>d.category===ts.DiagnosticCategory.Error),'typescript_transpile');
-      return output.outputText;
-    }
-    // TypeScript 7 exports version metadata only at its root; use its installed
-    // native CLI with an isolated single .cts input, never the project's build.
-    const stem='input-'+index,input=join(directory,stem+'.cts'),config=join(directory,stem+'.json');
-    await writeFile(input,source,{flag:'wx'});
-    await writeFile(config,JSON.stringify({compilerOptions:{target:'ES2022',module:'Node16',moduleResolution:'Node16',noCheck:true,noResolve:true,lib:['ES2022','DOM','DOM.Iterable'],types:[],isolatedModules:true,esModuleInterop:true,sourceMap:false,inlineSourceMap:false,declaration:false,incremental:false},files:[input]}),{flag:'wx'});
-    const compiler=join(dirname(require.resolve('typescript/package.json')),'bin/tsc');
-    const emitted=spawnSync(process.execPath,[compiler,'--project',config],{cwd:directory,encoding:'utf8',stdio:['ignore','pipe','pipe'],timeout:30000,windowsHide:true,maxBuffer:1_000_000});
-    if(emitted.error||emitted.status!==0){const diagnosticCodes=[...new Set(((emitted.stdout??'')+(emitted.stderr??'')).match(/TS[0-9]{4,6}/g)??[])];throw new VerificationFailure('typescript_transpile',{exitCode:integer(emitted.status)?emitted.status:null,diagnosticCodes});}
-    return (await bounded(join(directory,stem+'.cjs'),4_000_000)).toString('utf8');
-  }
-  async function compile(path){
-    path=resolve(path);if(cache.has(path))return cache.get(path);
-    requireThat(inside(allowedSource,path)&&path.endsWith('.ts')||path===allowedJSON,'unsupported_source_import');
-    requireThat(await realpath(path)===path,'source_symlink');
-    const target=join(directory,'module-'+cache.size+(path.endsWith('.json')?'.json':'.cjs'));
-    cache.set(path,target);const source=await bounded(path,4_000_000),fingerprint=remember(path,source);sources.push({path:relative(ROOT,path).split(sep).join('/'),sha256:fingerprint.sha256});
-    if(path.endsWith('.json')){JSON.parse(source.toString('utf8'));await writeFile(target,source,{flag:'wx'});return target;}
-    let text=await transpile(source.toString('utf8'),path,cache.size-1);
-    const calls=[...text.matchAll(/require\((["'])([^"']+)\1\)/g)];
-    for(const match of calls){
-      const specifier=match[2];requireThat(specifier.startsWith('.'),'unsupported_external_import');
-      let dependency=resolve(dirname(path),specifier);
-      if(!dependency.endsWith('.json'))dependency=dependency.replace(/\.js$/,'')+'.ts';
-      const built=await compile(dependency);
-      text=text.split(match[0]).join('require('+JSON.stringify('./'+relative(directory,built).split(sep).join('/'))+')');
-    }
-    await writeFile(target,text,{flag:'wx'});return target;
-  }
-  const imports={
-    engine:ENGINE,context:join(allowedSource,'data/fieldContext.ts'),dialogue:join(allowedSource,'data/fieldDialogue.ts'),
-    gameplay:join(allowedSource,'data/gameplay.ts'),interaction:join(allowedSource,'data/fieldInteraction.ts'),
-    script:join(allowedSource,'data/fieldScriptEvidence.ts'),workspace:join(allowedSource,'app/workspace.ts'),
-  };
-  const modules={};for(const [key,path]of Object.entries(imports))modules[key]=require(await compile(path));
-  requireThat(typeof modules.engine.analyzeFieldConditionalEvidence==='function','engine_api_unavailable');
-  return {modules,sources,typescriptVersion:ts.version};
 }
 
 const memory=()=>{const m=process.memoryUsage();return {rss:m.rss,heapUsed:m.heapUsed,external:m.external,arrayBuffers:m.arrayBuffers};};
@@ -213,7 +163,7 @@ async function main(){
   await mkdir(OUT,{recursive:true});requireThat(await realpath(OUT)===OUT,'output_symlink');
   temp=await mkdtemp(join(OUT,'ts-runtime-'));
   const started=performance.now();stage='load_production_typescript';
-  const {modules:m,sources,typescriptVersion}=await loadProduction(temp);
+  const {modules:m,sources,typescriptVersion}=await loadProduction(temp,remember);
   stage='manifest';const manifest=m.workspace.parseManifest(JSON.parse(bytes.get('gaia-workspace.json').toString('utf8')));
   for(const [name]of INPUTS.slice(1)){const record=manifest.assets.find(a=>a.filename===name);requireThat(record&&record.sha256===before[name].sha256&&record.bytes===before[name].bytes,'manifest_asset_mismatch');}
   const file=name=>new File([bytes.get(name)],name);

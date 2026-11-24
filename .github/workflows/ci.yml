@@ -36,6 +36,12 @@ jobs:
                   stream.write(f'{key}={value}\n')
       - run: npm ci
         working-directory: web
+      - name: Source CLI Field Evidence smoke on Node 24
+        shell: python {0}
+        run: |
+          import os, subprocess, tempfile
+          with tempfile.TemporaryDirectory(prefix='field-evidence-', dir=os.environ['TEMP']) as stage:
+              subprocess.run(['node', 'web/scripts/export-field-evidence.mjs', stage, '--self-test'], check=True)
       - run: npm test
         working-directory: web
       - run: npm run build

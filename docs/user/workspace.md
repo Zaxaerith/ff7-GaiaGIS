@@ -134,6 +134,14 @@ Choose unused output names. V2 requires a registered, matching `gaia-field-inter
 
 V2 adds `field_triggers` and `script_lines` (LineString Z), plus six nonspatial tables: `interaction_scripts`, `interaction_memberships`, `interaction_line_links`, `interaction_candidates`, `interaction_background`, `interaction_stops`. A LINE has one geometry per original instruction offset; its multiple Actor/entry memberships remain separate rows. LINON and all SLINE records remain nonspatial evidence. Constant SLINE coordinates describe a possible modification, not an unconditional initial line; dynamic bank operands are not coordinates. `runtime_active` is NULL everywhere.
 
+### Script and event evidence in GeoPackage v3
+
+Use `--format-version 3` for the same FieldLocal geometry plus searchable
+Gameplay, Dialogue and conditional evidence. Add `--qgis-project` to create a
+same-stem QGZ with evidence relations. From a source checkout, install the
+pinned Web dependencies and use local Node ≥22.12 alongside the existing
+GDAL-enabled Python. See the [v3 CLI, schema and SQL examples](../reference/field-evidence-gis-export.md).
+
 ### QGIS 中文操作与查询
 
 1. 先复制需要保留原始文件哈希的研究文件，再在 **浏览器** 面板找到新 `.gpkg`，展开并把所需图层拖到地图；也可用 **图层 → 添加图层 → 添加矢量图层**。表没有地图几何，但可打开属性表。每个 Field 单独研究，保留未定义 Cartesian CRS；不要在 CRS 提示中指定 WGS84、EPSG:4326 或米制投影。
