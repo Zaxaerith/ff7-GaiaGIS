@@ -103,7 +103,7 @@ async function start(provided?:{mesh:GaiaMesh;meta:GaiaMeta}){
     const encounterControls=mountEncounters(viewer,meta,()=>request===operation);
     const traversalControls=mountTraversal(viewer,meta);
     const eventControls=mountEvents(viewer,meta,()=>request===operation);
-    analysisControls=mountAnalysis(viewer,meta,()=>request===operation);
+    analysisControls=mountAnalysis(viewer,meta,()=>request===operation,{encounters:()=>encounterControls.evidence(),gameplay:()=>atlasOwner?.gameplayResource()??null});
     viewer.renderer.domElement.addEventListener('keydown',e=>{if(['n','N','ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key))element<HTMLInputElement>('auto-rotate').checked=false;});
     element('loading').hidden=true;
     element('dataset-count').textContent=t('message.triangles',{count:mesh.triangleCount});

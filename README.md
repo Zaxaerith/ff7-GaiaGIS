@@ -4,6 +4,12 @@ A local-first GIS reconstruction of the original FINAL FANTASY VII world, with a
 
 ## Quick start
 
+**v5.15.0 — Encounter-aware Journey Analysis** shows where a verified WM0
+route crosses encounter table and static candidate ranges. Compare ordinary
+and Chocobo coverage along a complete Journey or one leg, then inspect the
+selected range on the map and trace it back to the original Set, Formation,
+Enemy or Source Face. [Encounter-aware journey guide](docs/reference/encounter-aware-journey.md).
+
 **v5.14.0 — World–Field Integrated Exploration & Spatial Continuity** connects
 the actual WM0 route endpoint to a selected FIELD.TBL entrance and its directed
 Walkmesh. Follow up to three Gateways or select a final Triangle or verified

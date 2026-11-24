@@ -5,8 +5,20 @@ import type {ProjectionId,ProjectionContext,GeoPoint} from '../projections/Proje
 import {projections} from '../projections';
 import {projectGraticule} from './graticule';
 import {addVisibilityMask} from './visibility';
+import {sourceGeographic} from '../explorer/coordinates';
+import type {RouteLeg} from '../analysis/spatial';
 export function corridorPoints(mesh:GaiaMesh,nodes:number[]):GeoPoint[]{return nodes.map(t=>{const corners=[0,1,2].map(j=>{const i=mesh.indices[t*3+j]*3;return [mesh.geographic[i],mesh.geographic[i+1],mesh.geographic[i+2]];});let lon=corners[0][0];for(let i=1;i<3;i++)lon+=corners[i][0]+360*Math.round((corners[0][0]-corners[i][0])/360);return [((lon/3+180)%360+360)%360-180,corners.reduce((s,p)=>s+p[1]/3,0),corners.reduce((s,p)=>s+p[2]/3,0)+1500];});}
 export function routeSegments(points:GeoPoint[]){const result:number[]=[];for(let i=1;i<points.length;i++){const a=points[i-1],b=points[i],lon=b[0]+360*Math.round((a[0]-b[0])/360),steps=Math.max(1,Math.ceil(Math.max(Math.abs(lon-a[0]),Math.abs(b[1]-a[1]))/1));let prev=a;for(let j=1;j<=steps;j++){const f=j/steps,next:GeoPoint=[a[0]+f*(lon-a[0]),a[1]+f*(b[1]-a[1]),a[2]+f*(b[2]-a[2])];const shift=360*Math.floor((prev[0]+180)/360),x=prev[0]-shift,y=next[0]-shift;if(y>180||y< -180){const seam=y>180?180:-180,k=(seam-x)/(y-x),lat=prev[1]+k*(next[1]-prev[1]),h=prev[2]+k*(next[2]-prev[2]);result.push(x,prev[1],prev[2],seam,lat,h,-seam,lat,h,y-Math.sign(y)*360,next[1],next[2]);}else result.push(x,prev[1],prev[2],y,next[1],next[2]);prev=next;}}return new Float32Array(result);}
+/** Render separate witnessed half-edges without joining across an omitted interval. */
+export function encounterRouteSegments(pieces:readonly RouteLeg[]){
+ const values:number[]=[];
+ for(const piece of pieces){
+  if(!piece.distance)continue;
+  const [a,b]=[piece.from,piece.to].map(point=>sourceGeographic(point[0],point[1],point[2]+1500));
+  for(const value of routeSegments([a,b]))values.push(value);
+ }
+ return new Float32Array(values);
+}
 export class RouteOverlay {
   progress:LineSegments<BufferGeometry,LineBasicMaterial>;
   setProgress(value:number){const count=this.line.geometry.getAttribute('position')?.count??0;this.progress.geometry.setDrawRange(0,Math.floor(Math.max(0,Math.min(1,value))*count/2)*2);this.progress.visible=this.line.visible&&value>0;}

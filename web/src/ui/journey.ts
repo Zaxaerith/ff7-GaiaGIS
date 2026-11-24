@@ -16,6 +16,8 @@ import type {JourneyStation,JourneySource,JourneyResult,JourneyLeg,JourneyReason
 import {resolveJourneyStation} from '../navigation/journeyTargets';
 import {mountWorldFieldExploration} from './worldFieldExploration';
 import type {ExplorationFieldPort} from './worldFieldExploration';
+import {encounterJourneyRoute} from '../analysis/encounterJourney';
+import type {EncounterRoute} from '../analysis/encounterJourney';
 
 /** A borrower of the existing Analysis graph, Worker and foreground route lease. */
 export interface JourneyRoutingPort {
@@ -24,8 +26,9 @@ export interface JourneyRoutingPort {
  route(profile:string,conditional:boolean,starts:Endpoint[],targets:Endpoint[]):Promise<ReturnType<typeof findRoute>>;
  claim():number;
  current(lease:number):boolean;
- display(lease:number,nodes:number[],from:string|null,to:string|null,distance:number):void;
+ display(lease:number,nodes:number[],from:string|null,to:string|null,distance:number,encounter?:EncounterRoute):void;
  clear(lease:number):void;
+ openEncounter?():void;
 }
 export interface JourneyDraftStop {id:string;target:JourneyStation['target'];parentConfirmed:boolean;}
 interface Draft {id:string;stops:JourneyDraftStop[];profile:string;conditional:boolean;}
@@ -89,6 +92,7 @@ export function mountJourney(getViewer:()=>GaiaViewer|undefined,getBackend:()=>J
   const c=document.createElement('p');c.className='control-note';c.textContent=t('journey.common',{count:result.commonComponents.length,id:result.component!});results.append(c);
   const references=draft.stops.filter(reference).length;if(references){const p=document.createElement('p');p.className='control-note';p.textContent=t('journey.references',{count:references});results.append(p);}
   const show=button('journey.showAll',()=>void showRoute());show.id='journey-show-all';results.append(show);
+  if(getBackend()?.openEncounter){const analyze=button('encRoute.title',()=>void showRoute(undefined,true));analyze.id='journey-encounter-analysis';results.append(analyze);}
   for(const [index,leg]of result.legs.entries()){const from=resultStations.find(s=>s.id===leg.from)!,to=resultStations.find(s=>s.id===leg.to)!,row=document.createElement('section'),title=document.createElement('h4'),distance=document.createElement('p'),show=button('journey.viewLeg',()=>void showRoute(index));row.className='journey-leg';row.dataset.leg=String(index);title.textContent=t('journey.leg',{index:index+1})+` · ${name(from)} → ${name(to)}`;distance.textContent=t('journey.graphDistance')+': '+km(leg.distance);show.dataset.journeyLeg=String(index);row.append(title,distance,show);results.append(row);}
   note(results,'journey.optimality');note(results,'journey.referenceScale');
  }
@@ -104,15 +108,15 @@ export function mountJourney(getViewer:()=>GaiaViewer|undefined,getBackend:()=>J
    const labels=await backend.components(scenario.profile,scenario.conditional);if(!current())return;
    const calculated=await solveJourney(context.graph,labels.labels,routeStops,scenario,context.source,(starts,targets)=>backend.route(scenario.profile,scenario.conditional,starts,targets),current);if(!current())return;
    result=calculated;resultStations=routeStops;message=calculated.status==='success'?'journey.success':reason(calculated.reason??'route_failed');
-   if(calculated.status==='success'){backend.display(heldLease,calculated.nodes,routeStops[0].locationId,routeStops.at(-1)!.locationId,calculated.totalDistance!);getViewer()?.setJourneyStops(routeStops.map(s=>s.locationId!));}
+   if(calculated.status==='success'){backend.display(heldLease,calculated.nodes,routeStops[0].locationId,routeStops.at(-1)!.locationId,calculated.totalDistance!,encounterJourneyRoute(calculated,'journey'));getViewer()?.setJourneyStops(routeStops.map(s=>s.locationId!));}
   }catch(error){if(current()){const code=error instanceof Error?error.message:'';message=Object.hasOwn(reasonKeys,code)?reason(code as JourneyReason):reason('route_failed');}}
   finally{if(attempt===revision&&!scope.disposed){busy=false;if(!backend.current(heldLease)&&!result&&message==='journey.busy'){message=reason('superseded');}drawResults();drawStatus();exploration.refresh();}}
  }
  const reasonKeys:Record<JourneyReason,boolean>={workspace_missing:true,routing_missing:true,unverified_entrance:true,no_eligible_nodes:true,different_components:true,no_common_component:true,field_only:true,source_stale:true,superseded:true,unsupported_space:true,invalid_plan:true,invalid_scenario:true,invalid_route:true,route_failed:true};
- async function showRoute(index?:number){
+ async function showRoute(index?:number,openEncounter=false){
   const solved=result,stations=resultStations,backend=getBackend();if(!solved||solved.status!=='success'||!backend||!supported())return;
   const attempt=revision;port=backend;lease=backend.claim();const heldLease=lease;try{const context=await backend.context(JSON.stringify(getAtlas()));if(attempt!==revision||scope.disposed||!backend.current(heldLease))return;if(JSON.stringify(context.source)!==JSON.stringify(solved.source)){invalidate(reason('source_stale'));return;}
-   const leg=index===undefined?null:solved.legs[index],from=leg?stations.find(s=>s.id===leg.from)!:stations[0],to=leg?stations.find(s=>s.id===leg.to)!:stations.at(-1)!;backend.display(heldLease,leg?.nodes??solved.nodes,from.locationId,to.locationId,leg?.distance??solved.totalDistance!);getViewer()?.setJourneyStops(stations.map(s=>s.locationId!));if(leg&&index!==undefined)inspectLeg(leg,index,stations);
+   const leg=index===undefined?null:solved.legs[index],from=leg?stations.find(s=>s.id===leg.from)!:stations[0],to=leg?stations.find(s=>s.id===leg.to)!:stations.at(-1)!;backend.display(heldLease,leg?.nodes??solved.nodes,from.locationId,to.locationId,leg?.distance??solved.totalDistance!,encounterJourneyRoute(solved,'journey'));getViewer()?.setJourneyStops(stations.map(s=>s.locationId!));if(leg&&index!==undefined)inspectLeg(leg,index,stations);if(openEncounter)backend.openEncounter?.();
   }catch{if(attempt===revision)invalidate(reason('source_stale'));}
  }
  function inspectLeg(leg:JourneyLeg,index:number,stations:JourneyStation[]){

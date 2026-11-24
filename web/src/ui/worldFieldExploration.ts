@@ -11,6 +11,7 @@ import {resolveJourneyStation} from '../navigation/journeyTargets';
 import {exploreWorldField,sameJourneySource} from '../navigation/worldFieldExploration';
 import type {ExplorationFieldView,ExplorationFields,ExplorationResult,ExplorationTarget} from '../navigation/worldFieldExploration';
 import type {JourneyRoutingPort} from './journey';
+import {encounterJourneyRoute} from '../analysis/encounterJourney';
 import type {mountFieldContext} from './fieldContext';
 import {evidenceSection} from './contentPresentation';
 
@@ -94,6 +95,10 @@ export function mountWorldFieldExploration(parent:HTMLElement,ports:{
    add('p',results,t('journey.graphDistance')+' · '+distance+' km');
    action(results,'worldField.world',()=>void showWorld()).id='world-field-world';
    action(fieldActions,'worldField.world',()=>void showWorld());
+   if(ports.backend()?.openEncounter){
+    action(results,'encRoute.title',()=>void showWorld(true)).id='world-field-encounter-analysis';
+    action(fieldActions,'encRoute.title',()=>void showWorld(true));
+   }
   }
   if(result.start){
    const record=result.transfer!.record!,first=result.start;
@@ -150,7 +155,7 @@ export function mountWorldFieldExploration(parent:HTMLElement,ports:{
     solve:(from,to)=>backend.route(profile.profile,profile.conditional,from,to),yield:()=>new Promise(resolve=>setTimeout(resolve,0))});
    if(!valid())return;
    answer=result;report=result.status;worldLocations=[stations[0].locationId,selectedEntrance.location_id];
-   if(result.world?.status==='success')backend.display(lease,result.world.nodes,...worldLocations,result.world.totalDistance!);
+   if(result.world?.status==='success')backend.display(lease,result.world.nodes,...worldLocations,result.world.totalDistance!,encounterJourneyRoute(result.world,'world-field'));
   }catch(error){if(valid())report=error instanceof Error&&error.message==='source_stale'?'unresolved':'unavailable';}
   finally{if(stamp===ticket){busy=false;controller=null;if(report==='busy')report='cancelled';draw();}}
  }
@@ -174,7 +179,7 @@ export function mountWorldFieldExploration(parent:HTMLElement,ports:{
   try{if(!await field.showExploration(view,appStore.state.view.spatial==='world'?captureWorld():()=>{},valid)&&valid()){report='unavailable';draw();}}
   catch{if(valid()){report='unavailable';draw();}}
  }
- async function showWorld(){
+ async function showWorld(encounter=false){
   const result=answer,world=result?.world,backend=ports.backend(),stamp=++viewTicket;
   if(!world||!backend||!current())return;
   if(appStore.state.view.spatial!=='world')ports.field()?.returnFromExploration();
@@ -184,7 +189,8 @@ export function mountWorldFieldExploration(parent:HTMLElement,ports:{
    const {source}=await backend.context(JSON.stringify(ports.atlas()));
    if(viewTicket!==stamp||answer!==result||!current()||!backend.current(lease))return;
    if(!sameJourneySource(world.source,source)){invalidate('unresolved');return;}
-   backend.display(lease,world.nodes,...worldLocations,world.totalDistance!);
+   backend.display(lease,world.nodes,...worldLocations,world.totalDistance!,encounterJourneyRoute(world,'world-field'));
+   if(encounter){backend.openEncounter?.();return;}
    const host=document.getElementById('selection-details');
    if(host){
     host.replaceChildren();host.hidden=false;host.dataset.journeyLeg='world-field';

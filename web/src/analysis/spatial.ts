@@ -6,9 +6,10 @@ import {geographicSource,sourceGeographic,WM0_EXTENT} from '../explorer/coordina
 import {centralAngle,REFERENCE_RADIUS} from './sphere';
 import {terrainPalette} from '../styles/terrainPalette';
 export type TinPoint=[number,number,number]; // east X, south Z, raw height
+export class SourceCorridorError extends Error{}
 export function sourceCorners(mesh:GaiaMesh,face:number):TinPoint[]{
- if(face<0||face>=mesh.sourceTriangleCount||mesh.attributes(face).origin)throw Error('Source TIN required');
- return [0,1,2].map(j=>{const i=mesh.indices[face*3+j]*3,p=[...geographicSource(mesh.geographic[i],mesh.geographic[i+1]),mesh.geographic[i+2]];if(p.some(v=>!Number.isFinite(v)||Math.abs(v-Math.round(v))>.125))throw Error('Ambiguous V1 source corner');return p.map(Math.round) as TinPoint;});
+ if(face<0||face>=mesh.sourceTriangleCount||mesh.attributes(face).origin)throw new SourceCorridorError('Source TIN required');
+ return [0,1,2].map(j=>{const i=mesh.indices[face*3+j]*3,p=[...geographicSource(mesh.geographic[i],mesh.geographic[i+1]),mesh.geographic[i+2]];if(p.some(v=>!Number.isFinite(v)||Math.abs(v-Math.round(v))>.125))throw new SourceCorridorError('Ambiguous V1 source corner');return p.map(Math.round) as TinPoint;});
 }
 export function tinGradient(p:TinPoint[],horizontalScale=1,verticalScale=1){
  if(p.length!==3||p.flat().some(v=>!Number.isFinite(v))||!Number.isFinite(horizontalScale)||!Number.isFinite(verticalScale)||horizontalScale<=0||verticalScale<=0)throw Error('Invalid TIN scales');
@@ -29,9 +30,9 @@ export interface RouteLeg {triangle:number;from:TinPoint;to:TinPoint;distance:nu
 const center=(p:TinPoint[])=>[0,1,2].map(k=>p.reduce((s,v)=>s+v[k]/p.length,0)) as TinPoint;
 const distance=(a:TinPoint,b:TinPoint)=>centralAngle(sourceGeographic(...a),sourceGeographic(...b))*REFERENCE_RADIUS;
 /** Center → shared source-edge midpoint → center, confined to the solved TIN corridor. */
-export function corridorLegs(mesh:GaiaMesh,nodes:number[]):RouteLeg[]{const legs:RouteLeg[]=[];if(nodes.length>mesh.sourceTriangleCount)throw Error('Route length');let a=nodes.length?sourceCorners(mesh,nodes[0]):[];
+export function corridorLegs(mesh:GaiaMesh,nodes:number[]):RouteLeg[]{const legs:RouteLeg[]=[];if(nodes.length>mesh.sourceTriangleCount)throw new SourceCorridorError('Route length');let a=nodes.length?sourceCorners(mesh,nodes[0]):[];
  if(nodes.length===1){const p=center(a);return [{triangle:nodes[0],from:p,to:p,distance:0}];}
- for(let i=1;i<nodes.length;i++){const b=sourceCorners(mesh,nodes[i]),key=(p:TinPoint)=>`${p[0]%WM0_EXTENT[0]}/${p[1]}/${p[2]}`,shared=a.filter(p=>b.some(q=>key(q)===key(p)));if(shared.length!==2)throw Error('Route edge is not a verified source edge');const mid=center(shared),ca=center(a),cb=center(b),mb=mid.slice() as TinPoint;mb[0]+=Math.round((cb[0]-mb[0])/WM0_EXTENT[0])*WM0_EXTENT[0];for(const [triangle,from,to]of [[nodes[i-1],ca,mid],[nodes[i],mb,cb]] as [number,TinPoint,TinPoint][])legs.push({triangle,from,to,distance:distance(from,to)});a=b;}return legs;
+ for(let i=1;i<nodes.length;i++){const b=sourceCorners(mesh,nodes[i]),key=(p:TinPoint)=>`${p[0]%WM0_EXTENT[0]}/${p[1]}/${p[2]}`,shared=a.filter(p=>b.some(q=>key(q)===key(p)));if(shared.length!==2)throw new SourceCorridorError('Route edge is not a verified source edge');const mid=center(shared),ca=center(a),cb=center(b),mb=mid.slice() as TinPoint;mb[0]+=Math.round((cb[0]-mb[0])/WM0_EXTENT[0])*WM0_EXTENT[0];for(const [triangle,from,to]of [[nodes[i-1],ca,mid],[nodes[i],mb,cb]] as [number,TinPoint,TinPoint][])legs.push({triangle,from,to,distance:distance(from,to)});a=b;}return legs;
 }
 /** Single traversal for elevation, terrain and static encounter exposure. */
 export function analyzeLegs(mesh:Pick<GaiaMesh,'attributes'>,legs:RouteLeg[],encounters:EncounterDataset|null,verticalScale=1){

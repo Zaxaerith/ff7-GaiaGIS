@@ -32,7 +32,8 @@ import type {ColorLayer,EncounterDataset} from '../data/encounters';
 import {profileById,traversalColor} from '../data/traversal';
 import {orderSurfaceHits} from './surfacePicking';
 import {RouteOverlay} from './route';
-import {corridorPoints,routeSegments} from './route';
+import {corridorPoints,encounterRouteSegments,routeSegments} from './route';
+import type {RouteLeg} from '../analysis/spatial';
 import {createSurfaceMaterial} from './surfaceMaterial';
 import {TexturedSurface} from './texturedSurface';
 import {applyRelief,validateExaggeration} from './relief';
@@ -91,6 +92,14 @@ export class GaiaViewer {
   readonly context:ProjectionContext;
   projectionId:ProjectionId='globe';
   private route=new RouteOverlay();
+  private encounterRoute=new CartographicLine('#eb85fb');
+  setEncounterRoute(pieces:readonly RouteLeg[]){
+    const segments=encounterRouteSegments(pieces);
+    this.encounterRoute.relief=this.relief;
+    this.encounterRoute.set(segments);
+    this.renderer.domElement.dataset.encounterRouteSegments=String(segments.length/6);
+    if(this.morph)this.encounterRoute.begin(this.morph.fromId,this.projectionId,this.context);
+  }
   readonly measurement=new CartographicLine('#73e4ed');
   readonly tissot=new CartographicLine('#dfb4ff',true);
   readonly comparedRoutes=[new CartographicLine('#6de0d0'),new CartographicLine('#ffab82'),new CartographicLine('#c5acff')];
@@ -220,7 +229,7 @@ export class GaiaViewer {
     addVisibilityMask(gridMaterial);
     this.graticule=new LineSegments(gridGeometry,gridMaterial);this.graticule.visible=true;this.graticule.frustumCulled=false;
     this.scene.add(this.graticule);this.scene.add(this.route.line,this.route.progress);
-    for(const o of [this.measurement,this.tissot,...this.comparedRoutes])this.scene.add(o.line);
+    for(const o of [this.measurement,this.tissot,this.encounterRoute,...this.comparedRoutes])this.scene.add(o.line);
     this.diagnostics.mapId=mesh.attributes(0).map??0;
     const highlightMaterial=new MeshBasicMaterial({color:'#ffdf8f',side:DoubleSide,transparent:true,opacity:0.92,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-3,polygonOffsetUnits:-3});
     addVisibilityMask(highlightMaterial);
@@ -348,7 +357,7 @@ export class GaiaViewer {
     if(id===this.projectionId&&!this.morph) return;
     if(this.comparison)this.pendingLinked=this.viewState();
     this.cancelFlight();
-    for(const o of [this.measurement,this.tissot,...this.comparedRoutes])o.begin(this.projectionId,id,this.context);this.regionalOverlay.begin(this.projectionId,id,this.context);
+    for(const o of [this.measurement,this.tissot,this.encounterRoute,...this.comparedRoutes])o.begin(this.projectionId,id,this.context);this.regionalOverlay.begin(this.projectionId,id,this.context);
     this.locations.beginMorph(this.projectionId,id,this.context,!!this.morph);
     this.atlas.beginMorph(this.projectionId,id,this.context,!!this.morph);
     this.events.beginMorph(this.projectionId,id,this.context,!!this.morph);this.route.begin(this.projectionId,id,this.context,!!this.morph);
@@ -585,7 +594,7 @@ export class GaiaViewer {
     this.events.update(this.projectionId,this.context,this.camera,markerMorph);
     this.atlas.update(this.projectionId,this.context,this.camera,markerMorph);
     this.route.update(this.projectionId,this.context,markerMorph?.ease);
-    for(const o of [this.measurement,this.tissot,...this.comparedRoutes])o.update(this.projectionId,this.context,markerMorph?.ease,this.camera.position);
+    for(const o of [this.measurement,this.tissot,this.encounterRoute,...this.comparedRoutes])o.update(this.projectionId,this.context,markerMorph?.ease,this.camera.position);
     this.regionalOverlay.update(this.projectionId,this.context,markerMorph?.ease,this.camera.position);this.diagnostics.tissotGenerationMs=this.tissot.generationMs;
     this.syncTexture();if(this.originalTexture||this.shading)this.sphereDepth.value=0;
     this.userMapping.update(this.projectionId,this.context,!this.captureExplorer&&!this.morph);

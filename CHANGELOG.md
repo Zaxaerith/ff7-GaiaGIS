@@ -1,5 +1,11 @@
 # Changelog
 
+## 5.15.0 — Encounter-aware Journey Analysis
+
+- Analyze successful WM0 Routing, Journey and World–Field world stages in the same Encounter Analysis panel. Reuse verified Route Profile half-edges and keep graph cost, corridor length and leg boundaries visible.
+- Compare all table references with historical static candidates, separate ordinary and Chocobo coverage, and deduplicate each Formation and composite Enemy per traversal piece. Show set intervals, source records and exact selected map segments.
+- Keep raw positive Battle IDs usable without verified Gameplay links. Analysis and highlight are session-only and use the existing Workspace assets.
+
 ## 5.14.0 — World–Field Integrated Exploration & Spatial Continuity
 
 - Lock the world route to a specific source entrance and its explicit arrival scenario. Verify the actual CSR end node, ENTER_FIELD call binding and FIELD.TBL Triangle/XY before starting Field analysis.
