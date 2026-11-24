@@ -14,6 +14,8 @@ import {analyzeRoute} from '../analysis/spatial';
 import {JOURNEY_MAX_STATIONS,journeyProfiles,solveJourney} from '../navigation/journey';
 import type {JourneyStation,JourneySource,JourneyResult,JourneyLeg,JourneyReason} from '../navigation/journey';
 import {resolveJourneyStation} from '../navigation/journeyTargets';
+import {mountWorldFieldExploration} from './worldFieldExploration';
+import type {ExplorationFieldPort} from './worldFieldExploration';
 
 /** A borrower of the existing Analysis graph, Worker and foreground route lease. */
 export interface JourneyRoutingPort {
@@ -35,7 +37,7 @@ const fresh=():Draft=>({id:uid(),stops:[],profile:'foot',conditional:false});
 const cloneDraft=(draft:Draft):Draft=>({...draft,stops:draft.stops.map(s=>({...s,target:{...s.target}}))});
 export function resetJourneyDraft(){retained=null;}
 
-export function mountJourney(getViewer:()=>GaiaViewer|undefined,getBackend:()=>JourneyRoutingPort|null,getPoi:()=>PoiDataset|null,getAtlas:()=>AtlasContent){
+export function mountJourney(getViewer:()=>GaiaViewer|undefined,getBackend:()=>JourneyRoutingPort|null,getPoi:()=>PoiDataset|null,getAtlas:()=>AtlasContent,getField:()=>ExplorationFieldPort|undefined=()=>undefined){
  const scope=new ResourceScope(),root=document.createElement('section');root.id='journey-planner';root.className='journey-planner';
  const heading=document.createElement('h2'),intro=document.createElement('p'),list=document.createElement('ol'),controls=document.createElement('div'),choices=document.createElement('select'),chooseLabel=document.createElement('label'),append=document.createElement('button');
  const scenario=document.createElement('div'),modeLabel=document.createElement('label'),mode=document.createElement('select'),conditionLabel=document.createElement('label'),condition=document.createElement('input'),conditionText=document.createElement('span'),assumption=document.createElement('p');
@@ -56,7 +58,7 @@ export function mountJourney(getViewer:()=>GaiaViewer|undefined,getBackend:()=>J
  function reference(stop:JourneyDraftStop){if(stop.target.kind!=='atlas')return false;const binding=getAtlas().entities.find(e=>e.id===stop.target.id)?.spatialBinding;return !binding||['field_identity','unresolved','non_spatial'].includes(binding.kind)||binding.kind==='field_parent'&&!stop.parentConfirmed;}
  function eraseInspector(){const details=document.getElementById('selection-details');if(details?.dataset.journeyLeg){delete details.dataset.journeyLeg;details.replaceChildren();details.hidden=true;if(appStore.state.selection?.kind==='route'&&appStore.state.selection.id.startsWith('journey:'))appStore.dispatch({type:'select',selection:null});}}
  function invalidate(key='journey.ready'){
-  revision++;busy=false;if(port&&port.current(lease))port.clear(lease);lease=-1;result=null;resultStations=[];message=key;eraseInspector();drawResults();drawStatus();saveDraft();
+  revision++;busy=false;if(port&&port.current(lease))port.clear(lease);lease=-1;result=null;resultStations=[];message=key;eraseInspector();drawResults();drawStatus();saveDraft();exploration.refresh();
  }
  function button(key:string,fn:()=>void){const b=document.createElement('button');b.type='button';b.textContent=t(key);b.onclick=fn;return b;}
  function drawChoices(){const previous=choices.value;choices.replaceChildren();const empty=document.createElement('option');empty.value='';empty.textContent=t('journey.choose');choices.append(empty);const poi=getPoi();if(poi){const places=document.createElement('optgroup');places.label=t('ui.locations');for(const l of poi.locations){const option=document.createElement('option');option.value='location:'+l.id;option.textContent=l.display_name;places.append(option);}choices.append(places);}const guides=document.createElement('optgroup');guides.label=t('guide.title');for(const e of getAtlas().entities){if(!visibleEntity(e.id))continue;const option=document.createElement('option');option.value='atlas:'+e.id;option.textContent=e.localizedNames[locale()];guides.append(option);}choices.append(guides);if([...choices.options].some(o=>o.value===previous))choices.value=previous;else choices.value='';}
@@ -104,7 +106,7 @@ export function mountJourney(getViewer:()=>GaiaViewer|undefined,getBackend:()=>J
    result=calculated;resultStations=routeStops;message=calculated.status==='success'?'journey.success':reason(calculated.reason??'route_failed');
    if(calculated.status==='success'){backend.display(heldLease,calculated.nodes,routeStops[0].locationId,routeStops.at(-1)!.locationId,calculated.totalDistance!);getViewer()?.setJourneyStops(routeStops.map(s=>s.locationId!));}
   }catch(error){if(current()){const code=error instanceof Error?error.message:'';message=Object.hasOwn(reasonKeys,code)?reason(code as JourneyReason):reason('route_failed');}}
-  finally{if(attempt===revision&&!scope.disposed){busy=false;if(!backend.current(heldLease)&&!result&&message==='journey.busy'){message=reason('superseded');}drawResults();drawStatus();}}
+  finally{if(attempt===revision&&!scope.disposed){busy=false;if(!backend.current(heldLease)&&!result&&message==='journey.busy'){message=reason('superseded');}drawResults();drawStatus();exploration.refresh();}}
  }
  const reasonKeys:Record<JourneyReason,boolean>={workspace_missing:true,routing_missing:true,unverified_entrance:true,no_eligible_nodes:true,different_components:true,no_common_component:true,field_only:true,source_stale:true,superseded:true,unsupported_space:true,invalid_plan:true,invalid_scenario:true,invalid_route:true,route_failed:true};
  async function showRoute(index?:number){
@@ -129,6 +131,8 @@ export function mountJourney(getViewer:()=>GaiaViewer|undefined,getBackend:()=>J
  scope.listen(document,'gaiagis-navigation',()=>{const content=getAtlas();if(content!==atlasIdentity){atlasIdentity=content;invalidate(reason('source_stale'));}drawChoices();});
  scope.listen(document,'change',((event:Event)=>{if((event.target as HTMLElement).id==='atlas-spoilers'){drawChoices();drawStops();drawResults();}}) as EventListener);
  scope.own(appStore.subscribe(s=>{if(s.data.generation!==generation||getPoi()!==poiIdentity){generation=s.data.generation;poiIdentity=getPoi();invalidate(reason('source_stale'));drawChoices();drawStops();}const now=supported();if(lastSupported&&!now){revision++;busy=false;if(message==='journey.busy')message=reason('superseded');}lastSupported=now;drawStatus();}));
- scope.own(onLocaleChange(translate));translate();saveDraft();
+ const exploration=mountWorldFieldExploration(root,{viewer:getViewer,backend:getBackend,poi:getPoi,atlas:getAtlas,field:getField,supported,
+  scenario:()=>({profile:draft.profile,conditional:draft.conditional}),journey:()=>result?.status==='success'?{result,stations:resultStations}:null});
+ scope.own(exploration.dispose);scope.own(onLocaleChange(translate));translate();saveDraft();
  return {dispose(){if(scope.disposed)return;revision++;saveDraft();if(port&&port.current(lease))port.clear(lease);eraseInspector();scope.dispose();root.remove();}};
 }

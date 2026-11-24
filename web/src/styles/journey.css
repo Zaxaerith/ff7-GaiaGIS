@@ -8,3 +8,8 @@
 .journey-leg{padding:.65rem 0;border-top:1px solid rgba(194,218,248,.25);overflow-wrap:anywhere}#journey-results{margin-top:.75rem;min-width:0}#journey-total{font-weight:700;color:#fff}#journey-status{white-space:normal;overflow-wrap:anywhere}#journey-plan{border-color:#d7ecff;background:linear-gradient(135deg,#285d9b,#143b71)}
 #journey-export-tour{margin-top:.6rem;max-width:100%}#selection-details[data-journey-leg] pre{white-space:pre-wrap;overflow-wrap:anywhere}
 @media(max-width:699px){.journey-add{grid-template-columns:minmax(0,1fr)}.journey-add label{grid-column:auto}.journey-planner button{min-height:42px;max-width:100%}.journey-stop-actions button{flex:1 1 auto}.journey-planner .control-note{line-height:1.5}.journey-planner select{font-size:1rem}}
+.world-field-form { display: grid; gap: .5rem; grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr)); }
+.world-field-form label { display: grid; gap: .2rem; min-width: 0; }
+.world-field-form select, .world-field-form input:not([type="checkbox"]) { width: 100%; min-width: 0; }
+.world-field-exploration button { max-width: 100%; overflow-wrap: anywhere; margin: .2rem; }
+.world-field-exploration pre, #field-exploration-evidence pre, #world-field-world-evidence pre { max-height: 20rem; overflow: auto; }

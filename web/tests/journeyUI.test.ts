@@ -10,6 +10,7 @@ import type {AtlasContent} from '../src/data/atlas';
 import type {GaiaViewer} from '../src/viewer/GaiaViewer';
 import {dictionaries,locales} from '../src/i18n';
 import {journeyCatalog} from '../src/i18n/journeyCatalog';
+import {worldFieldCatalog} from '../src/i18n/worldFieldCatalog';
 
 vi.mock('../src/analysis/spatial',()=>({analyzeRoute:()=>({total:12})}));
 class NodeStub extends EventTarget{
@@ -25,6 +26,8 @@ class NodeStub extends EventTarget{
  querySelectorAll(selector:string){return this.all().filter(n=>selector==='button'?n.tagName==='BUTTON':selector.startsWith('[data-journey-stop=')?n.dataset.journeyStop===selector.match(/"([^"]+)"/)?.[1]:false);}
  querySelector(selector:string){return this.querySelectorAll(selector)[0]??null;}
  get options(){return this.all().filter(n=>n.tagName==='OPTION');}
+ get validity(){return {valid:true};}
+ get valueAsNumber(){return Number(this.value);}
  focus(){this.doc.activeElement=this;}scrollIntoView(){}
  click(){if(!this.disabled)return this.onclick?.(new Event('click'));}
  get text():string{return this.textContent+this.children.map(n=>n.text).join(' ');}
@@ -40,7 +43,7 @@ const tick=async()=>{for(let i=0;i<10;i++)await Promise.resolve();};
 function fixture(sourceOnly=false){
  const doc=new DocStub();for(const id of ['app-group-explore','selection-details','selection-empty','inspector-title']){const n=doc.createElement('div');n.id=id;doc.body.append(n);}vi.stubGlobal('document',doc);
  const graph=parseRouting(routingFixture()),source={wm0:graph.sourceHash,routing:'bb'.repeat(32),poi:'cc'.repeat(32),atlas:'dd'.repeat(32),generation:appStore.state.data.generation};
- const entrance=(id:string,node:number)=>({id:'entrance-'+id,location_id:id,section_id:0,mesh_id:0,trigger_triangle_ids:[node],world_map:0,source_kind:'derived_from_entry_trigger'});
+ const entrance=(id:string,node:number)=>({id:'entrance-'+id,location_id:id,section_id:0,mesh_id:0,trigger_triangle_ids:[node],world_map:0,source_kind:'derived_from_entry_trigger',scenario:0,field_id:90+node});
  const poi={locations:['a','b','c'].map((id,i)=>({id,display_name:'Place '+id,primary_entrance:'entrance-'+id,entrance_ids:['entrance-'+id],field_names:['field-'+id]})),entrances:[entrance('a',0),entrance('b',1),entrance('c',3)],sources:{'wm0.map':graph.sourceHash}} as unknown as PoiDataset;
  const names=(name:string)=>Object.fromEntries(locales.map(l=>[l,name]));
  const content={entities:[{id:'guide-a',canonicalName:'Guide A',localizedNames:names('Guide A'),spoilerLevel:'none',spatialBinding:{kind:'location',locationId:'a'}},{id:'parent',canonicalName:'Reward',localizedNames:names('Reward'),spoilerLevel:'none',spatialBinding:{kind:'parent_location',locationId:'b'}},{id:'field',canonicalName:'Field',localizedNames:names('Field'),spoilerLevel:'none',spatialBinding:{kind:'field_identity',fieldNames:['qa']}},{id:'cave-reward',canonicalName:'Cave reward',localizedNames:names('Cave reward'),spoilerLevel:'none',spatialBinding:{kind:'field_parent',locationId:'c',fieldNames:['field-c']}}]} as unknown as AtlasContent;
@@ -63,5 +66,21 @@ describe('Journey player owner and source-only draft',()=>{
  it('lets a newer professional action win while an explicit redisplay is awaiting source validation',async()=>{const f=fixture();f.add('location','a');f.add('location','c');f.node('journey-plan').click();await tick();let finish:(value:any)=>void=()=>{};f.backend.context=()=>new Promise(resolve=>{finish=resolve;});f.node('journey-show-all').click();f.replaceForeground();finish({graph:parseRouting(routingFixture()),source:f.source});await tick();expect(f.display).toHaveBeenCalledTimes(1);expect(f.node('journey-planner').dataset.phase).toBe('success');});
  it('uses shared route Inspector and retains a result when Inspector closes or projection changes',async()=>{const f=fixture();f.add('location','a');f.add('location','c');f.node('journey-plan').click();await tick();f.node('journey-results').querySelectorAll('button')[1].click();await tick();expect(f.node('selection-details').dataset.journeyLeg).toBeTruthy();expect(appStore.state.selection?.kind).toBe('route');appStore.dispatch({type:'select',selection:null});appStore.dispatch({type:'view',view:{projection:'mercator'}});expect(f.node('journey-planner').dataset.phase).toBe('success');expect(f.route).toHaveBeenCalledTimes(1);});
  it('pauses planning controls in Native, Field and roaming without resetting a valid plan',async()=>{const f=fixture();f.add('location','a');f.add('location','c');f.node('journey-plan').click();await tick();appStore.dispatch({type:'map',id:'WM2'});expect(f.node('journey-plan').disabled).toBe(true);expect(f.node('journey-show-all').disabled).toBe(true);appStore.dispatch({type:'map',id:'WM0'});appStore.dispatch({type:'explorer',phase:'active'});expect(f.node('journey-plan').disabled).toBe(true);appStore.dispatch({type:'explorer',phase:'idle'});expect(f.node('journey-planner').dataset.phase).toBe('success');expect(f.node('journey-plan').disabled).toBe(false);});
- it('includes every new label in five locale dictionaries',()=>{for(const row of journeyCatalog)for(const language of locales)expect(dictionaries[language][row[0]]).toBeTruthy();});
+ it('preserves a verified world result when Field resources are unavailable and redraws without another route',async()=>{
+  const f=fixture();
+  f.node('world-field-origin').value='a';f.node('world-field-entrance').value='entrance-b';f.node('world-field-field').value='91';
+  f.node('world-field-transfers').value='0';f.node('world-field-run').onclick!();
+  await vi.waitFor(()=>expect(f.node('world-field-result').dataset.status).toBe('unavailable'));
+  expect(f.route.mock.calls[0][3]).toEqual([{node:1,entrance:'entrance-b'}]);
+  expect(f.node('world-field-result').text).toContain('Walkmesh');
+  f.node('world-field-world').click();await tick();expect(f.display).toHaveBeenCalledTimes(2);expect(f.route).toHaveBeenCalledTimes(1);
+ });
+ it('drops a pending combined reply after Workspace replacement',async()=>{
+  const f=fixture();let finish!:()=>void;
+  f.backend.components=()=>new Promise(resolve=>{finish=()=>resolve(connectedComponents(parseRouting(routingFixture()),'foot'));});
+  f.node('world-field-origin').value='a';f.node('world-field-entrance').value='entrance-b';f.node('world-field-field').value='91';
+  f.node('world-field-run').onclick!();await tick();appStore.dispatch({type:'reset-data'});finish();await tick();
+  expect(f.display).not.toHaveBeenCalled();expect(f.node('world-field-result').dataset.status).toBeUndefined();
+ });
+ it('includes every new label in five locale dictionaries',()=>{for(const row of [...journeyCatalog,...worldFieldCatalog])for(const language of locales)expect(dictionaries[language][row[0]]).toBeTruthy();});
 });

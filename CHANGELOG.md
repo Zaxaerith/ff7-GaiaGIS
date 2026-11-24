@@ -1,5 +1,11 @@
 # Changelog
 
+## 5.14.0 — World–Field Integrated Exploration & Spatial Continuity
+
+- Lock the world route to a specific source entrance and its explicit arrival scenario. Verify the actual CSR end node, ENTER_FIELD call binding and FIELD.TBL Triangle/XY before starting Field analysis.
+- Continue directed Gateway search past the first Arrival when an original Triangle or exact LINE requires a different one. Support zero to three transfers, bounded work and session-only evidence.
+- Review the world route, entrance transfer, Gateway legs and final local witness in the existing maps and shared Inspector. World and Field measurements retain their own units. Existing Workspace assets serve the full operation.
+
 ## 5.13.0 — Field Conditional Event Geography & Control-Flow Evidence
 
 - Add scene-lazy, source-bound static control dependence for MESSAGE, ASK, STITM, SMTRA, BATTLE and REQ/REQSW/REQEW. Accept only complete acyclic Entry-root CFGs with verified successors and local exits; keep Entry-bound strong and all-owning-roots core separate from the existing branch witness.

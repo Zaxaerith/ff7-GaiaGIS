@@ -7,6 +7,8 @@ import type {BackgroundSelection} from '../data/fieldCamera';
 import {openFieldInteraction,interactionReach} from '../data/fieldInteraction';
 import type {InteractionRecord,InteractionScene} from '../data/fieldInteraction';
 import {FieldIndex,WalkmeshNetwork,parseFieldPack,validateFieldPoi,fieldEvidence,fieldAliases,openWalkmeshPack,sceneAnchors,validateWorldEntrance,currentSaveField} from '../data/fieldContext';
+import type {ExplorationFields,ExplorationFieldView} from '../navigation/worldFieldExploration';
+import {evidenceSection} from './contentPresentation';
 import type {NativeViewer} from '../viewer/NativeViewer';
 import {notifyUISound} from '../app/presentation';
 import type {FieldWalkmesh,EvidenceStep,FieldAnchor,WalkmeshReach,WalkmeshPath,SceneEdge} from '../data/fieldContext';
@@ -102,10 +104,11 @@ export function mountFieldContext(viewer?:GaiaViewer,getPoi?:()=>PoiDataset|null
  let renderScope:ResourceScope|null=null,sceneScope:number[]=[],filter='context',active=false,pausedNative:NativeViewer|undefined;
  let previousHidden:HTMLElement['hidden']=false;
  let returnFocus:HTMLElement|null=null;
- type NavStep={id:number;entryRecord:number|null;mode:'field-graph'|'field-walkmesh';triangle:number;anchor:string|null;interaction:string|null;relation:SceneEdge|null;camera:'plan'|'camera'|'overlay';cameraId:number;pose:Pose|null;analysis:{mode:NetworkMode;start:number|null;end:number|null;source:string|null}};
+ type NavStep={id:number;entryRecord:number|null;mode:'field-graph'|'field-walkmesh';triangle:number;anchor:string|null;interaction:string|null;relation:SceneEdge|null;camera:'plan'|'camera'|'overlay';cameraId:number;pose:Pose|null;analysis:{mode:NetworkMode;start:number|null;end:number|null;source:string|null};exploration?:{view:ExplorationFieldView;revision:number}};
  const trail=new BoundedFieldHistory<NavStep>();let worldOrigin:{id:string;name:string;record:number}|null=null,relation:SceneEdge|null=null,navTicket=0;
  let entryRecord:number|null=null,locateAnchor=false;let readPose:()=>Pose|null=()=>null,restoreAnalysis:NavStep['analysis']|null=null;
  let worldLease:ResourceScope|null=null,drawSelection:(locate?:boolean)=>void=()=>{};
+ let explorationControls:HTMLElement|null=null,explorationView:ExplorationFieldView|null=null,explorationPending=false,explorationReturn:(()=>void)|null=null,explorationRevision=0;
  // A save position is session evidence, never an Anchor or a navigation step.
  type SaveFieldRequest={slot:SaveSlot;fields:FieldIndex;fieldId:number;generation:number;ticket:number;result:ReturnType<typeof saveFieldPoint>;locate:boolean};
  let saveRequest:SaveFieldRequest|null=null,saveTicket=0,locateSavePoint:()=>void=()=>{};
@@ -138,9 +141,42 @@ export function mountFieldContext(viewer?:GaiaViewer,getPoi?:()=>PoiDataset|null
    current:()=>!scope.disposed&&index===fields&&meshes===pack&&fieldContextHash===contextHash&&walkmeshHash===walkHash&&appStore.state.data.generation===generation,
    decode:id=>currentMesh&&selected===id?Promise.resolve(currentMesh):pack.decode(id),network:mesh=>{let n=networkCache.get(mesh);if(!n){n=new WalkmeshNetwork(mesh);networkCache.set(mesh,n);}return n;}};
  }
+ function explorationResources(requireInteraction:boolean):ExplorationFields|null{
+  const gateway=gatewayResources();
+  if(!gateway)return null;
+  const interaction=interactions,interactionSHA256=interactionAssetHash;
+  return {gateway,interaction,interactionSHA256,current:()=>gateway.current()&&gateway.poi===poi&&
+   (!requireInteraction||interaction===interactions&&interactionSHA256===interactionAssetHash)};
+ }
+ async function showExploration(view:ExplorationFieldView,returnWorld:()=>void,current:()=>boolean){
+  const pack=meshes,request=++navTicket;
+  if(!pack||!canEnter()||appStore.state.map.id!=='WM0')return false;
+  const mesh=await pack.decode(view.point.fieldId);
+  if(request!==navTicket||!current()||!canEnter())return false;
+  explorationReturn??=returnWorld;
+  cameraMode='plan';
+  open(view.point.fieldId,{mesh,triangle:view.point.triangle,key:view.anchor??undefined,relation:view.gateway,mode:'field-walkmesh'});
+  explorationView=view;explorationPending=true;
+  if(!active)enter('field-walkmesh');
+  document.dispatchEvent(new Event('gaiagis:inspect'));
+  return true;
+ }
+ function drawExplorationEvidence(){
+  card.querySelector('#field-exploration-evidence')?.remove();
+  if(!active||explorationView?.point.fieldId!==selected||!explorationView)return;
+  const details=evidenceSection(card,t('worldField.evidence'));
+  details.id='field-exploration-evidence';
+  make('pre',details,JSON.stringify(explorationView.evidence,null,2));
+ }
+ function clearExploration(){
+  const view=explorationView;
+  explorationRevision++;explorationView=null;explorationPending=false;
+  if(view?.path&&path===view.path){resetNetwork();triangleDetails();drawSelection();}
+  drawExplorationEvidence();
+ }
  function fieldEventInput():FieldEventInput|null{
   if(!active||selected===null||!index||!fieldContextHash)return null;
-  return {fields:index,fieldId:selected,contextSHA256:fieldContextHash,walkmeshSHA256:walkmeshHash,meshSHA256:currentMeshHash,generation:appStore.state.data.generation,mesh:currentMesh,dialogue:currentDialogue&&dialoguePack&&dialogueSHA?{scene:currentDialogue,sha256:dialogueSHA,sources:dialoguePack.sources,contextSHA256:fieldContextHash,generation:appStore.state.data.generation,mode:dialoguePack.mode}:null,
+  return {fields:index,fieldId:selected,contextSHA256:fieldContextHash,walkmeshSHA256:walkmeshHash,meshSHA256:currentMeshHash,generation:appStore.state.data.generation,mesh:currentMeshHash?currentMesh:null,dialogue:currentDialogue&&dialoguePack&&dialogueSHA?{scene:currentDialogue,sha256:dialogueSHA,sources:dialoguePack.sources,contextSHA256:fieldContextHash,generation:appStore.state.data.generation,mode:dialoguePack.mode}:null,
    interaction:currentInteractions&&interactions&&interactionAssetHash?{scene:currentInteractions,sha256:interactionAssetHash,sources:interactions.sources,decoder:interactions.decoder,contextSHA256:interactions.contextSHA256}:null,
    script:currentScriptEvidence&&scriptEvidence&&scriptAssetHash?{scene:currentScriptEvidence,sha256:scriptAssetHash,sources:scriptEvidence.sources,decoder:scriptEvidence.decoder,contextSHA256:scriptEvidence.contextSHA256}:null,gameplay:getGameplay()};
  }
@@ -172,19 +208,21 @@ export function mountFieldContext(viewer?:GaiaViewer,getPoi?:()=>PoiDataset|null
   revealSpatialWorkspace();
   renderWorkspace();workspace.querySelector<HTMLButtonElement>('#field-world-return')?.focus();
  }
- function leave(focus=true){clearDialogueScene();fieldEvents.invalidate();gatewayUI.invalidate();clearSavePosition();clearScriptScene();clearTrail();clearInteractionScene();currentVisual=null;backgroundSelection=staticBackgroundSelection();previewBackground=()=>{};if(!active)return;resetNetwork();active=false;walkTicket++;renderScope?.dispose();renderScope=null;drawSelection=()=>{};workspace.replaceChildren();workspace.hidden=true;document.body.classList.remove('field-active');worldLease?.dispose();worldLease=null;viewport.hidden=previousHidden;pausedNative?.setSuspended(false);pausedNative=undefined;viewer?.setSuspended(appStore.state.map.id!=='WM0');if(appStore.state.view.spatial!=='world')appStore.dispatch({type:'view',view:{spatial:'world'}});if(focus){const canvas=appStore.state.map.id==='WM0'?viewer?.renderer.domElement:getNative?.()?.renderer.domElement;(canvas??(returnFocus?.isConnected&&returnFocus.getClientRects().length?returnFocus:null)??document.getElementById('app-menu'))?.focus();}returnFocus=null;inspect();}
+ function leave(focus=true){clearDialogueScene();fieldEvents.invalidate();gatewayUI.invalidate();clearSavePosition();clearScriptScene();clearTrail();clearInteractionScene();currentVisual=null;backgroundSelection=staticBackgroundSelection();previewBackground=()=>{};if(!active)return;const restoreWorld=explorationReturn;explorationReturn=null;explorationPending=false;explorationView=null;resetNetwork();active=false;walkTicket++;renderScope?.dispose();renderScope=null;drawSelection=()=>{};workspace.replaceChildren();workspace.hidden=true;document.body.classList.remove('field-active');worldLease?.dispose();worldLease=null;viewport.hidden=previousHidden;pausedNative?.setSuspended(false);pausedNative=undefined;viewer?.setSuspended(appStore.state.map.id!=='WM0');if(appStore.state.view.spatial!=='world')appStore.dispatch({type:'view',view:{spatial:'world'}});if(focus){restoreWorld?.();const canvas=appStore.state.map.id==='WM0'?viewer?.renderer.domElement:getNative?.()?.renderer.domElement;(canvas??(returnFocus?.isConnected&&returnFocus.getClientRects().length?returnFocus:null)??document.getElementById('app-menu'))?.focus();}returnFocus=null;inspect();}
  function invalidate(){clearDialogueScene();dialoguePack=null;dialogueSHA='';scriptAssetHash=interactionAssetHash=currentMeshHash='';walkmeshHash='';gatewayUI.invalidate();scriptTicket++;scriptEvidence=null;scriptHeaderProblem=undefined;fieldContextHash='';clearScriptScene();interactionTicket++;interactions=null;clearInteractionScene();visualTicket++;visuals=null;clearVisualScene();leave(false);card.replaceChildren();disclosures.clear();resetNetwork();networkCache=new WeakMap();meshes=null;currentMesh=null;anchors=[];anchorKey=null;walkTicket++;meshTicket++;index=null;selected=null;triangle=0;sceneScope=[];delete panel.dataset.parseMs;delete panel.dataset.walkParseMs;if(appStore.state.selection?.kind==='field')appStore.dispatch({type:'select',selection:null});refresh();emit();}
  function clearTrail(){navTicket++;trail.clear();worldOrigin=null;relation=null;entryRecord=null;locateAnchor=false;readPose=()=>null;restoreAnalysis=null;}
- function captureStep():NavStep{return {id:selected!,entryRecord,mode:appStore.state.view.spatial==='field-walkmesh'?'field-walkmesh':'field-graph',triangle,anchor:anchorKey,interaction:interactionKey,relation,camera:cameraMode,cameraId,pose:readPose(),analysis:{mode:networkMode,start:networkStart,end:networkEnd,source:networkSource?.key??null}};}
+ function captureStep():NavStep{return {id:selected!,entryRecord,mode:appStore.state.view.spatial==='field-walkmesh'?'field-walkmesh':'field-graph',triangle,anchor:anchorKey,interaction:interactionKey,relation,camera:cameraMode,cameraId,pose:readPose(),analysis:{mode:networkMode,start:networkStart,end:networkEnd,source:networkSource?.key??null},exploration:explorationView&&(!explorationView.path||path===explorationView.path)?{view:explorationView,revision:explorationRevision}:undefined};}
  function remember(){if(active&&selected!==null)trail.replace(captureStep());}
  function open(id:number,target?:{key?:string;triangle?:number;relation?:SceneEdge|null;mode?:NavStep['mode'];mesh?:FieldWalkmesh;origin?:typeof worldOrigin;restore?:NavStep}){
   if(!index?.nodes.has(id)||!canEnter()){reject();return;}const focusScene=active&&card.contains(document.activeElement);navTicket++;const changed=selected!==id;if(!target?.restore)remember();
+  explorationView=null;explorationPending=false;
   if(saveRequest&&id!==saveRequest.fieldId)clearSavePosition();
   if(changed){renderScope?.dispose();clearDialogueScene();clearScriptScene();clearInteractionScene();clearVisualScene();resetNetwork();currentMesh=null;currentMeshHash='';triangle=0;anchors=[];anchorKey=null;readPose=()=>null;}
   if(!active){trail.clear();worldOrigin=target?.origin??null;filter='context';viewer?.clearSelection();viewer?.selectLocation(null);setNavigationSelection(null);}
   selected=id;relation=target?.relation??null;if(changed||target?.relation){entryRecord=null;locateAnchor=false;}if(target?.origin){worldOrigin=target.origin;entryRecord=target.origin.record;}if(target?.relation&&!target.key){anchorKey=null;triangle=0;}
   if(target?.mesh)currentMesh=target.mesh;if(target?.key){interactionKey=null;overlapChoices=[];anchorKey=target.key;locateAnchor=true;const kind=target.key.startsWith('entrance:')?'entrance':target.key.startsWith('arrival:')?'arrival':'segment';anchorLayers[kind]=true;}if(target?.triangle!==undefined)triangle=target.triangle;
-  if(target?.restore){const r=target.restore;entryRecord=r.entryRecord;triangle=r.triangle;anchorKey=r.anchor;interactionKey=r.interaction;relation=r.relation;cameraMode=r.camera;cameraId=r.cameraId;if(r.camera==='plan')planPose=r.pose;else if(r.pose)cameraPoses.set(cameraId,r.pose);restoreAnalysis=r.analysis;locateAnchor=!r.pose&&!!r.anchor;}
+  if(target?.restore){const r=target.restore;entryRecord=r.entryRecord;triangle=r.triangle;anchorKey=r.anchor;interactionKey=r.interaction;relation=r.relation;cameraMode=r.camera;cameraId=r.cameraId;if(r.camera==='plan')planPose=r.pose;else if(r.pose)cameraPoses.set(cameraId,r.pose);restoreAnalysis=r.exploration?null:r.analysis;locateAnchor=!r.pose&&!!r.anchor;
+   if(r.exploration?.revision===explorationRevision){explorationView=r.exploration.view;explorationPending=true;}}
   if(target?.mode)appStore.dispatch({type:'view',view:{spatial:target.mode}});
   const mode=target?.mode??(appStore.state.view.spatial==='field-walkmesh'?'field-walkmesh':'field-graph');
   const step={...captureStep(),mode};if(target?.restore)trail.replace(step);else if(changed||!trail.current)trail.push(step);else trail.replace(step);
@@ -251,6 +289,7 @@ export function mountFieldContext(viewer?:GaiaViewer,getPoi?:()=>PoiDataset|null
   if(!available)make('p',card,t('field.walkUnavailable'));savePositionDetails();
   if(active&&appStore.state.view.spatial==='field-walkmesh'){const detail=make('section',card);detail.id='field-triangle-details';detail.className='field-triangle-details';triangleDetails();}
   const c=index.context(n.id);make('p',card,t('field.'+c.status));make('p',card,t('field.parentNote'));
+  drawExplorationEvidence();
   for(const id of c.parents){const place=poi?.locations.find(l=>l.id===id);const parent=button(card,t('field.openParent')+' · '+(place?.display_name??id),()=>{leave();document.dispatchEvent(new CustomEvent('gaiagis-inspect-location',{detail:id}));});parent.disabled=appStore.state.map.id!=='WM0';}
   // A Field never supplies global coordinates; borrow a validated POI Entrance.
   if(viewer)for(const b of c.bindings){const entrance=poi?.entrances.find(e=>e.id===b.entranceId);if(entrance){const fly=button(card,t('field.flyEntrance')+' · '+entrance.field_name,()=>{leave();viewer.flyToLocation(entrance.longitude,entrance.latitude);});fly.dataset.entranceId=entrance.id;fly.disabled=appStore.state.map.id!=='WM0';}}
@@ -354,6 +393,7 @@ ${t('camera.omitted')} ${b.omitted}`);const tiles=make('details',raw);make('summ
  function renderWorkspace(){if(!active)return;rememberDisclosures();const began=performance.now();walkTicket++;renderScope?.dispose();renderScope=new ResourceScope();const owner=renderScope;drawSelection=()=>{};previewBackground=()=>{};workspace.replaceChildren();workspace.dataset.mode=appStore.state.view.spatial;workspace.dataset.fieldId=selected===null?'':String(selected);
   const toolbar=make('header',workspace);toolbar.className='field-workspace-toolbar';const title=make('h2',toolbar,t('field.workspace'));title.id='field-workspace-title';if(selected!==null&&index){title.textContent=index.nodes.get(selected)!.name+' / '+selected;}
   const back=button(toolbar,t('field.world'),()=>leave());back.id='field-world-return';back.dataset.uiSound='cancel';
+  if(explorationControls&&!explorationControls.hidden)toolbar.append(explorationControls);
   crumbs(toolbar);
   const modes=make('div',toolbar);modes.className='field-mode-buttons';for(const [mode,key]of [['field-graph','field.graphView'],['field-walkmesh','field.walkmesh']] as const){const b=button(modes,t(key),()=>enter(mode));b.id=mode==='field-graph'?'field-mode-graph':'field-mode-walkmesh';b.setAttribute('aria-pressed',String(appStore.state.view.spatial===mode));}
   const label=make('label',toolbar,t('field.scene')),choose=make('select',label) as HTMLSelectElement;choose.id='field-scene-selector';choose.setAttribute('aria-label',t('field.scene'));for(const n of index?.nodes.values()??[]){const option=make('option',choose,n.name+' / '+n.id) as HTMLOptionElement;option.value=String(n.id);}choose.value=String(selected);choose.disabled=!index;choose.onchange=()=>{open(Number(choose.value));workspace.querySelector<HTMLElement>('#field-scene-selector')?.focus();};
@@ -482,7 +522,7 @@ const drawOrder=()=>{const neighbors=new Set(anchorKey||interactionKey?[]:a.suba
    const draw=()=>{frame=0;if(owner.disposed)return;const start=performance.now(),r=canvas.getBoundingClientRect(),dpr=window.devicePixelRatio||1;if(r.width<=0||r.height<=0)return;view.resize(r.width,r.height);diagnostic.refresh();canvas.width=Math.max(1,Math.round(r.width*dpr));canvas.height=Math.max(1,Math.round(r.height*dpr));ctx.setTransform(canvas.width/r.width,0,0,canvas.height/r.height,0,0);ctx.clearRect(0,0,r.width,r.height);if(projected){const p=view.point(-160,120),q=view.point(160,-120);ctx.save();ctx.strokeStyle='#95a3bb';ctx.setLineDash([3,5]);ctx.strokeRect(p[0],p[1],q[0]-p[0],q[1]-p[1]);ctx.restore();}if(backdrop&&scene?.background.bounds){const b=scene.background.bounds,p=view.point(b[0],-b[1]);ctx.save();ctx.globalAlpha=backgroundOpacity;ctx.imageSmoothingEnabled=false;ctx.drawImage(backdrop,p[0],p[1],backdrop.width*view.scale,backdrop.height*view.scale);ctx.restore();}const neighbors=new Set(anchorKey||interactionKey?[]:a.subarray(triangle*3,triangle*3+3));
     const pathIds=new Set(path?.ids??[]),selectedAnchor=anchors.find(a=>a.key===anchorKey),interactionCandidates=new Set(currentInteractions?.records.find(r=>r.key===interactionKey)?.geometry?.candidates??[]),gatewayCandidates=new Set(selectedAnchor?.kind==='segment'&&networkMode!=='none'&&network?network.gateway(selectedAnchor.record):[]);
     for(const i of drawOrder()){if(rawPoints[i].some(p=>!p))continue;const p=[point(i,0),point(i,1),point(i,2)];ctx.beginPath();ctx.moveTo(...p[0]);ctx.lineTo(...p[1]);ctx.lineTo(...p[2]);ctx.closePath();const z=(v[i*12+2]+v[i*12+6]+v[i*12+10])/3;ctx.globalAlpha=reach&&reach.distance[i]<0 ? .25 : 1;ctx.fillStyle=!anchorKey&&!interactionKey&&i===triangle?'#ffd67a':neighbors.has(i)?'#72b8c9':zColor?`hsl(${220-170*(z-minZ)/Math.max(1,maxZ-minZ)} 50% 38%)`:'#273a62';if(!backdrop)ctx.fill();else{ctx.globalAlpha*=.25;ctx.fill();}ctx.globalAlpha=1;
-     if(network&&networkMode!=='none'){ctx.globalAlpha=.55;ctx.fillStyle=networkMode==='wcc'||networkMode==='scc'?`hsl(${(network[networkMode].labels[i]*137.508)%360} 65% 60%)`:pathIds.has(i)?'#75ecb4':reach!.distance[i]>=0?'#649fed':'#172032';ctx.fill();ctx.globalAlpha=1;}
+     if(network&&(networkMode==='wcc'||networkMode==='scc'||reach||pathIds.has(i))){ctx.globalAlpha=.55;ctx.fillStyle=networkMode==='wcc'||networkMode==='scc'?`hsl(${(network[networkMode].labels[i]*137.508)%360} 65% 60%)`:pathIds.has(i)?'#75ecb4':reach!.distance[i]>=0?'#649fed':'#172032';ctx.fill();ctx.globalAlpha=1;}
      if(wire)for(let k=0;k<3;k++){ctx.beginPath();ctx.moveTo(...p[k]);ctx.lineTo(...p[(k+1)%3]);ctx.strokeStyle=a[i*3+k]===65535?'#ed8d9b':'#78bfae';ctx.lineWidth=i===triangle?2:.7;ctx.stroke();}
      if(pathIds.has(i)||gatewayCandidates.has(i)||interactionCandidates.has(i)||networkStart===i||networkEnd===i){ctx.beginPath();ctx.moveTo(...p[0]);ctx.lineTo(...p[1]);ctx.lineTo(...p[2]);ctx.closePath();ctx.strokeStyle=interactionCandidates.has(i)?'#fff1ac':gatewayCandidates.has(i)?'#c3a0ff':networkEnd===i?'#fff':networkStart===i?'#4ee1ca':'#75ecb4';ctx.lineWidth=2.5;ctx.stroke();}
      if(triangleLabels||networkStart===i||networkEnd===i){const [x,y]=[0,1].map(k=>(p[0][k]+p[1][k]+p[2][k])/3);ctx.font='bold 12px sans-serif';ctx.fillStyle='#fff';ctx.strokeStyle='#101c31';ctx.lineWidth=3;const label=(networkStart===i?'▶':'')+(networkEnd===i?'■':'')+i;ctx.strokeText(label,x,y);ctx.fillText(label,x,y);}}
@@ -505,7 +545,20 @@ const drawOrder=()=>{const neighbors=new Set(anchorKey||interactionKey?[]:a.suba
    planInput(canvas,view,owner,schedule,(x,y)=>{const saved=savePoint(),p=saved?view.point(...saved):null;if(p&&Math.hypot(p[0]-x,p[1]-y)<=11){savePositionDetails();if(!document.getElementById('integrated-inspector')?.classList.contains('open'))document.getElementById('toggle-inspector')?.click();document.getElementById('field-save-position')?.scrollIntoView({block:'nearest'});schedule();notifyUISound('confirm');return;}if(projected&&diagnostic.tapEnabled()){const p=view.raw(x,y);diagnostic.pick(p[0],-p[1]);return;}const hits=visibleInteractions().filter(r=>lineDistance(onScreen(r.a!),onScreen(r.b!),x,y)<=10);if(hits.length){overlapChoices=[...hits.map(r=>({kind:'interaction' as const,key:r.key})),...visibleAnchors().filter(a=>a.kind==='segment'&&lineDistance(onScreen(a.record.sourceA),onScreen(a.record.sourceB),x,y)<=10).map(a=>({kind:'anchor' as const,key:a.key}))];if(overlapChoices.length===1)selectInteraction(hits[0].key);else{interactionKey=null;anchorKey=null;triangleDetails();drawSelection();if(!document.getElementById('integrated-inspector')?.classList.contains('open'))document.getElementById('toggle-inspector')?.click();revealSelection();}notifyUISound('confirm');return;}for(const anchor of visibleAnchors().sort((a,b)=>Number(a.kind!=='segment')-Number(b.kind!=='segment')).reverse()){let distance:number;if(anchor.kind==='segment'){const g=anchor.record,p=onScreen(g.sourceA),q=onScreen(g.sourceB),dx=q[0]-p[0],dy=q[1]-p[1],length=dx*dx+dy*dy,t=length?Math.max(0,Math.min(1,((x-p[0])*dx+(y-p[1])*dy)/length)):0;distance=Math.hypot(x-p[0]-t*dx,y-p[1]-t*dy);}else{const p=view.point(...anchorPoint(anchor)!);distance=Math.hypot(x-p[0],y-p[1]);}if(distance<=10){selectAnchor(anchor.key);notifyUISound('confirm');return;}}for(const i of drawOrder().reverse()){if(rawPoints[i].some(p=>!p))continue;const p=[point(i,0),point(i,1),point(i,2)],cross=(u:number[],w:number[],x:number,y:number)=>(w[0]-u[0])*(y-u[1])-(w[1]-u[1])*(x-u[0]);const area=cross(p[0],p[1],p[2][0],p[2][1]);if(area===0)continue;const c=[cross(p[0],p[1],x,y),cross(p[1],p[2],x,y),cross(p[2],p[0],x,y)];if(c.every(n=>n>=0)||c.every(n=>n<=0)){selectTriangle(i);if(!document.getElementById('integrated-inspector')?.classList.contains('open'))document.getElementById('toggle-inspector')?.click();notifyUISound('confirm');break;}}});
    owner.listen(canvas,'keydown',((e:KeyboardEvent)=>{if(['ArrowRight','ArrowLeft','+','=','-','Home'].includes(e.key)){e.preventDefault();if(e.key.startsWith('Arrow'))selectTriangle(triangle+(e.key==='ArrowRight'?1:-1));else if(e.key==='Home')view.fitTo(normalBounds);else view.zoom(e.key==='-'?.8:1.25);schedule();}}) as EventListener);
    const resize=new ResizeObserver(schedule);resize.observe(canvas);owner.own(()=>resize.disconnect());owner.listen(window,'resize',schedule);let media:MediaQueryList;const watchDpr=()=>{media?.removeEventListener('change',watchDpr);media=matchMedia(`(resolution: ${devicePixelRatio}dppx)`);media.addEventListener('change',watchDpr);schedule();};watchDpr();owner.own(()=>media.removeEventListener('change',watchDpr));
-   const legend=make('details',host);legend.className='field-legend';make('summary',legend,t('field.legend'));make('p',legend,t('field.walkLegend'));make('p',legend,t('field.walkAnomalies',{asymmetric:s.asymmetric,mismatch:s.edgeMismatch,self:s.selfLinks,degenerate:s.degenerate,flat:s.degenerateXY,padding:s.paddingVariants}));triangleDetails();drawSelection(locateAnchor);locateAnchor=false;updateCrumbs();if(restoreAnalysis){const r=restoreAnalysis;restoreAnalysis=null;if(r.mode!=='none')runNetwork(r.mode,r.start??triangle,r.end??triangle,anchors.find(a=>a.key===r.source)??null);}schedule();
+   const legend=make('details',host);legend.className='field-legend';make('summary',legend,t('field.legend'));make('p',legend,t('field.walkLegend'));make('p',legend,t('field.walkAnomalies',{asymmetric:s.asymmetric,mismatch:s.edgeMismatch,self:s.selfLinks,degenerate:s.degenerate,flat:s.degenerateXY,padding:s.paddingVariants}));triangleDetails();drawSelection(locateAnchor);locateAnchor=false;updateCrumbs();if(restoreAnalysis){const r=restoreAnalysis;restoreAnalysis=null;if(r.mode!=='none')runNetwork(r.mode,r.start??triangle,r.end??triangle,anchors.find(a=>a.key===r.source)??null);}
+   if(explorationPending&&explorationView){
+    explorationPending=false;
+    const witness=explorationView;
+    if(witness.lineKey&&currentInteractions?.records.some(record=>record.key===witness.lineKey))selectInteraction(witness.lineKey,true);
+    if(witness.path){
+     const start=witness.path.ids[0],end=witness.path.ids.at(-1)!;
+     network=useNetwork();networkMode='path';networkStart=start;networkEnd=end;path=witness.path;reach=null;
+     networkSource=anchors.find(anchor=>anchor.key===witness.anchor&&anchor.kind!=='segment')??null;
+     triangleDetails();drawSelection();
+    }
+    drawExplorationEvidence();
+   }
+   schedule();
   }catch{if(!owner.disposed&&request===walkTicket){resetNetwork();currentMesh=null;triangleDetails();status.textContent=t('field.walkRejected');host.dataset.unavailable='true';}}
  }
 
@@ -542,5 +595,7 @@ const drawOrder=()=>{const neighbors=new Set(anchorKey||interactionKey?[]:a.suba
   if(!['loading','loaded','legacy'].includes(state.data.assets['field-walkmesh']?.status??'')){if(meshes||currentMesh){walkmeshHash='';gatewayUI.invalidate();resetNetwork();networkCache=new WeakMap();meshes=null;currentMesh=null;updateSavePosition(null,null);anchors=[];anchorKey=null;walkTicket++;renderScope?.dispose();if(active)renderWorkspace();}}
   const key=JSON.stringify([state.selection,state.map.id,state.explorer.phase]);if(key===lastSelection)return;navTicket++;lastSelection=key;if(state.selection?.kind==='field'){const id=Number(state.selection.id);if(!index?.nodes.has(id))return;if(selected!==id){clearDialogueScene();clearScriptScene();clearInteractionScene();clearVisualScene();resetNetwork();selected=id;currentMesh=null;currentMeshHash='';triangle=0;anchors=[];anchorKey=null;}}else if(active&&state.selection?.kind!=='atlas')leave(false);inspect();
  }));scope.own(onLocaleChange(()=>{refresh();renderWorkspace();refreshEntranceActions();}));refresh();emit();
- return {evidence:()=>index?.pack??null,dispose(){clearDialogueScene();dialoguePack=null;dialogueSHA='';scriptTicket++;scriptEvidence=null;scriptHeaderProblem=undefined;fieldContextHash='';clearScriptScene();interactionTicket++;interactions=null;clearInteractionScene();visualTicket++;visuals=null;clearVisualScene();leave(false);resetNetwork();networkCache=new WeakMap();ticket++;walkTicket++;meshTicket++;currentMesh=null;meshes=null;anchors=[];anchorKey=null;clearNavigation('fields');index=null;emit();scope.dispose();}};
+ return {evidence:()=>index?.pack??null,explorationResources,showExploration,clearExploration,returnFromExploration:()=>leave(),
+  explorationControls(control:HTMLElement){explorationControls=control;workspace.querySelector('.field-workspace-toolbar')?.append(control);},
+  dispose(){clearDialogueScene();dialoguePack=null;dialogueSHA='';scriptTicket++;scriptEvidence=null;scriptHeaderProblem=undefined;fieldContextHash='';clearScriptScene();interactionTicket++;interactions=null;clearInteractionScene();visualTicket++;visuals=null;clearVisualScene();leave(false);resetNetwork();networkCache=new WeakMap();ticket++;walkTicket++;meshTicket++;currentMesh=null;meshes=null;anchors=[];anchorKey=null;clearNavigation('fields');index=null;emit();scope.dispose();}};
 }

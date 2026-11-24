@@ -4,8 +4,8 @@ import {existsSync,readFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
 import {fileURLToPath} from 'node:url';
 import {resolve} from 'node:path';
-import {FieldGatewayNetwork} from '../src/analysis/fieldGateway';
-import type {GatewayResources,GatewayResult,GatewayStart} from '../src/analysis/fieldGateway';
+import {FieldGatewayNetwork,GatewayBudget} from '../src/analysis/fieldGateway';
+import type {GatewayPoint,GatewayResources,GatewayResult,GatewayStart} from '../src/analysis/fieldGateway';
 import {FieldIndex,decodeWalkmesh,openWalkmeshPack,parseFieldPack,validateFieldPoi} from '../src/data/fieldContext';
 import type {FieldPack,FieldGateway,FieldWalkmesh} from '../src/data/fieldContext';
 import {parsePoi} from '../src/data/poi';
@@ -46,6 +46,38 @@ describe('Gateway-only bounded directed composition',()=>{
  it('requires the current archive/maplist identity and real digest-shaped session identity',()=>{const f=fixture(new Map([[1,strip()]]),[]);expect(()=>new FieldGatewayNetwork({...f.resources,identity:{...f.resources.identity,contextSHA256:'missing'}})).toThrow();expect(()=>new FieldGatewayNetwork({...f.resources,pack:{...f.pack,sources:{...sources,maplist:a}}})).toThrow();expect(()=>new FieldGatewayNetwork({...f.resources,identity:{...f.resources.identity,archive:'fflevel.lgp'}})).toThrow();});
  it('rejects late results when source generation, ticket or disposal invalidates the request',async()=>{for(const mode of ['source','ticket','dispose']){const f=fixture(new Map([[1,strip()],[2,strip()]]),[{from:1,to:2}]);let finish:(value:FieldWalkmesh)=>void=()=>{};f.resources.decode=id=>id===99?new Promise(resolve=>{finish=resolve;}):f.decode(id);const solver=f.engine();let current=true;const pending=solver.solve(f.start,2,3,()=>current);if(mode==='source')f.replace();else if(mode==='ticket')current=false;else solver.dispose();finish(strip());const r=await pending;expect(r.status).toBe('superseded');expect(r.legs).toEqual([]);if(mode==='dispose')expect(solver.cachedScenes).toBe(0);}});
  it('allows an already-arrived Field with zero legs without inferring a new route',async()=>{const f=fixture(new Map([[1,strip()]]),[]),r=await f.engine().solve(f.start,1);assertContinuous(r);expect(r.states).toHaveLength(1);expect(r.legs).toEqual([]);});
+ it('continues past a rejected Arrival and can leave and re-enter the target Field',async()=>{
+  const f=fixture(new Map([[1,strip()],[2,strip(2,false,false)],[3,strip()]]),[
+   {from:1,to:2,arrival:0},{from:2,to:3,sourceTriangle:0},{from:3,to:2,arrival:1}]);
+  const accept=vi.fn((point:GatewayPoint,scene:Awaited<ReturnType<FieldGatewayNetwork['scene']>>)=>!scene.network.path(point.triangle,1).reason);
+  const bounded=await f.engine().solve(f.start,2,2,undefined,{budget:new GatewayBudget(),accept});
+  expect(bounded).toMatchObject({status:'limit',limitReason:'transfers',legs:[]});
+  accept.mockClear();
+  const result=await f.engine().solve(f.start,2,3,undefined,{budget:new GatewayBudget(),accept});
+  assertContinuous(result);
+  expect(accept.mock.calls.map(([point])=>point.triangle)).toEqual([0,1]);
+  expect(result.legs.map(leg=>[leg.arrival.fieldId,leg.arrival.triangle])).toEqual([[2,0],[3,0],[2,1]]);
+ });
+ it('selects the alternative two-leg Arrival over an invalid one-leg local result',async()=>{
+  const f=fixture(new Map([[1,strip()],[2,strip(2,false,false)],[3,strip()]]),[
+   {from:1,to:2,arrival:0},{from:1,to:3},{from:3,to:2,arrival:1}]);
+  const result=await f.engine().solve(f.start,2,2,undefined,{budget:new GatewayBudget(),accept:(point,{network})=>!network.path(point.triangle,1).reason});
+  assertContinuous(result);expect(result.legs.map(leg=>[leg.arrival.fieldId,leg.arrival.triangle])).toEqual([[3,0],[2,1]]);
+ });
+ it('supports explicit zero and returns a bounded status when the work budget is spent',async()=>{
+  const f=fixture(new Map([[1,strip()],[2,strip()]]),[{from:1,to:2}]);
+  const zero=await f.engine().solve(f.start,1,0,undefined,{budget:new GatewayBudget(),accept:point=>point.triangle===0});
+  assertContinuous(zero);expect(zero.legs).toEqual([]);expect(f.decode).not.toHaveBeenCalledWith(2);
+  expect(await f.engine().solve(f.start,2,3,undefined,{budget:new GatewayBudget({states:1})})).toMatchObject({status:'limit',limitReason:'states',legs:[]});
+ });
+ it('rejects a stale terminal predicate result and preserves geometric Access refusal',async()=>{
+  const f=fixture(new Map([[1,strip()],[2,strip(3,false,false)],[3,strip()]]),[{from:1,to:2},{from:2,to:3,sourceTriangle:2}]);
+  const mesh=await f.decode(2);mesh.access[1]=2; // Nonadjacent geometries in a directed Access slot.
+  const failure=await f.engine().solve(f.start,3,3,undefined,{budget:new GatewayBudget()});
+  expect(failure).toMatchObject({status:'unreachable',counts:{access_mismatch:1},legs:[]});
+  const result=await f.engine().solve(f.start,2,3,undefined,{budget:new GatewayBudget(),accept:async()=>{f.replace();return true;}});
+  expect(result).toMatchObject({status:'superseded',legs:[]});
+ });
 });
 
 const workspace=process.env.GAIA_BROWSER_WORKSPACE??fileURLToPath(new URL('../../output/local-workspace/',import.meta.url));

@@ -4,6 +4,12 @@ A local-first GIS reconstruction of the original FINAL FANTASY VII world, with a
 
 ## Quick start
 
+**v5.14.0 — World–Field Integrated Exploration & Spatial Continuity** connects
+the actual WM0 route endpoint to a selected FIELD.TBL entrance and its directed
+Walkmesh. Follow up to three Gateways or select a final Triangle or verified
+LINE from the actual Arrival. Open each segment in the existing map and
+Inspector. [Exploration and evidence](docs/reference/world-field-exploration.md).
+
 **v5.13.0 — Field Conditional Event Geography & Control-Flow Evidence** adds
 current-Field, bounded strict control dependence to the existing evidence window
 and Inspector. Complete acyclic Entry graphs can show Entry-bound strong and
