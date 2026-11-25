@@ -119,3 +119,9 @@ dialog{color:#c6d9e3;background:#14232e;border:1px solid #426173;border-radius:1
 #variant-compare-chart .surface-coverage{fill:#39bac91a;stroke:#aaa;stroke-width:.5}
 #variant-compare-chart .surface-coverage-outside{fill:#888;stroke:#ddd;stroke-dasharray:4 3}
 #variant-compare-chart .surface-coverage-noSurface{fill:#d9a642}
+.evidence-search-controls label{display:grid;gap:.3rem}
+.evidence-search-controls select{max-width:100%;min-width:0}
+#evidence-search-status{font-size:.82rem;overflow-wrap:anywhere}
+#evidence-discovery-inspector{display:grid;gap:.45rem;padding:.75rem;overflow-wrap:anywhere}
+#evidence-discovery-inspector[hidden]{display:none}
+#integrated-inspector:has(#evidence-discovery-inspector:not([hidden])) :is(#info-panel,#field-inspector,#native-inspector,#tool-inspector){display:none}

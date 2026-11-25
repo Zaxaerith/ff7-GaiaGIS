@@ -1,6 +1,6 @@
 import {appStore} from '../app/state';
-import {registerNavigation,searchNavigation,setNavigationSelection} from '../app/navigation';
-import type {NavigationEntry} from '../app/navigation';
+import {clearNavigation,registerNavigation,setNavigationSelection} from '../app/navigation';
+import {beginPublicNavigation,browsingEvidence} from '../app/evidenceSession';
 import {workspaceLoader,loadedAsset} from '../app/assets';
 import {t,formatNumber} from '../i18n';
 // SPDX-License-Identifier: GPL-3.0-only
@@ -11,12 +11,11 @@ import type {GaiaViewer} from '../viewer/GaiaViewer';
 
 export function mountLocations(viewer:GaiaViewer,meta:GaiaMeta,isCurrent:()=>boolean){
   const element=<T extends HTMLElement=HTMLElement>(id:string)=>document.getElementById(id) as T;
-  const input=element<HTMLInputElement>('location-search'),results=element('location-results'),status=element('location-status');
+  const status=element('location-status');
   const filter=element<HTMLSelectElement>('location-filter'),file=element<HTMLInputElement>('local-poi-file');
-  let dataset:PoiDataset|null=null,matches:NavigationEntry[]=[],active=-1,loadRevision=0;
+  let dataset:PoiDataset|null=null,loadRevision=0;
   const display=()=>viewer.setLocationsDisplay(element<HTMLInputElement>('locations-toggle').checked,element<HTMLInputElement>('location-labels').checked,filter.value as LocationFilter);
   const clear=()=>{setNavigationSelection(null);viewer.selectLocation(null);element('inspector-title').textContent=t('ui.triangleInspector');delete element('selection-details').dataset.location;delete element('selection-details').dataset.entrance;};
-  const close=()=>{results.replaceChildren();input.setAttribute('aria-expanded','false');input.removeAttribute('aria-activedescendant');active=-1;};
   function inspect(location:Location,entrance?:Entrance){
     if(!dataset)return;
     const e=entrance??dataset.entrances.find(e=>e.id===location.primary_entrance)!;
@@ -27,7 +26,7 @@ export function mountLocations(viewer:GaiaViewer,meta:GaiaMeta,isCurrent:()=>boo
     element<HTMLInputElement>('auto-rotate').checked=false;
     // Every displayed value is textContent; a local file never supplies HTML.
     const title=document.createElement('h3');title.textContent=location.display_name;detail.append(title);
-    const journey=document.createElement('button');journey.type='button';journey.dataset.journeyLocation=location.id;journey.textContent=t('journey.add');journey.onclick=()=>document.dispatchEvent(new CustomEvent('gaiagis:journey-add',{detail:{target:{kind:'location',id:location.id},parentConfirmed:false}}));detail.append(journey);
+    const journey=document.createElement('button');journey.type='button';journey.dataset.journeyLocation=location.id;journey.textContent=t('journey.add');journey.onclick=()=>document.dispatchEvent(new CustomEvent('gaiagis:journey-add',{detail:{target:{kind:'location',id:location.id},parentConfirmed:false}}));if(!browsingEvidence())detail.append(journey);
     const list=document.createElement('dl');list.className='property-list';
     const rows:[string,string][]=[[t('inspect.category'),location.category],[t('inspect.lonlat'),`${formatNumber(e.longitude,5)}° / ${formatNumber(e.latitude,5)}°`],
       [t('inspect.raw'),`${formatNumber(e.game_x,2)} / ${formatNumber(e.game_north,2)} / ${formatNumber(e.game_height,2)}`],
@@ -45,41 +44,22 @@ export function mountLocations(viewer:GaiaViewer,meta:GaiaMeta,isCurrent:()=>boo
     for(const id of location.entrance_ids){const item=dataset.entrances.find(e=>e.id===id)!;const button=document.createElement('button');button.textContent=t('message.entrance',{field:item.field_name,entry:item.entrance_table_id,scenario:item.scenario});button.setAttribute('aria-pressed',String(id===e.id));button.addEventListener('click',()=>inspect(location,item));entrances.append(button);}technical.append(entrances);
     document.dispatchEvent(new CustomEvent('gaiagis:field-entrances',{detail:{host:detail,locationId:location.id,entranceId:entrance?.id}}));
     element('coordinates').textContent=`${formatNumber(e.longitude,2)}° / ${formatNumber(e.latitude,2)}°`;
-    setNavigationSelection({location,entrance:e});appStore.dispatch({type:'select',selection:{kind:entrance?'entrance':'location',id:entrance?.id??location.id,mapId:'WM0',geographicPoint:[e.longitude,e.latitude,e.height]}});document.dispatchEvent(new Event('gaiagis:inspect'));viewer.flyToLocation(e.longitude,e.latitude);close();document.dispatchEvent(new CustomEvent('gaiagis-location-inspect',{detail:location.id}));
-    history.replaceState(null,'',`${window.location.pathname}${window.location.search}#location=${encodeURIComponent(location.id)}`);
+    setNavigationSelection({location,entrance:e});appStore.dispatch({type:'select',selection:{kind:entrance?'entrance':'location',id:entrance?.id??location.id,mapId:'WM0',geographicPoint:[e.longitude,e.latitude,e.height]}});document.dispatchEvent(new Event('gaiagis:inspect'));viewer.flyToLocation(e.longitude,e.latitude);document.dispatchEvent(new CustomEvent('gaiagis-location-inspect',{detail:location.id}));
+    if(!browsingEvidence())history.replaceState(null,'',`${window.location.pathname}${window.location.search}#location=${encodeURIComponent(location.id)}`);
   }
   // Use the browser's URL components, never values supplied by POI data.
-  const select=(location:Location)=>inspect(location);
+  const select=(location:Location)=>{beginPublicNavigation();inspect(location);};
   const navigateLocation=(event:Event)=>{const id=(event as CustomEvent<string>).detail;const l=dataset?.locations.find(l=>l.id===id);if(l)inspect(l);};document.addEventListener('gaiagis-inspect-location',navigateLocation);
-  function draw(){
-    close();matches=searchNavigation(input.value);if(filter.value!=='all'&&dataset){const ids=new Set(searchLocations(dataset.locations,input.value,filter.value as LocationFilter).map(l=>l.id));matches=matches.filter(e=>e.kind==='location'&&ids.has(e.id));}
-    const visible=matches.slice(0,60);
-    for(const [index,l]of visible.entries()){
-      const button=document.createElement('button');button.id=`location-result-${index}`;button.dataset.navigationId=l.id;button.className='location-result';button.setAttribute('role','option');button.setAttribute('aria-selected','false');button.tabIndex=-1;button.textContent=l.name+(l.kind==='location'?'':' · '+t(l.kind==='gameplay'?'gameplay.title':l.kind==='field'?'field.scene':l.kind==='entrance'?'ui.entrances':l.kind==='transition'?'map.transitions':l.kind==='atlas'?'atlas.title':l.kind==='user-feature'?'user26.created':'ui.events'));
-      button.addEventListener('click',()=>l.navigate());results.append(button);
-    }
-    if(!visible.length){const message=document.createElement('p');message.textContent=t('ui.noMatches');results.append(message);}
-    input.setAttribute('aria-expanded','true');
-  }
   function adopt(data:PoiDataset|null){
     if(data)loadedAsset("locations");
     if(data)validatePoiMesh(data,viewer.mesh);
     viewer.clearSelection();
-    dataset=data;registerNavigation('locations',data?[...data.locations.map(l=>({id:l.id,kind:'location' as const,name:l.display_name,anchor:[l.longitude,l.latitude,l.height] as [number,number,number],precision:'entrance_level' as const,group:'places' as const,canTour:true,target:{kind:'location' as const,id:l.id,mapId:'WM0' as const},aliases:[...l.aliases,...l.field_names],mapId:'WM0' as const,navigate:()=>inspect(l)})),...data.entrances.map(e=>{const l=data.locations.find(l=>l.id===e.location_id)!;return {id:e.id,kind:'entrance' as const,name:l.display_name+' · '+e.field_name,anchor:[e.longitude,e.latitude,e.height] as [number,number,number],precision:'entrance_level' as const,canTour:true,target:{kind:'entrance' as const,id:e.id,mapId:'WM0' as const},aliases:[e.field_name,l.display_name],mapId:'WM0' as const,navigate:()=>inspect(l,e)};})]:[]);document.dispatchEvent(new CustomEvent('gaiagis:poi',{detail:data}));viewer.setLocations(data?.locations??[]);display();input.disabled=!data;filter.disabled=!data;
+    dataset=data;registerNavigation('locations',data?[...data.locations.map(l=>({id:l.id,kind:'location' as const,name:l.display_name,anchor:[l.longitude,l.latitude,l.height] as [number,number,number],precision:'entrance_level' as const,group:'places' as const,canTour:true,target:{kind:'location' as const,id:l.id,mapId:'WM0' as const},aliases:[...l.aliases,...l.field_names],mapId:'WM0' as const,navigate:()=>inspect(l)})),...data.entrances.map(e=>{const l=data.locations.find(l=>l.id===e.location_id)!;return {id:e.id,kind:'entrance' as const,name:l.display_name+' · '+e.field_name,anchor:[e.longitude,e.latitude,e.height] as [number,number,number],precision:'entrance_level' as const,canTour:true,target:{kind:'entrance' as const,id:e.id,mapId:'WM0' as const},aliases:[e.field_name,l.display_name],mapId:'WM0' as const,navigate:()=>inspect(l,e)};})]:[]);document.dispatchEvent(new CustomEvent('gaiagis:poi',{detail:data}));viewer.setLocations(data?.locations??[]);display();filter.disabled=!data;
     status.textContent=data?t('message.locations',{locations:data.locations.length,entrances:data.entrances.length}):t('ui.locationsUnavailable');
-    if(data){const id=new URLSearchParams(window.location.hash.slice(1)).get('location');const target=data.locations.find(l=>l.id===id);if(target)select(target);}
+    if(data&&!browsingEvidence()){const id=new URLSearchParams(window.location.hash.slice(1)).get('location');const target=data.locations.find(l=>l.id===id);if(target)select(target);}
   }
-  input.disabled=true;filter.disabled=true;
-  input.addEventListener('input',draw);input.addEventListener('focus',draw);
-  input.addEventListener('keydown',e=>{
-    if(!['ArrowDown','ArrowUp','Enter','Escape'].includes(e.key))return;e.preventDefault();e.stopPropagation();
-    if(e.key==='Escape'){close();return;}
-    if(e.key==='Enter'){const match=matches[Math.max(0,active)];if(match)match.navigate();return;}
-    if(input.getAttribute('aria-expanded')!=='true')draw();
-    active=Math.max(0,Math.min(Math.min(matches.length,60)-1,active+(e.key==='ArrowDown'?1:-1)));
-    for(const [i,b]of Array.from(results.querySelectorAll('button')).entries()){b.setAttribute('aria-selected',String(i===active));if(i===active){input.setAttribute('aria-activedescendant',b.id);b.scrollIntoView({block:'nearest'});}}
-  });
-  filter.addEventListener('change',()=>{display();if(document.activeElement===input)draw();else close();});
+  filter.disabled=true;
+  filter.addEventListener('change',display);
   for(const id of ['locations-toggle','location-labels'])element(id).addEventListener('change',display);
   element('load-locations').addEventListener('click',()=>file.click());
   file.addEventListener('change',async()=>{
@@ -93,7 +73,11 @@ export function mountLocations(viewer:GaiaViewer,meta:GaiaMeta,isCurrent:()=>boo
   void loadOptionalPoi(meta).then(data=>{if(isCurrent()&&revision===loadRevision)adopt(data);}).catch(error=>{if(isCurrent()&&revision===loadRevision)status.textContent=t('ui.locationsUnavailable');status.title=error.message;});
   async function loadFile(selected:File,revision=++loadRevision){const data=await readLocalPoi(selected,meta);if(isCurrent()&&revision===loadRevision)adopt(data);}
   workspaceLoader.register("locations",async files=>loadFile(files[0]));
-  document.addEventListener('gaiagis-navigation',navigationChanged);
-  function navigationChanged(){if(isCurrent()&&(document.activeElement===input||input.getAttribute('aria-expanded')==='true'))draw();}
-  return {clear,loadFile,dataset:()=>dataset,dispose(){document.removeEventListener('gaiagis-navigation',navigationChanged);document.removeEventListener('gaiagis-inspect-location',navigateLocation);}};
+  return {clear,loadFile,dataset:()=>dataset,openEvidence(kind:'location'|'entrance',id:string){
+    if(!dataset||!isCurrent()||appStore.state.map.id!=='WM0'||appStore.state.view.spatial!=='world'||appStore.state.explorer.phase!=='idle')return false;
+    const entrance=kind==='entrance'?dataset.entrances.find(row=>row.id===id):undefined;
+    const location=dataset.locations.find(row=>row.id===(entrance?.location_id??(kind==='location'?id:null)));
+    if(!location)return false;
+    inspect(location,entrance);return true;
+  },dispose(){loadRevision++;dataset=null;clearNavigation('locations');document.removeEventListener('gaiagis-inspect-location',navigateLocation);}};
 }

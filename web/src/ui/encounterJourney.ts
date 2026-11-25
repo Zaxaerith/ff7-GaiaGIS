@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-only
 import {ResourceScope} from '../app/resources';
+import {mayShowPrivateEvidence} from '../app/evidenceSession';
 import {formatNumber,onLocaleChange,t} from '../i18n';
 import {analyzeEncounterRoute,createEncounterRouteIndex,createEncounterRouteProfile} from '../analysis/encounterJourney';
 import type {EncounterPiece,EncounterRoute,EncounterRouteResult,EncounterRow} from '../analysis/encounterJourney';
@@ -80,7 +81,7 @@ export function mountEncounterJourney(host:HTMLElement,viewer:GaiaViewer,sources
  }
  function label(row:EncounterRow){
   const names=relationIndex?.relations.index;
-  if(kindValue()==='enemy'){const name=names?.enemies.get(row.id)?.name;return name?`${name} · ${row.id}`:row.id;}
+  if(kindValue()==='enemy'){const name=mayShowPrivateEvidence()?names?.enemies.get(row.id)?.name:null;return name?`${name} · ${row.id}`:row.id;}
   if(kindValue()==='formation')return `${t(names?'encgeo.formation':'encRoute.battle')} ${row.id}`;
   return row.id;
  }
@@ -184,5 +185,20 @@ export function mountEncounterJourney(host:HTMLElement,viewer:GaiaViewer,sources
  }
  for(const event of ['gaiagis:encounters','gaiagis:gameplay-ready'])scope.listen(document,event,sourceChanged);
  scope.own(onLocaleChange(translate));translate();
- return {set,open(){panel.open=true;if(!answer&&!busy)void run();},dispose(){scope.dispose();ticket++;viewer.setEncounterRoute([]);panel.remove();}};
+ function evidenceMatch(target:GeographyTarget){
+  const result=answer,source=route,leg=legIndex;
+  if(target.kind==='all'||!result||result.status!=='complete'||!source||!usable()||!relationIndex||relationIndex.resource!==sources.encounters()||!sameGameplay(relationIndex.gameplay,sources.gameplay()))return null;
+  const key=target.kind==='enemy'?target.sceneId+'/'+target.enemyId:String(target.id);
+  const scopeRange=range.input.value as GeographyRange,scopeFamily=family.input.value as GeographyFamily;
+  const match=result.rows[scopeRange][scopeFamily][target.kind].get(key);
+  if(!match)return null;
+  return {pieces:match.pieces,intervals:match.spans.length,leg:leg<0?null:leg,range:scopeRange,family:scopeFamily,open(){
+   if(result!==answer||source!==route||leg!==legIndex||range.input.value!==scopeRange||family.input.value!==scopeFamily||!evidenceMatch(target))return false;
+   kind.input.value=target.kind;
+   document.dispatchEvent(new CustomEvent('gaiagis:open-tool',{detail:{toolId:'routeProfile'}}));
+   panel.open=true;pick(match);return true;
+  }};
+ }
+ scope.listen(document,'gaiagis:evidence-policy',draw);
+ return {set,evidenceMatch,open(){panel.open=true;if(!answer&&!busy)void run();},dispose(){scope.dispose();ticket++;viewer.setEncounterRoute([]);panel.remove();}};
 }

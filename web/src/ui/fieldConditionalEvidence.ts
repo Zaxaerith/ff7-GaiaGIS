@@ -340,7 +340,7 @@ export function mountFieldConditionalEvidence(ports:FieldConditionalPorts) {
    if(fold.open){if(failed)failed=false;void analyze();}else if(busy&&!open()){stopPending();render();}
   }
   fold.addEventListener('toggle',toggle);
-  return {fold,fixed,update,reset,dispose(){viewDisposed=true;fold.removeEventListener('toggle',toggle);pager.dispose();rootsPager.dispose();askPager.dispose();requestPager.dispose();for(const input of inputs.values())input.oninput=null;kind.onchange=level.onchange=null;resetButton.onclick=null;}};
+  return {fold,fixed,update,reset,focusIf(offset:number){const input=inputs.get('ifOffset');if(input)input.value=String(offset);update();},dispose(){viewDisposed=true;fold.removeEventListener('toggle',toggle);pager.dispose();rootsPager.dispose();askPager.dispose();requestPager.dispose();for(const input of inputs.values())input.oninput=null;kind.onchange=level.onchange=null;resetButton.onclick=null;}};
  }
  function render() {
   if(disposed)return;
@@ -368,5 +368,5 @@ export function mountFieldConditionalEvidence(ports:FieldConditionalPorts) {
  }
  const unlisten=onLocaleChange(render);
  refresh(ports.current());
- return {element:panel,refresh,inspect,clearInspection,invalidate,dispose(){if(disposed)return;invalidate();disposed=true;unlisten();main.dispose();session.dispose();panel.remove();}};
+ return {element:panel,refresh,inspect,clearInspection,invalidate,focusIf:main.focusIf,dispose(){if(disposed)return;invalidate();disposed=true;unlisten();main.dispose();session.dispose();panel.remove();}};
 }

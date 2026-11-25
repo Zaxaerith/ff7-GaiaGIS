@@ -179,18 +179,18 @@ export function mountWorldFieldExploration(parent:HTMLElement,ports:{
   try{if(!await field.showExploration(view,appStore.state.view.spatial==='world'?captureWorld():()=>{},valid)&&valid()){report='unavailable';draw();}}
   catch{if(valid()){report='unavailable';draw();}}
  }
- async function showWorld(encounter=false){
+ async function showWorld(encounter=false,evidenceCurrent=()=>true){
   const result=answer,world=result?.world,backend=ports.backend(),stamp=++viewTicket;
-  if(!world||!backend||!current())return;
+  if(!world||!backend||!current()||!evidenceCurrent())return false;
   if(appStore.state.view.spatial!=='world')ports.field()?.returnFromExploration();
-  if(!ports.supported())return;
+  if(!ports.supported())return false;
   const lease=backend.claim();
   try{
    const {source}=await backend.context(JSON.stringify(ports.atlas()));
-   if(viewTicket!==stamp||answer!==result||!current()||!backend.current(lease))return;
-   if(!sameJourneySource(world.source,source)){invalidate('unresolved');return;}
+   if(viewTicket!==stamp||answer!==result||!current()||!evidenceCurrent()||!backend.current(lease))return false;
+   if(!sameJourneySource(world.source,source)){invalidate('unresolved');return false;}
    backend.display(lease,world.nodes,...worldLocations,world.totalDistance!,encounterJourneyRoute(world,'world-field'));
-   if(encounter){backend.openEncounter?.();return;}
+   if(encounter){backend.openEncounter?.();return true;}
    const host=document.getElementById('selection-details');
    if(host){
     host.replaceChildren();host.hidden=false;host.dataset.journeyLeg='world-field';
@@ -199,7 +199,8 @@ export function mountWorldFieldExploration(parent:HTMLElement,ports:{
     appStore.dispatch({type:'select',selection:{kind:'route',id:'journey:world-field',mapId:'WM0'}});
     document.dispatchEvent(new Event('gaiagis:inspect'));
    }
-  }catch{if(viewTicket===stamp&&current())invalidate('unresolved');}
+   return true;
+  }catch{if(viewTicket===stamp&&current())invalidate('unresolved');return false;}
  }
  function refresh(){
   if(scope.disposed)return;
@@ -226,5 +227,9 @@ export function mountWorldFieldExploration(parent:HTMLElement,ports:{
  scope.listen(document,'gaiagis:routing-source-change',()=>invalidate('unresolved'));
  scope.listen(document,'gaiagis:poi',refresh);
  ports.field()?.explorationControls(fieldControl);translate();
- return {refresh,dispose(){viewTicket++;controller?.abort();fieldControl.remove();root.remove();scope.dispose();}};
+ const openEvidence=(current?:()=>boolean)=>showWorld(false,current);
+ return {refresh,evidence(){
+  if(answer?.status!=='complete'||!answer.worldArrival||!answer.start||!current())return undefined;
+  return {fields:[answer.start.fieldId,...answer.legs.map(leg=>leg.arrival.fieldId)],entranceId:answer.worldArrival.entranceId,open:openEvidence};
+ },dispose(){viewTicket++;controller?.abort();fieldControl.remove();root.remove();scope.dispose();}};
 }

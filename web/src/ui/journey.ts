@@ -138,5 +138,6 @@ export function mountJourney(getViewer:()=>GaiaViewer|undefined,getBackend:()=>J
  const exploration=mountWorldFieldExploration(root,{viewer:getViewer,backend:getBackend,poi:getPoi,atlas:getAtlas,field:getField,supported,
   scenario:()=>({profile:draft.profile,conditional:draft.conditional}),journey:()=>result?.status==='success'?{result,stations:resultStations}:null});
  scope.own(exploration.dispose);scope.own(onLocaleChange(translate));translate();saveDraft();
- return {dispose(){if(scope.disposed)return;revision++;saveDraft();if(port&&port.current(lease))port.clear(lease);eraseInspector();scope.dispose();root.remove();}};
+ return {evidence:()=>result&&port?.current(lease)?result:null,explorationEvidence:exploration.evidence,
+  dispose(){if(scope.disposed)return;revision++;saveDraft();if(port&&port.current(lease))port.clear(lease);eraseInspector();scope.dispose();root.remove();}};
 }

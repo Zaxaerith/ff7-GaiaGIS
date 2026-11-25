@@ -1,5 +1,14 @@
 # Navigation
 
+## Spatial Evidence Discovery (v5.17.0)
+
+Open the existing search box in **World** or **Game Guide**, choose a category
+and enter a name or an original identity such as `formation:0` or
+`field:<id> triangle:0`. Select a result, then choose its available record,
+map or analysis action. Use **Back to search** to restore the query and page.
+The Atlas spoiler selector also controls private Gameplay labels and details.
+[Search syntax and evidence scope](../reference/spatial-evidence-discovery.md).
+
 ## Cross-scene Field reachability (v5.9.0)
 
 Open a Field Workspace from an existing place/entrance or Field Context entry.

@@ -170,6 +170,7 @@ export function mountShell(){
  intro.addEventListener('toggle',()=>{if(!intro.open)try{localStorage.setItem('gaiagis.seenIntro','true');}catch{}});scope.own(appStore.subscribe(introRefresh));scope.own(onLocaleChange(introRefresh));introRefresh();scope.own(()=>intro.remove());
  scope.own(mountWelcome(id=>id==='view'?openArea('settings'):activate(id),globalActions).dispose);
  scope.listen(document,'gaiagis:inspect',()=>{if(appStore.state.selection)openDrawer('inspector');});
+ scope.listen(document,'gaiagis:evidence-inspect',()=>openDrawer('inspector'));
  scope.listen(document,'gaiagis:open-tool',((e:CustomEvent<{toolId?:string}>)=>{const tool=toolById(e.detail?.toolId??'');if(tool)chooseTool(tool.id);}) as EventListener);
  scope.listen(document,'gaiagis:open-area',((e:CustomEvent<{area?:PlayerArea}>)=>{if(playerAreas.includes(e.detail?.area as PlayerArea))openArea(e.detail.area!);}) as EventListener);
  scope.listen(document,'gaiagis:map-capture',()=>{panelOpen=false;inspectorOpen=false;layer='map';renderPresentation();document.querySelector<HTMLCanvasElement>('.native-host:not([hidden]) canvas,.viewport canvas')?.focus();});

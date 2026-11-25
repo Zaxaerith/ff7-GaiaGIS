@@ -1,5 +1,11 @@
 # Changelog
 
+## 5.17.0 — Spatial Evidence Discovery
+
+- Extend the shared World and Game Guide search with original ID qualifiers, composite Enemy keys and one-Field script and geometry lookup.
+- Use existing evidence owners to open exact records and explicitly request strict analysis or Encounter Geography. Reuse current route results without starting a new calculation.
+- Keep private evidence navigation in session and apply Atlas spoiler policy to Gameplay search and related actions.
+
 ## 5.16.0 — Field Evidence GIS Export
 
 - Add a private, single-Field GeoPackage v3 with the seven existing FieldLocal spatial layers and normalized script, Gameplay, Dialogue, conditional, ASK/IF and REQ attributes. Preserve native raw coordinates, original record keys and evidence grades.

@@ -7,6 +7,7 @@ import type {FieldEventInput,FieldEventIndex,FieldEventRow,FieldEventFilter} fro
 import {FieldGatewayNetwork} from '../analysis/fieldGateway';
 import type {GatewayResources,GatewayStart} from '../analysis/fieldGateway';
 import {appStore} from '../app/state';
+import {mayShowPrivateEvidence} from '../app/evidenceSession';
 import {ResourceScope} from '../app/resources';
 import {sourceResultPager} from './surfaceQueries';
 import {evidenceSection} from './contentPresentation';
@@ -61,11 +62,12 @@ export function mountFieldEventEvidence(ports:FieldEventPorts){
   if(row.channel==='gameplay')document.dispatchEvent(new CustomEvent('gaiagis:gameplay-record-evidence',{detail:{host:section,recordId:(row.record as {id:string}).id}}));
   const related=make('details',section),summary=make('summary',related,t('evgeo.related'));summary.dataset.relation='candidate';make('p',related,t('evgeo.candidate'));const relations=index.relations(row),rp=sourceResultPager<(typeof relations)[number]>(related,'field-event-relations',r=>t('evgeo.'+r.relation)+' · '+caption(r.row),r=>select(r.row),(b,r)=>{b.dataset.eventRelation=r.row.key;});rp.set(relations);inspection??=new ResourceScope();inspection.own(rp.dispose);
   if(pathResult){make('p',section,t('evgeo.'+pathResult.status));make('pre',section,JSON.stringify({start:seedProof,reachable:pathResult.reachable,unreachable:pathResult.unreachable,triangles:pathResult.path?.ids??[],access:pathResult.path?.steps??[]},null,2));section.dataset.reach=pathResult.status;}
-  const raw=evidenceSection(section,t('evgeo.provenance'));make('pre',raw,JSON.stringify({decoder:index.input.fields.pack.scriptDecoder??'legacy-stop',contextSHA256:index.input.contextSHA256,walkmeshSHA256:index.input.walkmeshSHA256,section1SHA256:index.section1SHA256,section5SHA256:index.input.meshSHA256,section8SHA256:index.section8SHA256,interactionSHA256:index.input.interaction?.sha256,scriptSHA256:index.input.script?.sha256,gameplaySHA256:index.input.gameplay?.sha256,dialogueSHA256:index.input.dialogue?.sha256,generation:index.input.generation,fieldId:index.input.fieldId,record:row.record},null,2));
+  const raw=evidenceSection(section,t('evgeo.provenance'));make('pre',raw,JSON.stringify({decoder:index.input.fields.pack.scriptDecoder??'legacy-stop',contextSHA256:index.input.contextSHA256,walkmeshSHA256:index.input.walkmeshSHA256,section1SHA256:index.section1SHA256,section5SHA256:index.input.meshSHA256,section8SHA256:index.section8SHA256,interactionSHA256:index.input.interaction?.sha256,scriptSHA256:index.input.script?.sha256,gameplaySHA256:index.input.gameplay?.sha256,dialogueSHA256:index.input.dialogue?.sha256,generation:index.input.generation,fieldId:index.input.fieldId,record:mayShowPrivateEvidence()?row.record:undefined},null,2));
  }
  function showText(id:number){if(!index?.input.dialogue||index.problems.includes('dialogue'))return;selected=null;selectedText=id;ports.activate?.();ticket++;pathResult=null;ports.clearPath?.();inspect(ports.inspector());document.dispatchEvent(new Event('gaiagis:inspect'));revealInspection();}
  function renderText(host:HTMLElement,id:number){const resource=index!.input.dialogue!,scene=resource.scene,text=scene.textTable.texts[id],refs=scene.records.filter(r=>(r.opcode===64||r.opcode===72)&&dialogueOperand(r).textId===id);host.dataset.textId=String(id);const provenance=evidenceSection(host,t('evgeo.provenance'));make('pre',provenance,JSON.stringify({fieldId:scene.fieldId,section1SHA256:scene.section1SHA256,memberSHA256:scene.memberSHA256,dialogueSHA256:resource.sha256,generation:resource.generation,textId:id,offset:text?.offset,bytes:text?.bytes,status:text?.status},null,2));make('h3',host,'Text '+id+' · '+scene.name);make('p',host,t('dlg.sourceEn'));make('p',host,t('dlg.noPosition'));const reverse=button(host,t('dlg.references')+' · '+refs.filter(r=>r.entryReachable).length,()=>{for(const n of inputs.values())n.value='';inputs.get('textId')!.value=String(id);inputs.get('channel')!.value='dialogue';box.open=true;pageRows();});reverse.dataset.dialogueTextQuery=String(id);
   if(!text||text.status!=='valid'){make('p',host,t('dlg.badText')+' · '+(text?.reason??'invalid_text_id'));return;}
+  if(!mayShowPrivateEvidence()){make('p',host,t('discovery.hidden'));return;}
   if(!text.body){make('p',host,t('dlg.noBody'));return;}
   const preview=make('details',host);preview.dataset.dialoguePreview=String(id);make('summary',preview,t('dlg.preview'));const note=make('p',preview,t('dlg.tokens')),pre=make('pre',preview);pre.className='dialogue-preview';preview.addEventListener('toggle',()=>{if(preview.open&&!pre.dataset.decoded){const tokens=dialogueTokens(dialogueBytes(text.body!));pre.textContent=tokens.text;pre.dataset.decoded='true';note.textContent=t('dlg.tokens')+(tokens.unknown.length?' · '+t('dlg.unknownGlyph'): '');}});
  }
@@ -86,8 +88,11 @@ export function mountFieldEventEvidence(ports:FieldEventPorts){
  function filterTriangle(id:number){ports.reveal?.();inputs.get('triangle')!.value=String(id);box.open=true;pageRows();inputs.get('triangle')!.focus();}
  function invalidate(){conditional.invalidate();ports.clearPath?.();ticket++;pending=null;busy=false;engine?.dispose();engine=null;inspection?.dispose();inspection=null;index=null;selectedText=null;selected=null;last='';pathResult=null;seedProof=null;issue='';pager.set([]);ports.inspector().querySelector('#field-event-inspection')?.remove();}
  start.onchange=()=>{ports.clearPath?.();ticket++;busy=false;pathResult=null;seedProof=null;draw();inspect(ports.inspector());};scope.own(onLocaleChange(()=>{draw();inspect(ports.inspector());}));draw();
+ scope.listen(document,'gaiagis:evidence-policy',()=>inspect(ports.inspector()));
  return {attach(host:HTMLElement){host.append(box);refresh();},refresh,inspect,filterTriangle,invalidate,
-  openRecord(key:string){refresh();const row=index?.rows.find(r=>r.key===key);if(row){ports.reveal?.();box.open=true;select(row);}},
+  prepareDiscovery(){conditional.element.open=false;conditional.clearInspection();},
+  filterOwner(owner:{actor?:number;slot?:number;entry?:number;ownerKind?:string}){for(const input of inputs.values())input.value='';for(const [name,value]of Object.entries(owner)){const input=inputs.get(name);if(input&&value!==undefined)input.value=String(value);}box.open=true;pageRows();},
+  openRecord(key:string){refresh();const row=index?.rows.find(r=>r.key===key);if(row){ports.reveal?.();box.open=true;select(row);if(row.channel==='condition')conditional.focusIf(row.offset);}},
   request(key:string,contextSHA256:string,gameplaySHA256:string,generation:number){pending={key,contextSHA256,gameplaySHA256,generation};box.open=true;},
   dispose(){invalidate();pending=null;scope.dispose();box.remove();}};
 }

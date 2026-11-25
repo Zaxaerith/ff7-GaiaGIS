@@ -4,6 +4,11 @@ A local-first GIS reconstruction of the original FINAL FANTASY VII world, with a
 
 ## Quick start
 
+**v5.17.0 — Spatial Evidence Discovery** extends the existing World and Game
+Guide search with original identities, scoped Field evidence and links to
+current Encounter and World–Field results.
+[Search syntax and source precision](docs/reference/spatial-evidence-discovery.md).
+
 **v5.16.0 — Field Evidence GIS Export** exports a single Field to a private
 GeoPackage with its original geometry, script identities, Dialogue references
 and strict conditional evidence. An optional QGIS project links the attributes
