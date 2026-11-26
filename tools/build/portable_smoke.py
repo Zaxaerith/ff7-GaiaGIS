@@ -144,6 +144,16 @@ def verify(args, isolated):
                 else:raise RuntimeError('Frozen server timeout')
                 label='synthetic_' if synthetic else 'real_'
                 checks[label+'localhost_status']=status['local_mode'] is True and status['version']==__version__
+                request=urllib.request.Request(url+'__gaiagis_local__/db/status',headers={'X-GaiaGIS-DB':'1'})
+                with urllib.request.urlopen(request,timeout=2) as response:
+                    status_code=response.status
+                    database_status=json.load(response)
+                checks[label+'database_not_configured']=status_code==200 and database_status['status']=='not_configured'
+                try:
+                    urllib.request.urlopen(url+'__gaiagis_local__/db/status',timeout=2)
+                    checks[label+'database_header_required']=False
+                except urllib.error.HTTPError as error:
+                    checks[label+'database_header_required']=error.code==403
                 with urllib.request.urlopen(url+'__gaiagis_local__/workspace') as response:manifest=json.load(response)
                 checks[label+'manifest']=manifest['schema']=='gaiagis-workspace' and str(workspace) not in json.dumps(manifest)
                 with urllib.request.urlopen(url) as response:checks[label+'compiled_viewer']=b'gaiagis-local' in response.read()
@@ -182,6 +192,12 @@ def verify(args, isolated):
         after=validate_source(source);checks['source_unchanged']=before==after
         report['assets']=len(names)
     if not all(checks.values()):raise RuntimeError('Portable smoke failed: '+json.dumps(checks))
+    unsupported=subprocess.run([str(exe),'--field-db',str(isolated/'unsupported.gpkg')],cwd=isolated,env=env,
+                               capture_output=True,text=True,encoding='utf8',timeout=30)
+    checks['frozen_database_configuration_rejected']=(unsupported.returncode==2 and
+                                                       'source-checkout CLI' in unsupported.stderr)
+    if not checks['frozen_database_configuration_rejected']:
+        raise RuntimeError('Portable database configuration boundary failed: '+json.dumps(checks))
     print(json.dumps(report,indent=2))
     return report
 def main(argv=None):

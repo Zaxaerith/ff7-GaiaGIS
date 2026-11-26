@@ -391,6 +391,8 @@ def main(argv=None, *, progress=None, ready=None):
     # Refuse overlapping input before even lifecycle scratch can be written.
     cli=parser()
     args=cli.parse_args(argv)
+    if args.field_db is not None and getattr(sys,'frozen',False):
+        cli.error('--field-db is supported only by the source-checkout CLI')
     if args.serve_existing and (args.source or args.game_language or args.remember_source or args.rebuild or args.clean_invalid or args.build_only):
         cli.error('--serve-existing cannot be combined with game input or build options')
     selected=args.source

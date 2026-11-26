@@ -16,7 +16,6 @@ from urllib.parse import parse_qsl
 from .clean_output import reject_links
 from .field_bundle import read_cfg_metadata
 from .field_evidence_gis import ATTRIBUTES, FILES, REVISION, SCHEMA as PROTOCOL
-from .field_gis import LIMIT, SCHEMA, fieldlocal_path, load_field, table_fields
 from .field_interaction import read_interaction
 from .field_provenance import context_decoder
 from .field_transaction import JOURNAL
@@ -54,6 +53,11 @@ REQUIRED_COLUMNS = {
     'dialogue_references': 'instruction_offset kind text_id text_status',
     'conditional_controls': 'root_offset if_offset successor target_offset is_standard is_strong is_core',
 }
+
+
+def load_field(*args, **kwargs):
+    from .field_gis import load_field as read_field
+    return read_field(*args, **kwargs)
 
 EVENT_FROM = """
 FROM script_events AS e
@@ -144,6 +148,7 @@ def _sidecars(path):
 
 
 def _fingerprint(path):
+    from .field_gis import LIMIT
     token = _stat(path)
     _need(100 <= token[2] <= LIMIT, 'incompatible')
     _need(not _sidecars(path), 'unsafe_journal')
@@ -183,6 +188,7 @@ def _one(connection, sql):
 
 
 def _validate_schema(connection):
+    from .field_gis import table_fields
     _need(connection.execute('PRAGMA application_id').fetchone()[0] == 0x47504B47)
     tables = {r['name'] for r in connection.execute('PRAGMA table_list') if r['schema'] == 'main' and r['type'] == 'table'}
     expected = set(table_fields(3)) | ATTRIBUTES.keys()
@@ -290,6 +296,7 @@ class Binding:
     watched: tuple
 
     def status(self):
+        from .field_gis import SCHEMA
         return dict(available=True, status='available', schema=SCHEMA, version=3,
                     fieldId=self.field_id, fieldName=self.name, coordinateSpace='FieldLocal', readOnly=True,
                     tableCount=self.table_count, spatialLayerCount=self.feature_count,
@@ -297,6 +304,7 @@ class Binding:
 
 
 def _validate(connection, root, manifest):
+    from .field_gis import SCHEMA
     table_count, features = _validate_schema(connection)
     meta = _one(connection, """SELECT schema, version, field_id, field_name, coordinate_space,
         source_file, source_sha256, maplist_sha256, context_version, walkmesh_version,
@@ -374,6 +382,7 @@ class LocalDatabase:
         self._slots = BoundedSemaphore(4)
         if path is None:
             return
+        from .field_gis import fieldlocal_path
         try:
             self._path = fieldlocal_path(path)
             _need(not self._path.is_relative_to(self._root), 'invalid_path')
@@ -396,6 +405,7 @@ class LocalDatabase:
     def _check_current(self):
         if self._state != 'available':
             return False
+        from .field_gis import fieldlocal_path
         try:
             _need(_fingerprint(fieldlocal_path(self._path)) == self._initial, 'database_changed')
         except (OSError, ValueError):
