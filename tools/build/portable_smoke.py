@@ -128,11 +128,14 @@ def verify(args, isolated):
 
     def probe(command,receipt,synthetic):
         receipt.unlink(missing_ok=True)
-        with (isolated/'server.log').open('w',encoding='utf8') as log:
+        server_log=isolated/'server.log'
+        with server_log.open('w',encoding='utf8') as log:
             server=subprocess.Popen([str(exe),*command],cwd=isolated,env=env,stdout=log,stderr=subprocess.STDOUT)
             try:
                 for _ in range(240):
-                    if server.poll() is not None:raise RuntimeError('Frozen server exited')
+                    if server.poll() is not None:
+                        detail=server_log.read_text(encoding='utf8',errors='replace')[-4000:]
+                        raise RuntimeError('Frozen server exited; server.log tail:\n'+detail)
                     try:
                         ready=json.loads(receipt.read_text(encoding='utf8'));url=ready['url']
                         with urllib.request.urlopen(url+'__gaiagis_local__/status',timeout=1) as response:status=json.load(response)
