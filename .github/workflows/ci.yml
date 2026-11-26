@@ -34,6 +34,16 @@ jobs:
           with open(os.environ['GITHUB_ENV'], 'a', encoding='utf8') as stream:
               for key, value in values.items():
                   stream.write(f'{key}={value}\n')
+      - name: Local database Python regression on synthetic data
+        shell: python {0}
+        env:
+          PYTHONPATH: src
+        run: |
+          import sqlite3, subprocess, sys
+          if sqlite3.sqlite_version_info < (3, 37, 0):
+              raise RuntimeError(f'SQLite 3.37 or newer required; found {sqlite3.sqlite_version}')
+          print(f'SQLite {sqlite3.sqlite_version}')
+          subprocess.run([sys.executable, '-B', '-m', 'unittest', 'discover', '-s', 'tools/tests', '-p', 'test_local_database.py', '-v'], check=True)
       - run: npm ci
         working-directory: web
       - name: Source CLI Field Evidence smoke on Node 24
