@@ -243,6 +243,16 @@ The WM0 Analysis owner shares the existing Viewer/Inspector and releases results
 picks and borrowed evidence on map/source/mode replacement. No new Workspace pack,
 database or coordinate authority exists. [Contract](global-source-gis.md).
 
+## Optional local spatial database queries
+
+The v5.18 source CLI can serve an existing Workspace and one validated
+FieldLocal v3 export. Data & Settings sends same-origin GETs to the existing
+Python loopback server. A bounded, read-only SQLite connection supplies event
+and conditional-relation rows to a session-only table. Source checks anchor the
+export to that server Workspace. The browser disables the binding on manual
+Workspace replacement. Public static builds leave this service dormant.
+[API and query boundaries](local-spatial-database-query.md).
+
 ## Game data language sources
 
 `SourceDataset` resolves one bounded EN/FR/DE/ES World/Field pair and is passed

@@ -125,3 +125,11 @@ dialog{color:#c6d9e3;background:#14232e;border:1px solid #426173;border-radius:1
 #evidence-discovery-inspector{display:grid;gap:.45rem;padding:.75rem;overflow-wrap:anywhere}
 #evidence-discovery-inspector[hidden]{display:none}
 #integrated-inspector:has(#evidence-discovery-inspector:not([hidden])) :is(#info-panel,#field-inspector,#native-inspector,#tool-inspector){display:none}
+.local-db,.local-db-form{min-width:0;max-width:100%}
+.local-db-form label{display:grid;gap:.25rem;margin-block:.35rem}
+.local-db-form label[hidden]{display:none}
+.local-db-form input,.local-db-form select{min-width:0;width:100%}
+#local-db-http{overflow-wrap:anywhere}
+.local-db-scroll{max-width:100%;overflow:auto}
+.local-db-scroll table{border-collapse:collapse;text-align:left}
+.local-db-scroll :is(th,td){padding:.45rem;border-bottom:1px solid var(--border);white-space:nowrap}

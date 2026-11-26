@@ -1,5 +1,10 @@
 # Changelog
 
+## 5.18.0 — Local Spatial Database Query Service
+
+- Serve a single, explicitly configured FieldLocal v3 GeoPackage through a bounded read-only HTTP SQLite query API. Validate source identity and revoke a changed database until restart.
+- Add source CLI `--serve-existing` to reuse an existing verified Workspace, and a Data & Settings panel for event and conditional JOIN results.
+
 ## 5.17.0 — Spatial Evidence Discovery
 
 - Extend the shared World and Game Guide search with original ID qualifiers, composite Enemy keys and one-Field script and geometry lookup.

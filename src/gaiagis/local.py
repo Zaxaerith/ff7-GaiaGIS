@@ -73,9 +73,9 @@ def validate_source(source, game_language='en'):
                          + str(error)) from error
 
 
-def workspace_path(path, source):
+def workspace_path(path, source=None):
     root = output_path(Path(path))
-    if root.is_relative_to(Path(source).resolve()):raise ValueError('Workspace cannot be inside game source')
+    if source is not None and root.is_relative_to(Path(source).resolve()):raise ValueError('Workspace cannot be inside game source')
     # Local output may be deleted/rebuilt; keep it away from source and sealed evidence.
     if not root.is_relative_to(WORKSPACE_ROOT / 'output') or root == WORKSPACE_ROOT / 'output':
         raise ValueError('Local workspace must be a subdirectory of project output/')
@@ -172,11 +172,13 @@ def server_manifest(root):
     return manifest
 
 
-def _make_server(root, dist, host='127.0.0.1', port=5173):
+def _make_server(root, dist, host='127.0.0.1', port=5173, *, field_db=None):
     root=output_path(Path(root));dist=resource_path(Path(dist))
     if host not in ('127.0.0.1', 'localhost'):
         raise ValueError('Local Viewer must bind to loopback')
     manifest=server_manifest(root)
+    from .local_database import LocalDatabase, inactive, response_bytes
+    database=LocalDatabase(field_db,root,manifest)
     assets={a['filename']:a for a in manifest['assets']}
     static=set()
     for p in dist.rglob('*'):
@@ -190,15 +192,56 @@ def _make_server(root, dist, host='127.0.0.1', port=5173):
         def log_message(self,*args):pass  # no absolute paths or per-asset console noise
         def do_HEAD(self):self.respond(head=True)
         def do_GET(self):self.respond()
+        def do_POST(self):self.respond()
+        do_PUT=do_PATCH=do_DELETE=do_OPTIONS=do_TRACE=do_CONNECT=do_POST
+
+        def send_payload(self,code,payload,mime,head=False):
+            self.send_response(code)
+            self.send_header('Content-Type',mime)
+            self.send_header('Content-Length',str(len(payload)))
+            self.send_header('Cache-Control','no-store')
+            self.send_header('X-Content-Type-Options','nosniff')
+            self.send_header('Cross-Origin-Resource-Policy','same-origin')
+            if code==405:self.send_header('Allow','GET')
+            self.end_headers()
+            if not head:self.wfile.write(payload)
+
+        def respond_database(self,endpoint,query,authority,allowed,head):
+            origin=self.headers.get_all('Origin',[])
+            fetch_sites=self.headers.get_all('Sec-Fetch-Site',[])
+            if (self.headers.get_all('Host',[])!=[authority] or authority not in allowed
+                    or origin not in ([],[f'http://{authority}'])
+                    or fetch_sites not in ([],['same-origin'],['none'])):
+                code,result=403,inactive('forbidden')
+            elif self.command!='GET':
+                code,result=405,inactive('method_not_allowed')
+            elif self.headers.get_all('X-GaiaGIS-DB',[])!=['1']:
+                code,result=403,inactive('forbidden')
+            elif endpoint not in ('status','events','controls'):
+                code,result=404,inactive('unknown_endpoint')
+            else:
+                code,result=database.request(endpoint,query)
+            code,payload=response_bytes(code,result)
+            self.send_payload(code,payload,'application/json',head)
+
         def respond(self,head=False):
             authority=self.headers.get('Host','')
             allowed={f'{h}:{self.server.server_port}' for h in (host,'127.0.0.1','localhost')}
             origin=self.headers.get('Origin')
-            if authority not in allowed or origin and origin not in {f'http://{h}' for h in allowed}:
-                self.send_error(403);return
-            raw=urlsplit(self.path).path;path=unquote(raw)
+            try:target_url=urlsplit(self.path)
+            except ValueError:self.send_error(400);return
+            raw=target_url.path;path=unquote(raw)
             if '\\' in path or '%' in path or any(part in ('.','..') for part in path.split('/')):
                 self.send_error(404);return
+            if path.startswith(PREFIX+'db/'):
+                if target_url.scheme or target_url.netloc or target_url.fragment or raw!=path:
+                    self.send_error(400);return
+                self.respond_database(path[len(PREFIX+'db/'):],target_url.query,authority,allowed,head)
+                return
+            if authority not in allowed or origin and origin not in {f'http://{h}' for h in allowed}:
+                self.send_error(403);return
+            if self.command not in ('GET','HEAD'):
+                self.send_error(501);return
             try:
                 if path==PREFIX+'status':
                     payload=json.dumps({'local_mode':True,'version':__version__,'workspace_path':str(root)}).encode();mime='application/json'
@@ -219,14 +262,7 @@ def _make_server(root, dist, host='127.0.0.1', port=5173):
                     payload=target.read_bytes();mime=mimetypes.guess_type(name)[0] or 'application/octet-stream'
                     if name=='index.html':
                         payload=payload.replace(b'<head>',b'<head><meta name="gaiagis-local" content="true">',1)
-                self.send_response(200)
-                self.send_header('Content-Type',mime)
-                self.send_header('Content-Length',str(len(payload)))
-                self.send_header('Cache-Control','no-store')
-                self.send_header('X-Content-Type-Options','nosniff')
-                self.send_header('Cross-Origin-Resource-Policy','same-origin')
-                self.end_headers()
-                if not head:self.wfile.write(payload)
+                self.send_payload(200,payload,mime,head)
             except (OSError,ValueError):self.send_error(404)
 
     class LocalHTTPServer(ThreadingHTTPServer):
@@ -242,12 +278,23 @@ def _make_server(root, dist, host='127.0.0.1', port=5173):
     raise RuntimeError('No free local port available')
 
 
-def make_server(root, dist, host='127.0.0.1', port=5173):
-    from .field_transaction import workspace_lease, recover
+def make_server(root, dist, host='127.0.0.1', port=5173, *, field_db=None, serve_existing=False):
+    from .field_transaction import JOURNAL, workspace_lease, recover
+    root=Path(root)
+    if serve_existing:
+        from .clean_output import reject_links
+        root=runtime_path(root.absolute())
+        reject_links(root/'.build')
+        reject_links(root/'.build/field-cfg.lock')
+        if os.path.lexists(root/JOURNAL):raise ValueError('CFG recovery required before read-only serve-existing')
+        if not (root/'gaia-workspace.json').is_file():raise ValueError('Existing Workspace Manifest unavailable')
     lease=workspace_lease(root);lease.__enter__()
     try:
-        recover(Path(root))
-        server=_make_server(root,dist,host,port)
+        if serve_existing:
+            if os.path.lexists(root/JOURNAL):raise ValueError('CFG recovery required before read-only serve-existing')
+        else:
+            recover(root)
+        server=_make_server(root,dist,host,port,field_db=field_db)
     except BaseException:
         lease.__exit__(*sys.exc_info());raise
     close=server.server_close
@@ -265,6 +312,8 @@ def parser():
     cli.add_argument('--workspace',type=Path,default=WORKSPACE_ROOT/'output/local-workspace',help='Generated GaiaGIS workspace folder; default: output/local-workspace (not the raw FF7 wm directory)')
     cli.add_argument('--host',default='127.0.0.1')
     cli.add_argument('--port',type=int,default=5173)
+    cli.add_argument('--serve-existing',action='store_true',help='Serve an existing Workspace without opening game inputs, building or recovering it')
+    cli.add_argument('--field-db',type=Path,help='Read-only FieldLocal v3 GeoPackage under output/exports/fieldlocal')
     for flag in ('no-open','rebuild','clean-invalid','remember-source','debug'):
         cli.add_argument('--'+flag,action='store_true')
     cli.add_argument('--build-only',action='store_true',help=argparse.SUPPRESS)
@@ -276,6 +325,16 @@ def _main(argv=None, scratch=None, progress=None, ready=None):
     if not 0<=args.port<=65535:raise SystemExit('Port must be between 0 and 65535')
     env=runtime_environment(scratch)
     try:
+        if args.serve_existing:
+            out=workspace_path(args.workspace.absolute())
+            print('Serving existing Workspace',flush=True)
+            server=make_server(out,prepare_viewer(env),args.host,args.port,field_db=args.field_db,serve_existing=True)
+            url=f'http://{args.host}:{server.server_port}/'
+            print(f'GaiaGIS: {url}\nReady in {time.perf_counter()-began:.2f}s. Ctrl+C to stop.',flush=True)
+            if ready:ready(server,url)
+            if not args.no_open:webbrowser.open(url)
+            server.serve_forever(poll_interval=0.2)
+            return 0
         print('Detecting FF7 installation / checking source fingerprints',flush=True)
         if progress:progress('checking',0,15)
         source,before=choose_source(args.source,args.remember_source,args.game_language)
@@ -306,7 +365,7 @@ def _main(argv=None, scratch=None, progress=None, ready=None):
         (out/'local-launch.json').write_text(json.dumps(evidence,sort_keys=True,indent=2)+'\n',encoding='utf8')
         if args.build_only:return 0
         print('Starting Viewer',flush=True);dist=prepare_viewer(env)
-        server=make_server(out,dist,args.host,args.port)
+        server=make_server(out,dist,args.host,args.port,field_db=args.field_db)
         url=f'http://{args.host if args.host!="0.0.0.0" else "127.0.0.1"}:{server.server_port}/'
         evidence['ready_seconds']=time.perf_counter()-began
         (out/'local-launch.json').write_text(json.dumps(evidence,sort_keys=True,indent=2)+'\n',encoding='utf8')
@@ -330,8 +389,12 @@ def main(argv=None, *, progress=None, ready=None):
     from .output_lifecycle import OutputRun
     class StartFailed(Exception):pass
     # Refuse overlapping input before even lifecycle scratch can be written.
-    selected=parser().parse_args(argv).source
-    if selected is None and CONFIG.is_file():
+    cli=parser()
+    args=cli.parse_args(argv)
+    if args.serve_existing and (args.source or args.game_language or args.remember_source or args.rebuild or args.clean_invalid or args.build_only):
+        cli.error('--serve-existing cannot be combined with game input or build options')
+    selected=args.source
+    if not args.serve_existing and selected is None and CONFIG.is_file():
         try:selected=json.loads(CONFIG.read_text(encoding='utf8')).get('source')
         except (ValueError,OSError,AttributeError):pass
     if selected:

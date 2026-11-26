@@ -4,6 +4,12 @@ A local-first GIS reconstruction of the original FINAL FANTASY VII world, with a
 
 ## Quick start
 
+**v5.18.0 — Local Spatial Database Query Service** adds a read-only HTTP query
+panel for one existing FieldLocal GeoPackage v3. The source CLI serves the
+Viewer, its verified Workspace and parameterized SQLite SELECT/JOIN results
+from the same loopback origin.
+[Startup and API reference](docs/reference/local-spatial-database-query.md).
+
 **v5.17.0 — Spatial Evidence Discovery** extends the existing World and Game
 Guide search with original identities, scoped Field evidence and links to
 current Encounter and World–Field results.

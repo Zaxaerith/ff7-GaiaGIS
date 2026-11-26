@@ -154,9 +154,10 @@ def _sources(value, required=None):
         if name not in value:raise ValueError('Missing Field source identity')
 
 
-def load_field(workspace, field):
+def load_field(workspace, field, *, protect_workspace=True):
     """Bounded workspace/pack reader; reuses the original Section-5 parser."""
-    root=Path(workspace).resolve();protect_input(root)
+    root=Path(workspace).resolve()
+    if protect_workspace:protect_input(root)
     manifest_path=root/'gaia-workspace.json';reject_links(manifest_path)
     manifest_raw=_metadata_bytes(manifest_path,100_000);manifest=_decode_json(manifest_raw);manifest_hash=hashlib.sha256(manifest_raw).hexdigest()
     if manifest.get('schema')!='gaiagis-workspace' or type(manifest.get('version')) is not int or manifest['version']!=1 or manifest.get('timestamp_policy')!='omitted' or not re.fullmatch(r'\d+\.\d+\.\d+',str(manifest.get('tool_version',''))):raise ValueError('Workspace manifest/version')
@@ -235,13 +236,18 @@ def _point(record, triangle, xy, scene):
     return result
 
 
-def safe_target(path,suffix='.gpkg'):
+def fieldlocal_path(path,suffix='.gpkg'):
     path=Path(path).absolute();target=output_path(path)
     allowed=WORKSPACE_ROOT/'output/exports/fieldlocal'
-    if target!=path or not target.is_relative_to(allowed) or target.suffix.lower()!=suffix:raise ValueError(f'Field GIS output must be under output/exports/fieldlocal/*{suffix}')
+    if target!=path or not target.is_relative_to(allowed) or target.suffix.lower()!=suffix:raise ValueError(f'Field GIS path must be under output/exports/fieldlocal/*{suffix}')
     for parent in (target,*target.parents):
         if parent==WORKSPACE_ROOT:break
         reject_links(parent)
+    return target
+
+
+def safe_target(path,suffix='.gpkg'):
+    target=fieldlocal_path(path,suffix)
     if target.exists():raise ValueError('Output exists; choose a new filename')
     return target
 

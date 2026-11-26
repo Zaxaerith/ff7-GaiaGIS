@@ -50,6 +50,22 @@ def read_pack(payload, name):
     return meta, scenes, chunks
 
 
+def read_cfg_metadata(path):
+    name=path.name
+    if name=='gaia-gameplay.json':
+        if path.stat().st_size>20_000_000:raise ValueError('Gameplay budget')
+        return json.loads(path.read_bytes()),'gameplay'
+    magic,kind,_=KINDS[name]
+    with path.open('rb') as stream:
+        prefix=stream.read(16)
+        if len(prefix)!=16 or prefix[:8]!=magic.encode():raise ValueError('CFG header identity')
+        version,size=struct.unpack_from('<II',prefix,8)
+        if not 0<size<=1_000_000:raise ValueError('CFG header budget')
+        meta=json.loads(stream.read(size))
+        if meta['version']!=version:raise ValueError('CFG transport version')
+    return meta,kind
+
+
 def validate_manifest_cfg(root, manifest):
     """Small server/pre-publication gate. Full scene readback belongs to staging."""
     from pathlib import Path
@@ -60,19 +76,7 @@ def validate_manifest_cfg(root, manifest):
     for name in (*KINDS,'gaia-gameplay.json'):
         record=records.get(name)
         if record is None:continue
-        path=root/name
-        if name.endswith('.json'):
-            if path.stat().st_size>20_000_000:raise ValueError('Gameplay budget')
-            meta=json.loads(path.read_bytes());kind='gameplay'
-        else:
-            with path.open('rb') as stream:
-                prefix=stream.read(16)
-                if len(prefix)!=16 or prefix[:8]!=KINDS[name][0].encode():raise ValueError('CFG header identity')
-                version,size=struct.unpack_from('<II',prefix,8)
-                if not 0<size<=1_000_000:raise ValueError('CFG header budget')
-                meta=json.loads(stream.read(size))
-                if meta['version']!=version:raise ValueError('CFG transport version')
-            kind=KINDS[name][1]
+        meta,kind=read_cfg_metadata(root/name)
         validate_profile(meta,kind,context)
         if record.get('generator_version')!=meta['generator_revision'] or any(context['sources'].get(k)!=meta['sources'].get(k) for k in (context['archive'],'maplist')):
             raise ValueError('CFG Manifest/source identity')

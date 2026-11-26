@@ -65,7 +65,7 @@ Field 奖励索引复用共享 Section 1 CFG，解读 STITM/SMTRA/BATTLE 与有�
 
 ## 数据库实际使用情况
 
-Web Viewer 是 TypeScript/Vite/Three.js 应用，**没有 MySQL、PostgreSQL、Web SQL 后端或数据库服务接口**。公开部署可静态托管；本地 Launcher 可以提供文件与控制接口，但没有因此成为 SQL 数据服务。用户首选项和个人标注采用既有的浏览器本地状态；这不等于把游戏 Workspace 导入 SQL。
+v5.17 及更早版本的 GeoPackage 主要用于本地 GIS 研究与交换。v5.18 的源码 CLI 可显式配置一个既有 FieldLocal v3 GeoPackage，使用本机 Python 回环 HTTP 服务执行只读 SQLite 查询。公共 Pages 仍是静态部署。Workspace 的 JSON 与二进制资产继续由各自的数据读取器处理，浏览器首选项与标注继续使用原有本地状态。服务范围是单 Field 的 SELECT 和 JOIN，不提供公网数据库、账号或 CRUD。[启动和接口](local-spatial-database-query.md)
 
 GIS 研究/交换导出可使用 **GeoPackage（基于 SQLite）**，由 Python/GDAL 在本地写入与核查，供 QGIS 等工具使用。WM0 重建空间、Native 和 FieldLocal 导出有各自的坐标与契约约束；Native/FieldLocal 不伪装为地球 EPSG 坐标。浏览器的正常 Atlas、Source GIS、Routing 或 Field 浏览不要求连接或读取这些 GeoPackage，也不依赖实时 SQL 查询。
 

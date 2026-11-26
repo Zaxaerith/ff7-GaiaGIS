@@ -1,6 +1,7 @@
 import {archiveKey,gameArchives} from '../data/sourceRoles';
 import {mountPresentation} from './presentation';
 import {mountWorkspaceCard} from '../ui/workspaceCard';
+import {mountLocalDatabase} from '../ui/localDatabase';
 import {mountWelcome} from '../ui/welcome';
 import {playerAreas,areaStart,panelArea,menuIndex,paneVisibility,autoOpenInspector} from './shellNavigation';
 import type {PlayerArea} from './shellNavigation';
@@ -108,6 +109,7 @@ export function mountShell(){
  const diagnostics=document.createElement('details'),summary=document.createElement('summary'),pre=document.createElement('pre'),copy=document.createElement('button');summary.textContent=t('workspace.diagnostics');copy.textContent=t('workspace.copy');copy.id='copy-diagnostics';diagnostics.append(summary,copy,pre);data.append(diagnostics);
  const diagnostic=()=>({app:'GaiaGIS',map:appStore.state.map,view:appStore.state.view,assets:Object.fromEntries(Object.entries(appStore.state.data.assets).map(([id,a])=>[id,{status:a?.status,version:a?.version,bytes:a?.bytes,sourceHashes:a?.sourceHashes}])),privateContentIncluded:false});
  copy.onclick=()=>{if(!navigator.clipboard){status.textContent=t('workspace.error');return;}void navigator.clipboard.writeText(JSON.stringify(diagnostic(),null,2)).catch(()=>{status.textContent=t('workspace.error');});};
+ scope.own(mountLocalDatabase(data));
  async function load(chosen:File[],folderName?:string,choice=beginWorkspaceImport()){
   if(!currentWorkspaceImport(choice))return;updateWorkspaceConnection({issue:undefined});status.textContent=t('shell.loading');status.setAttribute('role','status');const began=performance.now();
   try{const plan=await validateWorkspaceChoice(chosen);if(!currentWorkspaceImport(choice))return;
